@@ -1,0 +1,12 @@
+# ch.proc is an encoded string listing active processing blocks in order,
+# e.g. "GEDI". Each character maps to one block.
+# Source: bitfocus/companion-module-behringer-wing field survey, confirmed
+# against WING_Series_Manual_Knowledge_Base.md section 5.
+blocks:
+  G: { id: GATE,   label: "Gate" }
+  E: { id: EQ,     label: "Equaliser" }
+  D: { id: DELAY,  label: "Delay" }
+  I: { id: INSERT, label: "Insert" }
+  C: { id: COMP,   label: "Compressor" }
+  F: { id: FILTER, label: "Filter" }
+unknown_prefix: UNKNOWN_
