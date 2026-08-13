@@ -1,0 +1,23 @@
+# Vendor binaries and copyrighted documentation — not project source
+user-files/WING-Edit.exe
+user-files/User-Manual_WING-series_*.pdf
+
+# Third-party skill archive, not ours to redistribute
+user-files/mastering-engineer-*.tar.gz
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local secrets — the Anthropic key for the classifier fallback lives here
+.env
+
+# OS
+Thumbs.db
+.DS_Store
