@@ -26,10 +26,22 @@ REQUIRED_CE = ("cfg", "safes")
 
 def check_counts(ae: dict) -> list[Anomaly]:
     found: list[Anomaly] = []
+    if not isinstance(ae, dict):
+        return found                      # already reported by check_required_keys
     for section, expected in EXPECTED_COUNTS.items():
         if section not in ae:
             continue
-        actual = len(ae[section])
+        value = ae[section]
+        if not isinstance(value, (dict, list)):
+            found.append(
+                Anomaly(
+                    code="malformed_section",
+                    where=f"ae_data.{section}",
+                    detail=f"expected a collection, found {type(value).__name__}",
+                )
+            )
+            continue
+        actual = len(value)
         if actual != expected:
             found.append(
                 Anomaly(
@@ -41,19 +53,26 @@ def check_counts(ae: dict) -> list[Anomaly]:
     return found
 
 
+def _check_block(block: object, label: str, required: tuple[str, ...]) -> list[Anomaly]:
+    if not isinstance(block, dict):
+        return [
+            Anomaly(
+                code="malformed_section",
+                where=label,
+                detail=f"expected an object, found {type(block).__name__}",
+            )
+        ]
+    return [
+        Anomaly("missing_section", f"{label}.{section}", "section absent")
+        for section in required
+        if section not in block
+    ]
+
+
 def check_required_keys(ae: dict, ce: dict) -> list[Anomaly]:
-    found: list[Anomaly] = []
-    for section in REQUIRED_AE:
-        if section not in ae:
-            found.append(
-                Anomaly("missing_section", f"ae_data.{section}", "section absent")
-            )
-    for section in REQUIRED_CE:
-        if section not in ce:
-            found.append(
-                Anomaly("missing_section", f"ce_data.{section}", "section absent")
-            )
-    return found
+    return _check_block(ae, "ae_data", REQUIRED_AE) + _check_block(
+        ce, "ce_data", REQUIRED_CE
+    )
 
 
 def validate(raw: RawScene) -> list[Anomaly]:

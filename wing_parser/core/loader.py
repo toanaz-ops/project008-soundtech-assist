@@ -32,8 +32,11 @@ def load_raw(path: str | Path) -> RawScene:
 
     return RawScene(
         version=version,
-        ae=doc.get("ae_data", {}),
-        ce=doc.get("ce_data", {}),
+        # `or {}` rather than a .get default: a corrupt file can carry
+        # "ae_data": null, where the key is present and the default never
+        # fires. Downstream code must never receive None here.
+        ae=doc.get("ae_data") or {},
+        ce=doc.get("ce_data") or {},
         meta=meta,
         path=file_path,
     )

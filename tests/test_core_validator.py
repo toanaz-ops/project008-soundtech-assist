@@ -48,3 +48,28 @@ def test_unknown_version_is_reported_as_an_anomaly(vu_path, tmp_path):
 
     anomalies = validate(load_raw(future))
     assert any(a.code == "unknown_version" for a in anomalies)
+
+
+def test_null_payload_is_reported_not_raised(vu_path, tmp_path):
+    # "ae_data": null is valid JSON, so .get(key, default) never fires its
+    # default. The validator must survive it — collecting anomalies is its
+    # whole job, and an exception here would destroy the parse.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"] = None
+    nulled = tmp_path / "nullae.snap"
+    nulled.write_text(json.dumps(doc), encoding="utf-8")
+
+    anomalies = validate(load_raw(nulled))
+    assert any(a.code == "missing_section" and a.where == "ae_data.ch" for a in anomalies)
+
+
+def test_non_collection_section_is_reported_not_raised(vu_path, tmp_path):
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"] = 42
+    corrupt = tmp_path / "intch.snap"
+    corrupt.write_text(json.dumps(doc), encoding="utf-8")
+
+    anomalies = validate(load_raw(corrupt))
+    assert any(
+        a.code == "malformed_section" and a.where == "ae_data.ch" for a in anomalies
+    )
