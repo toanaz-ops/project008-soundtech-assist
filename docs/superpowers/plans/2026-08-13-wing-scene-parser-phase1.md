@@ -18,7 +18,7 @@ Every task's requirements implicitly include this section.
 
 - **File length ceiling: ~200 lines per source file.** If a module approaches it, split by responsibility — never let a file accumulate. This is a standing rule from the project owner.
 - **Split by responsibility layer,** not by technical convenience: format decoding, interpretation, query, rules, interface. Command dispatch is separate from output rendering; MCP tool definitions are separate from handler logic.
-- **`core/` uses the standard library only.** `json` for reading; no YAML, no third-party imports below the `descriptors/` layer.
+- **`core/` may import only the standard library and PyYAML.** It must never import from `descriptors/`, `query/`, `classifier/`, or `advisory/`. The rule is layer discipline, not stdlib purity: PyYAML is a hard dependency of the package, and `core/versions.py` reads the version registry from YAML.
 - **Parser and advisory engine are deterministic.** The same `.snap` file must always yield the same findings. No LLM call may appear in `core/`, `query/`, or `advisory/`.
 - **The tool must run fully offline.** With no `ANTHROPIC_API_KEY`, no network, or the fallback disabled, everything works; only names the pattern matcher cannot resolve degrade to `unknown`.
 - **Never fabricate EQ band values.** An `eq.mdl` with no descriptor yields `bands=None` plus a `descriptor_missing` anomaly. Never apply the `STD` layout to another model.
@@ -34,7 +34,7 @@ Every task's requirements implicitly include this section.
 
 | Layer | Package | Analogue | May import |
 |---|---|---|---|
-| Format decoding | `core/` | HAL | stdlib only |
+| Format decoding | `core/` | HAL | stdlib, `yaml` |
 | Interpretation | `descriptors/` | driver | `core`, `yaml` |
 | Query | `query/` | backend | `core`, `descriptors` |
 | Classification | `classifier/` | backend | `core`, `query`, optionally `anthropic` |
@@ -1866,6 +1866,11 @@ which would produce plausible wrong numbers instead of a clear failure."
 - Consumes: `to_db` (Task 2); all records from Task 3; `proc_chain.decode` / `proc_chain.tap_point` (Task 4); `eq_models.build` (Task 7)
 - Produces:
   - `wing_parser.query.build_channel.build(number: int, entry: dict) -> tuple[ChannelData, list[Anomaly]]`
+  - `wing_parser.query.build_channel.build_dyn(raw: dict | None) -> Dyn`
+  - `wing_parser.query.build_channel.build_sends(raw: dict | None) -> tuple[Send, ...]`
+  - `wing_parser.query.build_channel.build_main_sends(raw: dict | None) -> tuple[MainSend, ...]`
+
+  The three `build_*` helpers are public because Task 9's bus builder needs the same three blocks. `_filter`, `_gate` and `_insert` stay private — nothing outside this module builds them.
 
 Note: the builder returns `ChannelData`, a plain record. Navigation (`.source`, `.dcas`) arrives in Task 10 as a separate view class, so this module never needs a back-reference to the scene.
 
@@ -2019,7 +2024,8 @@ def _gate(raw: dict[str, Any]) -> Gate:
     )
 
 
-def _dyn(raw: dict[str, Any] | None) -> Dyn:
+def build_dyn(raw: dict[str, Any] | None) -> Dyn:
+    """Public: build_bus.py builds the same block from bus entries."""
     raw = raw or {}
     return Dyn(
         on=bool(raw.get("on", False)),
@@ -2045,7 +2051,8 @@ def _insert(raw: dict[str, Any] | None) -> Insert:
     )
 
 
-def _sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
+def build_sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
+    """Public: shared with build_bus.py."""
     raw = raw or {}
     return tuple(
         Send(
@@ -2060,7 +2067,8 @@ def _sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
     )
 
 
-def _main_sends(raw: dict[str, Any] | None) -> tuple[MainSend, ...]:
+def build_main_sends(raw: dict[str, Any] | None) -> tuple[MainSend, ...]:
+    """Public: shared with build_bus.py."""
     raw = raw or {}
     return tuple(
         MainSend(
@@ -2105,14 +2113,16 @@ def build(number: int, entry: dict[str, Any]) -> tuple[ChannelData, list[Anomaly
         filter=_filter(entry.get("flt", {})),
         eq=eq,
         gate=_gate(entry.get("gate", {})),
-        dyn=_dyn(entry.get("dyn")),
+        dyn=build_dyn(entry.get("dyn")),
         pre_insert=_insert(entry.get("preins")),
         post_insert=_insert(entry.get("postins")),
-        sends=_sends(entry.get("send")),
-        main_sends=_main_sends(entry.get("main")),
+        sends=build_sends(entry.get("send")),
+        main_sends=build_main_sends(entry.get("main")),
     )
     return data, anomalies
 ```
+
+`_filter`, `_gate` and `_insert` stay private — they are channel-only. The three `build_*` functions are public because `build_bus.py` builds the same blocks from bus entries.
 
 - [ ] **Step 4: Run the test and verify it passes**
 
@@ -2140,7 +2150,7 @@ lifted out of postins.mode/postins.w here."
 - Test: `tests/test_query_build_io.py`
 
 **Interfaces:**
-- Consumes: `to_db` (Task 2); `SourceData`, `BusData`, `DcaData`, `MuteGroupData` (Task 3); `eq_models.build` (Task 7); `_dyn`, `_sends`, `_main_sends` (Task 8 — import them from `build_channel`)
+- Consumes: `to_db` (Task 2); `SourceData`, `BusData`, `DcaData`, `MuteGroupData` (Task 3); `eq_models.build` (Task 7); `build_dyn`, `build_sends`, `build_main_sends` (Task 8 — import them from `build_channel`)
 - Produces:
   - `wing_parser.query.build_io.build_sources(io_in: dict) -> dict[tuple[str, int], SourceData]` — keyed by `(group, index)`
   - `wing_parser.query.build_io.build_dcas(section: dict) -> dict[int, DcaData]`
@@ -2304,7 +2314,14 @@ from typing import Any
 from wing_parser.core.models import Anomaly, BusData
 from wing_parser.core.normalizer import to_db
 from wing_parser.descriptors import eq_models
-from wing_parser.query.build_channel import _dyn, _main_sends, _sends
+from wing_parser.query.build_channel import build_dyn, build_main_sends, build_sends
+
+
+def _delay_ms(raw: Any) -> float:
+    """Buses store delay as a nested block; matrices sometimes as a bare number."""
+    if isinstance(raw, dict):
+        return float(raw.get("dly", 0.0))
+    return float(raw or 0.0)
 
 
 def build(kind: str, number: int, entry: dict[str, Any]) -> tuple[BusData, list[Anomaly]]:
@@ -2322,12 +2339,10 @@ def build(kind: str, number: int, entry: dict[str, Any]) -> tuple[BusData, list[
         fader_dB=to_db(entry.get("fdr")),
         tags_raw=entry.get("tags", ""),
         eq=eq,
-        dyn=_dyn(entry.get("dyn")),
-        delay_ms=float((entry.get("dly") or {}).get("dly", 0.0))
-        if isinstance(entry.get("dly"), dict)
-        else float(entry.get("dly") or 0.0),
-        sends=_sends(entry.get("send")),
-        main_sends=_main_sends(entry.get("main")),
+        dyn=build_dyn(entry.get("dyn")),
+        delay_ms=_delay_ms(entry.get("dly")),
+        sends=build_sends(entry.get("send")),
+        main_sends=build_main_sends(entry.get("main")),
     )
     return data, anomalies
 ```
@@ -3079,7 +3094,9 @@ def test_summary_reports_alt_sourced_channels(scene):
 def test_summary_counts_live_channels(scene):
     summary = scene.routing.summary()
     # A channel is live when it is unmuted and its fader is above -inf.
-    assert summary.live_channel_count == 4      # ch 8, 10, 12, and 1 more
+    # Verified against the file: ch 8 (M8 MC, -7.9), ch 10 (LED PLAYBACK,
+    # -2.6), ch 12 (My Lap, +0.4). Everything else is at -144 or muted.
+    assert summary.live_channel_count == 3
     assert isinstance(summary.orphan_channels, tuple)
 
 
@@ -3258,7 +3275,7 @@ and add this property to the class:
 - [ ] **Step 5: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_query_routing.py -v`
-Expected: PASS — 9 tests. If `live_channel_count` is not 4, read the actual value from the failure and correct the assertion — the definition (unmuted and fader above −∞) is what matters, not the constant.
+Expected: PASS — 9 tests. The count of 3 is verified against the file; if it comes out differently, the bug is in `_is_live`, not in the assertion.
 
 - [ ] **Step 6: Commit**
 
