@@ -65,3 +65,25 @@ def test_real_file_tag_distribution(vu_path):
     for section in ("ch", "aux", "bus", "main", "mtx"):
         for entry in raw.ae[section].values():
             assert parse(entry.get("tags", "")).unknown == ()
+
+
+def test_longer_prefix_is_not_shadowed_by_a_shorter_one(monkeypatch):
+    # The grammar must not depend on key order in tags.yaml. A nested
+    # prefix declared after its own leading substring still has to win.
+    from wing_parser.descriptors import registry, tags
+
+    monkeypatch.setattr(
+        tags.registry,
+        "load",
+        lambda name: {
+            "separator": ",",
+            "prefixes": {
+                "#D": {"kind": "dca", "max": 16},
+                "#DX": {"kind": "mute_group", "max": 8},
+            },
+        },
+    )
+    result = tags.parse("#DX5")
+    assert result.mute_groups == (5,)
+    assert result.dcas == ()
+    assert result.unknown == ()

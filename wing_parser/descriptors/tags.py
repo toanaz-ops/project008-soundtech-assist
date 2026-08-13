@@ -24,6 +24,12 @@ def parse(tags_raw: str) -> Membership:
     separator = doc["separator"]
     prefixes = doc["prefixes"]
 
+    # Longest prefix first, so a future "#DX" cannot be shadowed by "#D"
+    # merely because "#D" appears earlier in the YAML. Without this, adding
+    # a nested tag kind would need a code change or an unwritten ordering
+    # rule in the data file.
+    by_length = sorted(prefixes, key=len, reverse=True)
+
     dcas: set[int] = set()
     mute_groups: set[int] = set()
     unknown: list[str] = []
@@ -32,7 +38,7 @@ def parse(tags_raw: str) -> Membership:
         token = token.strip()
         if not token:
             continue
-        spec = next(((p, prefixes[p]) for p in prefixes if token.startswith(p)), None)
+        spec = next(((p, prefixes[p]) for p in by_length if token.startswith(p)), None)
         if spec is None:
             unknown.append(token)
             continue
