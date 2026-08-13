@@ -1,0 +1,10 @@
+# The `tags` field on channels, auxes, buses, mains and matrices encodes
+# group membership. Membership is stored on the member, not on the group,
+# so a reverse index has to be built to answer "who is in DCA 1".
+#
+# Grammar: zero or more tokens separated by ",". Each token is a prefix
+# plus a 1-based integer, e.g. "#D8,#D10" or "#M1".
+separator: ","
+prefixes:
+  "#D": { kind: dca,        max: 16 }
+  "#M": { kind: mute_group, max: 8 }
