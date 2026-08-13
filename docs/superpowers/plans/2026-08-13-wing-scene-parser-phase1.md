@@ -510,8 +510,11 @@ def load_raw(path: str | Path) -> RawScene:
 
     return RawScene(
         version=version,
-        ae=doc.get("ae_data", {}),
-        ce=doc.get("ce_data", {}),
+        # `or {}` rather than a .get default: a corrupt file can carry
+        # "ae_data": null, where the key is present and the default never
+        # fires. Downstream code must never receive None here.
+        ae=doc.get("ae_data") or {},
+        ce=doc.get("ce_data") or {},
         meta=meta,
         path=file_path,
     )
@@ -700,7 +703,8 @@ to know the sentinel exists. Section keys become ints at the same point."
 - Consumes: `SceneVersion` (Task 1), `to_db` / `int_keyed` (Task 2)
 - Produces:
   - `wing_parser.core.models.Anomaly` — frozen dataclass `code: str`, `where: str`, `detail: str`
-  - `wing_parser.core.models.SourceRef` — frozen dataclass `group: str`, `index: int`; `SourceRef.OFF_GROUP = "OFF"`
+  - `wing_parser.core.models.OFF_GROUP: str = "OFF"` — module-level constant, not a class attribute
+  - `wing_parser.core.models.SourceRef` — frozen dataclass `group: str`, `index: int`, plus the derived property `is_off` (compares `group` against `OFF_GROUP`)
   - `wing_parser.core.models.SourceData` — `group`, `index`, `name`, `gain_dB`, `phantom`, `polarity`, `mode`
   - `wing_parser.core.models.Send` — `dest: int`, `on: bool`, `level_dB: float`, `mode: str`, `pre_on: bool`, `pan: float`
   - `wing_parser.core.models.MainSend` — `dest: int`, `on: bool`, `level_dB: float`, `pre: bool`
@@ -950,6 +954,31 @@ def test_unknown_version_is_reported_as_an_anomaly(vu_path, tmp_path):
 
     anomalies = validate(load_raw(future))
     assert any(a.code == "unknown_version" for a in anomalies)
+
+
+def test_null_payload_is_reported_not_raised(vu_path, tmp_path):
+    # "ae_data": null is valid JSON, so .get(key, default) never fires its
+    # default. The validator must survive it — collecting anomalies is its
+    # whole job, and an exception here would destroy the parse.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"] = None
+    nulled = tmp_path / "nullae.snap"
+    nulled.write_text(json.dumps(doc), encoding="utf-8")
+
+    anomalies = validate(load_raw(nulled))
+    assert any(a.code == "missing_section" and a.where == "ae_data.ch" for a in anomalies)
+
+
+def test_non_collection_section_is_reported_not_raised(vu_path, tmp_path):
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"] = 42
+    corrupt = tmp_path / "intch.snap"
+    corrupt.write_text(json.dumps(doc), encoding="utf-8")
+
+    anomalies = validate(load_raw(corrupt))
+    assert any(
+        a.code == "malformed_section" and a.where == "ae_data.ch" for a in anomalies
+    )
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
@@ -990,10 +1019,22 @@ REQUIRED_CE = ("cfg", "safes")
 
 def check_counts(ae: dict) -> list[Anomaly]:
     found: list[Anomaly] = []
+    if not isinstance(ae, dict):
+        return found                      # already reported by check_required_keys
     for section, expected in EXPECTED_COUNTS.items():
         if section not in ae:
             continue
-        actual = len(ae[section])
+        value = ae[section]
+        if not isinstance(value, (dict, list)):
+            found.append(
+                Anomaly(
+                    code="malformed_section",
+                    where=f"ae_data.{section}",
+                    detail=f"expected a collection, found {type(value).__name__}",
+                )
+            )
+            continue
+        actual = len(value)
         if actual != expected:
             found.append(
                 Anomaly(
@@ -1005,19 +1046,26 @@ def check_counts(ae: dict) -> list[Anomaly]:
     return found
 
 
+def _check_block(block: object, label: str, required: tuple[str, ...]) -> list[Anomaly]:
+    if not isinstance(block, dict):
+        return [
+            Anomaly(
+                code="malformed_section",
+                where=label,
+                detail=f"expected an object, found {type(block).__name__}",
+            )
+        ]
+    return [
+        Anomaly("missing_section", f"{label}.{section}", "section absent")
+        for section in required
+        if section not in block
+    ]
+
+
 def check_required_keys(ae: dict, ce: dict) -> list[Anomaly]:
-    found: list[Anomaly] = []
-    for section in REQUIRED_AE:
-        if section not in ae:
-            found.append(
-                Anomaly("missing_section", f"ae_data.{section}", "section absent")
-            )
-    for section in REQUIRED_CE:
-        if section not in ce:
-            found.append(
-                Anomaly("missing_section", f"ce_data.{section}", "section absent")
-            )
-    return found
+    return _check_block(ae, "ae_data", REQUIRED_AE) + _check_block(
+        ce, "ce_data", REQUIRED_CE
+    )
 
 
 def validate(raw: RawScene) -> list[Anomaly]:
