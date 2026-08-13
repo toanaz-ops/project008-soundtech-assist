@@ -1177,7 +1177,9 @@ groups:
   AES:  { label: "AES/EBU",         channels: 2 }
   USR:  { label: "User Signal",     channels: 24 }
   OSC:  { label: "Oscillator",      channels: 2 }
-  OFF:  { label: "Not patched",     channels: 0 }
+  # Quoted deliberately: YAML 1.1 parses a bareword OFF as boolean false,
+  # which would make the "OFF" lookup miss and return the raw group name.
+  "OFF": { label: "Not patched",    channels: 0 }
 ```
 
 - [ ] **Step 2: Write the failing test**
