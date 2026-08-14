@@ -4862,7 +4862,10 @@ cached so it is asked at most once per name.
 
 Every failure path returns None. This tool is used in venues where the
 network is unreliable or absent, so an unreachable API must degrade to
-"unknown", never to an exception.
+"unknown", never to an exception. That covers a safety refusal too:
+claude-opus-5 can answer with stop_reason "refusal" and no parsed
+output, which surfaces here as an exception and lands on the same
+"unknown" path as a dead uplink.
 """
 
 from __future__ import annotations
@@ -4921,7 +4924,14 @@ def _ask(name: str, domain: str, context: str) -> tuple[str, float]:
     client = anthropic.Anthropic()
     response = client.messages.parse(
         model=MODEL,
-        max_tokens=1024,
+        # Headroom, not appetite. On claude-opus-5 thinking is ON by default
+        # -- unlike opus-4-8, where omitting the parameter meant no thinking
+        # -- and max_tokens caps thinking PLUS the reply. The answer here is
+        # two short fields, but 1024 would truncate the moment the model
+        # thinks first, and classify() swallows the resulting exception into
+        # a silent None. Overshooting costs nothing: billing is per token
+        # emitted, not per token allowed.
+        max_tokens=4096,
         messages=[
             {
                 "role": "user",
