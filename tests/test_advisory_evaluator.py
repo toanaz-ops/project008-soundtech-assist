@@ -1,8 +1,20 @@
+import json
+
 import pytest
 
 from wing_parser import WingScene
 from wing_parser.advisory.evaluator import evaluate, evaluate_all, targets_for
+from wing_parser.advisory.loader import load_base_rules
 from wing_parser.advisory.models import Rule
+
+
+@pytest.fixture(autouse=True)
+def offline(monkeypatch):
+    # Same guarantee test_cli.py's "offline" fixture gives the CLI suite:
+    # no test in this module can reach a model even if `anthropic` is
+    # installed, rather than relying on the subset of tests below that
+    # happened to set this per-test.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
 
 
 @pytest.fixture(scope="module")
@@ -72,8 +84,7 @@ def test_disabled_rule_produces_nothing(scene):
     assert evaluate(scene, rule(enabled=False)) == []
 
 
-def test_classifier_dependent_rule_carries_the_confidence(scene, monkeypatch):
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+def test_classifier_dependent_rule_carries_the_confidence(scene):
     findings = evaluate(
         scene,
         rule(
@@ -92,8 +103,7 @@ def test_classifier_dependent_rule_carries_the_confidence(scene, monkeypatch):
     assert all(f.confidence == pytest.approx(0.9) for f in findings)
 
 
-def test_classifier_dependent_rule_skips_unclassifiable_targets(scene, monkeypatch):
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+def test_classifier_dependent_rule_skips_unclassifiable_targets(scene):
     findings = evaluate(
         scene,
         rule(requires_classifier=True, where={}, message="{channel.name}"),
@@ -110,6 +120,35 @@ def test_classifier_dependent_rule_skips_unclassifiable_targets(scene, monkeypat
     # one -- "My Lap" sits at 0.0 and is excluded either way, so without
     # this line the test would pass even if the gate skipped at HIGH.
     assert "HS4" in names
+
+
+def _g8_rule() -> Rule:
+    return next(r for r in load_base_rules() if r.id == "G8")
+
+
+def test_dest_kind_guard_prevents_a_phantom_monitor_finding_on_a_matrix_send(
+    vu_path, tmp_path
+):
+    """Channel 39 (BOH Talk) and channel 40 (FOH Tak) both carry a POST
+    send to MX8 -- a matrix, not bus 8 -- in the sample file, and matrix
+    number 8 collides exactly with bus 8 (MON VOX): monitor buses are 7,
+    8, 9 and 10. `_channel_sends` in evaluator.py tells the two apart
+    only by `send.dest_kind != "bus": continue`; the sample file's own
+    `on: false` on both sends is the only other thing standing between
+    this and a phantom "talkback mic feeding a monitor bus" finding. Flip
+    channel 39's MX8 send on -- an entirely ordinary thing, a talkback
+    send switched on mid-show -- and confirm G8 still does not fire. This
+    is real data, not a synthetic fixture: it is the near-miss the review
+    found when it removed the guard and still got 343 passed, 1 skipped.
+    """
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"]["39"]["send"]["MX8"]["on"] = True
+    live = tmp_path / "talkback_on.snap"
+    live.write_text(json.dumps(doc), encoding="utf-8")
+
+    findings = evaluate(WingScene.load(live), _g8_rule())
+    assert all(not f.target.startswith("ch.39.") for f in findings)
+    assert all(f.target != "ch.39.send.8" for f in findings)
 
 
 def test_evaluate_all_concatenates(scene):
