@@ -14,6 +14,7 @@ from wing_parser.query.build_io import build_dcas, build_mute_groups, build_sour
 from wing_parser.query.bus import Bus
 from wing_parser.query.channel import Channel
 from wing_parser.query.groups import Dca, MuteGroup, build_index
+from wing_parser.query.routing import RoutingFacade
 
 
 class WingScene:
@@ -122,6 +123,10 @@ class WingScene:
 
     def mute_group(self, number: int) -> MuteGroup:
         return MuteGroup(self.mute_groups[number], self._mute_index.get(number, ()))
+
+    @property
+    def routing(self) -> RoutingFacade:
+        return RoutingFacade(self)
 
     def __repr__(self) -> str:
         return f"<WingScene {self.path.name} {self.version.type_id}>"
