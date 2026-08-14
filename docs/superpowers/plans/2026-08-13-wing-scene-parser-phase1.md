@@ -76,6 +76,7 @@ Every task's requirements implicitly include this section.
 │   │       └── io.yaml
 │   ├── query/
 │   │   ├── __init__.py
+│   │   ├── build_blocks.py                 # blocks shared by channels and buses
 │   │   ├── build_channel.py                # raw ch entry  → ChannelData
 │   │   ├── build_bus.py                    # raw bus entry → BusData
 │   │   ├── build_io.py                     # sources, DCAs, mute groups
@@ -1943,20 +1944,21 @@ which would produce plausible wrong numbers instead of a clear failure."
 
 **Files:**
 - Create: `wing_parser/query/__init__.py`
+- Create: `wing_parser/query/build_blocks.py`
 - Create: `wing_parser/query/build_channel.py`
 - Test: `tests/test_query_build_channel.py`
 
 **Interfaces:**
 - Consumes: `to_db` (Task 2); all records from Task 3; `proc_chain.decode` / `proc_chain.tap_point` (Task 4); `eq_models.build` (Task 7)
 - Produces:
+  - `wing_parser.query.build_blocks.MATRIX_PREFIX: str = "MX"`
+  - `wing_parser.query.build_blocks.parse_send_key(key: str) -> tuple[str, int] | None` — `"8"` → `("bus", 8)`, `"MX3"` → `("matrix", 3)`, anything else → `None`
+  - `wing_parser.query.build_blocks.build_dyn(raw: dict | None) -> Dyn`
+  - `wing_parser.query.build_blocks.build_sends(raw: dict | None) -> tuple[tuple[Send, ...], list[Anomaly]]` — buses first, then matrices, each ascending; a key that parses as neither is skipped and reported
+  - `wing_parser.query.build_blocks.build_main_sends(raw: dict | None) -> tuple[tuple[MainSend, ...], list[Anomaly]]`
   - `wing_parser.query.build_channel.build(number: int, entry: dict) -> tuple[ChannelData, list[Anomaly]]`
-  - `wing_parser.query.build_channel.build_dyn(raw: dict | None) -> Dyn`
-  - `wing_parser.query.build_channel.parse_send_key(key: str) -> tuple[str, int] | None` — `"8"` → `("bus", 8)`, `"MX3"` → `("matrix", 3)`, anything else → `None`
-  - `wing_parser.query.build_channel.MATRIX_PREFIX: str = "MX"`
-  - `wing_parser.query.build_channel.build_sends(raw: dict | None) -> tuple[tuple[Send, ...], list[Anomaly]]` — buses first, then matrices, each ascending; a key that parses as neither is skipped and reported
-  - `wing_parser.query.build_channel.build_main_sends(raw: dict | None) -> tuple[tuple[MainSend, ...], list[Anomaly]]`
 
-  The three `build_*` helpers are public because Task 9's bus builder needs the same three blocks. `_filter`, `_gate` and `_insert` stay private — nothing outside this module builds them.
+  **Why two modules.** Channels, auxes, buses, mains and matrices all carry a dynamics block and the same two send collections, so those builders live in `build_blocks.py` and both `build_channel.py` and Task 9's `build_bus.py` import from it. Putting them in `build_channel.py` and having the bus builder reach across for them would make the bus builder depend on the channel builder for no reason other than which file was written first. `_filter`, `_gate` and `_insert` stay private in `build_channel.py` — nothing else builds them.
 
 Note: the builder returns `ChannelData`, a plain record. Navigation (`.source`, `.dcas`) arrives in Task 10 as a separate view class, so this module never needs a back-reference to the scene.
 
@@ -2317,7 +2319,7 @@ lifted out of postins.mode/postins.w here."
 - Test: `tests/test_query_build_io.py`
 
 **Interfaces:**
-- Consumes: `to_db` (Task 2); `SourceData`, `BusData`, `DcaData`, `MuteGroupData` (Task 3); `eq_models.build` (Task 7); `build_dyn`, `build_sends`, `build_main_sends` (Task 8 — import them from `build_channel`)
+- Consumes: `to_db` (Task 2); `SourceData`, `BusData`, `DcaData`, `MuteGroupData` (Task 3); `eq_models.build` (Task 7); `build_dyn`, `build_sends`, `build_main_sends` (Task 8 — import them from `wing_parser.query.build_blocks`, not from `build_channel`)
 - Produces:
   - `wing_parser.query.build_io.build_sources(io_in: dict) -> dict[tuple[str, int], SourceData]` — keyed by `(group, index)`
   - `wing_parser.query.build_io.build_dcas(section: dict) -> dict[int, DcaData]`
@@ -2481,7 +2483,7 @@ from typing import Any
 from wing_parser.core.models import Anomaly, BusData
 from wing_parser.core.normalizer import to_db
 from wing_parser.descriptors import eq_models
-from wing_parser.query.build_channel import build_dyn, build_main_sends, build_sends
+from wing_parser.query.build_blocks import build_dyn, build_main_sends, build_sends
 
 
 def _delay_ms(raw: Any) -> float:
