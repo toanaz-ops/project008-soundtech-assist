@@ -821,6 +821,15 @@ class Insert:
 
 @dataclass(frozen=True)
 class Send:
+    """One send from a channel, aux, bus, main or matrix.
+
+    A send block mixes two destination families under one dict: numeric
+    keys ("1".."16") address buses, and "MX1".."MX8" address matrices.
+    Bus 3 and MX3 are different destinations, so the number alone cannot
+    identify one — dest_kind is what keeps them apart.
+    """
+
+    dest_kind: str        # "bus" | "matrix"
     dest: int
     on: bool
     level_dB: float
@@ -1942,7 +1951,9 @@ which would produce plausible wrong numbers instead of a clear failure."
 - Produces:
   - `wing_parser.query.build_channel.build(number: int, entry: dict) -> tuple[ChannelData, list[Anomaly]]`
   - `wing_parser.query.build_channel.build_dyn(raw: dict | None) -> Dyn`
-  - `wing_parser.query.build_channel.build_sends(raw: dict | None) -> tuple[Send, ...]`
+  - `wing_parser.query.build_channel.parse_send_key(key: str) -> tuple[str, int]` — `"8"` → `("bus", 8)`, `"MX3"` → `("matrix", 3)`
+  - `wing_parser.query.build_channel.MATRIX_PREFIX: str = "MX"`
+  - `wing_parser.query.build_channel.build_sends(raw: dict | None) -> tuple[Send, ...]` — buses first, then matrices, each ascending
   - `wing_parser.query.build_channel.build_main_sends(raw: dict | None) -> tuple[MainSend, ...]`
 
   The three `build_*` helpers are public because Task 9's bus builder needs the same three blocks. `_filter`, `_gate` and `_insert` stay private — nothing outside this module builds them.
@@ -2017,14 +2028,30 @@ def test_trim_and_polarity(ch8):
 
 
 def test_sends_are_indexed_by_destination(ch8):
-    send8 = next(s for s in ch8.sends if s.dest == 8)
+    send8 = next(s for s in ch8.sends if s.dest_kind == "bus" and s.dest == 8)
     assert send8.on is True
     assert send8.mode == "POST"
     assert send8.level_dB == pytest.approx(-19.9, abs=1e-6)
 
-    send2 = next(s for s in ch8.sends if s.dest == 2)
+    send2 = next(s for s in ch8.sends if s.dest_kind == "bus" and s.dest == 2)
     assert send2.on is False
     assert send2.level_dB == NEG_INF
+
+
+def test_matrix_sends_are_kept_and_kept_distinct(ch8):
+    # Every send block holds 16 bus keys and 8 "MX<n>" matrix keys.
+    # Bus 3 and MX3 are different destinations sharing a number.
+    buses = [s for s in ch8.sends if s.dest_kind == "bus"]
+    matrices = [s for s in ch8.sends if s.dest_kind == "matrix"]
+    assert len(buses) == 16
+    assert len(matrices) == 8
+    assert {s.dest for s in matrices} == set(range(1, 9))
+
+
+def test_sends_are_ordered_buses_then_matrices(ch8):
+    kinds = [s.dest_kind for s in ch8.sends]
+    assert kinds == ["bus"] * 16 + ["matrix"] * 8
+    assert [s.dest for s in ch8.sends[:16]] == list(range(1, 17))
 
 
 def test_silent_fader_uses_negative_infinity(vu_path):
@@ -2126,20 +2153,42 @@ def _insert(raw: dict[str, Any] | None) -> Insert:
     )
 
 
+MATRIX_PREFIX = "MX"
+
+
+def parse_send_key(key: str) -> tuple[str, int]:
+    """Split a send-block key into its destination kind and number.
+
+    Both real files store 16 numeric bus keys and 8 "MX<n>" matrix keys in
+    the same dict — and a main's send block holds *only* matrix keys, so
+    discarding the non-numeric ones would leave every main with no sends
+    at all.
+    """
+    if key.startswith(MATRIX_PREFIX):
+        return "matrix", int(key[len(MATRIX_PREFIX):])
+    return "bus", int(key)
+
+
 def build_sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
     """Public: shared with build_bus.py."""
     raw = raw or {}
-    return tuple(
-        Send(
-            dest=int(key),
-            on=bool(value.get("on", False)),
-            level_dB=to_db(value.get("lvl")),
-            mode=value.get("mode", "GRP"),
-            pre_on=bool(value.get("pon", False)),
-            pan=float(value.get("pan", 0.0)),
+    sends = []
+    for key, value in (raw or {}).items():
+        dest_kind, dest = parse_send_key(key)
+        sends.append(
+            Send(
+                dest_kind=dest_kind,
+                dest=dest,
+                on=bool(value.get("on", False)),
+                level_dB=to_db(value.get("lvl")),
+                mode=value.get("mode", "GRP"),
+                pre_on=bool(value.get("pon", False)),
+                pan=float(value.get("pan", 0.0)),
+            )
         )
-        for key, value in sorted(raw.items(), key=lambda kv: int(kv[0]))
-    )
+    # Buses first, then matrices, each ascending — a stable order the diff
+    # and the rule engine can both rely on.
+    return tuple(sorted(sends, key=lambda s: (s.dest_kind, s.dest)))
 
 
 def build_main_sends(raw: dict[str, Any] | None) -> tuple[MainSend, ...]:
@@ -2633,8 +2682,13 @@ class Channel:
     def scene_safe(self) -> bool:
         return safes.is_safe(self._scene.safes.get("ch", ()), self.data.number)
 
-    def send_to(self, dest: int) -> Send | None:
-        return next((s for s in self.data.sends if s.dest == dest), None)
+    def send_to(self, dest: int, kind: str = "bus") -> Send | None:
+        """A send block mixes buses and matrices, so the number alone is
+        ambiguous: bus 3 and MX3 share a number. Defaults to bus."""
+        return next(
+            (s for s in self.data.sends if s.dest == dest and s.dest_kind == kind),
+            None,
+        )
 ```
 
 - [ ] **Step 4: Implement WingScene**
@@ -2929,8 +2983,11 @@ class Bus:
         section = SAFES_SECTION.get(self.data.kind, self.data.kind)
         return safes.is_safe(self._scene.safes.get(section, ()), self.data.number)
 
-    def send_to(self, dest: int) -> Send | None:
-        return next((s for s in self.data.sends if s.dest == dest), None)
+    def send_to(self, dest: int, kind: str = "bus") -> Send | None:
+        return next(
+            (s for s in self.data.sends if s.dest == dest and s.dest_kind == kind),
+            None,
+        )
 ```
 
 - [ ] **Step 4: Implement the group reverse index**
@@ -3234,7 +3291,14 @@ from wing_parser.core.normalizer import is_silent
 if TYPE_CHECKING:
     from wing_parser.query.scene import WingScene
 
-SEND_SECTION = {"bus": "sends", "main": "main_sends"}
+# Which collection to read, and which dest_kind within it. Buses and
+# matrices share the `sends` tuple and are told apart by dest_kind; mains
+# live in their own `main_sends` tuple, which carries no kind.
+SEND_SECTION: dict[str, tuple[str, str | None]] = {
+    "bus": ("sends", "bus"),
+    "matrix": ("sends", "matrix"),
+    "main": ("main_sends", None),
+}
 
 
 @dataclass(frozen=True)
@@ -3266,7 +3330,7 @@ def _feeds_anything(view) -> bool:
 
 def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
     """Every enabled send from any channel or bus into the named destination."""
-    attribute = SEND_SECTION.get(kind, "sends")
+    attribute, dest_kind = SEND_SECTION.get(kind, ("sends", "bus"))
     found: list[Feed] = []
 
     sources = [("channel", ch) for ch in scene.channels()]
@@ -3276,6 +3340,8 @@ def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
         if source_kind == kind and view.number == number:
             continue                      # a bus cannot feed itself
         for send in getattr(view, attribute, ()):
+            if dest_kind is not None and send.dest_kind != dest_kind:
+                continue                  # bus 3 and MX3 share a number
             if send.dest == number and send.on:
                 found.append(
                     Feed(
@@ -3541,8 +3607,16 @@ def _walk(path: str, before: Any, after: Any, out: list[Change]) -> None:
 
 
 def _key(item: Any, index: int) -> Any:
-    """Match tuple entries by identity where they have one."""
-    for attribute in ("dest", "name", "number"):
+    """Match tuple entries by identity where they have one.
+
+    A send's number is not unique on its own — bus 3 and MX3 both report
+    dest 3 — so a send keys on its kind and number together.
+    """
+    dest = getattr(item, "dest", None)
+    if dest is not None:
+        kind = getattr(item, "dest_kind", None)
+        return f"{kind}.{dest}" if kind else dest
+    for attribute in ("name", "number"):
         value = getattr(item, attribute, None)
         if value is not None:
             return value
@@ -5392,9 +5466,17 @@ def _channels(scene) -> Iterator[Target]:
 
 
 def _channel_sends(scene) -> Iterator[Target]:
+    """One target per bus send.
+
+    Matrix sends live in the same tuple and are skipped here: matrix 3 is
+    not bus 3, and binding one to the other would let a bus-role rule fire
+    against a matrix destination.
+    """
     buses = {bus.number: bus for bus in scene.buses()}
     for channel in scene.channels():
         for send in channel.sends:
+            if send.dest_kind != "bus":
+                continue
             destination = buses.get(send.dest)
             yield Target(
                 name=f"ch.{channel.number}.send.{send.dest}",
