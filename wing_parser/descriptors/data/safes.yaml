@@ -1,13 +1,15 @@
-# ce_data.safes holds a positional bitmap per section: one character per
-# channel/bus/etc, in ascending order. A space means "not safe"; any
-# other character means "safe".
+# Verified against both sample files, which agree exactly: safes.ch is 40
+# spaces, and the block holds thirteen sections — ten flat strings and
+# three nested dicts (source, output and area, each keyed by input group
+# or surface area). The nested blocks use the same encoding one level
+# down; nothing in Phase 1 reads them.
 #
-# Verified against example-Vu.snap, where safes.ch is 40 spaces.
-# Nested groups (safes.source.A and friends) use the same encoding one
-# level down; nothing in Phase 1 needs them.
+# custom (22) and setup (2) are flat and therefore decoded, even though no
+# Phase 1 rule consumes them: decode_scene promises every flat section, and
+# a promise the data quietly contradicts is worse than an unused entry.
 not_safe_char: " "
-flat_sections: [ch, aux, bus, main, mtx, dca, mute, fx]
-nested_sections: [source]
+flat_sections: [ch, aux, bus, main, mtx, dca, mute, fx, custom, setup]
+nested_sections: [source, output, area]
 expected_lengths:
   ch: 40
   aux: 8
@@ -17,3 +19,5 @@ expected_lengths:
   dca: 16
   mute: 8
   fx: 16
+  custom: 22
+  setup: 2

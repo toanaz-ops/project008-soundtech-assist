@@ -36,5 +36,16 @@ def test_real_file_has_nothing_scene_safe(vu_path):
 
 def test_decode_scene_skips_nested_sections(vu_path):
     sections = decode_scene(load_raw(vu_path).ce["safes"])
-    assert "source" not in sections
-    assert set(sections) <= {"ch", "aux", "bus", "main", "mtx", "dca", "mute", "fx"}
+    assert {"source", "output", "area"}.isdisjoint(sections)
+
+
+def test_decode_scene_covers_every_flat_section(vu_path):
+    # The real block holds thirteen sections: ten flat strings and three
+    # nested dicts. decode_scene promises every flat one, so pin that
+    # against the file rather than against the allowlist it reads.
+    raw_safes = load_raw(vu_path).ce["safes"]
+    flat = {k for k, v in raw_safes.items() if isinstance(v, str)}
+    assert set(decode_scene(raw_safes)) == flat
+    assert flat == {
+        "ch", "aux", "bus", "main", "mtx", "dca", "mute", "fx", "custom", "setup",
+    }
