@@ -131,3 +131,42 @@ def test_fx_buses_in_the_real_file(vu_path):
         bus.number for bus in scene.buses() if classify(bus.name, "buses").kind == "fx"
     }
     assert {11, 12, 13, 14, 15, 16} <= fx_numbers
+
+
+@pytest.mark.parametrize(
+    "name", ["IEM", "IEM 1", "IEM1", "IEM2", "IEM-1", "IEM3 BAKUP", "In Ear 2"]
+)
+def test_an_iem_bus_is_a_monitor_however_it_is_numbered(name):
+    # \biem\b has no word boundary between M and 3, so IEM1/IEM2/IEM3 --
+    # the commonest numbering -- silently missed. Rules G8 and G7 only fire
+    # on buses classified `monitor`, so a missed IEM bus is a skipped bus.
+    result = classify(name, "buses")
+    assert result.kind == "monitor"
+    assert result.confidence == pytest.approx(0.95)
+
+
+def test_a_sidefill_bus_is_a_monitor_even_when_named_just_side():
+    # ToanAZ: "Side = sidefill speakers". The band hears a sidefill, not
+    # the audience, so it is a monitor send rather than a house zone.
+    assert classify("SIDE", "buses").kind == "monitor"
+    assert classify("SIDEFILL", "buses").kind == "monitor"
+
+
+@pytest.mark.parametrize(
+    "name, kind",
+    [
+        ("TB OUT", "talkback"),
+        ("Talkback", "talkback"),
+        ("MAIN FOH", "main"),
+        ("FLOWN", "pa_zone"),
+        ("CEN", "pa_zone"),
+    ],
+)
+def test_the_roles_toanaz_named_from_the_real_file(name, kind):
+    assert classify(name, "buses").kind == kind
+
+
+def test_a_misspelling_stays_unknown_rather_than_being_guessed_at():
+    # "RECODING" is a real typo in example-Vu.snap. Reporting it as
+    # unresolved is the honest answer; pattern-matching typos is not.
+    assert classify("RECODING", "buses").kind == "unknown"

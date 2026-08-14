@@ -61,12 +61,27 @@ channels:
 
 buses:
   - { match: '^mon\b|monitor',  kind: monitor,             confidence: 0.9 }
-  - { match: '\biem\b|in\s*ear', kind: monitor,            confidence: 0.95 }
+  # \d* matters: there is no word boundary between M and 3, so a bare
+  # \biem\b missed IEM1/IEM2/IEM3 -- the commonest way to number them.
+  - { match: '\biem\d*\b|in\s*ear', kind: monitor,         confidence: 0.95 }
   - { match: 'wedge|side\s*fill|sidefill', kind: monitor,  confidence: 0.9 }
+  # ToanAZ: "Side = sidefill speakers". A sidefill is a monitor -- the band
+  # hears it, not the audience -- so a bus named SIDE is a monitor send.
+  - { match: '^side\b',         kind: monitor,             confidence: 0.85 }
   - { match: 'head\s*set',      kind: monitor,             confidence: 0.7 }
   - { match: '\bfx\b|reverb|delay|hall|room|chorus|haha', kind: fx, confidence: 0.85 }
   - { match: '\brec\b|record|multitrack', kind: record,    confidence: 0.9 }
   - { match: 'stream|broadcast|encoder|webcast', kind: stream, confidence: 0.9 }
   - { match: '\bfill\b|delay\s*ring|overflow|lobby', kind: matrix_fill, confidence: 0.85 }
   - { match: '\bsub\b|\blfe\b', kind: subgroup,            confidence: 0.85 }
+  # ToanAZ: "TB = talkback". Engineer-to-stage, never part of the mix, so
+  # level and mute rules that apply to programme material must skip it.
+  - { match: '\btb\b|talk\s*back', kind: talkback,         confidence: 0.9 }
+  # A bus feeding the house PA. Distinct from the console's main objects.
+  - { match: 'main\s*foh|\bfoh\b|^main\b', kind: main,     confidence: 0.85 }
+  # ToanAZ: "Flown = Flown Array speaker", "Cen = center speaker". These
+  # are house loudspeaker zones fed from a bus, not fills -- matrix_fill
+  # already means an actual fill (delay ring, lobby), so they get their
+  # own role rather than being lumped in with it.
+  - { match: 'flown|\bcen\b|^cent(er|re)\b|\barray\b', kind: pa_zone, confidence: 0.85 }
   - { match: '\bdrum\b|\bband\b|\bmic\b|\bmusic\b', kind: subgroup, confidence: 0.6 }
