@@ -1,0 +1,69 @@
+# Name -> source-type patterns.
+#
+# Every `match` is a regular expression applied to the normalized name
+# (trimmed, whitespace-collapsed, casefolded). When several patterns hit,
+# the highest confidence wins; ties break toward the longest matched
+# substring, so "snare bot" beats "snare".
+#
+# Confidence bands (see spec section 4.3):
+#   >= 0.8  classified, conditional rules run normally
+#   >= 0.4  low confidence, findings are worded as questions
+#   <  0.4  unknown, conditional rules skip the target
+
+channels:
+  # Drums
+  - { match: 'kick\s*out',      kind: drums.kick.out,      confidence: 0.95 }
+  - { match: 'kick\s*in',       kind: drums.kick.in,       confidence: 0.95 }
+  - { match: 'kick',            kind: drums.kick,          confidence: 0.9 }
+  - { match: 'snare\s*bot',     kind: drums.snare.bottom,  confidence: 0.95 }
+  - { match: 'snare\s*top',     kind: drums.snare.top,     confidence: 0.95 }
+  - { match: 'snare',           kind: drums.snare,         confidence: 0.9 }
+  - { match: '\btom\b|\bfloor\b', kind: drums.tom,         confidence: 0.9 }
+  - { match: 'hi\s*hat|\bhh\b', kind: drums.hihat,         confidence: 0.9 }
+  - { match: '\boh\b|overhead', kind: drums.overhead,      confidence: 0.9 }
+  - { match: '\bride\b',        kind: drums.ride,          confidence: 0.9 }
+  - { match: '\bspd\b',         kind: drums.pad,           confidence: 0.75 }
+
+  # Instruments
+  - { match: '\bbass\b',        kind: instrument.bass,     confidence: 0.9 }
+  - { match: 'a\.?\s*guitar|acoustic', kind: instrument.guitar.acoustic, confidence: 0.9 }
+  - { match: 'e\.?\s*guitar|elec.*guit', kind: instrument.guitar.electric, confidence: 0.9 }
+  - { match: '\bguitar\b|\bgtr\b', kind: instrument.guitar, confidence: 0.85 }
+  - { match: '\bkey\b|\bkeys\b|piano', kind: instrument.keys, confidence: 0.9 }
+  - { match: '\bstring',        kind: instrument.strings,  confidence: 0.85 }
+  - { match: '\bhorn|\bsax\b|trumpet', kind: instrument.horns, confidence: 0.85 }
+
+  # Voice
+  - { match: '\bvox\b|\bvocal', kind: speech.vocal,        confidence: 0.9 }
+  - { match: '\bmc\b',          kind: speech.mc,           confidence: 0.85 }
+  - { match: 'lectern|podium|gooseneck', kind: speech.lectern, confidence: 0.9 }
+  - { match: '\blav\b|lavalier', kind: speech.lav,         confidence: 0.9 }
+  - { match: 'head\s*set|\bhs\b', kind: speech.headset,    confidence: 0.7 }
+  - { match: 'hand\s*held|\bhh\s*mic\b', kind: speech.handheld, confidence: 0.85 }
+
+  # Non-performance
+  - { match: '\bclick\b',       kind: utility.click,       confidence: 0.95 }
+  - { match: 'playback|\bpb\b|\btracks?\b', kind: utility.playback, confidence: 0.9 }
+  - { match: '\btalk\b|\btak\b|\btb\b', kind: utility.talkback, confidence: 0.8 }
+  - { match: 'ambien|audience|\broom mic\b', kind: utility.ambient, confidence: 0.85 }
+  - { match: '\bfx\b',          kind: utility.fx_return,   confidence: 0.8 }
+
+  # Vietnamese
+  - { match: 'd\.?\s*phoi|du\s*phong', kind: utility.spare, confidence: 0.85 }
+  - { match: '\bspare\b|\bbackup\b', kind: utility.spare,  confidence: 0.9 }
+
+  # Weak fallbacks — deliberately below the 0.8 gate.
+  - { match: '^mic\s*\d+$',     kind: unknown.bare_mic,    confidence: 0.3 }
+  - { match: '^m\d+$',          kind: unknown.bare_mic,    confidence: 0.3 }
+
+buses:
+  - { match: '^mon\b|monitor',  kind: monitor,             confidence: 0.9 }
+  - { match: '\biem\b|in\s*ear', kind: monitor,            confidence: 0.95 }
+  - { match: 'wedge|side\s*fill|sidefill', kind: monitor,  confidence: 0.9 }
+  - { match: 'head\s*set',      kind: monitor,             confidence: 0.7 }
+  - { match: '\bfx\b|reverb|delay|hall|room|chorus|haha', kind: fx, confidence: 0.85 }
+  - { match: '\brec\b|record|multitrack', kind: record,    confidence: 0.9 }
+  - { match: 'stream|broadcast|encoder|webcast', kind: stream, confidence: 0.9 }
+  - { match: '\bfill\b|delay\s*ring|overflow|lobby', kind: matrix_fill, confidence: 0.85 }
+  - { match: '\bsub\b|\blfe\b', kind: subgroup,            confidence: 0.85 }
+  - { match: '\bdrum\b|\bband\b|\bmic\b|\bmusic\b', kind: subgroup, confidence: 0.6 }
