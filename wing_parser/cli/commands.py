@@ -22,6 +22,24 @@ def _load(path: str) -> WingScene | None:
     return None
 
 
+def _run_advisory(scene: WingScene) -> list | None:
+    """Run the advisory rules, turning a hand-edited rule file's error
+    into the same `error: <message>` shape `_load` already gives a bad
+    scene file, instead of a traceback. `scene.advisory.run()` reads and
+    validates `principles.yaml` and every show file on every call, so a
+    typo'd `supersedes` id, a rule missing `id:`, a bare-string list
+    entry, an unknown predicate operator, an unknown `for_each`, or a
+    YAML syntax error can all still surface here — this is the CLI's
+    copy of the same guard the MCP `_guard` decorator already gives
+    those tools.
+    """
+    try:
+        return scene.advisory.run()
+    except (KeyError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return None
+
+
 def analyze(args) -> int:
     scene = _load(args.file)
     if scene is None:
@@ -49,7 +67,9 @@ def doctor(args) -> int:
     scene = _load(args.file)
     if scene is None:
         return 1
-    found = scene.advisory.run()
+    found = _run_advisory(scene)
+    if found is None:
+        return 1
     if getattr(args, "json", False):
         print(json.dumps([asdict(f) for f in found], indent=2, ensure_ascii=False))
     else:
@@ -82,8 +102,12 @@ def feedback(args) -> int:
     if scene is None:
         return 1
 
+    findings = _run_advisory(scene)
+    if findings is None:
+        return 1
+
     match = next(
-        (f for f in scene.advisory.run() if feedback_log.finding_id(f) == args.finding_id),
+        (f for f in findings if feedback_log.finding_id(f) == args.finding_id),
         None,
     )
     if match is None:

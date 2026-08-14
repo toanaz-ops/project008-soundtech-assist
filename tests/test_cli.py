@@ -5,7 +5,8 @@ import pytest
 
 from wing_parser.classifier.resolve import Classifier
 from wing_parser.cli.__main__ import main
-from wing_parser.cli.render import level
+from wing_parser.cli.render import changes, level
+from wing_parser.query.diff import Change
 
 
 @pytest.fixture(autouse=True)
@@ -93,6 +94,22 @@ def test_routing_lists_unclassified_channels(vu_path, capsys):
     assert "My Lap" in capsys.readouterr().out
 
 
+def test_changes_orders_numbered_sends_naturally_not_lexicographically():
+    # render.findings() already got a _natural sort key to fix this same
+    # class of bug; render.changes() kept sorting its diff paths
+    # lexicographically, so send 16 printed before send 2. Reuse the same
+    # key here too.
+    items = [
+        Change(path="ch.1.send.16", before=0.0, after=-3.0, magnitude=3.0),
+        Change(path="ch.1.send.2", before=0.0, after=-3.0, magnitude=3.0),
+        Change(path="ch.1.send.1", before=0.0, after=-3.0, magnitude=3.0),
+    ]
+    out = changes(items)
+    assert [line.split(":", 1)[0].strip() for line in out.splitlines()[1:]] == [
+        "ch.1.send.1", "ch.1.send.2", "ch.1.send.16",
+    ]
+
+
 def test_diff_reports_a_changed_fader(vu_path, tmp_path, capsys):
     doc = json.loads(vu_path.read_text(encoding="utf-8"))
     doc["ae_data"]["ch"]["8"]["fdr"] = -3.0
@@ -127,6 +144,41 @@ def test_feedback_rejects_an_unknown_finding_id(vu_path, tmp_path, capsys, monke
     monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
     assert main(["feedback", "ZZ:ch.1", "--verdict", "correct", "--scene", str(vu_path)]) == 1
     assert "ZZ:ch.1" in capsys.readouterr().err
+
+
+def test_doctor_reports_a_typo_d_supersedes_id_without_a_traceback(
+    vu_path, tmp_path, capsys, monkeypatch
+):
+    # scene.advisory.run() sits outside every CLI handler's try/except;
+    # a hand-edited principles.yaml with a typo'd `supersedes` id used to
+    # reach the user as a traceback instead of `error: ...` on stderr.
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    (tmp_path / "principles.yaml").write_text(
+        "principles:\n"
+        "  - id: toanaz.typo\n"
+        "    principle: typo'd rule id\n"
+        "    hardness: hard\n"
+        "    supersedes: [G88]\n"
+        "    rationale: field practice\n"
+        "    source: ToanAZ\n"
+        "    enabled: true\n",
+        encoding="utf-8",
+    )
+    assert main(["doctor", str(vu_path)]) == 1
+    assert "G88" in capsys.readouterr().err
+
+
+def test_feedback_reports_a_yaml_syntax_error_without_a_traceback(
+    vu_path, tmp_path, capsys, monkeypatch
+):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    (tmp_path / "principles.yaml").write_text(
+        "principles:\n  - id: [unterminated\n", encoding="utf-8"
+    )
+    assert main(
+        ["feedback", "G8:ch.8.send.8", "--verdict", "correct", "--scene", str(vu_path)]
+    ) == 1
+    assert "principles.yaml" in capsys.readouterr().err
 
 
 def test_missing_file_reports_cleanly(capsys):

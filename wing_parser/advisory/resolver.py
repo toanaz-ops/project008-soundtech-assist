@@ -51,8 +51,37 @@ def _is_active(scene, rule: Rule) -> bool:
     return True
 
 
+def _validate_applies_when(rule: Rule) -> None:
+    """Reject an unknown `applies_when` key on a flexible rule.
+
+    `condition_holds` deliberately treats an unrecognised condition name
+    as False rather than an error (see `test_unknown_condition_is_false_
+    not_an_error`), which is the right call for a probe that genuinely
+    does not apply to a given scene. But it means a typo -- `monitor_
+    bus_cnt` for `monitor_bus_count` -- is indistinguishable from that:
+    the principle silently never fires and never says why, the same
+    failure mode `active_rules`'s `supersedes` check exists to catch on
+    the other hand-edited field of the same file. This only stops that
+    one confusion; it does not resolve the separate, open design
+    question of which conditions the project owner actually needs
+    `CONDITIONS` to support -- see the "do not touch" list in the Phase 1
+    fix-wave brief.
+    """
+    if rule.hardness != "flexible":
+        return
+    for key in rule.applies_when:
+        if key not in CONDITIONS:
+            raise ValueError(
+                f"{rule.id} has an unknown applies_when key {key!r}; "
+                f"expected one of {sorted(CONDITIONS)}"
+            )
+
+
 def active_rules(scene, directory: Path | None = None) -> list[Rule]:
-    higher = [r for r in _principles(directory) + _show_rules(directory) if _is_active(scene, r)]
+    candidates = _principles(directory) + _show_rules(directory)
+    for rule in candidates:
+        _validate_applies_when(rule)
+    higher = [r for r in candidates if _is_active(scene, r)]
     base = load_base_rules()
     base_ids = {r.id for r in base}
     higher_ids = {r.id for r in higher}

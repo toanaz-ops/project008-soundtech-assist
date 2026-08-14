@@ -12,8 +12,41 @@ from pathlib import Path
 import yaml
 
 from wing_parser.advisory.models import SEVERITIES, Rule
+from wing_parser.advisory.predicates import OPERATORS
 
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
+
+
+def _load_yaml(path: Path) -> dict:
+    """Parse a rule file, turning a YAML syntax error into the same
+    ValueError shape every other load-time problem raises, instead of a
+    bare `yaml.YAMLError` no caller here is set up to catch."""
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise ValueError(f"{path}: invalid YAML: {exc}") from exc
+
+
+def _validate_where(where: dict, path: Path, rule_id: str) -> None:
+    """Reject an unknown predicate operator at load time.
+
+    `predicates.matches` raises `ValueError` for this too, but only when
+    a target happens to reach that `where` clause mid-run -- a rule that
+    is rarely evaluated could ship a typo'd operator for a long time
+    before it ever surfaces. Checking every operator key up front means a
+    hand-edited rule file fails at load, the same moment every other slip
+    in it would.
+    """
+    for field_path, expected in where.items():
+        if not isinstance(expected, dict):
+            continue
+        for operator in expected:
+            if operator not in OPERATORS:
+                raise ValueError(
+                    f"{path}: rule {rule_id} has an unknown predicate "
+                    f"operator {operator!r} on {field_path!r}; expected "
+                    f"one of {sorted(OPERATORS)}"
+                )
 
 
 def _optional(entry: dict, key: str, default):
@@ -31,6 +64,12 @@ def _optional(entry: dict, key: str, default):
 
 
 def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
+    if not isinstance(entry, dict):
+        raise ValueError(
+            f"{where_from}: each rule entry must be a mapping, not "
+            f"{type(entry).__name__} ({entry!r})"
+        )
+
     for required in ("id", "title", "severity", "source", "rationale", "message"):
         if not entry.get(required):
             raise ValueError(f"{where_from}: rule is missing required field {required!r}")
@@ -46,6 +85,9 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
     if not when.get("for_each"):
         raise ValueError(f"{where_from}: rule {entry['id']} has no when.for_each")
 
+    where = dict(when.get("where") or {})
+    _validate_where(where, where_from, entry["id"])
+
     return Rule(
         id=entry["id"],
         title=entry["title"],
@@ -53,7 +95,7 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         source=entry["source"],
         rationale=entry["rationale"],
         for_each=when["for_each"],
-        where=dict(when.get("where") or {}),
+        where=where,
         message=entry["message"],
         layer=layer,
         requires_classifier=bool(_optional(entry, "requires_classifier", False)),
@@ -65,8 +107,9 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
 
 
 def load_rules(path: Path, layer: str) -> list[Rule]:
-    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
-    return [_rule_from(entry, layer, Path(path)) for entry in (doc.get("rules") or [])]
+    path = Path(path)
+    doc = _load_yaml(path)
+    return [_rule_from(entry, layer, path) for entry in (doc.get("rules") or [])]
 
 
 def load_base_rules() -> list[Rule]:

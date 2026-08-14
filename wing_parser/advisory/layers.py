@@ -12,10 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
-
 from wing_parser import config
-from wing_parser.advisory.loader import _optional, load_rules
+from wing_parser.advisory.loader import _load_yaml, _optional, _validate_where, load_rules
 from wing_parser.advisory.models import SEVERITIES, Rule
 
 PRINCIPLES_FILE = "principles.yaml"
@@ -74,10 +72,25 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
     already rejects a bad severity for the base layer, and toanaz is
     the one hand-maintained layer, so leaving it unvalidated here would
     make the only human-edited layer the only unchecked one.
+
+    Two more slips a hand-edited file invites, both turned into the
+    same `ValueError(f"{path}: ...")` shape `loader._rule_from` already
+    uses rather than left to raise a bare `KeyError` or `AttributeError`
+    a few lines down: an entry that is not a mapping at all (a bare
+    string dropped into the `principles:` list), and an entry missing
+    `id:` entirely.
     """
-    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    doc = _load_yaml(path)
     rules: list[Rule] = []
     for entry in doc.get(key) or []:
+        if not isinstance(entry, dict):
+            raise ValueError(
+                f"{path}: each entry under {key!r} must be a mapping, not "
+                f"{type(entry).__name__} ({entry!r})"
+            )
+        if not entry.get("id"):
+            raise ValueError(f"{path}: rule is missing required field 'id'")
+
         severity = _optional(entry, "severity", "info")
         if severity not in SEVERITIES:
             raise ValueError(
@@ -90,6 +103,10 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 raise ValueError(f"{path}: rule {entry['id']} has no when.for_each")
         else:
             when = {"for_each": "channel", "where": {"channel.number": -1}}
+
+        where = dict(when.get("where") or {})
+        _validate_where(where, path, entry["id"])
+
         rules.append(
             Rule(
                 id=entry["id"],
@@ -98,7 +115,7 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 source=_optional(entry, "source", "ToanAZ"),
                 rationale=_optional(entry, "rationale", ""),
                 for_each=when["for_each"],
-                where=dict(when.get("where") or {}),
+                where=where,
                 message=entry.get("message", entry.get("principle", entry["id"])),
                 layer=layer,
                 requires_classifier=bool(_optional(entry, "requires_classifier", False)),

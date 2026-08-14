@@ -14,6 +14,12 @@ from wing_parser.classifier.matcher import Classification
 
 _MISSING = object()
 
+# Every operator key `matches()` understands inside a `where` value's
+# dict form, e.g. `{"gt": 6.0}`. The loader validates a rule's `where`
+# against this set at load time, so an unknown operator is a clean error
+# naming the file rather than a `ValueError` raised from mid-run.
+OPERATORS: frozenset[str] = frozenset({"not", "in", "not_in", "gt", "lt", "is_null"})
+
 
 def resolve_path(context: dict[str, Any], path: str) -> Any:
     """Walk a dotted path. A Classification unwraps to its kind."""
@@ -54,7 +60,10 @@ def matches(value: Any, expected: Any) -> bool:
             if (value is None) is not bool(operand):
                 return False
         else:
-            raise ValueError(f"unknown predicate operator {operator!r}")
+            raise ValueError(
+                f"unknown predicate operator {operator!r}; expected one of "
+                f"{sorted(OPERATORS)}"
+            )
     return True
 
 

@@ -193,3 +193,37 @@ def test_base_rules_load_from_the_package():
     assert {r.id for r in rules} == {"G8", "G7", "E6"}
     assert all(r.layer == "base" for r in rules)
     assert all(r.source and r.rationale for r in rules)
+
+
+def test_loader_rejects_an_unknown_predicate_operator(tmp_path: Path):
+    # A typo'd operator (`gtt` for `gt`) used to reach `predicates.matches`
+    # mid-run and raise there; it must be caught at load time instead, the
+    # same moment every other slip in this file would be.
+    path = tmp_path / "bad_operator.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "T6", "title": "t", "severity": "warning",
+                        "source": "s", "rationale": "r",
+                        "when": {"for_each": "channel", "where": {"fader_dB": {"gtt": -6}}},
+                        "message": "m"}]}
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="gtt"):
+        load_rules(path, layer="base")
+
+
+def test_loader_reports_a_yaml_syntax_error_by_file_and_reason(tmp_path: Path):
+    path = tmp_path / "broken.yaml"
+    path.write_text("rules:\n  - id: T7\n    title: [unterminated\n", encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        load_rules(path, layer="base")
+    assert "broken.yaml" in str(excinfo.value)
+
+
+def test_loader_rejects_a_non_mapping_rule_entry(tmp_path: Path):
+    # A bare string dropped into `rules:` where a mapping was meant.
+    path = tmp_path / "bare_string.yaml"
+    path.write_text("rules:\n  - just a string\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="mapping"):
+        load_rules(path, layer="base")

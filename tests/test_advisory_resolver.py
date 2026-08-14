@@ -474,6 +474,136 @@ def test_advisory_facade_suppressed_delegates_to_suppressed_ids(scene, knowledge
     assert facade.suppressed() == {"G8": "toanaz.always-off-g8"}
 
 
+def test_a_flexible_principle_with_an_unknown_applies_when_key_raises(scene, knowledge):
+    # `monitor_bus_cnt` is a typo for `monitor_bus_count`. condition_holds
+    # treats an unrecognised name as False rather than an error (see
+    # test_unknown_condition_is_false_not_an_error above), which used to
+    # make this indistinguishable from a principle that legitimately never
+    # applies -- it silently never fired and said nothing about why, the
+    # same failure mode the supersedes check already catches on the other
+    # hand-edited field of this file.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.typo-applies-when",
+                        "principle": "x",
+                        "hardness": "flexible",
+                        "applies_when": {"monitor_bus_cnt": 1},
+                        "supersedes": ["G8"],
+                        "rationale": "field practice",
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="monitor_bus_cnt"):
+        active_rules(scene, directory=knowledge)
+
+
+def test_a_hard_principles_stray_applies_when_key_is_not_validated(scene, knowledge):
+    # applies_when is only ever consulted for hardness: flexible (see
+    # _is_active), so a stray key on a hard principle is inert either way
+    # -- this is not the typo-vs-gap confusion the check above exists for.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.hard-with-applies-when",
+                        "principle": "x",
+                        "hardness": "hard",
+                        "applies_when": {"not_a_real_condition": 1},
+                        "supersedes": ["G8"],
+                        "rationale": "field practice",
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    ids = {r.id for r in active_rules(scene, directory=knowledge)}
+    assert "toanaz.hard-with-applies-when" in ids
+    assert "G8" not in ids
+
+
+def test_a_principle_missing_id_raises(scene, knowledge):
+    # layers._as_rules used to index entry["id"] directly, so a principle
+    # missing `id:` entirely reached the caller as a bare KeyError instead
+    # of naming the file the way every other slip in it does.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "principle": "no id given",
+                        "hardness": "hard",
+                        "supersedes": ["G8"],
+                        "rationale": "field practice",
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="id"):
+        active_rules(scene, directory=knowledge)
+
+
+def test_a_bare_string_principle_entry_raises(scene, knowledge):
+    # A `principles:` list may contain a bare string where a mapping was
+    # meant; `.get()` on a str used to raise AttributeError a few lines in.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump({"principles": ["just a string"]}), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="mapping"):
+        active_rules(scene, directory=knowledge)
+
+
+def test_a_principles_file_with_a_yaml_syntax_error_names_the_file(scene, knowledge):
+    (knowledge / "principles.yaml").write_text(
+        "principles:\n  - id: [unterminated\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="principles.yaml"):
+        active_rules(scene, directory=knowledge)
+
+
+def test_run_raises_for_an_unrecognised_for_each(scene, knowledge):
+    # Not caught here: resolver.run() itself does not guard evaluation
+    # errors. The CLI's _run_advisory and the MCP tools' _guard are what
+    # turn this into a clean message instead of a traceback (see
+    # test_cli.py / test_mcp.py).
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.bad-for-each",
+                        "principle": "x",
+                        "hardness": "hard",
+                        "when": {"for_each": "nonexistent", "where": {}},
+                        "supersedes": [],
+                        "rationale": "field practice",
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(KeyError, match="nonexistent"):
+        run(scene, directory=knowledge)
+
+
 def test_show_rules_load_from_a_yml_extension_too(scene, knowledge):
     # A show file saved with the other spelling must not be silently
     # invisible -- indistinguishable from "no overrides tonight".
