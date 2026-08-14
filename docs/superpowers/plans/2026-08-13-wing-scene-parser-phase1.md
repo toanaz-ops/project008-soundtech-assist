@@ -3338,8 +3338,13 @@ def test_summary_counts_live_channels(scene):
 
 def test_unpatched_channels_are_listed(scene):
     summary = scene.routing.summary()
-    # Every channel in this file is patched to a source group.
-    assert summary.unpatched_channels == ()
+    # Verified against the file: channels 13-32, 36, 39 and 40 are named
+    # stage-box presets whose source_ref group is OFF for this show, i.e.
+    # never patched to hardware. Channels 1-12, 33-35, 37 and 38 are patched.
+    assert summary.unpatched_channels == (
+        13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        30, 31, 32, 36, 39, 40,
+    )
 
 
 def test_unnamed_but_live_is_reported(vu_path, tmp_path):
