@@ -356,6 +356,59 @@ def vu_path() -> Path:
     return USER_FILES / "example-Vu.snap"
 ```
 
+Fix wave (2026-08-14): the suite was not hermetic. Dropping a show file
+into `knowledge/toanaz/shows/` — which the README's own "Add a
+show-specific override" section instructs a user to do — turned tests
+red, because any test that never passed an explicit `directory=` was
+silently reading whatever a user had actually put in the real, in-repo
+knowledge directory. Added a session-scoped autouse fixture:
+
+```python
+import os
+from pathlib import Path
+
+import pytest
+
+from wing_parser import config
+
+# ... factory_path and vu_path unchanged, then:
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _isolated_knowledge_dir(tmp_path_factory):
+    """Point every test at a throwaway knowledge directory by default.
+
+    knowledge/toanaz/classifier.yaml ships with channels: {} and
+    buses: {}, and principles.yaml's one shipped principle is
+    enabled: false, so an empty tmp directory resolves identically to
+    the shipped default -- this costs no coverage. A test that
+    deliberately needs the real in-repo directory opts in explicitly
+    with monkeypatch.delenv(config.ENV_VAR, ...) or its own directory=
+    fixture, the way test_classifier_cache.py and
+    test_advisory_resolver.py already do.
+
+    A plain monkeypatch fixture is function-scoped and cannot be
+    requested from a session-scoped fixture, so the environment
+    variable is set and restored by hand instead.
+    """
+    directory = tmp_path_factory.mktemp("knowledge")
+    previous = os.environ.get(config.ENV_VAR)
+    os.environ[config.ENV_VAR] = str(directory)
+    yield directory
+    if previous is None:
+        os.environ.pop(config.ENV_VAR, None)
+    else:
+        os.environ[config.ENV_VAR] = previous
+```
+
+`test_classifier_cache.py::test_the_shipped_seed_file_matches_the_
+module_fallback` deliberately reads the real in-repo directory, so it
+was updated to `monkeypatch.delenv(config.ENV_VAR, raising=False)`
+rather than relying on the env var being unset by default. Verified by
+dropping a throwaway show file into the real `knowledge/toanaz/shows/`
+directory and confirming the full suite still passes (355 tests at the
+time of that check) before removing it.
+
 `tests/test_core_versions.py`:
 
 ```python
@@ -2433,7 +2486,7 @@ from __future__ import annotations
 from typing import Any
 
 from wing_parser.core.models import DcaData, MuteGroupData, SourceData
-from wing_parser.core.normalizer import to_db
+from wing_parser.core.normalizer import int_keyed, to_db
 
 
 def build_sources(io_in: dict[str, Any]) -> dict[tuple[str, int], SourceData]:
@@ -2460,26 +2513,34 @@ def build_sources(io_in: dict[str, Any]) -> dict[tuple[str, int], SourceData]:
 
 def build_dcas(section: dict[str, Any]) -> dict[int, DcaData]:
     return {
-        int(key): DcaData(
-            number=int(key),
+        number: DcaData(
+            number=number,
             name=entry.get("name", ""),
             muted=bool(entry.get("mute", False)),
             fader_dB=to_db(entry.get("fdr")),
         )
-        for key, entry in (section or {}).items()
+        for number, entry in int_keyed(section or {}).items()
     }
 
 
 def build_mute_groups(section: dict[str, Any]) -> dict[int, MuteGroupData]:
     return {
-        int(key): MuteGroupData(
-            number=int(key),
+        number: MuteGroupData(
+            number=number,
             name=entry.get("name", ""),
             muted=bool(entry.get("mute", False)),
         )
-        for key, entry in (section or {}).items()
+        for number, entry in int_keyed(section or {}).items()
     }
 ```
+
+Fix wave (2026-08-14): reuses `core.normalizer.int_keyed` — built in
+Task 2 for exactly this job — instead of reimplementing the same
+string-to-int key conversion inline. Behaviour is preserved (both raise
+on a non-numeric key; `int_keyed` additionally sorts ascending and names
+the bad key), covered by
+`test_dcas_reject_a_non_numeric_key`/`test_mute_groups_reject_a_non_numeric_key`
+in `tests/test_query_build_io.py`.
 
 - [ ] **Step 4: Implement the bus builder**
 
@@ -3472,7 +3533,12 @@ def _feeds_anything(view) -> bool:
 
 def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
     """Every enabled send from any channel or bus into the named destination."""
-    attribute, dest_kind = SEND_SECTION.get(kind, ("sends", "bus"))
+    if kind not in SEND_SECTION:
+        raise ValueError(
+            f"unrecognised destination kind {kind!r}; expected one of "
+            f"{sorted(SEND_SECTION)}"
+        )
+    attribute, dest_kind = SEND_SECTION[kind]
     found: list[Feed] = []
 
     sources = [("channel", ch) for ch in scene.channels()]
@@ -3496,6 +3562,14 @@ def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
                     )
                 )
     return tuple(found)
+
+
+# Fix wave (2026-08-14): SEND_SECTION.get(kind, ("sends", "bus")) used to
+# silently treat any unrecognised kind as a bus lookup. Raise instead --
+# the query-layer sibling of the evaluator's dest_kind guard on
+# `_channel_sends` (matrix 3 is not bus 3; an unknown kind is not a bus
+# either). Covered by test_feeds_into_rejects_an_unrecognised_destination_kind
+# in tests/test_query_routing.py.
 
 
 def summarise(scene: "WingScene") -> RoutingSummary:
@@ -5781,6 +5855,15 @@ from wing_parser.classifier.matcher import Classification
 
 _MISSING = object()
 
+# Every operator key `matches()` understands inside a `where` value's
+# dict form, e.g. `{"gt": 6.0}`. The loader validates a rule's `where`
+# against this set at load time, so an unknown operator is a clean error
+# naming the file rather than a `ValueError` raised from mid-run.
+# (Fix wave, 2026-08-14: added so advisory/loader.py can validate at
+# load time instead of leaving this the only place an unknown operator
+# is discovered, mid-evaluation.)
+OPERATORS: frozenset[str] = frozenset({"not", "in", "not_in", "gt", "lt", "is_null"})
+
 
 def resolve_path(context: dict[str, Any], path: str) -> Any:
     """Walk a dotted path. A Classification unwraps to its kind."""
@@ -5821,7 +5904,10 @@ def matches(value: Any, expected: Any) -> bool:
             if (value is None) is not bool(operand):
                 return False
         else:
-            raise ValueError(f"unknown predicate operator {operator!r}")
+            raise ValueError(
+                f"unknown predicate operator {operator!r}; expected one of "
+                f"{sorted(OPERATORS)}"
+            )
     return True
 
 
@@ -5860,8 +5946,41 @@ from pathlib import Path
 import yaml
 
 from wing_parser.advisory.models import SEVERITIES, Rule
+from wing_parser.advisory.predicates import OPERATORS
 
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
+
+
+def _load_yaml(path: Path) -> dict:
+    """Parse a rule file, turning a YAML syntax error into the same
+    ValueError shape every other load-time problem raises, instead of a
+    bare `yaml.YAMLError` no caller here is set up to catch."""
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise ValueError(f"{path}: invalid YAML: {exc}") from exc
+
+
+def _validate_where(where: dict, path: Path, rule_id: str) -> None:
+    """Reject an unknown predicate operator at load time.
+
+    `predicates.matches` raises `ValueError` for this too, but only when
+    a target happens to reach that `where` clause mid-run -- a rule that
+    is rarely evaluated could ship a typo'd operator for a long time
+    before it ever surfaces. Checking every operator key up front means a
+    hand-edited rule file fails at load, the same moment every other slip
+    in it would.
+    """
+    for field_path, expected in where.items():
+        if not isinstance(expected, dict):
+            continue
+        for operator in expected:
+            if operator not in OPERATORS:
+                raise ValueError(
+                    f"{path}: rule {rule_id} has an unknown predicate "
+                    f"operator {operator!r} on {field_path!r}; expected "
+                    f"one of {sorted(OPERATORS)}"
+                )
 
 
 def _optional(entry: dict, key: str, default):
@@ -5879,6 +5998,12 @@ def _optional(entry: dict, key: str, default):
 
 
 def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
+    if not isinstance(entry, dict):
+        raise ValueError(
+            f"{where_from}: each rule entry must be a mapping, not "
+            f"{type(entry).__name__} ({entry!r})"
+        )
+
     for required in ("id", "title", "severity", "source", "rationale", "message"):
         if not entry.get(required):
             raise ValueError(f"{where_from}: rule is missing required field {required!r}")
@@ -5894,6 +6019,9 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
     if not when.get("for_each"):
         raise ValueError(f"{where_from}: rule {entry['id']} has no when.for_each")
 
+    where = dict(when.get("where") or {})
+    _validate_where(where, where_from, entry["id"])
+
     return Rule(
         id=entry["id"],
         title=entry["title"],
@@ -5901,7 +6029,7 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         source=entry["source"],
         rationale=entry["rationale"],
         for_each=when["for_each"],
-        where=dict(when.get("where") or {}),
+        where=where,
         message=entry["message"],
         layer=layer,
         requires_classifier=bool(_optional(entry, "requires_classifier", False)),
@@ -5913,8 +6041,9 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
 
 
 def load_rules(path: Path, layer: str) -> list[Rule]:
-    doc = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
-    return [_rule_from(entry, layer, Path(path)) for entry in (doc.get("rules") or [])]
+    path = Path(path)
+    doc = _load_yaml(path)
+    return [_rule_from(entry, layer, path) for entry in (doc.get("rules") or [])]
 
 
 def load_base_rules() -> list[Rule]:
@@ -5923,6 +6052,18 @@ def load_base_rules() -> list[Rule]:
         rules.extend(load_rules(path, layer="base"))
     return rules
 ```
+
+Fix wave (2026-08-14): closes deferred minors T18-2 and T18-6. A
+hand-edited rule file used to reach the CLI as a traceback for six
+distinct slips (see `wing_parser/cli/commands.py` below); `_load_yaml`
+and `_validate_where` turn a YAML syntax error and an unknown predicate
+operator into the same `ValueError(f"{path}: ...")` shape every other
+load-time problem here already raises, and `_rule_from` now rejects a
+non-mapping entry before indexing into it. Covered by
+`test_loader_rejects_an_unknown_predicate_operator`,
+`test_loader_reports_a_yaml_syntax_error_by_file_and_reason` and
+`test_loader_rejects_a_non_mapping_rule_entry` in
+`tests/test_advisory_predicates.py`.
 
 - [ ] **Step 6: Run the test**
 
@@ -6990,10 +7131,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
-
 from wing_parser import config
-from wing_parser.advisory.loader import _optional, load_rules
+from wing_parser.advisory.loader import _load_yaml, _optional, _validate_where, load_rules
 from wing_parser.advisory.models import SEVERITIES, Rule
 
 PRINCIPLES_FILE = "principles.yaml"
@@ -7052,10 +7191,25 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
     already rejects a bad severity for the base layer, and toanaz is
     the one hand-maintained layer, so leaving it unvalidated here would
     make the only human-edited layer the only unchecked one.
+
+    Two more slips a hand-edited file invites, both turned into the
+    same `ValueError(f"{path}: ...")` shape `loader._rule_from` already
+    uses rather than left to raise a bare `KeyError` or `AttributeError`
+    a few lines down: an entry that is not a mapping at all (a bare
+    string dropped into the `principles:` list), and an entry missing
+    `id:` entirely.
     """
-    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    doc = _load_yaml(path)
     rules: list[Rule] = []
     for entry in doc.get(key) or []:
+        if not isinstance(entry, dict):
+            raise ValueError(
+                f"{path}: each entry under {key!r} must be a mapping, not "
+                f"{type(entry).__name__} ({entry!r})"
+            )
+        if not entry.get("id"):
+            raise ValueError(f"{path}: rule is missing required field 'id'")
+
         severity = _optional(entry, "severity", "info")
         if severity not in SEVERITIES:
             raise ValueError(
@@ -7068,6 +7222,10 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 raise ValueError(f"{path}: rule {entry['id']} has no when.for_each")
         else:
             when = {"for_each": "channel", "where": {"channel.number": -1}}
+
+        where = dict(when.get("where") or {})
+        _validate_where(where, path, entry["id"])
+
         rules.append(
             Rule(
                 id=entry["id"],
@@ -7076,7 +7234,7 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 source=_optional(entry, "source", "ToanAZ"),
                 rationale=_optional(entry, "rationale", ""),
                 for_each=when["for_each"],
-                where=dict(when.get("where") or {}),
+                where=where,
                 message=entry.get("message", entry.get("principle", entry["id"])),
                 layer=layer,
                 requires_classifier=bool(_optional(entry, "requires_classifier", False)),
@@ -7088,6 +7246,17 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
         )
     return rules
 ```
+
+Fix wave (2026-08-14): `_as_rules` used to index `entry["id"]` directly
+and call `.get()` on entries it had not checked were mappings, so a
+missing `id:` or a bare-string list entry reached the CLI as a bare
+`KeyError`/`AttributeError` instead of naming the file. Also reuses the
+new `loader._load_yaml` (a YAML syntax error now raises the same
+`ValueError` shape) and `loader._validate_where` (an unknown predicate
+operator is now rejected at load time here too, not just for the base
+and show layers). Covered by `test_a_principle_missing_id_raises` and
+`test_a_bare_string_principle_entry_raises` in
+`tests/test_advisory_resolver.py`.
 
 `wing_parser/advisory/resolver.py`:
 
@@ -7145,8 +7314,37 @@ def _is_active(scene, rule: Rule) -> bool:
     return True
 
 
+def _validate_applies_when(rule: Rule) -> None:
+    """Reject an unknown `applies_when` key on a flexible rule.
+
+    `condition_holds` deliberately treats an unrecognised condition name
+    as False rather than an error (see `test_unknown_condition_is_false_
+    not_an_error`), which is the right call for a probe that genuinely
+    does not apply to a given scene. But it means a typo -- `monitor_
+    bus_cnt` for `monitor_bus_count` -- is indistinguishable from that:
+    the principle silently never fires and never says why, the same
+    failure mode `active_rules`'s `supersedes` check exists to catch on
+    the other hand-edited field of the same file. This only stops that
+    one confusion; it does not resolve the separate, open design
+    question of which conditions the project owner actually needs
+    `CONDITIONS` to support -- see the "do not touch" list in the Phase 1
+    fix-wave brief.
+    """
+    if rule.hardness != "flexible":
+        return
+    for key in rule.applies_when:
+        if key not in CONDITIONS:
+            raise ValueError(
+                f"{rule.id} has an unknown applies_when key {key!r}; "
+                f"expected one of {sorted(CONDITIONS)}"
+            )
+
+
 def active_rules(scene, directory: Path | None = None) -> list[Rule]:
-    higher = [r for r in _principles(directory) + _show_rules(directory) if _is_active(scene, r)]
+    candidates = _principles(directory) + _show_rules(directory)
+    for rule in candidates:
+        _validate_applies_when(rule)
+    higher = [r for r in candidates if _is_active(scene, r)]
     base = load_base_rules()
     base_ids = {r.id for r in base}
     higher_ids = {r.id for r in higher}
@@ -7204,6 +7402,16 @@ class AdvisoryFacade:
     def suppressed(self) -> dict[str, str]:
         return suppressed_ids(self._scene, self._directory)
 ```
+
+Fix wave (2026-08-14): `active_rules` validates every higher-layer
+rule's `applies_when` keys against `CONDITIONS` before filtering by
+`_is_active`, the same load-time-not-runtime treatment the `supersedes`
+check above already gets. `suppressed_ids` is deliberately left as-is
+(it already did not run the `supersedes` check either; this fix wave
+does not add that asymmetry, only documents it in the report). Covered
+by `test_a_flexible_principle_with_an_unknown_applies_when_key_raises`
+and `test_a_hard_principles_stray_applies_when_key_is_not_validated` in
+`tests/test_advisory_resolver.py`.
 
 - [ ] **Step 5: Wire it into WingScene**
 
@@ -7841,7 +8049,7 @@ def routing(summary, unclassified: Iterable[Any]) -> str:
 
 
 def changes(items: Iterable[Any], limit: int = 50) -> str:
-    items = list(items)
+    items = sorted(items, key=lambda change: _natural(change.path))
     if not items:
         return "No differences."
 
@@ -7853,6 +8061,13 @@ def changes(items: Iterable[Any], limit: int = 50) -> str:
         lines.append(f"  ... {len(items) - limit} more (raise --limit to see them)")
     return "\n".join(lines)
 ```
+
+Fix wave (2026-08-14): `findings()` already got the `_natural` sort key
+above to fix lexicographic ordering of numbered targets; `changes()`
+kept sorting its diff paths lexicographically (send 16 before send 2).
+Reuses the same key. Covered by
+`test_changes_orders_numbered_sends_naturally_not_lexicographically` in
+`tests/test_cli.py`.
 
 - [ ] **Step 4: Implement the commands**
 
@@ -7883,6 +8098,24 @@ def _load(path: str) -> WingScene | None:
     return None
 
 
+def _run_advisory(scene: WingScene) -> list | None:
+    """Run the advisory rules, turning a hand-edited rule file's error
+    into the same `error: <message>` shape `_load` already gives a bad
+    scene file, instead of a traceback. `scene.advisory.run()` reads and
+    validates `principles.yaml` and every show file on every call, so a
+    typo'd `supersedes` id, a rule missing `id:`, a bare-string list
+    entry, an unknown predicate operator, an unknown `for_each`, or a
+    YAML syntax error can all still surface here — this is the CLI's
+    copy of the same guard the MCP `_guard` decorator already gives
+    those tools.
+    """
+    try:
+        return scene.advisory.run()
+    except (KeyError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return None
+
+
 def analyze(args) -> int:
     scene = _load(args.file)
     if scene is None:
@@ -7910,7 +8143,9 @@ def doctor(args) -> int:
     scene = _load(args.file)
     if scene is None:
         return 1
-    found = scene.advisory.run()
+    found = _run_advisory(scene)
+    if found is None:
+        return 1
     if getattr(args, "json", False):
         print(json.dumps([asdict(f) for f in found], indent=2, ensure_ascii=False))
     else:
@@ -7943,8 +8178,12 @@ def feedback(args) -> int:
     if scene is None:
         return 1
 
+    findings = _run_advisory(scene)
+    if findings is None:
+        return 1
+
     match = next(
-        (f for f in scene.advisory.run() if feedback_log.finding_id(f) == args.finding_id),
+        (f for f in findings if feedback_log.finding_id(f) == args.finding_id),
         None,
     )
     if match is None:
@@ -7963,6 +8202,20 @@ def feedback(args) -> int:
     scene.classifier.flush()
     return 0
 ```
+
+Fix wave (2026-08-14): `scene.advisory.run()` used to sit outside every
+CLI handler's try/except, so a hand-edited `principles.yaml` or show
+file reached the user as a traceback for six distinct slips (a typo'd
+`supersedes` id, a rule missing `id:`, a bare-string list entry, an
+unknown predicate operator, an unknown `for_each`, a YAML syntax error).
+`doctor` and `feedback` now route through `_run_advisory` above, closing
+deferred minors T18-2 and T18-6 — the CLI and the MCP `_guard` in
+`wing_parser/mcp/tools.py` are once again the same idea in two places
+instead of a drifted copy. Covered by
+`test_doctor_reports_a_typo_d_supersedes_id_without_a_traceback` and
+`test_feedback_reports_a_yaml_syntax_error_without_a_traceback` in
+`tests/test_cli.py`, plus the load-time validation tests in
+`tests/test_advisory_predicates.py` and `tests/test_advisory_resolver.py`.
 
 - [ ] **Step 5: Implement the argument parser**
 
@@ -8216,7 +8469,13 @@ def _guard(function):
         try:
             return function(*args, **kwargs)
         except OSError as exc:
-            return f"error: cannot open {exc.filename or args[0]}"
+            # exc.filename is always set: every OSError caught here comes
+            # from Path.read_text (via WingScene.load), which sets it on
+            # every failure mode. args[0] would be wrong for diff(before,
+            # after) if it were ever needed, since the failing path is not
+            # necessarily the first argument -- correct even though the
+            # fallback cannot fire today.
+            return f"error: cannot open {exc.filename}"
         except (KeyError, ValueError) as exc:
             return f"error: {exc}"
 
@@ -8314,6 +8573,12 @@ TOOLS: dict[str, Callable[..., str]] = {
 }
 ```
 
+Fix wave (2026-08-14): `_guard`'s OSError handler dropped the
+`or args[0]` fallback, which would have misattributed the path for the
+two-argument `diff` tool had it ever fired. Covered by
+`test_diff_names_the_second_file_when_it_is_the_one_missing` in
+`tests/test_mcp.py`.
+
 - [ ] **Step 4: Implement the server**
 
 `wing_parser/mcp/server.py`:
@@ -8322,6 +8587,8 @@ TOOLS: dict[str, Callable[..., str]] = {
 """FastMCP wiring over stdio. Registration only — behaviour is in tools.py."""
 
 from __future__ import annotations
+
+import sys
 
 from wing_parser.mcp import tools
 
@@ -8336,7 +8603,15 @@ def build():
 
 
 def main() -> None:
-    build().run()
+    try:
+        server = build()
+    except ImportError:
+        print(
+            'error: the mcp extra is not installed. Run: pip install "wing-parser[mcp]"',
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    server.run()
 
 
 if __name__ == "__main__":
@@ -8346,6 +8621,14 @@ if __name__ == "__main__":
 If `add_tool` is not present on the installed FastMCP version, register with the decorator form instead — `server.tool(name=name, description=...)(function)` — and keep the loop otherwise unchanged. Check `python -c "from mcp.server.fastmcp import FastMCP; print([m for m in dir(FastMCP) if 'tool' in m])"` before editing.
 
 Confirmed against the MCP Python SDK source during review: `ToolManager.add_tool(fn, name=None, title=None, description=None, ...)` exists, and `FastMCP.tool()` is itself implemented as a decorator that calls exactly that — so the `add_tool(function, name=name, description=...)` form above is correct as written and does not need to fall back to the decorator form.
+
+Fix wave (2026-08-14): `main()` used to let a bare `ImportError` from
+`build()` (raised when the optional `mcp` extra is not installed)
+propagate straight out of the `wing-mcp` console script. It now catches
+that specific case and prints the fix (`pip install "wing-parser[mcp]"`)
+instead. Covered by `test_main_names_the_fix_when_the_mcp_extra_is_missing`
+in `tests/test_mcp.py`, which only runs when `mcp` is genuinely absent
+(it is, deliberately, in this project's own test environment).
 
 - [ ] **Step 5: Add the console script**
 
