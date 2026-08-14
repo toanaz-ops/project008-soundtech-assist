@@ -3973,7 +3973,9 @@ channels:
   - { match: '\bmc\b',          kind: speech.mc,           confidence: 0.85 }
   - { match: 'lectern|podium|gooseneck', kind: speech.lectern, confidence: 0.9 }
   - { match: '\blav\b|lavalier', kind: speech.lav,         confidence: 0.9 }
-  - { match: 'head\s*set|\bhs\b', kind: speech.headset,    confidence: 0.7 }
+  # \d* for the same reason as iem below: \bhs\b has no word boundary
+  # between S and 4, so HS4 -- channel 11 in the real file -- never matched.
+  - { match: 'head\s*set|\bhs\d*\b', kind: speech.headset,  confidence: 0.7 }
   - { match: 'hand\s*held',     kind: speech.handheld,     confidence: 0.85 }
   # More specific than drums.hihat's '\bhh\b' (0.9), so it must outrank it on
   # confidence — `_rank` settles confidence before it ever consults length.
@@ -4003,7 +4005,6 @@ buses:
   # ToanAZ: "Side = sidefill speakers". A sidefill is a monitor -- the band
   # hears it, not the audience -- so a bus named SIDE is a monitor send.
   - { match: '^side\b',         kind: monitor,             confidence: 0.85 }
-  - { match: 'head\s*set',      kind: monitor,             confidence: 0.7 }
   - { match: '\bfx\b|reverb|delay|hall|room|chorus|haha', kind: fx, confidence: 0.85 }
   - { match: '\brec\b|record|multitrack', kind: record,    confidence: 0.9 }
   - { match: 'stream|broadcast|encoder|webcast', kind: stream, confidence: 0.9 }
@@ -4019,6 +4020,11 @@ buses:
   # already means an actual fill (delay ring, lobby), so they get their
   # own role rather than being lumped in with it.
   - { match: 'flown|\bcen\b|^cent(er|re)\b|\barray\b', kind: pa_zone, confidence: 0.85 }
+  # ToanAZ on a bus named HEADSET: "Headset co the la input headset mic,
+  # hoac group all headset mic" -- either way it is input-side, so it
+  # belongs with the source subgroups below, not with the monitor sends.
+  # The monitor reading was wrong, not merely under-confident.
+  - { match: 'head\s*set|\bstring', kind: subgroup,        confidence: 0.6 }
   - { match: '\bdrum\b|\bband\b|\bmic\b|\bmusic\b', kind: subgroup, confidence: 0.6 }
 ```
 
