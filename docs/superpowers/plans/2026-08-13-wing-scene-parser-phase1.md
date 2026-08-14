@@ -2360,7 +2360,9 @@ def test_dcas_carry_names_and_levels(vu_path):
     dcas = build_dcas(load_raw(vu_path).ae["dca"])
     assert len(dcas) == 16
     assert dcas[1].name == "MIC"
-    assert dcas[1].fader_dB == pytest.approx(-3.8, abs=1e-6)
+    # The file stores -3.79999876, which is 1.24e-6 away from -3.8 — the
+    # console's own encoding artefact, wider than the 1e-6 used elsewhere.
+    assert dcas[1].fader_dB == pytest.approx(-3.8, abs=1e-5)
 
 
 def test_mute_groups(vu_path):
