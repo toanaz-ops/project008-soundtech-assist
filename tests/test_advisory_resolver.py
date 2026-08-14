@@ -1,7 +1,7 @@
 import pytest
 import yaml
 
-from wing_parser import WingScene
+from wing_parser import WingScene, config
 from wing_parser.advisory.resolver import (
     AdvisoryFacade,
     active_rules,
@@ -32,6 +32,18 @@ def scene(vu_path, monkeypatch):
 
 def test_only_base_rules_are_active_with_an_empty_principles_file(scene, knowledge):
     assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "E6"}
+
+
+def test_the_shipped_principles_file_loads_without_raising(scene, monkeypatch):
+    # Every test above passes an explicit directory=, so nothing in this
+    # suite otherwise loads the real, hand-edited
+    # knowledge/toanaz/principles.yaml through the normal path. Item 10
+    # added applies_when validation the shipped file must satisfy -- it
+    # does today, but nothing would catch it if a future hand-edit broke
+    # that. Opts out of the hermetic WING_KNOWLEDGE_DIR fixture the same
+    # way test_classifier_cache.py's env-var tests do.
+    monkeypatch.delenv(config.ENV_VAR, raising=False)
+    active_rules(scene)  # must not raise
 
 
 def test_monitor_bus_count_condition_reads_the_scene(scene):
@@ -565,6 +577,35 @@ def test_a_bare_string_principle_entry_raises(scene, knowledge):
         yaml.safe_dump({"principles": ["just a string"]}), encoding="utf-8"
     )
     with pytest.raises(ValueError, match="mapping"):
+        active_rules(scene, directory=knowledge)
+
+
+def test_a_principle_with_a_non_mapping_when_block_raises(scene, knowledge):
+    # A `when:` block written as a YAML list ("- for_each: channel"
+    # instead of a mapping) used to reach `when.get("for_each")` a few
+    # lines down and raise a bare AttributeError instead of naming the
+    # file and the rule -- the twin of the loader.py case covered by
+    # test_loader_rejects_a_non_mapping_when_block.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.list-when",
+                        "principle": "when written as a list by mistake",
+                        "hardness": "hard",
+                        "when": [{"for_each": "channel"}],
+                        "supersedes": ["G8"],
+                        "rationale": "field practice",
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="when"):
         active_rules(scene, directory=knowledge)
 
 

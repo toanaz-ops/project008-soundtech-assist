@@ -73,12 +73,14 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
     the one hand-maintained layer, so leaving it unvalidated here would
     make the only human-edited layer the only unchecked one.
 
-    Two more slips a hand-edited file invites, both turned into the
+    Three more slips a hand-edited file invites, all turned into the
     same `ValueError(f"{path}: ...")` shape `loader._rule_from` already
     uses rather than left to raise a bare `KeyError` or `AttributeError`
     a few lines down: an entry that is not a mapping at all (a bare
-    string dropped into the `principles:` list), and an entry missing
-    `id:` entirely.
+    string dropped into the `principles:` list), an entry missing `id:`
+    entirely, and a `when:` block that is present but not a mapping
+    (a scalar like `"for_each channel"`, or a YAML list) -- `when.get(...)`
+    a few lines down would otherwise raise a bare `AttributeError`.
     """
     doc = _load_yaml(path)
     rules: list[Rule] = []
@@ -99,6 +101,11 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
             )
         when = entry.get("when")
         if when is not None:
+            if not isinstance(when, dict):
+                raise ValueError(
+                    f"{path}: rule {entry['id']} has a when: block that must "
+                    f"be a mapping, not {type(when).__name__} ({when!r})"
+                )
             if not when.get("for_each"):
                 raise ValueError(f"{path}: rule {entry['id']} has no when.for_each")
         else:

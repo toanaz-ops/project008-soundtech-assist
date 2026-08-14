@@ -227,3 +227,22 @@ def test_loader_rejects_a_non_mapping_rule_entry(tmp_path: Path):
     path.write_text("rules:\n  - just a string\n", encoding="utf-8")
     with pytest.raises(ValueError, match="mapping"):
         load_rules(path, layer="base")
+
+
+def test_loader_rejects_a_non_mapping_when_block(tmp_path: Path):
+    # `when: "for_each channel"` (a scalar, the single most common
+    # YAML hand-edit slip) used to reach `when.get("for_each")` a few
+    # lines down and raise a bare AttributeError instead of naming the
+    # file and the rule.
+    path = tmp_path / "scalar_when.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "T8", "title": "t", "severity": "warning",
+                        "source": "s", "rationale": "r",
+                        "when": "for_each channel",
+                        "message": "m"}]}
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="when"):
+        load_rules(path, layer="base")

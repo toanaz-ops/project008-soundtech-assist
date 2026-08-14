@@ -82,6 +82,11 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         )
 
     when = entry.get("when") or {}
+    if not isinstance(when, dict):
+        raise ValueError(
+            f"{where_from}: rule {entry['id']} has a when: block that must "
+            f"be a mapping, not {type(when).__name__} ({when!r})"
+        )
     if not when.get("for_each"):
         raise ValueError(f"{where_from}: rule {entry['id']} has no when.for_each")
 
