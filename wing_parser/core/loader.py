@@ -23,6 +23,12 @@ def load_raw(path: str | Path) -> RawScene:
     file_path = Path(path)
     doc = json.loads(file_path.read_text(encoding="utf-8"))
 
+    if not isinstance(doc, dict):
+        raise ValueError(
+            f"{file_path}: expected a JSON object at the top level, "
+            f"found {type(doc).__name__}; not a WING snapshot"
+        )
+
     type_id = doc.get("type")
     if not type_id:
         raise ValueError(f"{file_path}: missing top-level 'type' field; not a WING snapshot")

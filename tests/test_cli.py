@@ -1,4 +1,5 @@
 import json
+import re
 
 import pytest
 
@@ -21,7 +22,20 @@ def test_analyze_prints_an_overview(vu_path, capsys):
     assert main(["analyze", str(vu_path)]) == 0
     out = capsys.readouterr().out
     assert "snapshot.11" in out
-    assert "M8 MC" in out or "40 channels" in out
+    assert "M8 MC" in out
+    assert "40 channels" in out
+
+
+def test_analyze_reports_a_directory_without_a_traceback(tmp_path, capsys):
+    assert main(["analyze", str(tmp_path)]) == 1
+    assert str(tmp_path) in capsys.readouterr().err
+
+
+def test_analyze_reports_a_non_object_top_level_without_a_traceback(tmp_path, capsys):
+    bad = tmp_path / "bad.snap"
+    bad.write_text("[1, 2]", encoding="utf-8")
+    assert main(["analyze", str(bad)]) == 1
+    assert str(bad) in capsys.readouterr().err
 
 
 def test_channel_prints_detail(vu_path, capsys):
@@ -41,6 +55,7 @@ def test_channel_reports_an_unknown_number_without_a_traceback(vu_path, capsys):
 def test_doctor_lists_the_findings(vu_path, capsys):
     assert main(["doctor", str(vu_path)]) == 0
     out = capsys.readouterr().out
+    assert "17 findings" in out
     assert "G8" in out
     assert "G7" in out
     assert "MON VOX" in out
@@ -51,10 +66,25 @@ def test_doctor_shows_the_deciding_layer(vu_path, capsys):
     assert "base" in capsys.readouterr().out
 
 
+def test_doctor_orders_findings_naturally_not_lexicographically(vu_path, capsys):
+    main(["doctor", str(vu_path)])
+    out = capsys.readouterr().out
+    targets = re.findall(r"^\s*\[\S+\s*\]\s+\S+\s+(\S+)\s+via base", out, re.MULTILINE)
+    assert targets == [
+        "bus.7", "bus.8", "bus.9", "bus.10",
+        "ch.1.send.8", "ch.2.send.8", "ch.3.send.8",
+        "ch.4.send.7", "ch.4.send.8", "ch.5.send.8",
+        "ch.7.send.7", "ch.7.send.8", "ch.8.send.7", "ch.8.send.8",
+        "ch.10.send.8", "ch.11", "ch.12.send.8",
+    ]
+
+
 def test_routing_prints_the_summary(vu_path, capsys):
     assert main(["routing", str(vu_path)]) == 0
     out = capsys.readouterr().out
-    assert "live" in out.lower()
+    assert "3 live channels" in out
+    unpatched_line = next(line for line in out.splitlines() if "unpatched channels" in line)
+    assert len(re.findall(r"\d+", unpatched_line)) == 23
 
 
 def test_routing_lists_unclassified_channels(vu_path, capsys):

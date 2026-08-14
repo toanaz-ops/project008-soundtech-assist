@@ -15,7 +15,7 @@ from wing_parser.cli import render
 def _load(path: str) -> WingScene | None:
     try:
         return WingScene.load(path)
-    except FileNotFoundError:
+    except OSError:
         print(f"error: cannot open {path}", file=sys.stderr)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -27,6 +27,7 @@ def analyze(args) -> int:
     if scene is None:
         return 1
     print(render.scene_overview(scene))
+    scene.classifier.flush()
     return 0
 
 
@@ -37,9 +38,10 @@ def channel(args) -> int:
     try:
         view = scene.channel(args.number)
     except KeyError as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        print(f"error: {exc.args[0]}", file=sys.stderr)
         return 1
     print(render.channel_detail(view))
+    scene.classifier.flush()
     return 0
 
 
@@ -70,6 +72,8 @@ def diff(args) -> int:
     if before is None or after is None:
         return 1
     print(render.changes(before.diff(after), limit=args.limit))
+    before.classifier.flush()
+    after.classifier.flush()
     return 0
 
 
@@ -88,10 +92,12 @@ def feedback(args) -> int:
             "run `wing doctor` to list current findings",
             file=sys.stderr,
         )
+        scene.classifier.flush()
         return 1
 
     entry = feedback_log.record(
         match, args.verdict, note=args.note, scene=Path(args.scene).name
     )
     print(f"recorded {entry.verdict} for {entry.finding_id}")
+    scene.classifier.flush()
     return 0

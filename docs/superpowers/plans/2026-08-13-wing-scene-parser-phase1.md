@@ -403,6 +403,13 @@ def test_missing_type_field_is_an_error(tmp_path):
     bad.write_text('{"ae_data": {}, "ce_data": {}}', encoding="utf-8")
     with pytest.raises(ValueError, match="type"):
         load_raw(bad)
+
+
+def test_top_level_array_is_an_error(tmp_path):
+    bad = tmp_path / "bad.snap"
+    bad.write_text("[1, 2]", encoding="utf-8")
+    with pytest.raises(ValueError, match="list"):
+        load_raw(bad)
 ```
 
 - [ ] **Step 4: Run the test and verify it fails**
@@ -503,6 +510,12 @@ def load_raw(path: str | Path) -> RawScene:
     file_path = Path(path)
     doc = json.loads(file_path.read_text(encoding="utf-8"))
 
+    if not isinstance(doc, dict):
+        raise ValueError(
+            f"{file_path}: expected a JSON object at the top level, "
+            f"found {type(doc).__name__}; not a WING snapshot"
+        )
+
     type_id = doc.get("type")
     if not type_id:
         raise ValueError(f"{file_path}: missing top-level 'type' field; not a WING snapshot")
@@ -525,7 +538,7 @@ def load_raw(path: str | Path) -> RawScene:
 - [ ] **Step 7: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_core_versions.py -v`
-Expected: PASS — 5 tests
+Expected: PASS — 6 tests
 
 - [ ] **Step 8: Commit**
 
@@ -7522,6 +7535,7 @@ Output rendering is a separate module from command dispatch: rendering is the in
 
 ```python
 import json
+import re
 
 import pytest
 
@@ -7544,7 +7558,20 @@ def test_analyze_prints_an_overview(vu_path, capsys):
     assert main(["analyze", str(vu_path)]) == 0
     out = capsys.readouterr().out
     assert "snapshot.11" in out
-    assert "M8 MC" in out or "40 channels" in out
+    assert "M8 MC" in out
+    assert "40 channels" in out
+
+
+def test_analyze_reports_a_directory_without_a_traceback(tmp_path, capsys):
+    assert main(["analyze", str(tmp_path)]) == 1
+    assert str(tmp_path) in capsys.readouterr().err
+
+
+def test_analyze_reports_a_non_object_top_level_without_a_traceback(tmp_path, capsys):
+    bad = tmp_path / "bad.snap"
+    bad.write_text("[1, 2]", encoding="utf-8")
+    assert main(["analyze", str(bad)]) == 1
+    assert str(bad) in capsys.readouterr().err
 
 
 def test_channel_prints_detail(vu_path, capsys):
@@ -7564,6 +7591,7 @@ def test_channel_reports_an_unknown_number_without_a_traceback(vu_path, capsys):
 def test_doctor_lists_the_findings(vu_path, capsys):
     assert main(["doctor", str(vu_path)]) == 0
     out = capsys.readouterr().out
+    assert "17 findings" in out
     assert "G8" in out
     assert "G7" in out
     assert "MON VOX" in out
@@ -7574,10 +7602,25 @@ def test_doctor_shows_the_deciding_layer(vu_path, capsys):
     assert "base" in capsys.readouterr().out
 
 
+def test_doctor_orders_findings_naturally_not_lexicographically(vu_path, capsys):
+    main(["doctor", str(vu_path)])
+    out = capsys.readouterr().out
+    targets = re.findall(r"^\s*\[\S+\s*\]\s+\S+\s+(\S+)\s+via base", out, re.MULTILINE)
+    assert targets == [
+        "bus.7", "bus.8", "bus.9", "bus.10",
+        "ch.1.send.8", "ch.2.send.8", "ch.3.send.8",
+        "ch.4.send.7", "ch.4.send.8", "ch.5.send.8",
+        "ch.7.send.7", "ch.7.send.8", "ch.8.send.7", "ch.8.send.8",
+        "ch.10.send.8", "ch.11", "ch.12.send.8",
+    ]
+
+
 def test_routing_prints_the_summary(vu_path, capsys):
     assert main(["routing", str(vu_path)]) == 0
     out = capsys.readouterr().out
-    assert "live" in out.lower()
+    assert "3 live channels" in out
+    unpatched_line = next(line for line in out.splitlines() if "unpatched channels" in line)
+    assert len(re.findall(r"\d+", unpatched_line)) == 23
 
 
 def test_routing_lists_unclassified_channels(vu_path, capsys):
@@ -7641,6 +7684,7 @@ Create an empty `wing_parser/cli/__init__.py`, then `wing_parser/cli/render.py`:
 from __future__ import annotations
 
 import math
+import re
 from typing import Any, Iterable
 
 BULLET = "  - "
@@ -7648,6 +7692,12 @@ BULLET = "  - "
 
 def level(db: float) -> str:
     return "-inf" if math.isinf(db) else f"{db:.1f} dB"
+
+
+def _natural(target: str) -> tuple[object, ...]:
+    """Sort key that orders ch.2 before ch.10 rather than after it."""
+    return tuple(int(part) if part.isdigit() else part
+                 for part in re.split(r"(\d+)", target))
 
 
 def scene_overview(scene) -> str:
@@ -7725,7 +7775,7 @@ def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None) -> 
 
     order = {"error": 0, "warning": 1, "info": 2}
     lines: list[str] = [f"{len(items)} findings:"]
-    for finding in sorted(items, key=lambda f: (order.get(f.severity, 9), f.target)):
+    for finding in sorted(items, key=lambda f: (order.get(f.severity, 9), _natural(f.target))):
         confidence = "" if finding.confidence >= 1.0 else f"  (confidence {finding.confidence:.2f})"
         lines.append(
             f"  [{finding.severity:<7}] {finding.rule_id:<6} {finding.target:<18} "
@@ -7791,7 +7841,7 @@ from wing_parser.cli import render
 def _load(path: str) -> WingScene | None:
     try:
         return WingScene.load(path)
-    except FileNotFoundError:
+    except OSError:
         print(f"error: cannot open {path}", file=sys.stderr)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -7803,6 +7853,7 @@ def analyze(args) -> int:
     if scene is None:
         return 1
     print(render.scene_overview(scene))
+    scene.classifier.flush()
     return 0
 
 
@@ -7813,9 +7864,10 @@ def channel(args) -> int:
     try:
         view = scene.channel(args.number)
     except KeyError as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        print(f"error: {exc.args[0]}", file=sys.stderr)
         return 1
     print(render.channel_detail(view))
+    scene.classifier.flush()
     return 0
 
 
@@ -7846,6 +7898,8 @@ def diff(args) -> int:
     if before is None or after is None:
         return 1
     print(render.changes(before.diff(after), limit=args.limit))
+    before.classifier.flush()
+    after.classifier.flush()
     return 0
 
 
@@ -7864,12 +7918,14 @@ def feedback(args) -> int:
             "run `wing doctor` to list current findings",
             file=sys.stderr,
         )
+        scene.classifier.flush()
         return 1
 
     entry = feedback_log.record(
         match, args.verdict, note=args.note, scene=Path(args.scene).name
     )
     print(f"recorded {entry.verdict} for {entry.finding_id}")
+    scene.classifier.flush()
     return 0
 ```
 
@@ -7943,7 +7999,9 @@ if __name__ == "__main__":
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_cli.py -v`
-Expected: PASS — 13 tests
+Expected: PASS — 16 tests (13 from the original pass, plus 3 added in the
+Task 22 fix round: a directory input, a non-object top-level JSON input,
+and natural-order sorting of `doctor` findings)
 
 - [ ] **Step 7: Try it by hand**
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from typing import Any, Iterable
 
 BULLET = "  - "
@@ -10,6 +11,12 @@ BULLET = "  - "
 
 def level(db: float) -> str:
     return "-inf" if math.isinf(db) else f"{db:.1f} dB"
+
+
+def _natural(target: str) -> tuple[object, ...]:
+    """Sort key that orders ch.2 before ch.10 rather than after it."""
+    return tuple(int(part) if part.isdigit() else part
+                 for part in re.split(r"(\d+)", target))
 
 
 def scene_overview(scene) -> str:
@@ -87,7 +94,7 @@ def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None) -> 
 
     order = {"error": 0, "warning": 1, "info": 2}
     lines: list[str] = [f"{len(items)} findings:"]
-    for finding in sorted(items, key=lambda f: (order.get(f.severity, 9), f.target)):
+    for finding in sorted(items, key=lambda f: (order.get(f.severity, 9), _natural(f.target))):
         confidence = "" if finding.confidence >= 1.0 else f"  (confidence {finding.confidence:.2f})"
         lines.append(
             f"  [{finding.severity:<7}] {finding.rule_id:<6} {finding.target:<18} "
