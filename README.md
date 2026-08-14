@@ -223,6 +223,78 @@ is required beyond re-running the command.
   A manual entry is checked before the pattern matcher and the LLM
   fallback, so it always wins and costs nothing to resolve again.
 
+## MCP server
+
+An [MCP](https://modelcontextprotocol.io) server exposes the same
+functionality as the CLI to a tool-calling model (Claude Desktop, Claude
+Code, or any other MCP client) over stdio. It is optional and independent
+of the core parser — nothing else in this repo imports it, and the CLI
+works fully without it.
+
+Install the extra and run the server:
+
+```bash
+pip install -e ".[mcp]"
+wing-mcp
+```
+
+`wing-mcp` is the console script `pyproject.toml` registers for
+`wing_parser.mcp.server:main`. If the `mcp` extra is not installed, it
+prints `pip install "wing-parser[mcp]"` and exits rather than raising an
+import error. Point your MCP client's config at the `wing-mcp` command
+(or `python -m wing_parser.mcp.server` from a checkout); how each client
+discovers a stdio server is documented by that client, not here.
+
+The server registers five tools, each a thin wrapper over the matching
+CLI command and returning plain text rather than raising — the tool
+bodies live in `wing_parser/mcp/tools.py`, unit-tested there without a
+running server:
+
+| Tool | Same as | Use for |
+| --- | --- | --- |
+| `wing_analyze` | `analyze` | Scene overview: channel/bus counts, named channels, firmware version |
+| `wing_channel` | `channel` | Full detail on one channel: EQ, dynamics, HPF, tap point, sends |
+| `wing_diff` | `diff` | Field-by-field comparison of two scene files |
+| `wing_routing` | `routing` | Orphans, ALT-sourced, unpatched and unclassified channels |
+| `wing_doctor` | `doctor` | Advisory findings, with the deciding rule layer |
+
+Each tool's docstring is what the client reads to decide when to call
+it; the table above is a summary, not a substitute for actually trying a
+client against it. This project has not verified any particular model's
+tool-selection behavior against these descriptions — treat the
+descriptions in `tools.py` as a starting point to refine, not a
+guarantee a model will always pick the right tool.
+
+## Claude Skills
+
+`skills/` ships five [Claude Skill](https://docs.claude.com/en/docs/claude-code/skills)
+directories, one per CLI command family, each a `SKILL.md` with
+frontmatter (`name`, `description`) and instructions for running that
+command and reading its output:
+
+```
+skills/wing-analyze/SKILL.md
+skills/wing-channel/SKILL.md
+skills/wing-diff/SKILL.md
+skills/wing-routing/SKILL.md
+skills/wing-doctor/SKILL.md
+```
+
+`wing-doctor`'s also documents `wing feedback`, since recording a
+verdict is the natural next step after a doctor finding.
+
+To use them with Claude Code, copy or symlink the directories you want
+into a skills location Claude Code searches (for example a project's
+`.claude/skills/`, per Claude Code's own skill-discovery documentation —
+this repo does not install them anywhere by itself). Each skill invokes
+the CLI as a subprocess (`python -m wing_parser.cli ...`), so the
+package must be installed or importable from wherever the skill runs;
+it does not go through the MCP server. As with the MCP tool
+descriptions above, this project has not verified that a given model
+reliably picks the right skill for a given prompt — the frontmatter
+`description` is what a Skills-aware client matches against, and is
+worth tuning against your own usage.
+
 ## Tests
 
 ```bash
