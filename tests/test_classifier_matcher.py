@@ -57,6 +57,23 @@ def test_more_specific_pattern_wins_on_a_tie():
     assert classify("Snare Bot", "channels").kind == "drums.snare.bottom"
 
 
+def test_equal_confidence_is_broken_by_match_length():
+    # "sub" and "fx" are both 0.85, so only len(matched) separates them.
+    # This is the ONLY case that exercises _rank's length component --
+    # "Snare Bot" above is decided on confidence alone (0.95 > 0.9) and
+    # still passes with the length component removed.
+    assert classify("SUB FX", "buses").kind == "subgroup"
+    assert classify("FX SUB", "buses").kind == "subgroup"
+
+
+def test_hh_mic_is_a_handheld_not_a_hihat():
+    # drums.hihat matches '\bhh\b' at 0.9; the handheld entry must carry a
+    # higher confidence to win, because length never gets consulted.
+    assert classify("HH MIC", "channels").kind == "speech.handheld"
+    assert classify("HH", "channels").kind == "drums.hihat"
+    assert classify("Handheld 1", "channels").kind == "speech.handheld"
+
+
 def test_bare_mic_names_land_below_the_confidence_gate():
     for name in ("Mic 4", "Mic 5", "Mic 7"):
         result = classify(name, "channels")

@@ -39,7 +39,10 @@ channels:
   - { match: 'lectern|podium|gooseneck', kind: speech.lectern, confidence: 0.9 }
   - { match: '\blav\b|lavalier', kind: speech.lav,         confidence: 0.9 }
   - { match: 'head\s*set|\bhs\b', kind: speech.headset,    confidence: 0.7 }
-  - { match: 'hand\s*held|\bhh\s*mic\b', kind: speech.handheld, confidence: 0.85 }
+  - { match: 'hand\s*held',     kind: speech.handheld,     confidence: 0.85 }
+  # More specific than drums.hihat's '\bhh\b' (0.9), so it must outrank it on
+  # confidence — `_rank` settles confidence before it ever consults length.
+  - { match: '\bhh\s*mic\b',    kind: speech.handheld,     confidence: 0.92 }
 
   # Non-performance
   - { match: '\bclick\b',       kind: utility.click,       confidence: 0.95 }
