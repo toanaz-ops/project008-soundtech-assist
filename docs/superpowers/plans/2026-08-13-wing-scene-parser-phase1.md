@@ -5190,6 +5190,61 @@ def test_offline_run_still_classifies_by_pattern(vu_path, monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     scene = WingScene.load(vu_path)
     assert scene.bus(8).is_monitor is True          # MON VOX resolves offline
+
+
+def test_a_blank_name_costs_nothing_and_is_not_a_naming_problem(knowledge, monkeypatch):
+    # Six channels in the real file are unnamed. An empty slot is not a
+    # name that needs improving, and it must never reach the model.
+    called: list[str] = []
+    monkeypatch.setattr("wing_parser.classifier.resolve.llm.available", lambda: True)
+    monkeypatch.setattr(
+        "wing_parser.classifier.resolve.llm.classify",
+        lambda name, domain, context="": called.append(name) or Classification("x", 0.9, "llm"),
+    )
+
+    classifier = Classifier(directory=knowledge, use_llm=True)
+    for blank in ("", "   ", "\t"):
+        assert classifier.resolve(blank, "channels").kind == "unknown"
+
+    assert called == []
+    assert classifier.unresolved == ()
+    assert classifier.low_confidence == ()
+
+
+def test_the_knowledge_file_is_read_once_not_once_per_name(knowledge, monkeypatch):
+    # cache.lookup() re-parses the whole file per call, and since Task 15
+    # that parse is a ruamel round-trip. Measured on a 200-entry cache:
+    # 50 per-name lookups took 3.4 s against 65 ms for one load. The file
+    # grows one entry per name ever seen, so per-name reads get slower
+    # exactly as the tool gets used.
+    from wing_parser.classifier import resolve as resolve_module
+
+    loads: list[object] = []
+    real_load = resolve_module.cache.load
+
+    def counted(directory=None):
+        loads.append(directory)
+        return real_load(directory)
+
+    monkeypatch.setattr(resolve_module.cache, "load", counted)
+
+    classifier = Classifier(directory=knowledge, use_llm=False)
+    for name in ("Kick In", "Snare Top", "My Lap", "HS4", "MON VOX"):
+        classifier.resolve(name, "channels")
+
+    assert len(loads) == 1
+
+
+def test_a_classifier_nobody_asks_touches_no_disk(monkeypatch):
+    # WingScene builds one unconditionally, including for scenes the
+    # caller only wants routing or levels from.
+    from wing_parser.classifier import resolve as resolve_module
+
+    def explode(directory=None):
+        raise AssertionError("the knowledge file was read on construction")
+
+    monkeypatch.setattr(resolve_module.cache, "load", explode)
+    Classifier(directory=None, use_llm=False)       # must not raise
 ```
 
 - [ ] **Step 2: Run the test and verify it fails**
@@ -5227,9 +5282,36 @@ class Classifier:
         self._pending: list[tuple[str, str, Classification]] = []
         self._unresolved: list[str] = []
         self._low: list[str] = []
+        # Loaded on first use, not here: WingScene builds a Classifier
+        # unconditionally, and a scene nobody asks about types for should
+        # not touch the disk at all.
+        self._disk: dict[str, dict[str, Classification]] | None = None
+
+    def _cached(self, name: str, domain: str) -> Classification | None:
+        """One read of the knowledge file per Classifier, not per name.
+
+        cache.lookup() re-reads and re-parses the whole file on every
+        call, and since Task 15 that parse is a ruamel round-trip that
+        rebuilds the comment tree. Measured on a 200-entry cache: 50
+        per-name lookups took 3.4 s, one load plus 50 in-memory lookups
+        took 65 ms. The file is designed to grow one entry per name ever
+        seen, so the per-name version gets slower exactly as ToanAZ uses
+        the tool more -- 17 s at a thousand entries.
+        """
+        if self._disk is None:
+            self._disk = cache.load(self._directory)
+        return self._disk.get(domain, {}).get(clean(name))
 
     def resolve(self, name: str, domain: str) -> Classification:
-        key = (domain, clean(name))
+        target = clean(name)
+        # An unnamed channel is an empty slot, not a naming problem. Without
+        # this, all six blank channels in the real file would land in
+        # `unresolved` as an empty string, and the first one would spend a
+        # model call asking what "" is.
+        if not target:
+            return UNKNOWN
+
+        key = (domain, target)
         if key in self._memo:
             return self._memo[key]
 
@@ -5244,7 +5326,7 @@ class Classifier:
         return result
 
     def _first_answer(self, name: str, domain: str) -> Classification:
-        cached = cache.lookup(name, domain, directory=self._directory)
+        cached = self._cached(name, domain)
         if cached is not None:
             return cached
 
@@ -5258,12 +5340,17 @@ class Classifier:
                 self._pending.append((name, domain, guessed))
                 return guessed
 
-        return found if found is not UNKNOWN else UNKNOWN
+        # A weak pattern hit still beats nothing: `found` is already UNKNOWN
+        # when nothing matched, so returning it covers both cases.
+        return found
 
     def flush(self) -> None:
         for name, domain, result in self._pending:
             cache.remember(name, domain, result, directory=self._directory)
         self._pending.clear()
+        # The in-memory copy is now behind the file. Drop it rather than
+        # patch it, so the next read is honest.
+        self._disk = None
 
     @property
     def unresolved(self) -> tuple[str, ...]:
@@ -5341,7 +5428,7 @@ and add:
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_resolve.py -v`
-Expected: PASS — 11 tests. The last two are the offline guarantee: with no API key, `MON VOX` still resolves by pattern.
+Expected: PASS — 14 tests. `test_offline_run_still_classifies_by_pattern` is the offline guarantee: with no API key, `MON VOX` still resolves by pattern.
 
 - [ ] **Step 7: Run the whole suite**
 
