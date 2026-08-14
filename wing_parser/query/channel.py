@@ -23,10 +23,25 @@ class Channel:
         self._scene = scene
 
     def __getattr__(self, item: str) -> Any:
-        # Only reached when normal lookup fails, so no recursion risk
-        # for `data` and `_scene`, which are set in __init__.
+        """Delegate unknown attributes to the wrapped record.
+
+        Two lookups must be refused rather than delegated:
+
+        A private or dunder name. `copy.copy` and `pickle` probe for
+        `__setstate__` and friends on a shell built by `__new__`, whose
+        `__dict__` is still empty — delegating would re-enter this method
+        looking for `data`, which is also absent, and recurse forever.
+
+        A name already defined on the class. Reaching here for one means a
+        property raised `AttributeError` internally; answering "no such
+        attribute" would bury the real bug.
+        """
+        if item.startswith("_") or hasattr(type(self), item):
+            raise AttributeError(
+                f"{type(self).__name__}.{item} is not resolvable on this instance"
+            )
         try:
-            return getattr(self.data, item)
+            return getattr(object.__getattribute__(self, "data"), item)
         except AttributeError as exc:
             raise AttributeError(
                 f"{type(self).__name__!r} has no attribute {item!r}"

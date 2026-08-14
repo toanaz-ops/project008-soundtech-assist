@@ -95,3 +95,30 @@ def test_factory_scene_loads_too(factory_path):
     scene = WingScene.load(factory_path)
     assert scene.version.type_id == "snapshot.10"
     assert len(scene.channels()) == 40
+
+
+def test_channel_survives_copy_and_deepcopy(scene):
+    import copy
+
+    # copy probes __setstate__ on a __new__-built shell whose __dict__ is
+    # empty. An unguarded __getattr__ recurses forever looking for `data`.
+    shallow = copy.copy(scene.channel(8))
+    assert shallow.name == "M8 MC"
+    assert copy.deepcopy(scene.channel(8)).data.number == 8
+
+
+def test_a_property_raising_internally_is_not_reported_as_missing(scene, monkeypatch):
+    # If `source` blows up inside, the caller must see that — not a
+    # misleading "Channel has no attribute 'source'".
+    monkeypatch.setattr(
+        type(scene), "source_for",
+        lambda self, ref: (_ for _ in ()).throw(AttributeError("boom")),
+    )
+    with pytest.raises(AttributeError) as caught:
+        _ = scene.channel(8).source
+    assert "has no attribute 'source'" not in str(caught.value)
+
+
+def test_unknown_attribute_still_reports_cleanly(scene):
+    with pytest.raises(AttributeError, match="no attribute 'not_a_field'"):
+        _ = scene.channel(8).not_a_field
