@@ -1550,12 +1550,18 @@ parses one member's string; the reverse index lands in the query layer."
 # channel/bus/etc, in ascending order. A space means "not safe"; any
 # other character means "safe".
 #
-# Verified against example-Vu.snap, where safes.ch is 40 spaces.
-# Nested groups (safes.source.A and friends) use the same encoding one
-# level down; nothing in Phase 1 needs them.
+# Verified against both sample files, which agree exactly: safes.ch is 40
+# spaces, and the block holds thirteen sections — ten flat strings and
+# three nested dicts (source, output and area, each keyed by input group
+# or surface area). The nested blocks use the same encoding one level
+# down; nothing in Phase 1 reads them.
+#
+# custom (22) and setup (2) are flat and therefore decoded, even though no
+# Phase 1 rule consumes them: decode_scene promises every flat section, and
+# a promise the data quietly contradicts is worse than an unused entry.
 not_safe_char: " "
-flat_sections: [ch, aux, bus, main, mtx, dca, mute, fx]
-nested_sections: [source]
+flat_sections: [ch, aux, bus, main, mtx, dca, mute, fx, custom, setup]
+nested_sections: [source, output, area]
 expected_lengths:
   ch: 40
   aux: 8
@@ -1565,6 +1571,8 @@ expected_lengths:
   dca: 16
   mute: 8
   fx: 16
+  custom: 22
+  setup: 2
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1610,8 +1618,19 @@ def test_real_file_has_nothing_scene_safe(vu_path):
 
 def test_decode_scene_skips_nested_sections(vu_path):
     sections = decode_scene(load_raw(vu_path).ce["safes"])
-    assert "source" not in sections
-    assert set(sections) <= {"ch", "aux", "bus", "main", "mtx", "dca", "mute", "fx"}
+    assert {"source", "output", "area"}.isdisjoint(sections)
+
+
+def test_decode_scene_covers_every_flat_section(vu_path):
+    # The real block holds thirteen sections: ten flat strings and three
+    # nested dicts. decode_scene promises every flat one, so pin that
+    # against the file rather than against the allowlist it reads.
+    raw_safes = load_raw(vu_path).ce["safes"]
+    flat = {k for k, v in raw_safes.items() if isinstance(v, str)}
+    assert set(decode_scene(raw_safes)) == flat
+    assert flat == {
+        "ch", "aux", "bus", "main", "mtx", "dca", "mute", "fx", "custom", "setup",
+    }
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
