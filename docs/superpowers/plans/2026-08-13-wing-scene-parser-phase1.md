@@ -7539,6 +7539,7 @@ import re
 
 import pytest
 
+from wing_parser.classifier.resolve import Classifier
 from wing_parser.cli.__main__ import main
 from wing_parser.cli.render import level
 
@@ -7667,6 +7668,40 @@ def test_feedback_rejects_an_unknown_finding_id(vu_path, tmp_path, capsys, monke
 def test_missing_file_reports_cleanly(capsys):
     assert main(["analyze", "no-such-file.snap"]) == 1
     assert "no-such-file.snap" in capsys.readouterr().err
+
+
+FLUSH_CASES = [
+    pytest.param("analyze", lambda vu, tmp: ["analyze", str(vu)], 1, id="analyze"),
+    pytest.param("channel", lambda vu, tmp: ["channel", str(vu), "8"], 1, id="channel"),
+    pytest.param("doctor", lambda vu, tmp: ["doctor", str(vu)], 1, id="doctor"),
+    pytest.param("routing", lambda vu, tmp: ["routing", str(vu)], 1, id="routing"),
+    pytest.param(
+        "feedback",
+        lambda vu, tmp: [
+            "feedback", "G8:ch.8.send.8", "--verdict", "correct", "--scene", str(vu),
+        ],
+        1,
+        id="feedback",
+    ),
+    pytest.param("diff", lambda vu, tmp: ["diff", str(vu), str(vu)], 2, id="diff"),
+]
+
+
+@pytest.mark.parametrize("name, build_argv, expected", FLUSH_CASES)
+def test_flush_is_called_by_every_command_that_resolves_names(
+    name, build_argv, expected, vu_path, tmp_path, capsys, monkeypatch
+):
+    # A spy on Classifier.flush, not on what it writes (Task 15 covers that
+    # already) — the point is to catch a future edit that silently deletes
+    # one of the five call sites in commands.py.
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    calls: list[Classifier] = []
+    monkeypatch.setattr(Classifier, "flush", lambda self: calls.append(self))
+
+    assert main(build_argv(vu_path, tmp_path)) == 0
+    assert len(calls) == expected, (
+        f"{name}: expected {expected} flush() call(s), got {len(calls)}"
+    )
 ```
 
 - [ ] **Step 2: Run the test and verify it fails**
@@ -7999,9 +8034,11 @@ if __name__ == "__main__":
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_cli.py -v`
-Expected: PASS — 16 tests (13 from the original pass, plus 3 added in the
-Task 22 fix round: a directory input, a non-object top-level JSON input,
-and natural-order sorting of `doctor` findings)
+Expected: PASS — 22 tests (13 from the original pass; 3 added in fix round 1:
+a directory input, a non-object top-level JSON input, and natural-order
+sorting of `doctor` findings; 6 added in fix round 2, one parametrized case
+per command, spying on `Classifier.flush` to prove each command that
+resolves names actually persists the cache)
 
 - [ ] **Step 7: Try it by hand**
 
