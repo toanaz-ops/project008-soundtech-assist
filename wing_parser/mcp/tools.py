@@ -24,7 +24,13 @@ def _guard(function):
         try:
             return function(*args, **kwargs)
         except OSError as exc:
-            return f"error: cannot open {exc.filename or args[0]}"
+            # exc.filename is always set: every OSError caught here comes
+            # from Path.read_text (via WingScene.load), which sets it on
+            # every failure mode. args[0] would be wrong for diff(before,
+            # after) if it were ever needed, since the failing path is not
+            # necessarily the first argument -- correct even though the
+            # fallback cannot fire today.
+            return f"error: cannot open {exc.filename}"
         except (KeyError, ValueError) as exc:
             return f"error: {exc}"
 

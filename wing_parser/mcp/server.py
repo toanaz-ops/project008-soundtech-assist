@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 from wing_parser.mcp import tools
 
 
@@ -15,7 +17,15 @@ def build():
 
 
 def main() -> None:
-    build().run()
+    try:
+        server = build()
+    except ImportError:
+        print(
+            'error: the mcp extra is not installed. Run: pip install "wing-parser[mcp]"',
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    server.run()
 
 
 if __name__ == "__main__":

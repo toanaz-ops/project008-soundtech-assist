@@ -57,6 +57,18 @@ def test_diff_returns_changes(vu_path, tmp_path):
     assert "ch.8.fader_dB" in tools.diff(str(vu_path), str(other))
 
 
+def test_diff_names_the_second_file_when_it_is_the_one_missing(vu_path):
+    # _guard's OSError handler used to fall back to `exc.filename or
+    # args[0]`. That fallback is dead code -- Path.read_text always sets
+    # .filename -- but it would have named the wrong file for diff(before,
+    # after) if it had ever fired: args[0] is `before`, not whichever path
+    # actually failed to open. Assert on the argument that would have
+    # exposed that bug: the *second* (missing) path, not the first.
+    out = tools.diff(str(vu_path), "no-such-second-file.snap")
+    assert "no-such-second-file.snap" in out
+    assert out.lower().startswith("error")
+
+
 def test_a_missing_file_returns_a_message_not_an_exception():
     out = tools.analyze("no-such-file.snap")
     assert "no-such-file.snap" in out
@@ -94,3 +106,23 @@ def test_server_builds_when_the_mcp_package_is_installed():
     from wing_parser.mcp.server import build
 
     assert build() is not None
+
+
+def test_main_names_the_fix_when_the_mcp_extra_is_missing(capsys):
+    # A bare ImportError from `wing-mcp` (the console script) points at
+    # nothing actionable. This only exercises the failure path when `mcp`
+    # is genuinely absent -- which it deliberately is in this suite's
+    # environment (see the one skip in test_server_builds_when_...).
+    try:
+        import mcp  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        pytest.skip("mcp is installed in this environment")
+
+    from wing_parser.mcp.server import main
+
+    with pytest.raises(SystemExit) as excinfo:
+        main()
+    assert excinfo.value.code == 1
+    assert "wing-parser[mcp]" in capsys.readouterr().err
