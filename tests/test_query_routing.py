@@ -23,6 +23,25 @@ def test_feeds_into_only_returns_enabled_sends(scene):
         assert feed.on is True
 
 
+def test_bus_and_matrix_of_the_same_number_are_different_destinations(scene):
+    # The load-bearing property of this module. A send block holds 16 bus
+    # keys and 8 MX keys, so bus 3 and MX3 share a number and nothing but
+    # dest_kind separates them. Delete the filter in feeds_into and this
+    # test fails; without it, every other test here still passes.
+    bus3 = {(f.kind, f.number) for f in scene.routing.feeds_into("bus", 3)}
+    mx3 = {(f.kind, f.number) for f in scene.routing.feeds_into("matrix", 3)}
+
+    assert bus3 == {("channel", n) for n in (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24)}
+    assert mx3 == {("main", 1)}
+    assert bus3.isdisjoint(mx3)
+
+
+def test_main_destinations_read_main_sends_not_the_kind_filter(scene):
+    # Mains live in main_sends, which carries no dest_kind. The None entry
+    # in SEND_SECTION must disable the filter rather than reject everything.
+    assert scene.routing.feeds_into("main", 1) != ()
+
+
 def test_feeds_into_unused_bus_is_empty_or_small(scene):
     feeds = scene.routing.feeds_into("bus", 16)
     assert isinstance(feeds, tuple)
