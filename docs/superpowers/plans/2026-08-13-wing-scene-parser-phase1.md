@@ -5621,6 +5621,44 @@ def test_load_rules_reads_every_documented_field(tmp_path: Path):
     assert rule.enabled is True
 
 
+def test_an_explicit_null_optional_field_falls_back_to_its_default(tmp_path: Path):
+    """`enabled:` with the value left off must not disable the rule."""
+    path = tmp_path / "null.yaml"
+    path.write_text(
+        "rules:\n"
+        "  - id: T4\n"
+        "    title: t\n"
+        "    severity: warning\n"
+        "    source: s\n"
+        "    rationale: r\n"
+        "    enabled:\n"
+        "    hardness:\n"
+        "    when:\n"
+        "      for_each: channel\n"
+        "      where: {}\n"
+        "    message: m\n",
+        encoding="utf-8",
+    )
+    rule = load_rules(path, layer="base")[0]
+    assert rule.enabled is True
+    assert rule.hardness == "hard"
+
+
+def test_an_explicit_false_still_disables_the_rule(tmp_path: Path):
+    """The null fallback must not swallow a deliberate `enabled: false`."""
+    path = tmp_path / "off.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "T5", "title": "t", "severity": "warning",
+                        "source": "s", "rationale": "r", "enabled": False,
+                        "when": {"for_each": "channel", "where": {}},
+                        "message": "m"}]}
+        ),
+        encoding="utf-8",
+    )
+    assert load_rules(path, layer="base")[0].enabled is False
+
+
 def test_loader_rejects_an_unknown_severity(tmp_path: Path):
     path = tmp_path / "bad.yaml"
     path.write_text(
@@ -5813,6 +5851,20 @@ from wing_parser.advisory.models import SEVERITIES, Rule
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
 
 
+def _optional(entry: dict, key: str, default):
+    """Read an optional field, treating an explicit YAML null as unset.
+
+    `.get(key, default)` only defaults when the key is absent. A rule file
+    is hand-edited, and `enabled:` with the value left off is a plausible
+    slip — under `.get` it would come back None, silently disabling a rule
+    its author meant to leave on. The sibling fields (`where`,
+    `applies_when`, `supersedes`) already collapse null to their default
+    via `or`; this keeps the scalar ones consistent with them.
+    """
+    value = entry.get(key)
+    return default if value is None else value
+
+
 def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
     for required in ("id", "title", "severity", "source", "rationale", "message"):
         if not entry.get(required):
@@ -5839,9 +5891,9 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         where=dict(when.get("where") or {}),
         message=entry["message"],
         layer=layer,
-        requires_classifier=bool(entry.get("requires_classifier", False)),
-        enabled=bool(entry.get("enabled", True)),
-        hardness=entry.get("hardness", "hard"),
+        requires_classifier=bool(_optional(entry, "requires_classifier", False)),
+        enabled=bool(_optional(entry, "enabled", True)),
+        hardness=_optional(entry, "hardness", "hard"),
         applies_when=dict(entry.get("applies_when") or {}),
         supersedes=tuple(entry.get("supersedes") or ()),
     )
