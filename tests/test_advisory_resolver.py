@@ -165,14 +165,20 @@ def test_a_disabled_principle_supersedes_nothing(scene, knowledge):
     assert "G8" in {r.id for r in active_rules(scene, directory=knowledge)}
 
 
-def test_a_show_override_beats_a_principle(scene, knowledge):
-    # An empty principles.yaml gives this test's name nothing to prove:
-    # there is no principle for the show rule to beat. Here the
-    # principles.yaml carries a real, active principle that also names
-    # G7 in its own supersedes list -- but it is flexible and its
-    # applies_when (monitor_bus_count: 1) fails on this scene, so it
-    # never actually acts. G7 ends up suppressed anyway, and only the
-    # show layer's unconditional override is responsible for that.
+def test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule(scene, knowledge):
+    """No cross-layer precedence exists to demonstrate here.
+
+    `supersedes` is base-only (design spec section 6.3, line 270): a
+    principle and a show rule may each independently name the same base
+    rule id in their own supersedes list, but neither ever supersedes
+    the other -- there is no "the show beats the principle" mechanism
+    in this resolver (see
+    test_a_principle_superseding_a_higher_layer_rule_id_raises, which
+    confirms naming a higher-layer id is rejected outright). This
+    fixture's principle is flexible with an applies_when
+    (monitor_bus_count: 1) that fails on this scene, so it is not even
+    active; G7's suppression below comes entirely from the show layer.
+    """
     (knowledge / "principles.yaml").write_text(
         yaml.safe_dump(
             {
@@ -246,12 +252,13 @@ def test_a_principle_superseding_an_unknown_rule_id_raises(scene, knowledge):
         active_rules(scene, directory=knowledge)
 
 
-def test_a_principle_superseding_another_active_principles_id_is_allowed(scene, knowledge):
-    # supersedes is validated against the union of base rule ids and
-    # higher-layer rule ids, not base rules alone -- naming a real
-    # principle id must not raise, even though active_rules only ever
-    # filters superseded ids out of the *base* layer (there is no
-    # cross-higher-layer suppression, and this task does not add one).
+def test_a_principle_superseding_a_higher_layer_rule_id_raises(scene, knowledge):
+    # supersedes may only name a base rule id (design spec section 6.3,
+    # line 270). `toanaz.base` is a real id -- not a typo like G88 -- but
+    # naming it has no effect, because active_rules only ever filters
+    # superseded ids out of the base layer. This must raise too, with a
+    # message that tells it apart from an unknown-anywhere id: a misuse
+    # of the field, not a typo.
     (knowledge / "principles.yaml").write_text(
         yaml.safe_dump(
             {
@@ -279,11 +286,8 @@ def test_a_principle_superseding_another_active_principles_id_is_allowed(scene, 
         ),
         encoding="utf-8",
     )
-    ids = {r.id for r in active_rules(scene, directory=knowledge)}
-    assert "toanaz.base" in ids
-    assert "toanaz.names-the-other-principle" in ids
-    # toanaz.base is still active, so its own supersedes of G8 applies.
-    assert "G8" not in ids
+    with pytest.raises(ValueError, match="higher-layer rule id"):
+        active_rules(scene, directory=knowledge)
 
 
 def test_a_principle_with_hardness_left_blank_still_defaults_to_hard(scene, knowledge):
@@ -317,6 +321,60 @@ def test_a_principle_with_hardness_left_blank_still_defaults_to_hard(scene, know
         r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-hardness"
     )
     assert rule.hardness == "hard"
+
+
+def test_a_principle_with_source_left_blank_still_defaults_to_toanaz(scene, knowledge):
+    # Same hazard as hardness above, on the field that exists purely so a
+    # rule can be traced back to where it came from: a blank `source:`
+    # parses as YAML null, and plain `.get(key, default)` only supplies
+    # its default when the key is absent, not when it is present-but-null.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.blank-source",
+                        "principle": "source left blank by mistake",
+                        "hardness": "hard",
+                        "source": None,
+                        "supersedes": ["G8"],
+                        "rationale": "field practice",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    rule = next(
+        r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-source"
+    )
+    assert rule.source == "ToanAZ"
+
+
+def test_a_principle_with_rationale_left_blank_still_defaults_to_empty_string(scene, knowledge):
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.blank-rationale",
+                        "principle": "rationale left blank by mistake",
+                        "hardness": "hard",
+                        "rationale": None,
+                        "supersedes": ["G8"],
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    rule = next(
+        r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-rationale"
+    )
+    assert rule.rationale == ""
 
 
 def test_a_principle_with_an_invalid_severity_raises(scene, knowledge):

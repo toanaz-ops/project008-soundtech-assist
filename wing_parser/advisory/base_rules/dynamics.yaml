@@ -15,13 +15,16 @@ rules:
       gate and automix the same channel," with no exception; only
       Corporate-B2B-Events.md section 4.4 grants one, allowing a gate range
       of no more than 6 dB with a 200 ms hold if a channel truly needs both.
-      That same document contradicts itself elsewhere: its section 4.1
-      lectern gate row (L549) specifies range 12 dB, hold 120 ms with no
-      mention of automix, so a lectern built exactly to that row's own
-      guidance trips this rule if it is later also assigned to an automix
-      group. This rule keeps section 4.4's 6 dB range ceiling, because 4.4
-      is the passage that directly addresses a channel running gate and
-      automix together, and does not check hold time.
+      Section 4.1's lectern gate row does not contradict section 4.4: its
+      own guidance text says to prefer automix over gating and, if gating,
+      keep the range shallow, the same direction as 4.4. But the row's own
+      tabulated starting values are range 12 dB, hold 120 ms (L549), so a
+      lectern gate built to that table and later assigned to an automix
+      group trips this rule anyway -- a tension between the table's
+      numbers and the prose ceiling, not a self-contradiction. This rule
+      keeps section 4.4's 6 dB range ceiling, because 4.4 is the passage
+      that directly addresses a channel running gate and automix together,
+      and does not check hold time.
     requires_classifier: false
     when:
       for_each: channel

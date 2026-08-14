@@ -6218,6 +6218,12 @@ firing against a channel nobody could identify."
 
 **Files:**
 - Create: `wing_parser/advisory/resolver.py`
+- Create: `wing_parser/advisory/layers.py` — added in fix round 2: reading and
+  validating the hand-edited toanaz/show YAML (`_principles`, `_show_rules`,
+  `_as_rules`), split out of `resolver.py` once it grew past the project's
+  ~200-line-per-file guideline. `resolver.py` keeps the resolution and
+  precedence logic (`CONDITIONS`, `condition_holds`, `_is_active`,
+  `active_rules`, `suppressed_ids`, `run`, `AdvisoryFacade`).
 - Create: `wing_parser/advisory/base_rules/monitors.yaml`
 - Create: `wing_parser/advisory/base_rules/dynamics.yaml`
 - Modify: `wing_parser/query/scene.py`
@@ -6316,13 +6322,16 @@ rules:
       gate and automix the same channel," with no exception; only
       Corporate-B2B-Events.md section 4.4 grants one, allowing a gate range
       of no more than 6 dB with a 200 ms hold if a channel truly needs both.
-      That same document contradicts itself elsewhere: its section 4.1
-      lectern gate row (L549) specifies range 12 dB, hold 120 ms with no
-      mention of automix, so a lectern built exactly to that row's own
-      guidance trips this rule if it is later also assigned to an automix
-      group. This rule keeps section 4.4's 6 dB range ceiling, because 4.4
-      is the passage that directly addresses a channel running gate and
-      automix together, and does not check hold time.
+      Section 4.1's lectern gate row does not contradict section 4.4: its
+      own guidance text says to prefer automix over gating and, if gating,
+      keep the range shallow, the same direction as 4.4. But the row's own
+      tabulated starting values are range 12 dB, hold 120 ms (L549), so a
+      lectern gate built to that table and later assigned to an automix
+      group trips this rule anyway -- a tension between the table's
+      numbers and the prose ceiling, not a self-contradiction. This rule
+      keeps section 4.4's 6 dB range ceiling, because 4.4 is the passage
+      that directly addresses a channel running gate and automix together,
+      and does not check hold time.
     requires_classifier: false
     when:
       for_each: channel
@@ -6602,14 +6611,20 @@ def test_a_disabled_principle_supersedes_nothing(scene, knowledge):
     assert "G8" in {r.id for r in active_rules(scene, directory=knowledge)}
 
 
-def test_a_show_override_beats_a_principle(scene, knowledge):
-    # An empty principles.yaml gives this test's name nothing to prove:
-    # there is no principle for the show rule to beat. Here the
-    # principles.yaml carries a real, active principle that also names
-    # G7 in its own supersedes list -- but it is flexible and its
-    # applies_when (monitor_bus_count: 1) fails on this scene, so it
-    # never actually acts. G7 ends up suppressed anyway, and only the
-    # show layer's unconditional override is responsible for that.
+def test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule(scene, knowledge):
+    """No cross-layer precedence exists to demonstrate here.
+
+    `supersedes` is base-only (design spec section 6.3, line 270): a
+    principle and a show rule may each independently name the same base
+    rule id in their own supersedes list, but neither ever supersedes
+    the other -- there is no "the show beats the principle" mechanism
+    in this resolver (see
+    test_a_principle_superseding_a_higher_layer_rule_id_raises, which
+    confirms naming a higher-layer id is rejected outright). This
+    fixture's principle is flexible with an applies_when
+    (monitor_bus_count: 1) that fails on this scene, so it is not even
+    active; G7's suppression below comes entirely from the show layer.
+    """
     (knowledge / "principles.yaml").write_text(
         yaml.safe_dump(
             {
@@ -6683,12 +6698,13 @@ def test_a_principle_superseding_an_unknown_rule_id_raises(scene, knowledge):
         active_rules(scene, directory=knowledge)
 
 
-def test_a_principle_superseding_another_active_principles_id_is_allowed(scene, knowledge):
-    # supersedes is validated against the union of base rule ids and
-    # higher-layer rule ids, not base rules alone -- naming a real
-    # principle id must not raise, even though active_rules only ever
-    # filters superseded ids out of the *base* layer (there is no
-    # cross-higher-layer suppression, and this task does not add one).
+def test_a_principle_superseding_a_higher_layer_rule_id_raises(scene, knowledge):
+    # supersedes may only name a base rule id (design spec section 6.3,
+    # line 270). `toanaz.base` is a real id -- not a typo like G88 -- but
+    # naming it has no effect, because active_rules only ever filters
+    # superseded ids out of the base layer. This must raise too, with a
+    # message that tells it apart from an unknown-anywhere id: a misuse
+    # of the field, not a typo.
     (knowledge / "principles.yaml").write_text(
         yaml.safe_dump(
             {
@@ -6716,11 +6732,8 @@ def test_a_principle_superseding_another_active_principles_id_is_allowed(scene, 
         ),
         encoding="utf-8",
     )
-    ids = {r.id for r in active_rules(scene, directory=knowledge)}
-    assert "toanaz.base" in ids
-    assert "toanaz.names-the-other-principle" in ids
-    # toanaz.base is still active, so its own supersedes of G8 applies.
-    assert "G8" not in ids
+    with pytest.raises(ValueError, match="higher-layer rule id"):
+        active_rules(scene, directory=knowledge)
 
 
 def test_a_principle_with_hardness_left_blank_still_defaults_to_hard(scene, knowledge):
@@ -6754,6 +6767,60 @@ def test_a_principle_with_hardness_left_blank_still_defaults_to_hard(scene, know
         r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-hardness"
     )
     assert rule.hardness == "hard"
+
+
+def test_a_principle_with_source_left_blank_still_defaults_to_toanaz(scene, knowledge):
+    # Same hazard as hardness above, on the field that exists purely so a
+    # rule can be traced back to where it came from: a blank `source:`
+    # parses as YAML null, and plain `.get(key, default)` only supplies
+    # its default when the key is absent, not when it is present-but-null.
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.blank-source",
+                        "principle": "source left blank by mistake",
+                        "hardness": "hard",
+                        "source": None,
+                        "supersedes": ["G8"],
+                        "rationale": "field practice",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    rule = next(
+        r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-source"
+    )
+    assert rule.source == "ToanAZ"
+
+
+def test_a_principle_with_rationale_left_blank_still_defaults_to_empty_string(scene, knowledge):
+    (knowledge / "principles.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "principles": [
+                    {
+                        "id": "toanaz.blank-rationale",
+                        "principle": "rationale left blank by mistake",
+                        "hardness": "hard",
+                        "rationale": None,
+                        "supersedes": ["G8"],
+                        "source": "ToanAZ",
+                        "enabled": True,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    rule = next(
+        r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-rationale"
+    )
+    assert rule.rationale == ""
 
 
 def test_a_principle_with_an_invalid_severity_raises(scene, knowledge):
@@ -6887,52 +6954,37 @@ Expected: FAIL — `ModuleNotFoundError: No module named 'wing_parser.advisory.r
 
 - [ ] **Step 4: Implement the resolver**
 
-`wing_parser/advisory/resolver.py`:
+Fix round 2 split this step's original single file into two, once `resolver.py` grew
+past the project's ~200-line-per-file guideline: `layers.py` reads and validates the
+hand-edited toanaz/show YAML, and `resolver.py` keeps only the resolution and
+precedence logic. There is no reverse dependency from `layers.py` back into
+`resolver.py`.
+
+`wing_parser/advisory/layers.py`:
 
 ```python
-"""Three-layer rule resolution: base, then ToanAZ, then per-show.
+"""Read hand-edited YAML into Rule records for the toanaz and show layers.
 
-Generic rules are written as absolutes because that is how training
-material teaches. Real shows have conditions the textbook never states,
-so a higher layer can switch a base rule off under stated conditions and
-say why. Every finding records which layer decided it, because otherwise
-a false positive is undiagnosable.
+Base rules ship in the package and are validated on load by
+`loader.load_rules`. The toanaz principles file and per-show exception
+files are the two layers a human edits by hand, and a hand-edited file is
+exactly where a slip is most likely and a silent default is most
+dangerous -- so this module applies the same validation `load_rules`
+already gives the base layer.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
 
 import yaml
 
 from wing_parser import config
-from wing_parser.advisory.evaluator import evaluate_all
-from wing_parser.advisory.loader import _optional, load_base_rules, load_rules
-from wing_parser.advisory.models import SEVERITIES, Finding, Rule
+from wing_parser.advisory.loader import _optional, load_rules
+from wing_parser.advisory.models import SEVERITIES, Rule
 
 PRINCIPLES_FILE = "principles.yaml"
 SHOWS_DIR = "shows"
-
-
-def _monitor_bus_count(scene) -> int:
-    return sum(1 for bus in scene.buses() if bus.is_monitor)
-
-
-CONDITIONS: dict[str, Callable[[Any], Any]] = {
-    "monitor_bus_count": _monitor_bus_count,
-    "channel_count": lambda scene: len(scene.channels()),
-}
-
-
-def condition_holds(scene, applies_when: dict[str, Any]) -> bool:
-    for name, expected in (applies_when or {}).items():
-        probe = CONDITIONS.get(name)
-        if probe is None:
-            return False
-        if probe(scene) != expected:
-            return False
-    return True
 
 
 def _principles(directory: Path | None) -> list[Rule]:
@@ -6971,18 +7023,22 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
     rejected the same way `loader.load_rules` rejects it, rather than
     left to raise a bare `KeyError` a few lines down.
 
-    Every optional scalar routes through `loader._optional`, not
-    `.get(key, default)`. `.get` only supplies its default when the key
-    is absent entirely; a hand-edited principles file can leave a key
-    present but blank, which YAML parses as null. A blank `hardness:`
-    would resolve to `None` under `.get`, `_is_active` would not
-    recognise it as `"flexible"`, and the principle would fall through
-    to unconditionally active -- silently switching a base rule off on
-    every show from a one-character slip. This is also why this layer
-    validates `severity` against `SEVERITIES`: `load_rules` already
-    rejects a bad severity for the base layer, and toanaz is the one
-    hand-maintained layer, so leaving it unvalidated here would make
-    the only human-edited layer the only unchecked one.
+    Every optional field -- `severity`, `source`, `rationale`,
+    `requires_classifier`, `enabled`, `hardness` -- routes through
+    `loader._optional`, not `.get(key, default)`. `.get` only supplies
+    its default when the key is absent entirely; a hand-edited
+    principles file can leave a key present but blank, which YAML
+    parses as null. A blank `hardness:` would resolve to `None` under
+    `.get`, `_is_active` would not recognise it as `"flexible"`, and
+    the principle would fall through to unconditionally active --
+    silently switching a base rule off on every show from a
+    one-character slip. A blank `source:` would resolve to `None`
+    instead of the documented `"ToanAZ"` default, the same hazard on a
+    field that exists purely for traceability. This is also why this
+    layer validates `severity` against `SEVERITIES`: `load_rules`
+    already rejects a bad severity for the base layer, and toanaz is
+    the one hand-maintained layer, so leaving it unvalidated here would
+    make the only human-edited layer the only unchecked one.
     """
     doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     rules: list[Rule] = []
@@ -7004,8 +7060,8 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 id=entry["id"],
                 title=entry.get("principle") or entry.get("title", entry["id"]),
                 severity=severity,
-                source=entry.get("source", "ToanAZ"),
-                rationale=entry.get("rationale", ""),
+                source=_optional(entry, "source", "ToanAZ"),
+                rationale=_optional(entry, "rationale", ""),
                 for_each=when["for_each"],
                 where=dict(when.get("where") or {}),
                 message=entry.get("message", entry.get("principle", entry["id"])),
@@ -7018,6 +7074,54 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
             )
         )
     return rules
+```
+
+`wing_parser/advisory/resolver.py`:
+
+```python
+"""Three-layer rule resolution: base, then ToanAZ, then per-show.
+
+Generic rules are written as absolutes because that is how training
+material teaches. Real shows have conditions the textbook never states,
+so a higher layer can switch a base rule off under stated conditions and
+say why. Every finding records which layer decided it, because otherwise
+a false positive is undiagnosable.
+
+Reading and validating the hand-edited YAML for the toanaz and show
+layers lives in `layers.py`; this module is the resolution and
+precedence logic -- which rules end up active, and why -- and does not
+parse a rule file itself.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, Callable
+
+from wing_parser.advisory.evaluator import evaluate_all
+from wing_parser.advisory.layers import _principles, _show_rules
+from wing_parser.advisory.loader import load_base_rules
+from wing_parser.advisory.models import Finding, Rule
+
+
+def _monitor_bus_count(scene) -> int:
+    return sum(1 for bus in scene.buses() if bus.is_monitor)
+
+
+CONDITIONS: dict[str, Callable[[Any], Any]] = {
+    "monitor_bus_count": _monitor_bus_count,
+    "channel_count": lambda scene: len(scene.channels()),
+}
+
+
+def condition_holds(scene, applies_when: dict[str, Any]) -> bool:
+    for name, expected in (applies_when or {}).items():
+        probe = CONDITIONS.get(name)
+        if probe is None:
+            return False
+        if probe(scene) != expected:
+            return False
+    return True
 
 
 def _is_active(scene, rule: Rule) -> bool:
@@ -7031,21 +7135,33 @@ def _is_active(scene, rule: Rule) -> bool:
 def active_rules(scene, directory: Path | None = None) -> list[Rule]:
     higher = [r for r in _principles(directory) + _show_rules(directory) if _is_active(scene, r)]
     base = load_base_rules()
+    base_ids = {r.id for r in base}
+    higher_ids = {r.id for r in higher}
 
-    # A `supersedes` entry naming a rule id that does not exist -- a typo
-    # such as `G88` for `G8` -- would otherwise leave the intended base
-    # rule firing while its author believes it is off, and would make
-    # `suppressed_ids()` (the diagnostic that exists so a false positive
-    # is traceable) report a suppression that never happened. Fail loudly
-    # instead, against the union of everything that could legitimately be
-    # superseded: the base rules plus every other active higher-layer rule.
-    known_ids = {r.id for r in base} | {r.id for r in higher}
+    # Design spec section 6.3 (line 270): "`supersedes` names the base
+    # rules it switches off while active." shows/ is documented (§6.2) as
+    # one-off exceptions, not a layer with authority over principles --
+    # there is no cross-layer precedence mechanism, and this resolver does
+    # not add one. `active_rules` only ever filters the *base* layer by
+    # `suppressed`, so a `supersedes` entry naming a higher-layer rule id
+    # would pass a base-or-higher validity check and then silently do
+    # nothing. Reject it, and tell the two failure shapes apart: an id in
+    # neither layer is a typo (e.g. `G88` for `G8`); an id that names a
+    # real higher-layer rule is a misuse of a field the spec defines as
+    # base-only.
     for rule in higher:
         for target_id in rule.supersedes:
-            if target_id not in known_ids:
+            if target_id in base_ids:
+                continue
+            if target_id in higher_ids:
                 raise ValueError(
-                    f"{rule.id} supersedes unknown rule id {target_id!r}"
+                    f"{rule.id} supersedes {target_id!r}, which is a "
+                    "higher-layer rule id, not a base rule id. Per design "
+                    "spec section 6.3 (line 270), supersedes names only "
+                    "the base rules a rule switches off; naming another "
+                    "principle or show rule has no effect and is rejected."
                 )
+            raise ValueError(f"{rule.id} supersedes unknown rule id {target_id!r}")
 
     suppressed = {rule_id for r in higher for rule_id in r.supersedes}
     return [r for r in base if r.id not in suppressed] + higher
