@@ -3973,7 +3973,10 @@ channels:
   - { match: 'lectern|podium|gooseneck', kind: speech.lectern, confidence: 0.9 }
   - { match: '\blav\b|lavalier', kind: speech.lav,         confidence: 0.9 }
   - { match: 'head\s*set|\bhs\b', kind: speech.headset,    confidence: 0.7 }
-  - { match: 'hand\s*held|\bhh\s*mic\b', kind: speech.handheld, confidence: 0.85 }
+  - { match: 'hand\s*held',     kind: speech.handheld,     confidence: 0.85 }
+  # More specific than drums.hihat's '\bhh\b' (0.9), so it must outrank it on
+  # confidence — `_rank` settles confidence before it ever consults length.
+  - { match: '\bhh\s*mic\b',    kind: speech.handheld,     confidence: 0.92 }
 
   # Non-performance
   - { match: '\bclick\b',       kind: utility.click,       confidence: 0.95 }
@@ -4065,6 +4068,23 @@ def test_real_channel_names_classify(name, expected):
 def test_more_specific_pattern_wins_on_a_tie():
     # "snare bot" and "snare" both match; the specific one must win.
     assert classify("Snare Bot", "channels").kind == "drums.snare.bottom"
+
+
+def test_equal_confidence_is_broken_by_match_length():
+    # "sub" and "fx" are both 0.85, so only len(matched) separates them.
+    # This is the ONLY case that exercises _rank's length component --
+    # "Snare Bot" above is decided on confidence alone (0.95 > 0.9) and
+    # still passes with the length component removed.
+    assert classify("SUB FX", "buses").kind == "subgroup"
+    assert classify("FX SUB", "buses").kind == "subgroup"
+
+
+def test_hh_mic_is_a_handheld_not_a_hihat():
+    # drums.hihat matches '\bhh\b' at 0.9; the handheld entry must carry a
+    # higher confidence to win, because length never gets consulted.
+    assert classify("HH MIC", "channels").kind == "speech.handheld"
+    assert classify("HH", "channels").kind == "drums.hihat"
+    assert classify("Handheld 1", "channels").kind == "speech.handheld"
 
 
 def test_bare_mic_names_land_below_the_confidence_gate():
