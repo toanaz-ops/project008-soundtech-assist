@@ -1,7 +1,7 @@
 # WING scene parser — Phase 1 handoff
 
-**Date:** 2026-08-14 · **Branch:** `feature/wing-parser-phase1` · **Head:** `182a9b4`
-**State:** 17 of 24 tasks complete · 231 tests passing · nothing uncommitted
+**Date:** 2026-08-14 · **Branch:** `feature/wing-parser-phase1`, merged into local `main`
+**State:** 17 of 24 tasks complete · 238 tests passing · nothing uncommitted
 
 Paste this whole file as the opening message of the next session.
 
