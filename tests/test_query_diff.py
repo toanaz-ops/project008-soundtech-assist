@@ -88,6 +88,44 @@ def test_bus_change_is_reported(vu_path, tmp_path):
     assert change.after == "IEM VOX"
 
 
+def test_fader_leaving_silence_reports_its_full_travel(vu_path, tmp_path):
+    # -inf is the fader on its bottom stop, which the console writes as
+    # -144. Silent to audible is the largest change a mix can have and
+    # must not rank below a 1 dB trim.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"]["13"]["fdr"] = -7.9      # was -144
+    unmuted = tmp_path / "unmuted.snap"
+    unmuted.write_text(json.dumps(doc), encoding="utf-8")
+
+    change = next(
+        c for c in WingScene.load(vu_path).diff(WingScene.load(unmuted))
+        if c.path == "ch.13.fader_dB"
+    )
+    assert change.before == float("-inf")
+    assert change.after == pytest.approx(-7.9)
+    assert change.magnitude == pytest.approx(136.1, abs=1e-3)
+
+
+def test_two_silent_faders_have_no_travel():
+    from wing_parser.query.diff import _magnitude
+
+    assert _magnitude(float("-inf"), float("-inf")) is None
+
+
+def test_a_record_present_on_one_side_only_is_one_change():
+    # Documented limitation: an added or removed record is reported whole,
+    # not field by field. Pinned so the behaviour is deliberate.
+    from wing_parser.core.models import DcaData
+    from wing_parser.query.diff import _walk
+
+    out = []
+    _walk("dca.1", None, DcaData(1, "MIC", False, -3.8), out)
+    assert len(out) == 1
+    assert out[0].path == "dca.1"
+    assert out[0].before is None
+    assert isinstance(out[0].after, DcaData)
+
+
 def test_factory_versus_show_produces_many_changes(factory_path, vu_path):
     changes = WingScene.load(factory_path).diff(WingScene.load(vu_path))
     assert len(changes) > 100
