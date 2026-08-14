@@ -3642,6 +3642,19 @@ def test_send_change_is_reported(vu_path, tmp_path):
     assert change.after == "TAP"
 
 
+def test_matrix_send_change_keeps_its_own_path(vu_path, tmp_path):
+    # A send path uses the destination as the file spells it, so a matrix
+    # change cannot be confused with the same-numbered bus.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"]["8"]["send"]["MX3"]["on"] = True
+    mxd = tmp_path / "mxd.snap"
+    mxd.write_text(json.dumps(doc), encoding="utf-8")
+
+    paths = {c.path for c in WingScene.load(vu_path).diff(WingScene.load(mxd))}
+    assert "ch.8.sends.MX3.on" in paths
+    assert "ch.8.sends.3.on" not in paths
+
+
 def test_bus_change_is_reported(vu_path, tmp_path):
     doc = json.loads(vu_path.read_text(encoding="utf-8"))
     doc["ae_data"]["bus"]["8"]["name"] = "IEM VOX"
@@ -3683,6 +3696,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import TYPE_CHECKING, Any
+
+from wing_parser.query.build_blocks import MATRIX_PREFIX
 
 if TYPE_CHECKING:
     from wing_parser.query.scene import WingScene
@@ -3738,12 +3753,15 @@ def _key(item: Any, index: int) -> Any:
     """Match tuple entries by identity where they have one.
 
     A send's number is not unique on its own — bus 3 and MX3 both report
-    dest 3 — so a send keys on its kind and number together.
+    dest 3 — so a send keys on the destination as the file itself spells
+    it: "3" for bus 3, "MX3" for matrix 3. Those two forms cannot collide
+    (buses are 1-16, matrices MX1-MX8), the key doubles as the path
+    fragment, and a reader sees the same token the console wrote.
     """
     dest = getattr(item, "dest", None)
     if dest is not None:
         kind = getattr(item, "dest_kind", None)
-        return f"{kind}.{dest}" if kind else dest
+        return f"{MATRIX_PREFIX}{dest}" if kind == "matrix" else str(dest)
     for attribute in ("name", "number"):
         value = getattr(item, attribute, None)
         if value is not None:
