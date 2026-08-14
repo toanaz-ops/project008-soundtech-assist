@@ -4841,6 +4841,48 @@ def test_confidence_is_clamped_into_range(monkeypatch):
 
 def test_model_is_opus_5():
     assert llm.MODEL == "claude-opus-5"
+
+
+@pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  "])
+def test_a_kill_switch_set_to_something_meaning_no_does_not_disable(monkeypatch, value):
+    # Bare truthiness would read WING_DISABLE_LLM=0 as "disable", which is
+    # the opposite of what anyone typing that expects.
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv(llm.DISABLE_VAR, value)
+    monkeypatch.setitem(sys.modules, "anthropic", types.ModuleType("anthropic"))
+    assert llm.available() is True
+
+
+@pytest.mark.parametrize("value", ["1", "true", "yes", "on", "anything"])
+def test_a_kill_switch_set_to_anything_else_disables(monkeypatch, value):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv(llm.DISABLE_VAR, value)
+    monkeypatch.setitem(sys.modules, "anthropic", types.ModuleType("anthropic"))
+    assert llm.available() is False
+
+
+@pytest.mark.parametrize("bad", [None, "high", object()])
+def test_a_non_numeric_confidence_degrades_instead_of_raising(monkeypatch, bad):
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: ("utility.playback", bad))
+    assert llm.classify("My Lap", "channels") is None
+
+
+@pytest.mark.parametrize("kind", ["unknown", "Unknown", "UNKNOWN", " unknown ", "\tUnKnOwN"])
+def test_a_refusal_is_caught_whatever_its_casing(monkeypatch, kind):
+    # A capitalised "Unknown" that slipped through became a Classification,
+    # and Task 17 would have cached it as a real answer.
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: (kind, 0.0))
+    assert llm.classify("HS4", "channels") is None
+
+
+def test_a_kind_is_normalized_to_the_lowercase_taxonomy(monkeypatch):
+    # patterns.yaml kinds are lowercase dotted; a model answering
+    # "Utility.Playback" must not become a kind no rule can ever match.
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: ("  Utility.Playback  ", 0.8))
+    assert llm.classify("My Lap", "channels").kind == "utility.playback"
 ```
 
 - [ ] **Step 2: Run the test and verify it fails**
@@ -4900,8 +4942,20 @@ confidence of 0. Do not guess to be helpful.
 _DOMAIN_WORD = {"channels": "channel", "buses": "bus"}
 
 
+_OFF = {"", "0", "false", "no", "off"}
+
+
+def _kill_switch_thrown() -> bool:
+    """True unless the variable is unset or set to something meaning "no".
+
+    Bare truthiness would make WING_DISABLE_LLM=0 disable the fallback,
+    which is the opposite of what anyone typing that expects.
+    """
+    return os.environ.get(DISABLE_VAR, "").strip().casefold() not in _OFF
+
+
 def available() -> bool:
-    if os.environ.get(DISABLE_VAR):
+    if _kill_switch_thrown():
         return False
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return False
@@ -4953,21 +5007,26 @@ def classify(name: str, domain: str, context: str = "") -> Classification | None
         return None
     try:
         kind, confidence = _ask(name, domain, context)
+        # Coercion belongs inside the guard. A model that answers with a
+        # confidence of "high" instead of 0.9 must land on the same
+        # "unknown" path as a dead uplink -- float() would otherwise raise
+        # straight through the promise this module makes.
+        kind = str(kind).strip().casefold()
+        score = min(1.0, max(0.0, float(confidence)))
     except Exception:            # noqa: BLE001 - offline must never raise
         return None
+    # casefold above is what makes this catch "Unknown" and "UNKNOWN" too.
+    # Without it a capitalised refusal became a Classification, and Task 17
+    # would have written it into the knowledge file as a real answer.
     if not kind or kind == "unknown":
         return None
-    return Classification(
-        kind=kind,
-        confidence=min(1.0, max(0.0, float(confidence))),
-        origin="llm",
-    )
+    return Classification(kind=kind, confidence=score, origin="llm")
 ```
 
 - [ ] **Step 4: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_llm.py -v`
-Expected: PASS — 7 tests. No test makes a real API call.
+Expected: PASS — 26 tests (7 base + 19 parametrized cases). No test makes a real API call.
 
 - [ ] **Step 5: Commit**
 
