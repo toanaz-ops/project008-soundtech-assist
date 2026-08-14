@@ -85,7 +85,11 @@ def test_classifier_dependent_rule_carries_the_confidence(scene, monkeypatch):
     )
     names = {f.message for f in findings}
     assert {"MON VOX", "MON L", "MON R"} <= names
-    assert all(f.confidence >= 0.8 for f in findings)
+    # The exact value, not a floor. All four monitor buses classify at 0.9,
+    # so `>= 0.8` would still pass if evaluate()'s
+    # `target.confidence if rule.requires_classifier else 1.0` were dropped
+    # and every finding came out at a hardcoded 1.0.
+    assert all(f.confidence == pytest.approx(0.9) for f in findings)
 
 
 def test_classifier_dependent_rule_skips_unclassifiable_targets(scene, monkeypatch):
@@ -94,9 +98,18 @@ def test_classifier_dependent_rule_skips_unclassifiable_targets(scene, monkeypat
         scene,
         rule(requires_classifier=True, where={}, message="{channel.name}"),
     )
+    names = {f.message for f in findings}
+    # Pin the positive case first: a gate that wrongly excluded every
+    # target would satisfy the absence check below trivially.
+    assert findings
     # "My Lap" cannot be classified, so no rule that depends on the
     # classifier may fire against it.
-    assert "My Lap" not in {f.message for f in findings}
+    assert "My Lap" not in names
+    # HS4 classifies speech.headset at 0.7, inside the 0.4-0.8 band. It is
+    # the only thing in this file that tells a LOW gate apart from a HIGH
+    # one -- "My Lap" sits at 0.0 and is excluded either way, so without
+    # this line the test would pass even if the gate skipped at HIGH.
+    assert "HS4" in names
 
 
 def test_evaluate_all_concatenates(scene):
