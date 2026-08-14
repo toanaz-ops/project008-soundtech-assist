@@ -19,6 +19,7 @@ from wing_parser.core.normalizer import to_db
 from wing_parser.descriptors import eq_models, proc_chain
 
 AUTOMIX_PREFIX = "AUTO_"
+MATRIX_PREFIX = "MX"
 
 
 def _filter(raw: dict[str, Any]) -> Filter:
@@ -71,28 +72,39 @@ def _insert(raw: dict[str, Any] | None) -> Insert:
     )
 
 
-def build_sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
-    """Public: shared with build_bus.py.
+def parse_send_key(key: str) -> tuple[str, int]:
+    """Split a send-block key into its destination kind and number.
 
-    The raw block also carries matrix-send keys ("MX1".."MX8") alongside
-    the plain numeric bus destinations. Send.dest is a bare int with no
-    kind tag, so a matrix key can't be represented without colliding with
-    a same-numbered bus; matrix routing is out of scope for this record
-    and those keys are skipped rather than guessed at.
+    Both real files store 16 numeric bus keys and 8 "MX<n>" matrix keys in
+    the same dict — and a main's send block holds *only* matrix keys, so
+    discarding the non-numeric ones would leave every main with no sends
+    at all.
     """
+    if key.startswith(MATRIX_PREFIX):
+        return "matrix", int(key[len(MATRIX_PREFIX):])
+    return "bus", int(key)
+
+
+def build_sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
+    """Public: shared with build_bus.py."""
     raw = raw or {}
-    numeric = {key: value for key, value in raw.items() if key.isdigit()}
-    return tuple(
-        Send(
-            dest=int(key),
-            on=bool(value.get("on", False)),
-            level_dB=to_db(value.get("lvl")),
-            mode=value.get("mode", "GRP"),
-            pre_on=bool(value.get("pon", False)),
-            pan=float(value.get("pan", 0.0)),
+    sends = []
+    for key, value in (raw or {}).items():
+        dest_kind, dest = parse_send_key(key)
+        sends.append(
+            Send(
+                dest_kind=dest_kind,
+                dest=dest,
+                on=bool(value.get("on", False)),
+                level_dB=to_db(value.get("lvl")),
+                mode=value.get("mode", "GRP"),
+                pre_on=bool(value.get("pon", False)),
+                pan=float(value.get("pan", 0.0)),
+            )
         )
-        for key, value in sorted(numeric.items(), key=lambda kv: int(kv[0]))
-    )
+    # Buses first, then matrices, each ascending — a stable order the diff
+    # and the rule engine can both rely on.
+    return tuple(sorted(sends, key=lambda s: (s.dest_kind, s.dest)))
 
 
 def build_main_sends(raw: dict[str, Any] | None) -> tuple[MainSend, ...]:

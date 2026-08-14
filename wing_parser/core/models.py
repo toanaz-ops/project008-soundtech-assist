@@ -99,6 +99,15 @@ class Insert:
 
 @dataclass(frozen=True)
 class Send:
+    """One send from a channel, aux, bus, main or matrix.
+
+    A send block mixes two destination families under one dict: numeric
+    keys ("1".."16") address buses, and "MX1".."MX8" address matrices.
+    Bus 3 and MX3 are different destinations, so the number alone cannot
+    identify one — dest_kind is what keeps them apart.
+    """
+
+    dest_kind: str        # "bus" | "matrix"
     dest: int
     on: bool
     level_dB: float
