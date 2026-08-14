@@ -6255,8 +6255,14 @@ rules:
       for_each: channel.sends
       where:
         destination_bus.role: monitor
-        mode: POST
-        on: true
+        # Both keys are prefixed `send.`, and must stay that way. The
+        # channel.sends context binds three names -- channel, send and
+        # destination_bus -- so a bare `mode` resolves against the context
+        # dict itself, finds nothing, and the rule silently never fires.
+        # The prefix also dodges YAML 1.1: a bare `on:` key parses as the
+        # boolean True, and resolve_path then dies on True.split(".").
+        send.mode: POST
+        send.on: true
     message: >
       Channel {channel.number} ({channel.name}) sends post-fader to bus
       {destination_bus.number} ({destination_bus.name}), which looks like a
@@ -6368,9 +6374,26 @@ def test_g7_fires_on_bus_eight(scene, monkeypatch):
     assert "COMP" in match.message
 
 
-def test_e6_stays_silent_because_the_automix_insert_is_off(scene, monkeypatch):
+def test_e6_fires_on_the_headset_channel_and_nothing_else(scene, monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    assert [f for f in scene.advisory.run() if f.rule_id == "E6"] == []
+    findings = [f for f in scene.advisory.run() if f.rule_id == "E6"]
+    # Channel 11 (HS4) is the only channel in this file carrying both an
+    # active gate over 6 dB and an active automix insert: gate range 40 dB,
+    # hold 10 ms, automix group X. This is a real finding on a real show
+    # file, not a fixture -- do not "fix" it by weakening the rule.
+    assert [f.target for f in findings] == ["ch.11"]
+    assert "HS4" in findings[0].message
+
+
+def test_e6_ignores_an_automix_group_configured_but_switched_off(scene, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    # Channels 1, 2, 3, 5, 6, 7 and 8 all carry automix group X with the
+    # post insert switched OFF, and a gate over 6 dB. They are exactly the
+    # false positives E6's `channel.post_insert.on` check exists to
+    # prevent, so none of them may appear. Drop that check and this test
+    # goes red with seven extra targets.
+    flagged = {f.target for f in scene.advisory.run() if f.rule_id == "E6"}
+    assert flagged.isdisjoint({f"ch.{n}" for n in (1, 2, 3, 5, 6, 7, 8)})
 
 
 def test_e6_fires_once_the_automix_insert_is_switched_on(vu_path, tmp_path, monkeypatch):
@@ -6381,7 +6404,9 @@ def test_e6_fires_once_the_automix_insert_is_switched_on(vu_path, tmp_path, monk
     live.write_text(json.dumps(doc), encoding="utf-8")
 
     findings = [f for f in WingScene.load(live).advisory.run() if f.rule_id == "E6"]
-    assert [f.target for f in findings] == ["ch.8"]
+    # ch.11 already fires on the unmodified file; switching channel 8's
+    # insert on adds it, and targets come out in channel order.
+    assert [f.target for f in findings] == ["ch.8", "ch.11"]
     assert "X" in findings[0].message
 
 
