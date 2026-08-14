@@ -24,6 +24,7 @@ Every task's requirements implicitly include this section.
 - **Never fabricate EQ band values.** An `eq.mdl` with no descriptor yields `bands=None` plus a `descriptor_missing` anomaly. Never apply the `STD` layout to another model.
 - **`-144` becomes `float("-inf")` at the data layer**, in `core/normalizer.py`, not at presentation time.
 - **Descriptors and advisory rules are YAML data, not Python.** Adding a rule or a descriptor must never require a code change.
+- **Files under `knowledge/` are human-editable and machine-written, so they are written with `ruamel.yaml` in round-trip mode, never `yaml.safe_dump`.** PyYAML discards comments at parse time, so any file the tool rewrites would lose ToanAZ's own annotations on the first write. `ruamel.yaml>=0.18` is a hard dependency. Read-only YAML — descriptors, patterns, version registry — stays on PyYAML.
 - **Every `Finding` records its deciding layer** (`base` / `toanaz` / `show`).
 - **Every advisory rule YAML carries `source:` and `rationale:`.** Where knowledge-base sources disagree, record which value was chosen and why.
 - **Do not move or rewrite `docs/knowledge-base/`.**
@@ -4284,6 +4285,7 @@ guessed at, and 'M6 D.PHOI' is matched as a spare."
 **Files:**
 - Create: `wing_parser/config.py`
 - Create: `wing_parser/classifier/cache.py`
+- Modify: `pyproject.toml` — add `"ruamel.yaml>=0.18"` to `dependencies`
 - Create: `knowledge/toanaz/classifier.yaml`
 - Create: `knowledge/toanaz/principles.yaml`
 - Create: `knowledge/toanaz/shows/.gitkeep`
@@ -4311,10 +4313,15 @@ guessed at, and 'M6 D.PHOI' is matched as a spare."
 # manual entry always wins and a name only ever costs one classification
 # in its lifetime.
 #
+# Comments you add here survive every rewrite -- annotate freely.
+#
 # origin: manual | llm | pattern
 channels: {}
 buses: {}
 ```
+
+This must stay byte-identical to `_SEED` in `cache.py` (Step 5) — the
+module falls back to it when the file is absent.
 
 `knowledge/toanaz/principles.yaml`:
 
@@ -4431,6 +4438,60 @@ def test_missing_cache_file_is_created_on_first_write(tmp_path):
     empty.mkdir()
     cache.remember("Bass", "channels", Classification("instrument.bass", 0.9, "pattern"), directory=empty)
     assert (empty / "classifier.yaml").exists()
+
+
+ANNOTATED = """\
+# ToanAZ's own header. This must survive every write.
+channels:
+  kick in:            # judged by ear at the Hanoi show, do not re-guess
+    kind: drums.kick.in
+    confidence: 1.0
+    origin: manual
+buses: {}
+"""
+
+
+def test_writes_preserve_comments_the_human_wrote(tmp_path):
+    directory = tmp_path / "annotated"
+    directory.mkdir()
+    target = directory / "classifier.yaml"
+    target.write_text(ANNOTATED, encoding="utf-8")
+
+    cache.remember("My Lap", "channels", Classification("utility.playback", 0.8, "llm"), directory=directory)
+    after_one = target.read_text(encoding="utf-8")
+    assert "ToanAZ's own header" in after_one
+    assert "do not re-guess" in after_one
+
+    # A second write must not erode what the first one preserved.
+    cache.remember("MON VOX", "buses", Classification("monitor", 0.9, "pattern"), directory=directory)
+    after_two = target.read_text(encoding="utf-8")
+    assert "ToanAZ's own header" in after_two
+    assert "do not re-guess" in after_two
+    assert cache.lookup("Kick In", "channels", directory=directory).origin == "manual"
+    assert cache.lookup("My Lap", "channels", directory=directory) is not None
+    assert cache.lookup("MON VOX", "buses", directory=directory) is not None
+
+
+def test_the_shipped_seed_file_matches_the_module_fallback():
+    # cache.py falls back to _SEED when the file is absent; if the two
+    # drift, a fresh checkout and a fresh install disagree on the format.
+    shipped = (config.knowledge_dir() / "classifier.yaml").read_text(encoding="utf-8")
+    assert shipped == cache._SEED
+
+
+def test_a_hand_edited_entry_missing_a_key_names_the_file_and_the_key(tmp_path):
+    directory = tmp_path / "broken"
+    directory.mkdir()
+    (directory / "classifier.yaml").write_text(
+        "channels:\n  kick in:\n    origin: manual\nbuses: {}\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError) as excinfo:
+        cache.load(directory=directory)
+
+    message = str(excinfo.value)
+    assert "classifier.yaml" in message
+    assert "kick in" in message
+    assert "kind" in message
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
@@ -4499,7 +4560,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml
+from ruamel.yaml import YAML
 
 from wing_parser import config
 from wing_parser.classifier.matcher import Classification
@@ -4508,32 +4569,78 @@ from wing_parser.classifier.normalize import clean
 FILENAME = "classifier.yaml"
 DOMAINS = ("channels", "buses")
 
+_SEED = """\
+# Cached and manually declared classifications.
+#
+# Keys are normalized names (trimmed, whitespace-collapsed, casefolded).
+# Anything written here is read before the pattern matcher runs, so a
+# manual entry always wins and a name only ever costs one classification
+# in its lifetime.
+#
+# Comments you add here survive every rewrite -- annotate freely.
+#
+# origin: manual | llm | pattern
+channels: {}
+buses: {}
+"""
+
+
+def _yaml() -> YAML:
+    """Round-trip mode. safe_dump would erase every comment in the file."""
+    engine = YAML()
+    engine.preserve_quotes = True
+    return engine
+
 
 def _path(directory: Path | None) -> Path:
     return config.knowledge_dir(directory) / FILENAME
 
 
-def _read(directory: Path | None) -> dict[str, dict[str, Any]]:
+def _read(directory: Path | None) -> Any:
+    """The live document, comments and all. Mutate and hand back to _write."""
     path = _path(directory)
-    if not path.exists():
-        return {domain: {} for domain in DOMAINS}
-    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return {domain: dict(doc.get(domain) or {}) for domain in DOMAINS}
+    text = path.read_text(encoding="utf-8") if path.exists() else _SEED
+    doc = _yaml().load(text)
+    if doc is None:
+        doc = _yaml().load(_SEED)
+    for domain in DOMAINS:
+        if doc.get(domain) is None:
+            doc[domain] = {}
+    return doc
+
+
+def _write(doc: Any, directory: Path | None) -> None:
+    path = _path(directory)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        _yaml().dump(doc, handle)
+
+
+def _one(domain: str, key: str, entry: Any, path: Path) -> Classification:
+    for required in ("kind", "confidence"):
+        if required not in entry:
+            raise ValueError(
+                f"{path}: entry {domain}.{key!r} is missing required key "
+                f"{required!r}. Each entry needs at least kind: and "
+                f"confidence:, plus an optional origin: and matched:."
+            )
+    return Classification(
+        kind=str(entry["kind"]),
+        confidence=float(entry["confidence"]),
+        origin=str(entry.get("origin", "cache")),
+        matched=entry.get("matched"),
+    )
 
 
 def load(directory: Path | None = None) -> dict[str, dict[str, Classification]]:
-    raw = _read(directory)
+    doc = _read(directory)
+    path = _path(directory)
     return {
         domain: {
-            key: Classification(
-                kind=entry["kind"],
-                confidence=float(entry["confidence"]),
-                origin=entry.get("origin", "cache"),
-                matched=entry.get("matched"),
-            )
-            for key, entry in entries.items()
+            key: _one(domain, key, entry, path)
+            for key, entry in (doc.get(domain) or {}).items()
         }
-        for domain, entries in raw.items()
+        for domain in DOMAINS
     }
 
 
@@ -4547,34 +4654,42 @@ def remember(
     classification: Classification,
     directory: Path | None = None,
 ) -> None:
-    raw = _read(directory)
-    raw.setdefault(domain, {})[clean(name)] = {
+    doc = _read(directory)
+    if doc.get(domain) is None:
+        doc[domain] = {}
+    doc[domain][clean(name)] = {
         "kind": classification.kind,
         "confidence": round(float(classification.confidence), 3),
         "origin": classification.origin,
         "matched": classification.matched,
     }
-    path = _path(directory)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        yaml.safe_dump(raw, sort_keys=True, allow_unicode=True), encoding="utf-8"
-    )
+    _write(doc, directory)
 ```
+
+`ruamel.yaml` preserves insertion order rather than sorting, so new
+entries append at the end. That is the better behaviour for a file a
+human reads: every write produces an append-only diff instead of
+reshuffling lines ToanAZ already reviewed.
 
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_cache.py -v`
-Expected: PASS — 9 tests
+Expected: PASS — 12 tests
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add wing_parser/config.py wing_parser/classifier/cache.py knowledge/ tests/test_classifier_cache.py
+git add pyproject.toml wing_parser/config.py wing_parser/classifier/cache.py knowledge/ tests/test_classifier_cache.py
 git commit -m "Add knowledge-directory resolution and the classification cache
 
 Search order is WING_KNOWLEDGE_DIR, then the in-repo default, then XDG,
 then the mastering-engineer layout. Caching every resolved name is what
-turns the optional model call into a one-off rather than a running cost."
+turns the optional model call into a one-off rather than a running cost.
+
+The cache is written with ruamel.yaml in round-trip mode. This file is
+both machine-written and hand-edited, and PyYAML drops comments at parse
+time, so safe_dump would erase ToanAZ's own annotations on the first
+write."
 ```
 
 ---
