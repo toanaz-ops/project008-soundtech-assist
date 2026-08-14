@@ -10,6 +10,7 @@ log and proposes.
 from __future__ import annotations
 
 import json
+import warnings
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -77,14 +78,22 @@ def read_log(directory: Path | None = None) -> list[Verdict]:
         return []
 
     entries: list[Verdict] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         line = line.strip()
         if not line:
             continue
         try:
             entries.append(Verdict(**json.loads(line)))
-        except (json.JSONDecodeError, TypeError):
-            continue          # a hand-edited log should not break the reader
+        except (json.JSONDecodeError, TypeError) as unreadable:
+            # A hand-edited log should not break the reader, but it must
+            # not lose history in silence either. TypeError fires on any
+            # well-formed JSON object whose keys no longer match Verdict,
+            # so a single schema change would otherwise discard every
+            # pre-existing line without a word.
+            warnings.warn(
+                f"{path}:{number}: skipping unreadable feedback entry ({unreadable})",
+                stacklevel=2,
+            )
     return entries
 
 

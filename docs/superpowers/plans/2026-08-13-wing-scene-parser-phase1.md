@@ -7329,6 +7329,23 @@ def test_read_log_skips_a_corrupt_line(knowledge):
     assert len(feedback.read_log(directory=knowledge)) == 2
 
 
+def test_read_log_warns_about_every_line_it_skips(knowledge):
+    """A schema change must not discard history in silence."""
+    feedback.record(a_finding(), "correct", directory=knowledge, now=FIXED)
+    path = knowledge / "feedback.jsonl"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write("this is not json\n")
+        handle.write(json.dumps({"finding_id": "G8:ch.9", "rule_id": "G8"}) + "\n")
+
+    with pytest.warns(UserWarning, match="skipping unreadable feedback entry") as caught:
+        entries = feedback.read_log(directory=knowledge)
+
+    assert len(entries) == 1
+    assert len(caught) == 2
+    assert "feedback.jsonl:2" in str(caught[0].message)
+    assert "feedback.jsonl:3" in str(caught[1].message)
+
+
 def test_summarise_counts_verdicts_per_rule(knowledge):
     feedback.record(a_finding(), "false-positive", directory=knowledge, now=FIXED)
     feedback.record(a_finding(target="ch.9.send.8"), "false-positive", directory=knowledge, now=FIXED)
@@ -7362,6 +7379,7 @@ log and proposes.
 from __future__ import annotations
 
 import json
+import warnings
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -7429,14 +7447,22 @@ def read_log(directory: Path | None = None) -> list[Verdict]:
         return []
 
     entries: list[Verdict] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         line = line.strip()
         if not line:
             continue
         try:
             entries.append(Verdict(**json.loads(line)))
-        except (json.JSONDecodeError, TypeError):
-            continue          # a hand-edited log should not break the reader
+        except (json.JSONDecodeError, TypeError) as unreadable:
+            # A hand-edited log should not break the reader, but it must
+            # not lose history in silence either. TypeError fires on any
+            # well-formed JSON object whose keys no longer match Verdict,
+            # so a single schema change would otherwise discard every
+            # pre-existing line without a word.
+            warnings.warn(
+                f"{path}:{number}: skipping unreadable feedback entry ({unreadable})",
+                stacklevel=2,
+            )
     return entries
 
 
@@ -7451,7 +7477,7 @@ def summarise(directory: Path | None = None) -> dict[str, dict[str, int]]:
 - [ ] **Step 5: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_advisory_feedback.py -v`
-Expected: PASS — 7 tests
+Expected: PASS — 8 tests
 
 - [ ] **Step 6: Commit**
 

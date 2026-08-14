@@ -72,6 +72,23 @@ def test_read_log_skips_a_corrupt_line(knowledge):
     assert len(feedback.read_log(directory=knowledge)) == 2
 
 
+def test_read_log_warns_about_every_line_it_skips(knowledge):
+    """A schema change must not discard history in silence."""
+    feedback.record(a_finding(), "correct", directory=knowledge, now=FIXED)
+    path = knowledge / "feedback.jsonl"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write("this is not json\n")
+        handle.write(json.dumps({"finding_id": "G8:ch.9", "rule_id": "G8"}) + "\n")
+
+    with pytest.warns(UserWarning, match="skipping unreadable feedback entry") as caught:
+        entries = feedback.read_log(directory=knowledge)
+
+    assert len(entries) == 1
+    assert len(caught) == 2
+    assert "feedback.jsonl:2" in str(caught[0].message)
+    assert "feedback.jsonl:3" in str(caught[1].message)
+
+
 def test_summarise_counts_verdicts_per_rule(knowledge):
     feedback.record(a_finding(), "false-positive", directory=knowledge, now=FIXED)
     feedback.record(a_finding(target="ch.9.send.8"), "false-positive", directory=knowledge, now=FIXED)
