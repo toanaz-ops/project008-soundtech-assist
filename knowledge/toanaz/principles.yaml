@@ -1,0 +1,21 @@
+# ToanAZ's personal mixing principles.
+#
+# These override the generic base rules. hardness: hard applies always;
+# hardness: flexible applies only when every applies_when condition
+# matches. supersedes names the base rules switched off while active.
+#
+# The worked example below is real practice and deliberately contradicts
+# base rule G8, which the knowledge base states as an absolute.
+principles:
+  - id: toanaz.iem-shared-band.guitar-prefader
+    principle: "Shared band IEM: guitar sends pre-fader, all other sources post-fader"
+    hardness: flexible
+    applies_when:
+      monitor_bus_count: 1
+    supersedes: [G8]
+    rationale: >
+      The guitarist needs a stable guitar level regardless of FOH moves.
+      Everything else should track the FOH balance so the band hears what
+      the audience hears.
+    source: "ToanAZ, field practice"
+    enabled: false

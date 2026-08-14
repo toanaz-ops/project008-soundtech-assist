@@ -1,0 +1,12 @@
+# Cached and manually declared classifications.
+#
+# Keys are normalized names (trimmed, whitespace-collapsed, casefolded).
+# Anything written here is read before the pattern matcher runs, so a
+# manual entry always wins and a name only ever costs one classification
+# in its lifetime.
+#
+# Comments you add here survive every rewrite -- annotate freely.
+#
+# origin: manual | llm | pattern
+channels: {}
+buses: {}

@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "ToanAZ" }]
-dependencies = ["PyYAML>=6.0"]
+dependencies = ["PyYAML>=6.0", "ruamel.yaml>=0.18"]
 
 [project.optional-dependencies]
 llm = ["anthropic>=0.40"]
