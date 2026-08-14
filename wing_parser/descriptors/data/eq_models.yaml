@@ -1,0 +1,21 @@
+# Band layout per EQ model.
+#
+# Only STD ships complete. Across both sample files, 150 of 152 EQ blocks
+# use STD and 2 use PULSAR; the other nine models documented in the manual
+# never appear, so writing descriptors for them would be guesswork with no
+# data to check against.
+#
+# A model with no entry here yields bands=None plus a descriptor_missing
+# anomaly. It must never be parsed with another model's layout: PULSAR is
+# a Pultec-style passive EQ whose parameters are boost/attenuate pairs,
+# structurally unlike STD's freq/gain/Q triples.
+models:
+  STD:
+    label: "WING EQ"
+    bands:
+      - { name: low,  gain: lg, freq: lf, q: lq, shape: leq }
+      - { name: "1",  gain: 1g, freq: 1f, q: 1q }
+      - { name: "2",  gain: 2g, freq: 2f, q: 2q }
+      - { name: "3",  gain: 3g, freq: 3f, q: 3q }
+      - { name: "4",  gain: 4g, freq: 4f, q: 4q }
+      - { name: high, gain: hg, freq: hf, q: hq, shape: heq }
