@@ -170,3 +170,19 @@ def test_a_misspelling_stays_unknown_rather_than_being_guessed_at():
     # "RECODING" is a real typo in example-Vu.snap. Reporting it as
     # unresolved is the honest answer; pattern-matching typos is not.
     assert classify("RECODING", "buses").kind == "unknown"
+
+
+@pytest.mark.parametrize("name", ["HS", "HS 4", "HS4", "HS1", "HS-4", "Headset"])
+def test_a_headset_mic_is_found_however_it_is_numbered(name):
+    # Same word-boundary flaw as the IEM one: \bhs\b has no boundary
+    # between S and 4, so HS4 -- channel 11 in the real file -- missed.
+    assert classify(name, "channels").kind == "speech.headset"
+
+
+def test_a_headset_bus_groups_mics_and_is_not_a_monitor_send():
+    # ToanAZ: "Headset co the la input headset mic, hoac group all headset
+    # mic". Both readings are input-side. Classifying it monitor was wrong
+    # about the category, not just under-confident -- and it put a source
+    # subgroup in front of rules written for monitor sends.
+    assert classify("HEADSET", "buses").kind == "subgroup"
+    assert classify("STRING", "buses").kind == "subgroup"
