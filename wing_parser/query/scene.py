@@ -13,6 +13,7 @@ from wing_parser.query.build_channel import build as build_channel
 from wing_parser.query.build_io import build_dcas, build_mute_groups, build_sources
 from wing_parser.query.bus import Bus
 from wing_parser.query.channel import Channel
+from wing_parser.query.diff import Change, compare
 from wing_parser.query.groups import Dca, MuteGroup, build_index
 from wing_parser.query.routing import RoutingFacade
 
@@ -76,6 +77,9 @@ class WingScene:
     def channels(self) -> tuple[Channel, ...]:
         return tuple(self._channels[n] for n in sorted(self._channels))
 
+    def channel_map(self) -> dict[int, Channel]:
+        return dict(self._channels)
+
     def source_for(self, ref: SourceRef) -> SourceData | None:
         if ref.is_off:
             return None
@@ -115,6 +119,9 @@ class WingScene:
         section = self._bus_family[kind]
         return tuple(section[n] for n in sorted(section))
 
+    def family(self, kind: str) -> dict[int, Bus]:
+        return dict(self._bus_family[kind])
+
     def bus_family(self) -> tuple[Bus, ...]:
         return self.buses() + self.auxes() + self.mains() + self.matrices()
 
@@ -127,6 +134,9 @@ class WingScene:
     @property
     def routing(self) -> RoutingFacade:
         return RoutingFacade(self)
+
+    def diff(self, other: "WingScene") -> tuple[Change, ...]:
+        return compare(self, other)
 
     def __repr__(self) -> str:
         return f"<WingScene {self.path.name} {self.version.type_id}>"
