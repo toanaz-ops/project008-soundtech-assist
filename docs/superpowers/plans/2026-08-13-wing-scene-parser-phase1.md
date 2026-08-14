@@ -1951,10 +1951,10 @@ which would produce plausible wrong numbers instead of a clear failure."
 - Produces:
   - `wing_parser.query.build_channel.build(number: int, entry: dict) -> tuple[ChannelData, list[Anomaly]]`
   - `wing_parser.query.build_channel.build_dyn(raw: dict | None) -> Dyn`
-  - `wing_parser.query.build_channel.parse_send_key(key: str) -> tuple[str, int]` — `"8"` → `("bus", 8)`, `"MX3"` → `("matrix", 3)`
+  - `wing_parser.query.build_channel.parse_send_key(key: str) -> tuple[str, int] | None` — `"8"` → `("bus", 8)`, `"MX3"` → `("matrix", 3)`, anything else → `None`
   - `wing_parser.query.build_channel.MATRIX_PREFIX: str = "MX"`
-  - `wing_parser.query.build_channel.build_sends(raw: dict | None) -> tuple[Send, ...]` — buses first, then matrices, each ascending
-  - `wing_parser.query.build_channel.build_main_sends(raw: dict | None) -> tuple[MainSend, ...]`
+  - `wing_parser.query.build_channel.build_sends(raw: dict | None) -> tuple[tuple[Send, ...], list[Anomaly]]` — buses first, then matrices, each ascending; a key that parses as neither is skipped and reported
+  - `wing_parser.query.build_channel.build_main_sends(raw: dict | None) -> tuple[tuple[MainSend, ...], list[Anomaly]]`
 
   The three `build_*` helpers are public because Task 9's bus builder needs the same three blocks. `_filter`, `_gate` and `_insert` stay private — nothing outside this module builds them.
 
@@ -2156,25 +2156,47 @@ def _insert(raw: dict[str, Any] | None) -> Insert:
 MATRIX_PREFIX = "MX"
 
 
-def parse_send_key(key: str) -> tuple[str, int]:
+def parse_send_key(key: str) -> tuple[str, int] | None:
     """Split a send-block key into its destination kind and number.
 
     Both real files store 16 numeric bus keys and 8 "MX<n>" matrix keys in
     the same dict — and a main's send block holds *only* matrix keys, so
     discarding the non-numeric ones would leave every main with no sends
     at all.
+
+    Returns None for a key that is neither form. Every sibling in this
+    codebase reports malformed input rather than raising, so a corrupt
+    key must not abort the whole channel build.
     """
     if key.startswith(MATRIX_PREFIX):
-        return "matrix", int(key[len(MATRIX_PREFIX):])
-    return "bus", int(key)
+        rest, kind = key[len(MATRIX_PREFIX):], "matrix"
+    else:
+        rest, kind = key, "bus"
+    try:
+        return kind, int(rest)
+    except ValueError:
+        return None
 
 
-def build_sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
+def build_sends(
+    raw: dict[str, Any] | None,
+) -> tuple[tuple[Send, ...], list[Anomaly]]:
     """Public: shared with build_bus.py."""
-    raw = raw or {}
-    sends = []
+    sends: list[Send] = []
+    anomalies: list[Anomaly] = []
+
     for key, value in (raw or {}).items():
-        dest_kind, dest = parse_send_key(key)
+        parsed = parse_send_key(key)
+        if parsed is None:
+            anomalies.append(
+                Anomaly(
+                    code="malformed_send_key",
+                    where=f"send.{key}",
+                    detail="neither a bus number nor MX<n>; send skipped",
+                )
+            )
+            continue
+        dest_kind, dest = parsed
         sends.append(
             Send(
                 dest_kind=dest_kind,
@@ -2186,29 +2208,50 @@ def build_sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
                 pan=float(value.get("pan", 0.0)),
             )
         )
+
     # Buses first, then matrices, each ascending — a stable order the diff
     # and the rule engine can both rely on.
-    return tuple(sorted(sends, key=lambda s: (s.dest_kind, s.dest)))
+    return tuple(sorted(sends, key=lambda s: (s.dest_kind, s.dest))), anomalies
 
 
-def build_main_sends(raw: dict[str, Any] | None) -> tuple[MainSend, ...]:
-    """Public: shared with build_bus.py."""
-    raw = raw or {}
-    return tuple(
-        MainSend(
-            dest=int(key),
-            on=bool(value.get("on", False)),
-            level_dB=to_db(value.get("lvl")),
-            pre=bool(value.get("pre", False)),
+def build_main_sends(
+    raw: dict[str, Any] | None,
+) -> tuple[tuple[MainSend, ...], list[Anomaly]]:
+    """Public: shared with build_bus.py. Main keys are always numeric."""
+    sends: list[MainSend] = []
+    anomalies: list[Anomaly] = []
+
+    for key, value in (raw or {}).items():
+        try:
+            dest = int(key)
+        except ValueError:
+            anomalies.append(
+                Anomaly(
+                    code="malformed_send_key",
+                    where=f"main.{key}",
+                    detail="not a main number; send skipped",
+                )
+            )
+            continue
+        sends.append(
+            MainSend(
+                dest=dest,
+                on=bool(value.get("on", False)),
+                level_dB=to_db(value.get("lvl")),
+                pre=bool(value.get("pre", False)),
+            )
         )
-        for key, value in sorted(raw.items(), key=lambda kv: int(kv[0]))
-    )
+
+    return tuple(sorted(sends, key=lambda s: s.dest)), anomalies
 
 
 def build(number: int, entry: dict[str, Any]) -> tuple[ChannelData, list[Anomaly]]:
-    eq, anomalies = eq_models.build(entry.get("eq", {}))
+    eq, found = eq_models.build(entry.get("eq", {}))
+    sends, send_found = build_sends(entry.get("send"))
+    main_sends, main_found = build_main_sends(entry.get("main"))
     anomalies = [
-        Anomaly(a.code, f"ch.{number}.{a.where}", a.detail) for a in anomalies
+        Anomaly(a.code, f"ch.{number}.{a.where}", a.detail)
+        for a in (*found, *send_found, *main_found)
     ]
 
     conn = entry.get("in", {}).get("conn", {})
@@ -2240,8 +2283,8 @@ def build(number: int, entry: dict[str, Any]) -> tuple[ChannelData, list[Anomaly
         dyn=build_dyn(entry.get("dyn")),
         pre_insert=_insert(entry.get("preins")),
         post_insert=_insert(entry.get("postins")),
-        sends=build_sends(entry.get("send")),
-        main_sends=build_main_sends(entry.get("main")),
+        sends=sends,
+        main_sends=main_sends,
     )
     return data, anomalies
 ```
@@ -2449,9 +2492,12 @@ def _delay_ms(raw: Any) -> float:
 
 
 def build(kind: str, number: int, entry: dict[str, Any]) -> tuple[BusData, list[Anomaly]]:
-    eq, anomalies = eq_models.build(entry.get("eq", {}))
+    eq, found = eq_models.build(entry.get("eq", {}))
+    sends, send_found = build_sends(entry.get("send"))
+    main_sends, main_found = build_main_sends(entry.get("main"))
     anomalies = [
-        Anomaly(a.code, f"{kind}.{number}.{a.where}", a.detail) for a in anomalies
+        Anomaly(a.code, f"{kind}.{number}.{a.where}", a.detail)
+        for a in (*found, *send_found, *main_found)
     ]
 
     data = BusData(
@@ -2465,8 +2511,8 @@ def build(kind: str, number: int, entry: dict[str, Any]) -> tuple[BusData, list[
         eq=eq,
         dyn=build_dyn(entry.get("dyn")),
         delay_ms=_delay_ms(entry.get("dly")),
-        sends=build_sends(entry.get("send")),
-        main_sends=build_main_sends(entry.get("main")),
+        sends=sends,
+        main_sends=main_sends,
     )
     return data, anomalies
 ```
