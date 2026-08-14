@@ -45,8 +45,20 @@ confidence of 0. Do not guess to be helpful.
 _DOMAIN_WORD = {"channels": "channel", "buses": "bus"}
 
 
+_OFF = {"", "0", "false", "no", "off"}
+
+
+def _kill_switch_thrown() -> bool:
+    """True unless the variable is unset or set to something meaning "no".
+
+    Bare truthiness would make WING_DISABLE_LLM=0 disable the fallback,
+    which is the opposite of what anyone typing that expects.
+    """
+    return os.environ.get(DISABLE_VAR, "").strip().casefold() not in _OFF
+
+
 def available() -> bool:
-    if os.environ.get(DISABLE_VAR):
+    if _kill_switch_thrown():
         return False
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return False
@@ -98,12 +110,17 @@ def classify(name: str, domain: str, context: str = "") -> Classification | None
         return None
     try:
         kind, confidence = _ask(name, domain, context)
+        # Coercion belongs inside the guard. A model that answers with a
+        # confidence of "high" instead of 0.9 must land on the same
+        # "unknown" path as a dead uplink -- float() would otherwise raise
+        # straight through the promise this module makes.
+        kind = str(kind).strip().casefold()
+        score = min(1.0, max(0.0, float(confidence)))
     except Exception:            # noqa: BLE001 - offline must never raise
         return None
+    # casefold above is what makes this catch "Unknown" and "UNKNOWN" too.
+    # Without it a capitalised refusal became a Classification, and Task 17
+    # would have written it into the knowledge file as a real answer.
     if not kind or kind == "unknown":
         return None
-    return Classification(
-        kind=kind,
-        confidence=min(1.0, max(0.0, float(confidence))),
-        origin="llm",
-    )
+    return Classification(kind=kind, confidence=score, origin="llm")

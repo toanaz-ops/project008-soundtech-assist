@@ -65,3 +65,39 @@ def test_confidence_is_clamped_into_range(monkeypatch):
 
 def test_model_is_opus_5():
     assert llm.MODEL == "claude-opus-5"
+
+
+@pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  "])
+def test_a_kill_switch_set_to_something_meaning_no_does_not_disable(monkeypatch, value):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv(llm.DISABLE_VAR, value)
+    monkeypatch.setitem(sys.modules, "anthropic", types.ModuleType("anthropic"))
+    assert llm.available() is True
+
+
+@pytest.mark.parametrize("value", ["1", "true", "yes", "on", "anything"])
+def test_a_kill_switch_set_to_anything_else_disables(monkeypatch, value):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv(llm.DISABLE_VAR, value)
+    monkeypatch.setitem(sys.modules, "anthropic", types.ModuleType("anthropic"))
+    assert llm.available() is False
+
+
+@pytest.mark.parametrize("bad", [None, "high", object()])
+def test_a_non_numeric_confidence_degrades_instead_of_raising(monkeypatch, bad):
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: ("utility.playback", bad))
+    assert llm.classify("My Lap", "channels") is None
+
+
+@pytest.mark.parametrize("kind", ["unknown", "Unknown", "UNKNOWN", " unknown ", "\tUnKnOwN"])
+def test_a_refusal_is_caught_whatever_its_casing(monkeypatch, kind):
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: (kind, 0.0))
+    assert llm.classify("HS4", "channels") is None
+
+
+def test_a_kind_is_normalized_to_the_lowercase_taxonomy(monkeypatch):
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: ("  Utility.Playback  ", 0.8))
+    assert llm.classify("My Lap", "channels").kind == "utility.playback"
