@@ -1,3 +1,4 @@
+import inspect
 import json
 
 import pytest
@@ -39,7 +40,12 @@ def test_doctor_returns_the_findings(vu_path):
 
 
 def test_routing_returns_the_summary(vu_path):
-    assert "live" in tools.routing(str(vu_path)).lower()
+    # "live" alone also appears in scene_overview's "N live channels
+    # (unmuted, ...)" line, so a miswired tool calling the wrong renderer
+    # would still pass that check. Assert text only routing() produces.
+    out = tools.routing(str(vu_path))
+    assert "3 live channels" in out
+    assert "unpatched channels" in out
 
 
 def test_diff_returns_changes(vu_path, tmp_path):
@@ -61,6 +67,26 @@ def test_an_unknown_channel_returns_a_message(vu_path):
     out = tools.channel(str(vu_path), 99)
     assert "99" in out
     assert out.lower().startswith("error")
+
+
+def test_a_directory_returns_a_message_not_an_exception(tmp_path):
+    # analyze() opens a directory path, which raises PermissionError (an
+    # OSError subclass) rather than FileNotFoundError — Task 22's own
+    # loader guard covers this one layer up in cli/commands.py, and the
+    # MCP tools need the same net so nothing crosses the MCP boundary.
+    out = tools.analyze(str(tmp_path))
+    assert out.lower().startswith("error")
+
+
+def test_every_tool_keeps_the_signature_fastmcp_introspects():
+    """FastMCP builds each tool's input schema from the signature, so a
+    *args/**kwargs wrapper would register five tools with no parameters."""
+    assert list(inspect.signature(tools.channel).parameters) == ["path", "number"]
+    assert list(inspect.signature(tools.diff).parameters) == ["before", "after"]
+    for name, function in tools.TOOLS.items():
+        parameters = inspect.signature(function).parameters
+        assert parameters, f"{name} exposes no parameters"
+        assert "args" not in parameters and "kwargs" not in parameters, name
 
 
 def test_server_builds_when_the_mcp_package_is_installed():

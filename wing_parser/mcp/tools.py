@@ -11,6 +11,7 @@ tool to call, so they say when to use each one, not just what it does.
 
 from __future__ import annotations
 
+import functools
 from typing import Callable
 
 from wing_parser import WingScene
@@ -18,16 +19,15 @@ from wing_parser.cli import render
 
 
 def _guard(function):
+    @functools.wraps(function)
     def wrapper(*args, **kwargs) -> str:
         try:
             return function(*args, **kwargs)
-        except FileNotFoundError as exc:
+        except OSError as exc:
             return f"error: cannot open {exc.filename or args[0]}"
         except (KeyError, ValueError) as exc:
             return f"error: {exc}"
 
-    wrapper.__name__ = function.__name__
-    wrapper.__doc__ = function.__doc__
     return wrapper
 
 
@@ -70,7 +70,16 @@ def diff(before: str, after: str) -> str:
     Paths read in decoded terms such as ch.8.fader_dB, and level changes
     carry a magnitude in dB.
     """
-    return render.changes(WingScene.load(before).diff(WingScene.load(after)))
+    before_scene = WingScene.load(before)
+    after_scene = WingScene.load(after)
+    out = render.changes(before_scene.diff(after_scene))
+    # compare() walks raw dataclasses today and never resolves a name, so
+    # these flushes are inert — but the CLI's diff command flushes both
+    # scenes (and is spy-tested for it), and the day diff output gains a
+    # classified field this keeps the two surfaces from silently diverging.
+    before_scene.classifier.flush()
+    after_scene.classifier.flush()
+    return out
 
 
 @_guard

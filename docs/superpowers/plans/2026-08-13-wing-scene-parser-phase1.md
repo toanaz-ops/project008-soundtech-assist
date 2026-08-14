@@ -269,7 +269,7 @@ dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
 llm = ["anthropic>=0.40"]
-mcp = ["mcp>=1.2"]
+mcp = ["mcp>=1.2,<2"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0"]
 
 [project.scripts]
@@ -8082,6 +8082,7 @@ Tool bodies live in `tools.py` as plain functions so they are testable without a
 `tests/test_mcp.py`:
 
 ```python
+import inspect
 import json
 
 import pytest
@@ -8123,7 +8124,12 @@ def test_doctor_returns_the_findings(vu_path):
 
 
 def test_routing_returns_the_summary(vu_path):
-    assert "live" in tools.routing(str(vu_path)).lower()
+    # "live" alone also appears in scene_overview's "N live channels
+    # (unmuted, ...)" line, so a miswired tool calling the wrong renderer
+    # would still pass that check. Assert text only routing() produces.
+    out = tools.routing(str(vu_path))
+    assert "3 live channels" in out
+    assert "unpatched channels" in out
 
 
 def test_diff_returns_changes(vu_path, tmp_path):
@@ -8145,6 +8151,26 @@ def test_an_unknown_channel_returns_a_message(vu_path):
     out = tools.channel(str(vu_path), 99)
     assert "99" in out
     assert out.lower().startswith("error")
+
+
+def test_a_directory_returns_a_message_not_an_exception(tmp_path):
+    # analyze() opens a directory path, which raises PermissionError (an
+    # OSError subclass) rather than FileNotFoundError — Task 22's own
+    # loader guard covers this one layer up in cli/commands.py, and the
+    # MCP tools need the same net so nothing crosses the MCP boundary.
+    out = tools.analyze(str(tmp_path))
+    assert out.lower().startswith("error")
+
+
+def test_every_tool_keeps_the_signature_fastmcp_introspects():
+    """FastMCP builds each tool's input schema from the signature, so a
+    *args/**kwargs wrapper would register five tools with no parameters."""
+    assert list(inspect.signature(tools.channel).parameters) == ["path", "number"]
+    assert list(inspect.signature(tools.diff).parameters) == ["before", "after"]
+    for name, function in tools.TOOLS.items():
+        parameters = inspect.signature(function).parameters
+        assert parameters, f"{name} exposes no parameters"
+        assert "args" not in parameters and "kwargs" not in parameters, name
 
 
 def test_server_builds_when_the_mcp_package_is_installed():
@@ -8177,6 +8203,7 @@ tool to call, so they say when to use each one, not just what it does.
 
 from __future__ import annotations
 
+import functools
 from typing import Callable
 
 from wing_parser import WingScene
@@ -8184,16 +8211,15 @@ from wing_parser.cli import render
 
 
 def _guard(function):
+    @functools.wraps(function)
     def wrapper(*args, **kwargs) -> str:
         try:
             return function(*args, **kwargs)
-        except FileNotFoundError as exc:
+        except OSError as exc:
             return f"error: cannot open {exc.filename or args[0]}"
         except (KeyError, ValueError) as exc:
             return f"error: {exc}"
 
-    wrapper.__name__ = function.__name__
-    wrapper.__doc__ = function.__doc__
     return wrapper
 
 
@@ -8236,7 +8262,16 @@ def diff(before: str, after: str) -> str:
     Paths read in decoded terms such as ch.8.fader_dB, and level changes
     carry a magnitude in dB.
     """
-    return render.changes(WingScene.load(before).diff(WingScene.load(after)))
+    before_scene = WingScene.load(before)
+    after_scene = WingScene.load(after)
+    out = render.changes(before_scene.diff(after_scene))
+    # compare() walks raw dataclasses today and never resolves a name, so
+    # these flushes are inert — but the CLI's diff command flushes both
+    # scenes (and is spy-tested for it), and the day diff output gains a
+    # classified field this keeps the two surfaces from silently diverging.
+    before_scene.classifier.flush()
+    after_scene.classifier.flush()
+    return out
 
 
 @_guard
@@ -8310,6 +8345,8 @@ if __name__ == "__main__":
 
 If `add_tool` is not present on the installed FastMCP version, register with the decorator form instead — `server.tool(name=name, description=...)(function)` — and keep the loop otherwise unchanged. Check `python -c "from mcp.server.fastmcp import FastMCP; print([m for m in dir(FastMCP) if 'tool' in m])"` before editing.
 
+Confirmed against the MCP Python SDK source during review: `ToolManager.add_tool(fn, name=None, title=None, description=None, ...)` exists, and `FastMCP.tool()` is itself implemented as a decorator that calls exactly that — so the `add_tool(function, name=name, description=...)` form above is correct as written and does not need to fall back to the decorator form.
+
 - [ ] **Step 5: Add the console script**
 
 In `pyproject.toml`, under `[project.scripts]`, add:
@@ -8321,7 +8358,7 @@ wing-mcp = "wing_parser.mcp.server:main"
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_mcp.py -v`
-Expected: PASS — 10 tests. The last one skips if `mcp` is not installed.
+Expected: PASS — 12 tests. The last one skips if `mcp` is not installed.
 
 - [ ] **Step 7: Commit**
 
