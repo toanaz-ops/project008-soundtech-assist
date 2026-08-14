@@ -7,6 +7,8 @@ the file — the answer lands here and every later run reads it offline.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -29,7 +31,7 @@ _SEED = """\
 #
 # Comments you add here survive every rewrite -- annotate freely.
 #
-# origin: manual | llm | pattern
+# origin: manual | llm | pattern | cache
 channels: {}
 buses: {}
 """
@@ -53,17 +55,42 @@ def _read(directory: Path | None) -> Any:
     doc = _yaml().load(text)
     if doc is None:
         doc = _yaml().load(_SEED)
+    if not hasattr(doc, "get"):
+        raise ValueError(
+            f"{path}: the top level must be a mapping with a channels: and a "
+            f"buses: section, but this file's top level is "
+            f"{type(doc).__name__}."
+        )
     for domain in DOMAINS:
         if doc.get(domain) is None:
             doc[domain] = {}
+        elif not hasattr(doc[domain], "items"):
+            raise ValueError(
+                f"{path}: section {domain}: must be a mapping of normalized "
+                f"name to entry, but it is {type(doc[domain]).__name__}."
+            )
     return doc
 
 
 def _write(doc: Any, directory: Path | None) -> None:
+    """Write via a sibling temp file and one atomic rename.
+
+    This file is the durable record of every classification the tool has
+    ever paid a model to make, and Task 17 rewrites it once per unresolved
+    name. Truncating it in place means a crash mid-write loses the lot.
+    """
     path = _path(directory)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        _yaml().dump(doc, handle)
+    handle = tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", delete=False
+    )
+    try:
+        with handle:
+            _yaml().dump(doc, handle)
+        os.replace(handle.name, path)
+    except BaseException:
+        Path(handle.name).unlink(missing_ok=True)
+        raise
 
 
 def _one(domain: str, key: str, entry: Any, path: Path) -> Classification:

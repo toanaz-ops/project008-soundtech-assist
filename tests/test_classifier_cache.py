@@ -131,3 +131,44 @@ def test_a_hand_edited_entry_missing_a_key_names_the_file_and_the_key(tmp_path):
     assert "classifier.yaml" in message
     assert "kick in" in message
     assert "kind" in message
+
+
+@pytest.mark.parametrize(
+    "body, expected",
+    [
+        ("- a\n- b\n", "top level"),
+        ("just a string\n", "top level"),
+        ("channels:\n  - kick\nbuses: {}\n", "channels"),
+    ],
+)
+def test_a_structurally_broken_file_names_what_is_wrong(tmp_path, body, expected):
+    directory = tmp_path / "wrecked"
+    directory.mkdir()
+    (directory / "classifier.yaml").write_text(body, encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        cache.load(directory=directory)
+    assert expected in str(excinfo.value)
+    assert "classifier.yaml" in str(excinfo.value)
+
+
+def test_a_failed_write_leaves_the_previous_file_intact(tmp_path, monkeypatch):
+    directory = tmp_path / "atomic"
+    directory.mkdir()
+    target = directory / "classifier.yaml"
+    cache.remember("Bass", "channels", Classification("instrument.bass", 0.9, "pattern"), directory=directory)
+    before = target.read_text(encoding="utf-8")
+
+    class Boom(Exception):
+        pass
+
+    def explode(self, data, stream):
+        raise Boom("disk full")
+
+    monkeypatch.setattr("ruamel.yaml.YAML.dump", explode)
+    with pytest.raises(Boom):
+        cache.remember("Kick In", "channels", Classification("drums.kick.in", 0.95, "pattern"), directory=directory)
+
+    assert target.read_text(encoding="utf-8") == before
+    assert cache.lookup("Bass", "channels", directory=directory) is not None
+    leftovers = [p.name for p in directory.iterdir() if p.name != "classifier.yaml"]
+    assert leftovers == [], f"temp files not cleaned up: {leftovers}"

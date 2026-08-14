@@ -7,6 +7,6 @@
 #
 # Comments you add here survive every rewrite -- annotate freely.
 #
-# origin: manual | llm | pattern
+# origin: manual | llm | pattern | cache
 channels: {}
 buses: {}

@@ -1,9 +1,11 @@
 """Where ToanAZ's principles, cache and feedback log live.
 
-First existing location wins. The in-repo default is deliberate: these
-principles are a long-lived asset, and git history shows how the
-judgement behind them evolved. Setting one environment variable moves
-the whole set elsewhere with no code change.
+Resolution order: an explicit override argument, then the
+WING_KNOWLEDGE_DIR environment variable, then the first existing entry
+in SEARCH_ORDER, then the in-repo default. The in-repo default is
+deliberate: these principles are a long-lived asset, and git history
+shows how the judgement behind them evolved. Setting one environment
+variable moves the whole set elsewhere with no code change.
 """
 
 from __future__ import annotations
