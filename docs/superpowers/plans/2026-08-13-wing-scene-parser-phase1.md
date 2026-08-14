@@ -371,25 +371,43 @@ import pytest
 
 from wing_parser import config
 
-# ... factory_path and vu_path unchanged, then:
+REPO_ROOT = Path(__file__).resolve().parents[1]
+USER_FILES = REPO_ROOT / "user-files"
+
+
+@pytest.fixture(scope="session")
+def factory_path() -> Path:
+    return USER_FILES / "factory-scene.snap"
+
+
+@pytest.fixture(scope="session")
+def vu_path() -> Path:
+    return USER_FILES / "example-Vu.snap"
 
 
 @pytest.fixture(scope="session", autouse=True)
 def _isolated_knowledge_dir(tmp_path_factory):
     """Point every test at a throwaway knowledge directory by default.
 
-    knowledge/toanaz/classifier.yaml ships with channels: {} and
-    buses: {}, and principles.yaml's one shipped principle is
-    enabled: false, so an empty tmp directory resolves identically to
-    the shipped default -- this costs no coverage. A test that
-    deliberately needs the real in-repo directory opts in explicitly
-    with monkeypatch.delenv(config.ENV_VAR, ...) or its own directory=
-    fixture, the way test_classifier_cache.py and
-    test_advisory_resolver.py already do.
+    Without this, the suite reads `config.knowledge_dir()`'s real default
+    -- the in-repo `knowledge/toanaz/`. The README's own "Add a
+    show-specific override" section tells a user to drop a `.yaml` file
+    into `knowledge/toanaz/shows/`; doing that on a real checkout used to
+    turn tests red, because tests that never pass an explicit
+    `directory=` were silently reading whatever a user had actually put
+    there. `knowledge/toanaz/classifier.yaml` ships with `channels: {}`
+    and `buses: {}`, and `principles.yaml`'s one shipped principle is
+    `enabled: false`, so an empty tmp directory (nothing on disk at all)
+    resolves identically to the shipped default -- this costs no
+    coverage. A test that deliberately needs the real in-repo directory
+    opts in explicitly with `monkeypatch.delenv(config.ENV_VAR, ...)` or
+    by constructing its own `directory=` fixture, the way
+    `test_classifier_cache.py` and `test_advisory_resolver.py` already
+    do.
 
-    A plain monkeypatch fixture is function-scoped and cannot be
-    requested from a session-scoped fixture, so the environment
-    variable is set and restored by hand instead.
+    A plain `monkeypatch` fixture is function-scoped and cannot be
+    requested from a session-scoped fixture, so the environment variable
+    is set and restored by hand instead.
     """
     directory = tmp_path_factory.mktemp("knowledge")
     previous = os.environ.get(config.ENV_VAR)
@@ -3564,14 +3582,6 @@ def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
     return tuple(found)
 
 
-# Fix wave (2026-08-14): SEND_SECTION.get(kind, ("sends", "bus")) used to
-# silently treat any unrecognised kind as a bus lookup. Raise instead --
-# the query-layer sibling of the evaluator's dest_kind guard on
-# `_channel_sends` (matrix 3 is not bus 3; an unknown kind is not a bus
-# either). Covered by test_feeds_into_rejects_an_unrecognised_destination_kind
-# in tests/test_query_routing.py.
-
-
 def summarise(scene: "WingScene") -> RoutingSummary:
     orphans: list[int] = []
     alt_sourced: list[int] = []
@@ -5859,9 +5869,6 @@ _MISSING = object()
 # dict form, e.g. `{"gt": 6.0}`. The loader validates a rule's `where`
 # against this set at load time, so an unknown operator is a clean error
 # naming the file rather than a `ValueError` raised from mid-run.
-# (Fix wave, 2026-08-14: added so advisory/loader.py can validate at
-# load time instead of leaving this the only place an unknown operator
-# is discovered, mid-evaluation.)
 OPERATORS: frozenset[str] = frozenset({"not", "in", "not_in", "gt", "lt", "is_null"})
 
 
