@@ -16,6 +16,20 @@ from wing_parser.advisory.models import SEVERITIES, Rule
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
 
 
+def _optional(entry: dict, key: str, default):
+    """Read an optional field, treating an explicit YAML null as unset.
+
+    `.get(key, default)` only defaults when the key is absent. A rule file
+    is hand-edited, and `enabled:` with the value left off is a plausible
+    slip — under `.get` it would come back None, silently disabling a rule
+    its author meant to leave on. The sibling fields (`where`,
+    `applies_when`, `supersedes`) already collapse null to their default
+    via `or`; this keeps the scalar ones consistent with them.
+    """
+    value = entry.get(key)
+    return default if value is None else value
+
+
 def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
     for required in ("id", "title", "severity", "source", "rationale", "message"):
         if not entry.get(required):
@@ -42,9 +56,9 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         where=dict(when.get("where") or {}),
         message=entry["message"],
         layer=layer,
-        requires_classifier=bool(entry.get("requires_classifier", False)),
-        enabled=bool(entry.get("enabled", True)),
-        hardness=entry.get("hardness", "hard"),
+        requires_classifier=bool(_optional(entry, "requires_classifier", False)),
+        enabled=bool(_optional(entry, "enabled", True)),
+        hardness=_optional(entry, "hardness", "hard"),
         applies_when=dict(entry.get("applies_when") or {}),
         supersedes=tuple(entry.get("supersedes") or ()),
     )
