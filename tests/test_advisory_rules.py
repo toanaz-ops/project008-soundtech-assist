@@ -78,4 +78,8 @@ def test_e6_fires_once_the_automix_insert_is_switched_on(vu_path, tmp_path, monk
 
 def test_every_finding_records_its_layer(scene, monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    assert all(f.layer in {"base", "toanaz", "show"} for f in scene.advisory.run())
+    findings = scene.advisory.run()
+    # all(...) over an empty list is vacuously True, so an empty findings
+    # list would pass this assertion without actually exercising anything.
+    assert findings
+    assert all(f.layer in {"base", "toanaz", "show"} for f in findings)

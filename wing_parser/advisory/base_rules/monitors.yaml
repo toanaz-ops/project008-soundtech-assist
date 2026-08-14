@@ -35,11 +35,14 @@ rules:
       docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md section 4.1;
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8
     rationale: >
-      A feedback burst into in-ear moulds is a hearing injury. Both sources
-      call a hard limiter on every IEM mix non-optional. The rider gives no
-      ceiling; Core-Skills gives -6 to -10 dBFS. This rule checks only that a
-      limiter is present, because the correct ceiling depends on the IEM pack
-      and cannot be read from the scene file.
+      A feedback burst into in-ear moulds is a hearing injury. Core-Skills-
+      Overview section 3.4 step 8 calls a hard limiter on every IEM mix
+      non-optional, typically -6 to -10 dBFS. The rider's section 4.1 table
+      also lists a limiter as a requirement, but unlike its neighbouring
+      "Ambient mics" row it carries no [R] contractual tag and states no
+      ceiling -- so only Core-Skills makes the non-optional claim. This rule
+      checks only that a limiter is present, because the correct ceiling
+      depends on the IEM pack and cannot be read from the scene file.
     requires_classifier: true
     when:
       for_each: bus
