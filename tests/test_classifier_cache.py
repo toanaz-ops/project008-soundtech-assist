@@ -111,9 +111,13 @@ def test_writes_preserve_comments_the_human_wrote(tmp_path):
     assert cache.lookup("MON VOX", "buses", directory=directory) is not None
 
 
-def test_the_shipped_seed_file_matches_the_module_fallback():
+def test_the_shipped_seed_file_matches_the_module_fallback(monkeypatch):
     # cache.py falls back to _SEED when the file is absent; if the two
     # drift, a fresh checkout and a fresh install disagree on the format.
+    # This deliberately reads the real in-repo directory, so it opts out
+    # of the session-scoped WING_KNOWLEDGE_DIR isolation every other test
+    # gets by default (see tests/conftest.py).
+    monkeypatch.delenv(config.ENV_VAR, raising=False)
     shipped = (config.knowledge_dir() / "classifier.yaml").read_text(encoding="utf-8")
     assert shipped == cache._SEED
 
