@@ -2872,7 +2872,7 @@ __all__ = ["WingScene", "__version__"]
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_query_scene.py -v`
-Expected: PASS — 12 tests
+Expected: PASS — 16 tests
 
 - [ ] **Step 7: Commit**
 
@@ -4492,6 +4492,50 @@ def test_a_hand_edited_entry_missing_a_key_names_the_file_and_the_key(tmp_path):
     assert "classifier.yaml" in message
     assert "kick in" in message
     assert "kind" in message
+
+
+@pytest.mark.parametrize(
+    "body, expected",
+    [
+        ("- a\n- b\n", "top level"),
+        ("just a string\n", "top level"),
+        ("channels:\n  - kick\nbuses: {}\n", "channels"),
+    ],
+)
+def test_a_structurally_broken_file_names_what_is_wrong(tmp_path, body, expected):
+    # Same principle as the missing-key case: hand-editing this file is
+    # the documented override path, so a damaged file must say what is
+    # damaged rather than raising AttributeError from deep inside ruamel.
+    directory = tmp_path / "wrecked"
+    directory.mkdir()
+    (directory / "classifier.yaml").write_text(body, encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        cache.load(directory=directory)
+    assert expected in str(excinfo.value)
+    assert "classifier.yaml" in str(excinfo.value)
+
+
+def test_a_failed_write_leaves_the_previous_file_intact(tmp_path, monkeypatch):
+    directory = tmp_path / "atomic"
+    directory.mkdir()
+    target = directory / "classifier.yaml"
+    cache.remember("Bass", "channels", Classification("instrument.bass", 0.9, "pattern"), directory=directory)
+    before = target.read_text(encoding="utf-8")
+
+    class Boom(Exception):
+        pass
+
+    def explode(self, data, stream):
+        raise Boom("disk full")
+
+    monkeypatch.setattr("ruamel.yaml.YAML.dump", explode)
+    with pytest.raises(Boom):
+        cache.remember("Kick In", "channels", Classification("drums.kick.in", 0.95, "pattern"), directory=directory)
+
+    assert target.read_text(encoding="utf-8") == before
+    assert cache.lookup("Bass", "channels", directory=directory) is not None
+    leftovers = [p.name for p in directory.iterdir() if p.name != "classifier.yaml"]
+    assert leftovers == [], f"temp files not cleaned up: {leftovers}"
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
@@ -4557,6 +4601,8 @@ the file — the answer lands here and every later run reads it offline.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -4603,17 +4649,42 @@ def _read(directory: Path | None) -> Any:
     doc = _yaml().load(text)
     if doc is None:
         doc = _yaml().load(_SEED)
+    if not hasattr(doc, "get"):
+        raise ValueError(
+            f"{path}: the top level must be a mapping with a channels: and a "
+            f"buses: section, but this file's top level is "
+            f"{type(doc).__name__}."
+        )
     for domain in DOMAINS:
         if doc.get(domain) is None:
             doc[domain] = {}
+        elif not hasattr(doc[domain], "items"):
+            raise ValueError(
+                f"{path}: section {domain}: must be a mapping of normalized "
+                f"name to entry, but it is {type(doc[domain]).__name__}."
+            )
     return doc
 
 
 def _write(doc: Any, directory: Path | None) -> None:
+    """Write via a sibling temp file and one atomic rename.
+
+    This file is the durable record of every classification the tool has
+    ever paid a model to make, and Task 17 rewrites it once per unresolved
+    name. Truncating it in place means a crash mid-write loses the lot.
+    """
     path = _path(directory)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        _yaml().dump(doc, handle)
+    handle = tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", delete=False
+    )
+    try:
+        with handle:
+            _yaml().dump(doc, handle)
+        os.replace(handle.name, path)
+    except BaseException:
+        Path(handle.name).unlink(missing_ok=True)
+        raise
 
 
 def _one(domain: str, key: str, entry: Any, path: Path) -> Classification:
@@ -4674,7 +4745,7 @@ reshuffling lines ToanAZ already reviewed.
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_cache.py -v`
-Expected: PASS — 12 tests
+Expected: PASS — 16 tests
 
 - [ ] **Step 7: Commit**
 
@@ -5885,7 +5956,7 @@ def evaluate_all(scene, rules: Iterable[Rule]) -> list[Finding]:
 - [ ] **Step 4: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_advisory_evaluator.py -v`
-Expected: PASS — 12 tests
+Expected: PASS — 16 tests
 
 - [ ] **Step 5: Commit**
 
