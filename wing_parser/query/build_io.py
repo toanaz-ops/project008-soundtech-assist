@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from wing_parser.core.models import DcaData, MuteGroupData, SourceData
-from wing_parser.core.normalizer import to_db
+from wing_parser.core.normalizer import int_keyed, to_db
 
 
 def build_sources(io_in: dict[str, Any]) -> dict[tuple[str, int], SourceData]:
@@ -36,22 +36,22 @@ def build_sources(io_in: dict[str, Any]) -> dict[tuple[str, int], SourceData]:
 
 def build_dcas(section: dict[str, Any]) -> dict[int, DcaData]:
     return {
-        int(key): DcaData(
-            number=int(key),
+        number: DcaData(
+            number=number,
             name=entry.get("name", ""),
             muted=bool(entry.get("mute", False)),
             fader_dB=to_db(entry.get("fdr")),
         )
-        for key, entry in (section or {}).items()
+        for number, entry in int_keyed(section or {}).items()
     }
 
 
 def build_mute_groups(section: dict[str, Any]) -> dict[int, MuteGroupData]:
     return {
-        int(key): MuteGroupData(
-            number=int(key),
+        number: MuteGroupData(
+            number=number,
             name=entry.get("name", ""),
             muted=bool(entry.get("mute", False)),
         )
-        for key, entry in (section or {}).items()
+        for number, entry in int_keyed(section or {}).items()
     }

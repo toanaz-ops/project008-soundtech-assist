@@ -125,7 +125,7 @@ def routing(summary, unclassified: Iterable[Any]) -> str:
 
 
 def changes(items: Iterable[Any], limit: int = 50) -> str:
-    items = list(items)
+    items = sorted(items, key=lambda change: _natural(change.path))
     if not items:
         return "No differences."
 

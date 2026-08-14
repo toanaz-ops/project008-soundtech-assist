@@ -42,6 +42,16 @@ def test_main_destinations_read_main_sends_not_the_kind_filter(scene):
     assert scene.routing.feeds_into("main", 1) != ()
 
 
+def test_feeds_into_rejects_an_unrecognised_destination_kind(scene):
+    # SEND_SECTION.get(kind, ("sends", "bus")) used to silently treat any
+    # unrecognised kind (a typo like "buss") as a bus lookup instead of
+    # rejecting it -- the query-layer sibling of the evaluator's
+    # dest_kind guard (matrix 3 is not bus 3; an unknown kind is not a
+    # bus either).
+    with pytest.raises(ValueError, match="buss"):
+        scene.routing.feeds_into("buss", 8)
+
+
 def test_feeds_into_unused_bus_is_empty_or_small(scene):
     feeds = scene.routing.feeds_into("bus", 16)
     assert isinstance(feeds, tuple)
