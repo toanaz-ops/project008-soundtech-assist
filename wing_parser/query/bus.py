@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from wing_parser.classifier.matcher import Classification, is_confident
 from wing_parser.core.models import BusData, Send
 from wing_parser.descriptors import safes, tags
 
@@ -61,3 +62,12 @@ class Bus:
             (s for s in self.data.sends if s.dest == dest and s.dest_kind == kind),
             None,
         )
+
+    @property
+    def role(self) -> Classification:
+        return self._scene.classifier.resolve(self.data.name, "buses")
+
+    @property
+    def is_monitor(self) -> bool:
+        found = self.role
+        return found.kind == "monitor" and is_confident(found)

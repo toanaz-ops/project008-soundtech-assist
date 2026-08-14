@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from wing_parser.classifier.resolve import Classifier
 from wing_parser.core.loader import RawScene, load_raw
 from wing_parser.core.models import Anomaly, DcaData, MuteGroupData, SourceData, SourceRef
 from wing_parser.core.validator import validate
@@ -60,6 +61,7 @@ class WingScene:
         )
         self.anomalies: tuple[Anomaly, ...] = tuple(anomalies)
         self._dca_index, self._mute_index = build_index(self)
+        self.classifier = Classifier()
 
     @classmethod
     def load(cls, path: str | Path) -> "WingScene":
@@ -124,6 +126,17 @@ class WingScene:
 
     def bus_family(self) -> tuple[Bus, ...]:
         return self.buses() + self.auxes() + self.mains() + self.matrices()
+
+    def unclassified(self) -> tuple:
+        """Named channels and buses whose type could not be determined."""
+        found = []
+        for view in self.channels():
+            if view.name.strip() and view.source_type.confidence == 0.0:
+                found.append(view)
+        for view in self.bus_family():
+            if view.name.strip() and view.role.confidence == 0.0:
+                found.append(view)
+        return tuple(found)
 
     def dca(self, number: int) -> Dca:
         return Dca(self.dcas[number], self._dca_index.get(number, ()))

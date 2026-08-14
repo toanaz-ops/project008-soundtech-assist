@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from wing_parser.classifier.matcher import Classification
 from wing_parser.core.models import ChannelData, Send, SourceData
 from wing_parser.descriptors import safes, tags
 
@@ -83,3 +84,7 @@ class Channel:
             (s for s in self.data.sends if s.dest == dest and s.dest_kind == kind),
             None,
         )
+
+    @property
+    def source_type(self) -> Classification:
+        return self._scene.classifier.resolve(self.data.name, "channels")
