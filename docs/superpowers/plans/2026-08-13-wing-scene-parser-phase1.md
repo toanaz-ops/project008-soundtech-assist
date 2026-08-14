@@ -2973,7 +2973,9 @@ def scene(vu_path):
 def test_dca_one_is_named_mic_and_has_bus_one_as_a_member(scene):
     dca = scene.dca(1)
     assert dca.name == "MIC"
-    assert dca.fader_dB == pytest.approx(-3.8, abs=1e-6)
+    # -3.79999876 in the file, 1.24e-6 off -3.8. Same tolerance as the
+    # Task 9 assertion against the same value.
+    assert dca.fader_dB == pytest.approx(-3.8, abs=1e-5)
     assert ("bus", 1) in [(m.kind, m.number) for m in dca.members]
 
 
