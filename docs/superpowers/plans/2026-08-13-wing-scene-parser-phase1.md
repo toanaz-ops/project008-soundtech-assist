@@ -18,12 +18,13 @@ Every task's requirements implicitly include this section.
 
 - **File length ceiling: ~200 lines per source file.** If a module approaches it, split by responsibility — never let a file accumulate. This is a standing rule from the project owner.
 - **Split by responsibility layer,** not by technical convenience: format decoding, interpretation, query, rules, interface. Command dispatch is separate from output rendering; MCP tool definitions are separate from handler logic.
-- **`core/` uses the standard library only.** `json` for reading; no YAML, no third-party imports below the `descriptors/` layer.
+- **`core/` may import only the standard library and PyYAML.** It must never import from `descriptors/`, `query/`, `classifier/`, or `advisory/`. The rule is layer discipline, not stdlib purity: PyYAML is a hard dependency of the package, and `core/versions.py` reads the version registry from YAML.
 - **Parser and advisory engine are deterministic.** The same `.snap` file must always yield the same findings. No LLM call may appear in `core/`, `query/`, or `advisory/`.
 - **The tool must run fully offline.** With no `ANTHROPIC_API_KEY`, no network, or the fallback disabled, everything works; only names the pattern matcher cannot resolve degrade to `unknown`.
 - **Never fabricate EQ band values.** An `eq.mdl` with no descriptor yields `bands=None` plus a `descriptor_missing` anomaly. Never apply the `STD` layout to another model.
 - **`-144` becomes `float("-inf")` at the data layer**, in `core/normalizer.py`, not at presentation time.
 - **Descriptors and advisory rules are YAML data, not Python.** Adding a rule or a descriptor must never require a code change.
+- **Files under `knowledge/` are human-editable and machine-written, so they are written with `ruamel.yaml` in round-trip mode, never `yaml.safe_dump`.** PyYAML discards comments at parse time, so any file the tool rewrites would lose ToanAZ's own annotations on the first write. `ruamel.yaml>=0.18` is a hard dependency. Read-only YAML — descriptors, patterns, version registry — stays on PyYAML.
 - **Every `Finding` records its deciding layer** (`base` / `toanaz` / `show`).
 - **Every advisory rule YAML carries `source:` and `rationale:`.** Where knowledge-base sources disagree, record which value was chosen and why.
 - **Do not move or rewrite `docs/knowledge-base/`.**
@@ -34,7 +35,7 @@ Every task's requirements implicitly include this section.
 
 | Layer | Package | Analogue | May import |
 |---|---|---|---|
-| Format decoding | `core/` | HAL | stdlib only |
+| Format decoding | `core/` | HAL | stdlib, `yaml` |
 | Interpretation | `descriptors/` | driver | `core`, `yaml` |
 | Query | `query/` | backend | `core`, `descriptors` |
 | Classification | `classifier/` | backend | `core`, `query`, optionally `anthropic` |
@@ -76,6 +77,7 @@ Every task's requirements implicitly include this section.
 │   │       └── io.yaml
 │   ├── query/
 │   │   ├── __init__.py
+│   │   ├── build_blocks.py                 # blocks shared by channels and buses
 │   │   ├── build_channel.py                # raw ch entry  → ChannelData
 │   │   ├── build_bus.py                    # raw bus entry → BusData
 │   │   ├── build_io.py                     # sources, DCAs, mute groups
@@ -510,8 +512,11 @@ def load_raw(path: str | Path) -> RawScene:
 
     return RawScene(
         version=version,
-        ae=doc.get("ae_data", {}),
-        ce=doc.get("ce_data", {}),
+        # `or {}` rather than a .get default: a corrupt file can carry
+        # "ae_data": null, where the key is present and the default never
+        # fires. Downstream code must never receive None here.
+        ae=doc.get("ae_data") or {},
+        ce=doc.get("ce_data") or {},
         meta=meta,
         path=file_path,
     )
@@ -700,7 +705,8 @@ to know the sentinel exists. Section keys become ints at the same point."
 - Consumes: `SceneVersion` (Task 1), `to_db` / `int_keyed` (Task 2)
 - Produces:
   - `wing_parser.core.models.Anomaly` — frozen dataclass `code: str`, `where: str`, `detail: str`
-  - `wing_parser.core.models.SourceRef` — frozen dataclass `group: str`, `index: int`; `SourceRef.OFF_GROUP = "OFF"`
+  - `wing_parser.core.models.OFF_GROUP: str = "OFF"` — module-level constant, not a class attribute
+  - `wing_parser.core.models.SourceRef` — frozen dataclass `group: str`, `index: int`, plus the derived property `is_off` (compares `group` against `OFF_GROUP`)
   - `wing_parser.core.models.SourceData` — `group`, `index`, `name`, `gain_dB`, `phantom`, `polarity`, `mode`
   - `wing_parser.core.models.Send` — `dest: int`, `on: bool`, `level_dB: float`, `mode: str`, `pre_on: bool`, `pan: float`
   - `wing_parser.core.models.MainSend` — `dest: int`, `on: bool`, `level_dB: float`, `pre: bool`
@@ -817,6 +823,15 @@ class Insert:
 
 @dataclass(frozen=True)
 class Send:
+    """One send from a channel, aux, bus, main or matrix.
+
+    A send block mixes two destination families under one dict: numeric
+    keys ("1".."16") address buses, and "MX1".."MX8" address matrices.
+    Bus 3 and MX3 are different destinations, so the number alone cannot
+    identify one — dest_kind is what keeps them apart.
+    """
+
+    dest_kind: str        # "bus" | "matrix"
     dest: int
     on: bool
     level_dB: float
@@ -950,6 +965,31 @@ def test_unknown_version_is_reported_as_an_anomaly(vu_path, tmp_path):
 
     anomalies = validate(load_raw(future))
     assert any(a.code == "unknown_version" for a in anomalies)
+
+
+def test_null_payload_is_reported_not_raised(vu_path, tmp_path):
+    # "ae_data": null is valid JSON, so .get(key, default) never fires its
+    # default. The validator must survive it — collecting anomalies is its
+    # whole job, and an exception here would destroy the parse.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"] = None
+    nulled = tmp_path / "nullae.snap"
+    nulled.write_text(json.dumps(doc), encoding="utf-8")
+
+    anomalies = validate(load_raw(nulled))
+    assert any(a.code == "missing_section" and a.where == "ae_data.ch" for a in anomalies)
+
+
+def test_non_collection_section_is_reported_not_raised(vu_path, tmp_path):
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"] = 42
+    corrupt = tmp_path / "intch.snap"
+    corrupt.write_text(json.dumps(doc), encoding="utf-8")
+
+    anomalies = validate(load_raw(corrupt))
+    assert any(
+        a.code == "malformed_section" and a.where == "ae_data.ch" for a in anomalies
+    )
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
@@ -990,10 +1030,22 @@ REQUIRED_CE = ("cfg", "safes")
 
 def check_counts(ae: dict) -> list[Anomaly]:
     found: list[Anomaly] = []
+    if not isinstance(ae, dict):
+        return found                      # already reported by check_required_keys
     for section, expected in EXPECTED_COUNTS.items():
         if section not in ae:
             continue
-        actual = len(ae[section])
+        value = ae[section]
+        if not isinstance(value, (dict, list)):
+            found.append(
+                Anomaly(
+                    code="malformed_section",
+                    where=f"ae_data.{section}",
+                    detail=f"expected a collection, found {type(value).__name__}",
+                )
+            )
+            continue
+        actual = len(value)
         if actual != expected:
             found.append(
                 Anomaly(
@@ -1005,19 +1057,26 @@ def check_counts(ae: dict) -> list[Anomaly]:
     return found
 
 
+def _check_block(block: object, label: str, required: tuple[str, ...]) -> list[Anomaly]:
+    if not isinstance(block, dict):
+        return [
+            Anomaly(
+                code="malformed_section",
+                where=label,
+                detail=f"expected an object, found {type(block).__name__}",
+            )
+        ]
+    return [
+        Anomaly("missing_section", f"{label}.{section}", "section absent")
+        for section in required
+        if section not in block
+    ]
+
+
 def check_required_keys(ae: dict, ce: dict) -> list[Anomaly]:
-    found: list[Anomaly] = []
-    for section in REQUIRED_AE:
-        if section not in ae:
-            found.append(
-                Anomaly("missing_section", f"ae_data.{section}", "section absent")
-            )
-    for section in REQUIRED_CE:
-        if section not in ce:
-            found.append(
-                Anomaly("missing_section", f"ce_data.{section}", "section absent")
-            )
-    return found
+    return _check_block(ae, "ae_data", REQUIRED_AE) + _check_block(
+        ce, "ce_data", REQUIRED_CE
+    )
 
 
 def validate(raw: RawScene) -> list[Anomaly]:
@@ -1129,7 +1188,9 @@ groups:
   AES:  { label: "AES/EBU",         channels: 2 }
   USR:  { label: "User Signal",     channels: 24 }
   OSC:  { label: "Oscillator",      channels: 2 }
-  OFF:  { label: "Not patched",     channels: 0 }
+  # Quoted deliberately: YAML 1.1 parses a bareword OFF as boolean false,
+  # which would make the "OFF" lookup miss and return the raw group name.
+  "OFF": { label: "Not patched",    channels: 0 }
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1424,6 +1485,12 @@ def parse(tags_raw: str) -> Membership:
     separator = doc["separator"]
     prefixes = doc["prefixes"]
 
+    # Longest prefix first, so a future "#DX" cannot be shadowed by "#D"
+    # merely because "#D" appears earlier in the YAML. Without this, adding
+    # a nested tag kind would need a code change or an unwritten ordering
+    # rule in the data file.
+    by_length = sorted(prefixes, key=len, reverse=True)
+
     dcas: set[int] = set()
     mute_groups: set[int] = set()
     unknown: list[str] = []
@@ -1432,7 +1499,7 @@ def parse(tags_raw: str) -> Membership:
         token = token.strip()
         if not token:
             continue
-        spec = next(((p, prefixes[p]) for p in prefixes if token.startswith(p)), None)
+        spec = next(((p, prefixes[p]) for p in by_length if token.startswith(p)), None)
         if spec is None:
             unknown.append(token)
             continue
@@ -1494,12 +1561,18 @@ parses one member's string; the reverse index lands in the query layer."
 # channel/bus/etc, in ascending order. A space means "not safe"; any
 # other character means "safe".
 #
-# Verified against example-Vu.snap, where safes.ch is 40 spaces.
-# Nested groups (safes.source.A and friends) use the same encoding one
-# level down; nothing in Phase 1 needs them.
+# Verified against both sample files, which agree exactly: safes.ch is 40
+# spaces, and the block holds thirteen sections — ten flat strings and
+# three nested dicts (source, output and area, each keyed by input group
+# or surface area). The nested blocks use the same encoding one level
+# down; nothing in Phase 1 reads them.
+#
+# custom (22) and setup (2) are flat and therefore decoded, even though no
+# Phase 1 rule consumes them: decode_scene promises every flat section, and
+# a promise the data quietly contradicts is worse than an unused entry.
 not_safe_char: " "
-flat_sections: [ch, aux, bus, main, mtx, dca, mute, fx]
-nested_sections: [source]
+flat_sections: [ch, aux, bus, main, mtx, dca, mute, fx, custom, setup]
+nested_sections: [source, output, area]
 expected_lengths:
   ch: 40
   aux: 8
@@ -1509,6 +1582,8 @@ expected_lengths:
   dca: 16
   mute: 8
   fx: 16
+  custom: 22
+  setup: 2
 ```
 
 - [ ] **Step 2: Write the failing test**
@@ -1554,8 +1629,19 @@ def test_real_file_has_nothing_scene_safe(vu_path):
 
 def test_decode_scene_skips_nested_sections(vu_path):
     sections = decode_scene(load_raw(vu_path).ce["safes"])
-    assert "source" not in sections
-    assert set(sections) <= {"ch", "aux", "bus", "main", "mtx", "dca", "mute", "fx"}
+    assert {"source", "output", "area"}.isdisjoint(sections)
+
+
+def test_decode_scene_covers_every_flat_section(vu_path):
+    # The real block holds thirteen sections: ten flat strings and three
+    # nested dicts. decode_scene promises every flat one, so pin that
+    # against the file rather than against the allowlist it reads.
+    raw_safes = load_raw(vu_path).ce["safes"]
+    flat = {k for k, v in raw_safes.items() if isinstance(v, str)}
+    assert set(decode_scene(raw_safes)) == flat
+    assert flat == {
+        "ch", "aux", "bus", "main", "mtx", "dca", "mute", "fx", "custom", "setup",
+    }
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
@@ -1859,13 +1945,21 @@ which would produce plausible wrong numbers instead of a clear failure."
 
 **Files:**
 - Create: `wing_parser/query/__init__.py`
+- Create: `wing_parser/query/build_blocks.py`
 - Create: `wing_parser/query/build_channel.py`
 - Test: `tests/test_query_build_channel.py`
 
 **Interfaces:**
 - Consumes: `to_db` (Task 2); all records from Task 3; `proc_chain.decode` / `proc_chain.tap_point` (Task 4); `eq_models.build` (Task 7)
 - Produces:
+  - `wing_parser.query.build_blocks.MATRIX_PREFIX: str = "MX"`
+  - `wing_parser.query.build_blocks.parse_send_key(key: str) -> tuple[str, int] | None` — `"8"` → `("bus", 8)`, `"MX3"` → `("matrix", 3)`, anything else → `None`
+  - `wing_parser.query.build_blocks.build_dyn(raw: dict | None) -> Dyn`
+  - `wing_parser.query.build_blocks.build_sends(raw: dict | None) -> tuple[tuple[Send, ...], list[Anomaly]]` — buses first, then matrices, each ascending; a key that parses as neither is skipped and reported
+  - `wing_parser.query.build_blocks.build_main_sends(raw: dict | None) -> tuple[tuple[MainSend, ...], list[Anomaly]]`
   - `wing_parser.query.build_channel.build(number: int, entry: dict) -> tuple[ChannelData, list[Anomaly]]`
+
+  **Why two modules.** Channels, auxes, buses, mains and matrices all carry a dynamics block and the same two send collections, so those builders live in `build_blocks.py` and both `build_channel.py` and Task 9's `build_bus.py` import from it. Putting them in `build_channel.py` and having the bus builder reach across for them would make the bus builder depend on the channel builder for no reason other than which file was written first. `_filter`, `_gate` and `_insert` stay private in `build_channel.py` — nothing else builds them.
 
 Note: the builder returns `ChannelData`, a plain record. Navigation (`.source`, `.dcas`) arrives in Task 10 as a separate view class, so this module never needs a back-reference to the scene.
 
@@ -1937,14 +2031,30 @@ def test_trim_and_polarity(ch8):
 
 
 def test_sends_are_indexed_by_destination(ch8):
-    send8 = next(s for s in ch8.sends if s.dest == 8)
+    send8 = next(s for s in ch8.sends if s.dest_kind == "bus" and s.dest == 8)
     assert send8.on is True
     assert send8.mode == "POST"
     assert send8.level_dB == pytest.approx(-19.9, abs=1e-6)
 
-    send2 = next(s for s in ch8.sends if s.dest == 2)
+    send2 = next(s for s in ch8.sends if s.dest_kind == "bus" and s.dest == 2)
     assert send2.on is False
     assert send2.level_dB == NEG_INF
+
+
+def test_matrix_sends_are_kept_and_kept_distinct(ch8):
+    # Every send block holds 16 bus keys and 8 "MX<n>" matrix keys.
+    # Bus 3 and MX3 are different destinations sharing a number.
+    buses = [s for s in ch8.sends if s.dest_kind == "bus"]
+    matrices = [s for s in ch8.sends if s.dest_kind == "matrix"]
+    assert len(buses) == 16
+    assert len(matrices) == 8
+    assert {s.dest for s in matrices} == set(range(1, 9))
+
+
+def test_sends_are_ordered_buses_then_matrices(ch8):
+    kinds = [s.dest_kind for s in ch8.sends]
+    assert kinds == ["bus"] * 16 + ["matrix"] * 8
+    assert [s.dest for s in ch8.sends[:16]] == list(range(1, 17))
 
 
 def test_silent_fader_uses_negative_infinity(vu_path):
@@ -2019,7 +2129,8 @@ def _gate(raw: dict[str, Any]) -> Gate:
     )
 
 
-def _dyn(raw: dict[str, Any] | None) -> Dyn:
+def build_dyn(raw: dict[str, Any] | None) -> Dyn:
+    """Public: build_bus.py builds the same block from bus entries."""
     raw = raw or {}
     return Dyn(
         on=bool(raw.get("on", False)),
@@ -2045,38 +2156,105 @@ def _insert(raw: dict[str, Any] | None) -> Insert:
     )
 
 
-def _sends(raw: dict[str, Any] | None) -> tuple[Send, ...]:
-    raw = raw or {}
-    return tuple(
-        Send(
-            dest=int(key),
-            on=bool(value.get("on", False)),
-            level_dB=to_db(value.get("lvl")),
-            mode=value.get("mode", "GRP"),
-            pre_on=bool(value.get("pon", False)),
-            pan=float(value.get("pan", 0.0)),
-        )
-        for key, value in sorted(raw.items(), key=lambda kv: int(kv[0]))
-    )
+MATRIX_PREFIX = "MX"
 
 
-def _main_sends(raw: dict[str, Any] | None) -> tuple[MainSend, ...]:
-    raw = raw or {}
-    return tuple(
-        MainSend(
-            dest=int(key),
-            on=bool(value.get("on", False)),
-            level_dB=to_db(value.get("lvl")),
-            pre=bool(value.get("pre", False)),
+def parse_send_key(key: str) -> tuple[str, int] | None:
+    """Split a send-block key into its destination kind and number.
+
+    Both real files store 16 numeric bus keys and 8 "MX<n>" matrix keys in
+    the same dict — and a main's send block holds *only* matrix keys, so
+    discarding the non-numeric ones would leave every main with no sends
+    at all.
+
+    Returns None for a key that is neither form. Every sibling in this
+    codebase reports malformed input rather than raising, so a corrupt
+    key must not abort the whole channel build.
+    """
+    if key.startswith(MATRIX_PREFIX):
+        rest, kind = key[len(MATRIX_PREFIX):], "matrix"
+    else:
+        rest, kind = key, "bus"
+    try:
+        return kind, int(rest)
+    except ValueError:
+        return None
+
+
+def build_sends(
+    raw: dict[str, Any] | None,
+) -> tuple[tuple[Send, ...], list[Anomaly]]:
+    """Public: shared with build_bus.py."""
+    sends: list[Send] = []
+    anomalies: list[Anomaly] = []
+
+    for key, value in (raw or {}).items():
+        parsed = parse_send_key(key)
+        if parsed is None:
+            anomalies.append(
+                Anomaly(
+                    code="malformed_send_key",
+                    where=f"send.{key}",
+                    detail="neither a bus number nor MX<n>; send skipped",
+                )
+            )
+            continue
+        dest_kind, dest = parsed
+        sends.append(
+            Send(
+                dest_kind=dest_kind,
+                dest=dest,
+                on=bool(value.get("on", False)),
+                level_dB=to_db(value.get("lvl")),
+                mode=value.get("mode", "GRP"),
+                pre_on=bool(value.get("pon", False)),
+                pan=float(value.get("pan", 0.0)),
+            )
         )
-        for key, value in sorted(raw.items(), key=lambda kv: int(kv[0]))
-    )
+
+    # Buses first, then matrices, each ascending — a stable order the diff
+    # and the rule engine can both rely on.
+    return tuple(sorted(sends, key=lambda s: (s.dest_kind, s.dest))), anomalies
+
+
+def build_main_sends(
+    raw: dict[str, Any] | None,
+) -> tuple[tuple[MainSend, ...], list[Anomaly]]:
+    """Public: shared with build_bus.py. Main keys are always numeric."""
+    sends: list[MainSend] = []
+    anomalies: list[Anomaly] = []
+
+    for key, value in (raw or {}).items():
+        try:
+            dest = int(key)
+        except ValueError:
+            anomalies.append(
+                Anomaly(
+                    code="malformed_send_key",
+                    where=f"main.{key}",
+                    detail="not a main number; send skipped",
+                )
+            )
+            continue
+        sends.append(
+            MainSend(
+                dest=dest,
+                on=bool(value.get("on", False)),
+                level_dB=to_db(value.get("lvl")),
+                pre=bool(value.get("pre", False)),
+            )
+        )
+
+    return tuple(sorted(sends, key=lambda s: s.dest)), anomalies
 
 
 def build(number: int, entry: dict[str, Any]) -> tuple[ChannelData, list[Anomaly]]:
-    eq, anomalies = eq_models.build(entry.get("eq", {}))
+    eq, found = eq_models.build(entry.get("eq", {}))
+    sends, send_found = build_sends(entry.get("send"))
+    main_sends, main_found = build_main_sends(entry.get("main"))
     anomalies = [
-        Anomaly(a.code, f"ch.{number}.{a.where}", a.detail) for a in anomalies
+        Anomaly(a.code, f"ch.{number}.{a.where}", a.detail)
+        for a in (*found, *send_found, *main_found)
     ]
 
     conn = entry.get("in", {}).get("conn", {})
@@ -2105,14 +2283,16 @@ def build(number: int, entry: dict[str, Any]) -> tuple[ChannelData, list[Anomaly
         filter=_filter(entry.get("flt", {})),
         eq=eq,
         gate=_gate(entry.get("gate", {})),
-        dyn=_dyn(entry.get("dyn")),
+        dyn=build_dyn(entry.get("dyn")),
         pre_insert=_insert(entry.get("preins")),
         post_insert=_insert(entry.get("postins")),
-        sends=_sends(entry.get("send")),
-        main_sends=_main_sends(entry.get("main")),
+        sends=sends,
+        main_sends=main_sends,
     )
     return data, anomalies
 ```
+
+`_filter`, `_gate` and `_insert` stay private — they are channel-only. The three `build_*` functions are public because `build_bus.py` builds the same blocks from bus entries.
 
 - [ ] **Step 4: Run the test and verify it passes**
 
@@ -2140,7 +2320,7 @@ lifted out of postins.mode/postins.w here."
 - Test: `tests/test_query_build_io.py`
 
 **Interfaces:**
-- Consumes: `to_db` (Task 2); `SourceData`, `BusData`, `DcaData`, `MuteGroupData` (Task 3); `eq_models.build` (Task 7); `_dyn`, `_sends`, `_main_sends` (Task 8 — import them from `build_channel`)
+- Consumes: `to_db` (Task 2); `SourceData`, `BusData`, `DcaData`, `MuteGroupData` (Task 3); `eq_models.build` (Task 7); `build_dyn`, `build_sends`, `build_main_sends` (Task 8 — import them from `wing_parser.query.build_blocks`, not from `build_channel`)
 - Produces:
   - `wing_parser.query.build_io.build_sources(io_in: dict) -> dict[tuple[str, int], SourceData]` — keyed by `(group, index)`
   - `wing_parser.query.build_io.build_dcas(section: dict) -> dict[int, DcaData]`
@@ -2181,7 +2361,9 @@ def test_dcas_carry_names_and_levels(vu_path):
     dcas = build_dcas(load_raw(vu_path).ae["dca"])
     assert len(dcas) == 16
     assert dcas[1].name == "MIC"
-    assert dcas[1].fader_dB == pytest.approx(-3.8, abs=1e-6)
+    # The file stores -3.79999876, which is 1.24e-6 away from -3.8 — the
+    # console's own encoding artefact, wider than the 1e-6 used elsewhere.
+    assert dcas[1].fader_dB == pytest.approx(-3.8, abs=1e-5)
 
 
 def test_mute_groups(vu_path):
@@ -2304,13 +2486,23 @@ from typing import Any
 from wing_parser.core.models import Anomaly, BusData
 from wing_parser.core.normalizer import to_db
 from wing_parser.descriptors import eq_models
-from wing_parser.query.build_channel import _dyn, _main_sends, _sends
+from wing_parser.query.build_blocks import build_dyn, build_main_sends, build_sends
+
+
+def _delay_ms(raw: Any) -> float:
+    """Buses store delay as a nested block; matrices sometimes as a bare number."""
+    if isinstance(raw, dict):
+        return float(raw.get("dly", 0.0))
+    return float(raw or 0.0)
 
 
 def build(kind: str, number: int, entry: dict[str, Any]) -> tuple[BusData, list[Anomaly]]:
-    eq, anomalies = eq_models.build(entry.get("eq", {}))
+    eq, found = eq_models.build(entry.get("eq", {}))
+    sends, send_found = build_sends(entry.get("send"))
+    main_sends, main_found = build_main_sends(entry.get("main"))
     anomalies = [
-        Anomaly(a.code, f"{kind}.{number}.{a.where}", a.detail) for a in anomalies
+        Anomaly(a.code, f"{kind}.{number}.{a.where}", a.detail)
+        for a in (*found, *send_found, *main_found)
     ]
 
     data = BusData(
@@ -2322,12 +2514,10 @@ def build(kind: str, number: int, entry: dict[str, Any]) -> tuple[BusData, list[
         fader_dB=to_db(entry.get("fdr")),
         tags_raw=entry.get("tags", ""),
         eq=eq,
-        dyn=_dyn(entry.get("dyn")),
-        delay_ms=float((entry.get("dly") or {}).get("dly", 0.0))
-        if isinstance(entry.get("dly"), dict)
-        else float(entry.get("dly") or 0.0),
-        sends=_sends(entry.get("send")),
-        main_sends=_main_sends(entry.get("main")),
+        dyn=build_dyn(entry.get("dyn")),
+        delay_ms=_delay_ms(entry.get("dly")),
+        sends=sends,
+        main_sends=main_sends,
     )
     return data, anomalies
 ```
@@ -2468,6 +2658,33 @@ def test_factory_scene_loads_too(factory_path):
     scene = WingScene.load(factory_path)
     assert scene.version.type_id == "snapshot.10"
     assert len(scene.channels()) == 40
+
+
+def test_channel_survives_copy_and_deepcopy(scene):
+    import copy
+
+    # copy probes __setstate__ on a __new__-built shell whose __dict__ is
+    # empty. An unguarded __getattr__ recurses forever looking for `data`.
+    shallow = copy.copy(scene.channel(8))
+    assert shallow.name == "M8 MC"
+    assert copy.deepcopy(scene.channel(8)).data.number == 8
+
+
+def test_a_property_raising_internally_is_not_reported_as_missing(scene, monkeypatch):
+    # If `source` blows up inside, the caller must see that — not a
+    # misleading "Channel has no attribute 'source'".
+    monkeypatch.setattr(
+        type(scene), "source_for",
+        lambda self, ref: (_ for _ in ()).throw(AttributeError("boom")),
+    )
+    with pytest.raises(AttributeError) as caught:
+        _ = scene.channel(8).source
+    assert "has no attribute 'source'" not in str(caught.value)
+
+
+def test_unknown_attribute_still_reports_cleanly(scene):
+    with pytest.raises(AttributeError, match="no attribute 'not_a_field'"):
+        _ = scene.channel(8).not_a_field
 ```
 
 - [ ] **Step 2: Run the test and verify it fails**
@@ -2505,10 +2722,25 @@ class Channel:
         self._scene = scene
 
     def __getattr__(self, item: str) -> Any:
-        # Only reached when normal lookup fails, so no recursion risk
-        # for `data` and `_scene`, which are set in __init__.
+        """Delegate unknown attributes to the wrapped record.
+
+        Two lookups must be refused rather than delegated:
+
+        A private or dunder name. `copy.copy` and `pickle` probe for
+        `__setstate__` and friends on a shell built by `__new__`, whose
+        `__dict__` is still empty — delegating would re-enter this method
+        looking for `data`, which is also absent, and recurse forever.
+
+        A name already defined on the class. Reaching here for one means a
+        property raised `AttributeError` internally; answering "no such
+        attribute" would bury the real bug.
+        """
+        if item.startswith("_") or hasattr(type(self), item):
+            raise AttributeError(
+                f"{type(self).__name__}.{item} is not resolvable on this instance"
+            )
         try:
-            return getattr(self.data, item)
+            return getattr(object.__getattribute__(self, "data"), item)
         except AttributeError as exc:
             raise AttributeError(
                 f"{type(self).__name__!r} has no attribute {item!r}"
@@ -2543,8 +2775,13 @@ class Channel:
     def scene_safe(self) -> bool:
         return safes.is_safe(self._scene.safes.get("ch", ()), self.data.number)
 
-    def send_to(self, dest: int) -> Send | None:
-        return next((s for s in self.data.sends if s.dest == dest), None)
+    def send_to(self, dest: int, kind: str = "bus") -> Send | None:
+        """A send block mixes buses and matrices, so the number alone is
+        ambiguous: bus 3 and MX3 share a number. Defaults to bus."""
+        return next(
+            (s for s in self.data.sends if s.dest == dest and s.dest_kind == kind),
+            None,
+        )
 ```
 
 - [ ] **Step 4: Implement WingScene**
@@ -2635,7 +2872,7 @@ __all__ = ["WingScene", "__version__"]
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_query_scene.py -v`
-Expected: PASS — 12 tests
+Expected: PASS — 16 tests
 
 - [ ] **Step 7: Commit**
 
@@ -2737,7 +2974,9 @@ def scene(vu_path):
 def test_dca_one_is_named_mic_and_has_bus_one_as_a_member(scene):
     dca = scene.dca(1)
     assert dca.name == "MIC"
-    assert dca.fader_dB == pytest.approx(-3.8, abs=1e-6)
+    # -3.79999876 in the file, 1.24e-6 off -3.8. Same tolerance as the
+    # Task 9 assertion against the same value.
+    assert dca.fader_dB == pytest.approx(-3.8, abs=1e-5)
     assert ("bus", 1) in [(m.kind, m.number) for m in dca.members]
 
 
@@ -2816,8 +3055,18 @@ class Bus:
         self._scene = scene
 
     def __getattr__(self, item: str) -> Any:
+        """Same guarded delegation as Channel — see the note there.
+
+        A private or dunder name would recurse on the copy and pickle
+        paths; a name defined on the class means a property raised
+        internally and must not be reported as missing.
+        """
+        if item.startswith("_") or hasattr(type(self), item):
+            raise AttributeError(
+                f"{type(self).__name__}.{item} is not resolvable on this instance"
+            )
         try:
-            return getattr(self.data, item)
+            return getattr(object.__getattribute__(self, "data"), item)
         except AttributeError as exc:
             raise AttributeError(
                 f"{type(self).__name__!r} has no attribute {item!r}"
@@ -2839,8 +3088,11 @@ class Bus:
         section = SAFES_SECTION.get(self.data.kind, self.data.kind)
         return safes.is_safe(self._scene.safes.get(section, ()), self.data.number)
 
-    def send_to(self, dest: int) -> Send | None:
-        return next((s for s in self.data.sends if s.dest == dest), None)
+    def send_to(self, dest: int, kind: str = "bus") -> Send | None:
+        return next(
+            (s for s in self.data.sends if s.dest == dest and s.dest_kind == kind),
+            None,
+        )
 ```
 
 - [ ] **Step 4: Implement the group reverse index**
@@ -3066,6 +3318,25 @@ def test_feeds_into_only_returns_enabled_sends(scene):
         assert feed.on is True
 
 
+def test_bus_and_matrix_of_the_same_number_are_different_destinations(scene):
+    # The load-bearing property of this module. A send block holds 16 bus
+    # keys and 8 MX keys, so bus 3 and MX3 share a number and nothing but
+    # dest_kind separates them. Delete the filter in feeds_into and this
+    # test fails; without it, every other test here still passes.
+    bus3 = {(f.kind, f.number) for f in scene.routing.feeds_into("bus", 3)}
+    mx3 = {(f.kind, f.number) for f in scene.routing.feeds_into("matrix", 3)}
+
+    assert bus3 == {("channel", n) for n in (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24)}
+    assert mx3 == {("main", 1)}
+    assert bus3.isdisjoint(mx3)
+
+
+def test_main_destinations_read_main_sends_not_the_kind_filter(scene):
+    # Mains live in main_sends, which carries no dest_kind. The None entry
+    # in SEND_SECTION must disable the filter rather than reject everything.
+    assert scene.routing.feeds_into("main", 1) != ()
+
+
 def test_feeds_into_unused_bus_is_empty_or_small(scene):
     feeds = scene.routing.feeds_into("bus", 16)
     assert isinstance(feeds, tuple)
@@ -3079,14 +3350,21 @@ def test_summary_reports_alt_sourced_channels(scene):
 def test_summary_counts_live_channels(scene):
     summary = scene.routing.summary()
     # A channel is live when it is unmuted and its fader is above -inf.
-    assert summary.live_channel_count == 4      # ch 8, 10, 12, and 1 more
+    # Verified against the file: ch 8 (M8 MC, -7.9), ch 10 (LED PLAYBACK,
+    # -2.6), ch 12 (My Lap, +0.4). Everything else is at -144 or muted.
+    assert summary.live_channel_count == 3
     assert isinstance(summary.orphan_channels, tuple)
 
 
 def test_unpatched_channels_are_listed(scene):
     summary = scene.routing.summary()
-    # Every channel in this file is patched to a source group.
-    assert summary.unpatched_channels == ()
+    # Verified against the file: channels 13-32, 36, 39 and 40 are named
+    # stage-box presets whose source_ref group is OFF for this show, i.e.
+    # never patched to hardware. Channels 1-12, 33-35, 37 and 38 are patched.
+    assert summary.unpatched_channels == (
+        13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        30, 31, 32, 36, 39, 40,
+    )
 
 
 def test_unnamed_but_live_is_reported(vu_path, tmp_path):
@@ -3142,7 +3420,14 @@ from wing_parser.core.normalizer import is_silent
 if TYPE_CHECKING:
     from wing_parser.query.scene import WingScene
 
-SEND_SECTION = {"bus": "sends", "main": "main_sends"}
+# Which collection to read, and which dest_kind within it. Buses and
+# matrices share the `sends` tuple and are told apart by dest_kind; mains
+# live in their own `main_sends` tuple, which carries no kind.
+SEND_SECTION: dict[str, tuple[str, str | None]] = {
+    "bus": ("sends", "bus"),
+    "matrix": ("sends", "matrix"),
+    "main": ("main_sends", None),
+}
 
 
 @dataclass(frozen=True)
@@ -3174,7 +3459,7 @@ def _feeds_anything(view) -> bool:
 
 def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
     """Every enabled send from any channel or bus into the named destination."""
-    attribute = SEND_SECTION.get(kind, "sends")
+    attribute, dest_kind = SEND_SECTION.get(kind, ("sends", "bus"))
     found: list[Feed] = []
 
     sources = [("channel", ch) for ch in scene.channels()]
@@ -3184,6 +3469,8 @@ def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
         if source_kind == kind and view.number == number:
             continue                      # a bus cannot feed itself
         for send in getattr(view, attribute, ()):
+            if dest_kind is not None and send.dest_kind != dest_kind:
+                continue                  # bus 3 and MX3 share a number
             if send.dest == number and send.on:
                 found.append(
                     Feed(
@@ -3258,7 +3545,7 @@ and add this property to the class:
 - [ ] **Step 5: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_query_routing.py -v`
-Expected: PASS — 9 tests. If `live_channel_count` is not 4, read the actual value from the failure and correct the assertion — the definition (unmuted and fader above −∞) is what matters, not the constant.
+Expected: PASS — 9 tests. The count of 3 is verified against the file; if it comes out differently, the bug is in `_is_live`, not in the assertion.
 
 - [ ] **Step 6: Commit**
 
@@ -3356,6 +3643,19 @@ def test_send_change_is_reported(vu_path, tmp_path):
     assert change.after == "TAP"
 
 
+def test_matrix_send_change_keeps_its_own_path(vu_path, tmp_path):
+    # A send path uses the destination as the file spells it, so a matrix
+    # change cannot be confused with the same-numbered bus.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"]["8"]["send"]["MX3"]["on"] = True
+    mxd = tmp_path / "mxd.snap"
+    mxd.write_text(json.dumps(doc), encoding="utf-8")
+
+    paths = {c.path for c in WingScene.load(vu_path).diff(WingScene.load(mxd))}
+    assert "ch.8.sends.MX3.on" in paths
+    assert "ch.8.sends.3.on" not in paths
+
+
 def test_bus_change_is_reported(vu_path, tmp_path):
     doc = json.loads(vu_path.read_text(encoding="utf-8"))
     doc["ae_data"]["bus"]["8"]["name"] = "IEM VOX"
@@ -3367,6 +3667,44 @@ def test_bus_change_is_reported(vu_path, tmp_path):
         if c.path == "bus.8.name"
     )
     assert change.after == "IEM VOX"
+
+
+def test_fader_leaving_silence_reports_its_full_travel(vu_path, tmp_path):
+    # -inf is the fader on its bottom stop, which the console writes as
+    # -144. Silent to audible is the largest change a mix can have and
+    # must not rank below a 1 dB trim.
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    doc["ae_data"]["ch"]["13"]["fdr"] = -7.9      # was -144
+    unmuted = tmp_path / "unmuted.snap"
+    unmuted.write_text(json.dumps(doc), encoding="utf-8")
+
+    change = next(
+        c for c in WingScene.load(vu_path).diff(WingScene.load(unmuted))
+        if c.path == "ch.13.fader_dB"
+    )
+    assert change.before == float("-inf")
+    assert change.after == pytest.approx(-7.9)
+    assert change.magnitude == pytest.approx(136.1, abs=1e-3)
+
+
+def test_two_silent_faders_have_no_travel():
+    from wing_parser.query.diff import _magnitude
+
+    assert _magnitude(float("-inf"), float("-inf")) is None
+
+
+def test_a_record_present_on_one_side_only_is_one_change():
+    # Documented limitation: an added or removed record is reported whole,
+    # not field by field. Pinned so the behaviour is deliberate.
+    from wing_parser.core.models import DcaData
+    from wing_parser.query.diff import _walk
+
+    out = []
+    _walk("dca.1", None, DcaData(1, "MIC", False, -3.8), out)
+    assert len(out) == 1
+    assert out[0].path == "dca.1"
+    assert out[0].before is None
+    assert isinstance(out[0].after, DcaData)
 
 
 def test_factory_versus_show_produces_many_changes(factory_path, vu_path):
@@ -3390,6 +3728,13 @@ Expected: FAIL — `AttributeError: 'WingScene' object has no attribute 'diff'`
 Walks the frozen records recursively rather than the raw JSON, so paths
 read in decoded terms ("ch.8.fader_dB", "ch.8.eq.bands.2.gain") and
 levels compare as dB with the sentinel already resolved.
+
+One documented limitation. A record present in one scene and absent from
+the other is reported as a single change whose `before` or `after` is the
+whole record object, not as per-field changes. Adding or removing a
+channel is one logical edit, and both consoles this parser targets carry
+a fixed 40, so the case does not arise in practice — but a caller that
+assumes every `Change` holds primitive leaves must handle it.
 """
 
 from __future__ import annotations
@@ -3397,6 +3742,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, fields, is_dataclass
 from typing import TYPE_CHECKING, Any
+
+from wing_parser.core.normalizer import SENTINEL_MINUS_INF
+from wing_parser.query.build_blocks import MATRIX_PREFIX
 
 if TYPE_CHECKING:
     from wing_parser.query.scene import WingScene
@@ -3415,13 +3763,24 @@ class Change:
 
 
 def _magnitude(before: Any, after: Any) -> float | None:
+    """How far a numeric field moved.
+
+    A level at -inf is a fader on its bottom stop, which the console
+    writes as -144. Measuring the travel from there gives a real number
+    for the largest change a mix can have — silent to audible — instead
+    of dropping it to None and ranking it below a 1 dB trim.
+    """
     if isinstance(before, bool) or isinstance(after, bool):
         return None
     if not isinstance(before, (int, float)) or not isinstance(after, (int, float)):
         return None
-    if math.isinf(before) or math.isinf(after):
-        return None
-    return abs(float(after) - float(before))
+
+    left, right = float(before), float(after)
+    if math.isinf(left) and math.isinf(right):
+        return None                       # both silent: no travel
+    left = float(SENTINEL_MINUS_INF) if math.isinf(left) else left
+    right = float(SENTINEL_MINUS_INF) if math.isinf(right) else right
+    return abs(right - left)
 
 
 def _walk(path: str, before: Any, after: Any, out: list[Change]) -> None:
@@ -3449,8 +3808,19 @@ def _walk(path: str, before: Any, after: Any, out: list[Change]) -> None:
 
 
 def _key(item: Any, index: int) -> Any:
-    """Match tuple entries by identity where they have one."""
-    for attribute in ("dest", "name", "number"):
+    """Match tuple entries by identity where they have one.
+
+    A send's number is not unique on its own — bus 3 and MX3 both report
+    dest 3 — so a send keys on the destination as the file itself spells
+    it: "3" for bus 3, "MX3" for matrix 3. Those two forms cannot collide
+    (buses are 1-16, matrices MX1-MX8), the key doubles as the path
+    fragment, and a reader sees the same token the console wrote.
+    """
+    dest = getattr(item, "dest", None)
+    if dest is not None:
+        kind = getattr(item, "dest_kind", None)
+        return f"{MATRIX_PREFIX}{dest}" if kind == "matrix" else str(dest)
+    for attribute in ("name", "number"):
         value = getattr(item, attribute, None)
         if value is not None:
             return value
@@ -3603,8 +3973,13 @@ channels:
   - { match: '\bmc\b',          kind: speech.mc,           confidence: 0.85 }
   - { match: 'lectern|podium|gooseneck', kind: speech.lectern, confidence: 0.9 }
   - { match: '\blav\b|lavalier', kind: speech.lav,         confidence: 0.9 }
-  - { match: 'head\s*set|\bhs\b', kind: speech.headset,    confidence: 0.7 }
-  - { match: 'hand\s*held|\bhh\s*mic\b', kind: speech.handheld, confidence: 0.85 }
+  # \d* for the same reason as iem below: \bhs\b has no word boundary
+  # between S and 4, so HS4 -- channel 11 in the real file -- never matched.
+  - { match: 'head\s*set|\bhs\d*\b', kind: speech.headset,  confidence: 0.7 }
+  - { match: 'hand\s*held',     kind: speech.handheld,     confidence: 0.85 }
+  # More specific than drums.hihat's '\bhh\b' (0.9), so it must outrank it on
+  # confidence — `_rank` settles confidence before it ever consults length.
+  - { match: '\bhh\s*mic\b',    kind: speech.handheld,     confidence: 0.92 }
 
   # Non-performance
   - { match: '\bclick\b',       kind: utility.click,       confidence: 0.95 }
@@ -3623,14 +3998,33 @@ channels:
 
 buses:
   - { match: '^mon\b|monitor',  kind: monitor,             confidence: 0.9 }
-  - { match: '\biem\b|in\s*ear', kind: monitor,            confidence: 0.95 }
+  # \d* matters: there is no word boundary between M and 3, so a bare
+  # \biem\b missed IEM1/IEM2/IEM3 -- the commonest way to number them.
+  - { match: '\biem\d*\b|in\s*ear', kind: monitor,         confidence: 0.95 }
   - { match: 'wedge|side\s*fill|sidefill', kind: monitor,  confidence: 0.9 }
-  - { match: 'head\s*set',      kind: monitor,             confidence: 0.7 }
+  # ToanAZ: "Side = sidefill speakers". A sidefill is a monitor -- the band
+  # hears it, not the audience -- so a bus named SIDE is a monitor send.
+  - { match: '^side\b',         kind: monitor,             confidence: 0.85 }
   - { match: '\bfx\b|reverb|delay|hall|room|chorus|haha', kind: fx, confidence: 0.85 }
   - { match: '\brec\b|record|multitrack', kind: record,    confidence: 0.9 }
   - { match: 'stream|broadcast|encoder|webcast', kind: stream, confidence: 0.9 }
   - { match: '\bfill\b|delay\s*ring|overflow|lobby', kind: matrix_fill, confidence: 0.85 }
   - { match: '\bsub\b|\blfe\b', kind: subgroup,            confidence: 0.85 }
+  # ToanAZ: "TB = talkback". Engineer-to-stage, never part of the mix, so
+  # level and mute rules that apply to programme material must skip it.
+  - { match: '\btb\b|talk\s*back', kind: talkback,         confidence: 0.9 }
+  # A bus feeding the house PA. Distinct from the console's main objects.
+  - { match: 'main\s*foh|\bfoh\b|^main\b', kind: main,     confidence: 0.85 }
+  # ToanAZ: "Flown = Flown Array speaker", "Cen = center speaker". These
+  # are house loudspeaker zones fed from a bus, not fills -- matrix_fill
+  # already means an actual fill (delay ring, lobby), so they get their
+  # own role rather than being lumped in with it.
+  - { match: 'flown|\bcen\b|^cent(er|re)\b|\barray\b', kind: pa_zone, confidence: 0.85 }
+  # ToanAZ on a bus named HEADSET: "Headset co the la input headset mic,
+  # hoac group all headset mic" -- either way it is input-side, so it
+  # belongs with the source subgroups below, not with the monitor sends.
+  # The monitor reading was wrong, not merely under-confident.
+  - { match: 'head\s*set|\bstring', kind: subgroup,        confidence: 0.6 }
   - { match: '\bdrum\b|\bband\b|\bmic\b|\bmusic\b', kind: subgroup, confidence: 0.6 }
 ```
 
@@ -3696,6 +4090,23 @@ def test_real_channel_names_classify(name, expected):
 def test_more_specific_pattern_wins_on_a_tie():
     # "snare bot" and "snare" both match; the specific one must win.
     assert classify("Snare Bot", "channels").kind == "drums.snare.bottom"
+
+
+def test_equal_confidence_is_broken_by_match_length():
+    # "sub" and "fx" are both 0.85, so only len(matched) separates them.
+    # This is the ONLY case that exercises _rank's length component --
+    # "Snare Bot" above is decided on confidence alone (0.95 > 0.9) and
+    # still passes with the length component removed.
+    assert classify("SUB FX", "buses").kind == "subgroup"
+    assert classify("FX SUB", "buses").kind == "subgroup"
+
+
+def test_hh_mic_is_a_handheld_not_a_hihat():
+    # drums.hihat matches '\bhh\b' at 0.9; the handheld entry must carry a
+    # higher confidence to win, because length never gets consulted.
+    assert classify("HH MIC", "channels").kind == "speech.handheld"
+    assert classify("HH", "channels").kind == "drums.hihat"
+    assert classify("Handheld 1", "channels").kind == "speech.handheld"
 
 
 def test_bare_mic_names_land_below_the_confidence_gate():
@@ -3895,6 +4306,7 @@ guessed at, and 'M6 D.PHOI' is matched as a spare."
 **Files:**
 - Create: `wing_parser/config.py`
 - Create: `wing_parser/classifier/cache.py`
+- Modify: `pyproject.toml` — add `"ruamel.yaml>=0.18"` to `dependencies`
 - Create: `knowledge/toanaz/classifier.yaml`
 - Create: `knowledge/toanaz/principles.yaml`
 - Create: `knowledge/toanaz/shows/.gitkeep`
@@ -3922,10 +4334,15 @@ guessed at, and 'M6 D.PHOI' is matched as a spare."
 # manual entry always wins and a name only ever costs one classification
 # in its lifetime.
 #
+# Comments you add here survive every rewrite -- annotate freely.
+#
 # origin: manual | llm | pattern
 channels: {}
 buses: {}
 ```
+
+This must stay byte-identical to `_SEED` in `cache.py` (Step 5) — the
+module falls back to it when the file is absent.
 
 `knowledge/toanaz/principles.yaml`:
 
@@ -4042,6 +4459,104 @@ def test_missing_cache_file_is_created_on_first_write(tmp_path):
     empty.mkdir()
     cache.remember("Bass", "channels", Classification("instrument.bass", 0.9, "pattern"), directory=empty)
     assert (empty / "classifier.yaml").exists()
+
+
+ANNOTATED = """\
+# ToanAZ's own header. This must survive every write.
+channels:
+  kick in:            # judged by ear at the Hanoi show, do not re-guess
+    kind: drums.kick.in
+    confidence: 1.0
+    origin: manual
+buses: {}
+"""
+
+
+def test_writes_preserve_comments_the_human_wrote(tmp_path):
+    directory = tmp_path / "annotated"
+    directory.mkdir()
+    target = directory / "classifier.yaml"
+    target.write_text(ANNOTATED, encoding="utf-8")
+
+    cache.remember("My Lap", "channels", Classification("utility.playback", 0.8, "llm"), directory=directory)
+    after_one = target.read_text(encoding="utf-8")
+    assert "ToanAZ's own header" in after_one
+    assert "do not re-guess" in after_one
+
+    # A second write must not erode what the first one preserved.
+    cache.remember("MON VOX", "buses", Classification("monitor", 0.9, "pattern"), directory=directory)
+    after_two = target.read_text(encoding="utf-8")
+    assert "ToanAZ's own header" in after_two
+    assert "do not re-guess" in after_two
+    assert cache.lookup("Kick In", "channels", directory=directory).origin == "manual"
+    assert cache.lookup("My Lap", "channels", directory=directory) is not None
+    assert cache.lookup("MON VOX", "buses", directory=directory) is not None
+
+
+def test_the_shipped_seed_file_matches_the_module_fallback():
+    # cache.py falls back to _SEED when the file is absent; if the two
+    # drift, a fresh checkout and a fresh install disagree on the format.
+    shipped = (config.knowledge_dir() / "classifier.yaml").read_text(encoding="utf-8")
+    assert shipped == cache._SEED
+
+
+def test_a_hand_edited_entry_missing_a_key_names_the_file_and_the_key(tmp_path):
+    directory = tmp_path / "broken"
+    directory.mkdir()
+    (directory / "classifier.yaml").write_text(
+        "channels:\n  kick in:\n    origin: manual\nbuses: {}\n", encoding="utf-8"
+    )
+    with pytest.raises(ValueError) as excinfo:
+        cache.load(directory=directory)
+
+    message = str(excinfo.value)
+    assert "classifier.yaml" in message
+    assert "kick in" in message
+    assert "kind" in message
+
+
+@pytest.mark.parametrize(
+    "body, expected",
+    [
+        ("- a\n- b\n", "top level"),
+        ("just a string\n", "top level"),
+        ("channels:\n  - kick\nbuses: {}\n", "channels"),
+    ],
+)
+def test_a_structurally_broken_file_names_what_is_wrong(tmp_path, body, expected):
+    # Same principle as the missing-key case: hand-editing this file is
+    # the documented override path, so a damaged file must say what is
+    # damaged rather than raising AttributeError from deep inside ruamel.
+    directory = tmp_path / "wrecked"
+    directory.mkdir()
+    (directory / "classifier.yaml").write_text(body, encoding="utf-8")
+    with pytest.raises(ValueError) as excinfo:
+        cache.load(directory=directory)
+    assert expected in str(excinfo.value)
+    assert "classifier.yaml" in str(excinfo.value)
+
+
+def test_a_failed_write_leaves_the_previous_file_intact(tmp_path, monkeypatch):
+    directory = tmp_path / "atomic"
+    directory.mkdir()
+    target = directory / "classifier.yaml"
+    cache.remember("Bass", "channels", Classification("instrument.bass", 0.9, "pattern"), directory=directory)
+    before = target.read_text(encoding="utf-8")
+
+    class Boom(Exception):
+        pass
+
+    def explode(self, data, stream):
+        raise Boom("disk full")
+
+    monkeypatch.setattr("ruamel.yaml.YAML.dump", explode)
+    with pytest.raises(Boom):
+        cache.remember("Kick In", "channels", Classification("drums.kick.in", 0.95, "pattern"), directory=directory)
+
+    assert target.read_text(encoding="utf-8") == before
+    assert cache.lookup("Bass", "channels", directory=directory) is not None
+    leftovers = [p.name for p in directory.iterdir() if p.name != "classifier.yaml"]
+    assert leftovers == [], f"temp files not cleaned up: {leftovers}"
 ```
 
 - [ ] **Step 3: Run the test and verify it fails**
@@ -4107,10 +4622,12 @@ the file — the answer lands here and every later run reads it offline.
 
 from __future__ import annotations
 
+import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
-import yaml
+from ruamel.yaml import YAML
 
 from wing_parser import config
 from wing_parser.classifier.matcher import Classification
@@ -4119,32 +4636,103 @@ from wing_parser.classifier.normalize import clean
 FILENAME = "classifier.yaml"
 DOMAINS = ("channels", "buses")
 
+_SEED = """\
+# Cached and manually declared classifications.
+#
+# Keys are normalized names (trimmed, whitespace-collapsed, casefolded).
+# Anything written here is read before the pattern matcher runs, so a
+# manual entry always wins and a name only ever costs one classification
+# in its lifetime.
+#
+# Comments you add here survive every rewrite -- annotate freely.
+#
+# origin: manual | llm | pattern
+channels: {}
+buses: {}
+"""
+
+
+def _yaml() -> YAML:
+    """Round-trip mode. safe_dump would erase every comment in the file."""
+    engine = YAML()
+    engine.preserve_quotes = True
+    return engine
+
 
 def _path(directory: Path | None) -> Path:
     return config.knowledge_dir(directory) / FILENAME
 
 
-def _read(directory: Path | None) -> dict[str, dict[str, Any]]:
+def _read(directory: Path | None) -> Any:
+    """The live document, comments and all. Mutate and hand back to _write."""
     path = _path(directory)
-    if not path.exists():
-        return {domain: {} for domain in DOMAINS}
-    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    return {domain: dict(doc.get(domain) or {}) for domain in DOMAINS}
+    text = path.read_text(encoding="utf-8") if path.exists() else _SEED
+    doc = _yaml().load(text)
+    if doc is None:
+        doc = _yaml().load(_SEED)
+    if not hasattr(doc, "get"):
+        raise ValueError(
+            f"{path}: the top level must be a mapping with a channels: and a "
+            f"buses: section, but this file's top level is "
+            f"{type(doc).__name__}."
+        )
+    for domain in DOMAINS:
+        if doc.get(domain) is None:
+            doc[domain] = {}
+        elif not hasattr(doc[domain], "items"):
+            raise ValueError(
+                f"{path}: section {domain}: must be a mapping of normalized "
+                f"name to entry, but it is {type(doc[domain]).__name__}."
+            )
+    return doc
+
+
+def _write(doc: Any, directory: Path | None) -> None:
+    """Write via a sibling temp file and one atomic rename.
+
+    This file is the durable record of every classification the tool has
+    ever paid a model to make, and Task 17 rewrites it once per unresolved
+    name. Truncating it in place means a crash mid-write loses the lot.
+    """
+    path = _path(directory)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", delete=False
+    )
+    try:
+        with handle:
+            _yaml().dump(doc, handle)
+        os.replace(handle.name, path)
+    except BaseException:
+        Path(handle.name).unlink(missing_ok=True)
+        raise
+
+
+def _one(domain: str, key: str, entry: Any, path: Path) -> Classification:
+    for required in ("kind", "confidence"):
+        if required not in entry:
+            raise ValueError(
+                f"{path}: entry {domain}.{key!r} is missing required key "
+                f"{required!r}. Each entry needs at least kind: and "
+                f"confidence:, plus an optional origin: and matched:."
+            )
+    return Classification(
+        kind=str(entry["kind"]),
+        confidence=float(entry["confidence"]),
+        origin=str(entry.get("origin", "cache")),
+        matched=entry.get("matched"),
+    )
 
 
 def load(directory: Path | None = None) -> dict[str, dict[str, Classification]]:
-    raw = _read(directory)
+    doc = _read(directory)
+    path = _path(directory)
     return {
         domain: {
-            key: Classification(
-                kind=entry["kind"],
-                confidence=float(entry["confidence"]),
-                origin=entry.get("origin", "cache"),
-                matched=entry.get("matched"),
-            )
-            for key, entry in entries.items()
+            key: _one(domain, key, entry, path)
+            for key, entry in (doc.get(domain) or {}).items()
         }
-        for domain, entries in raw.items()
+        for domain in DOMAINS
     }
 
 
@@ -4158,34 +4746,42 @@ def remember(
     classification: Classification,
     directory: Path | None = None,
 ) -> None:
-    raw = _read(directory)
-    raw.setdefault(domain, {})[clean(name)] = {
+    doc = _read(directory)
+    if doc.get(domain) is None:
+        doc[domain] = {}
+    doc[domain][clean(name)] = {
         "kind": classification.kind,
         "confidence": round(float(classification.confidence), 3),
         "origin": classification.origin,
         "matched": classification.matched,
     }
-    path = _path(directory)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        yaml.safe_dump(raw, sort_keys=True, allow_unicode=True), encoding="utf-8"
-    )
+    _write(doc, directory)
 ```
+
+`ruamel.yaml` preserves insertion order rather than sorting, so new
+entries append at the end. That is the better behaviour for a file a
+human reads: every write produces an append-only diff instead of
+reshuffling lines ToanAZ already reviewed.
 
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_cache.py -v`
-Expected: PASS — 9 tests
+Expected: PASS — 16 tests
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add wing_parser/config.py wing_parser/classifier/cache.py knowledge/ tests/test_classifier_cache.py
+git add pyproject.toml wing_parser/config.py wing_parser/classifier/cache.py knowledge/ tests/test_classifier_cache.py
 git commit -m "Add knowledge-directory resolution and the classification cache
 
 Search order is WING_KNOWLEDGE_DIR, then the in-repo default, then XDG,
 then the mastering-engineer layout. Caching every resolved name is what
-turns the optional model call into a one-off rather than a running cost."
+turns the optional model call into a one-off rather than a running cost.
+
+The cache is written with ruamel.yaml in round-trip mode. This file is
+both machine-written and hand-edited, and PyYAML drops comments at parse
+time, so safe_dump would erase ToanAZ's own annotations on the first
+write."
 ```
 
 ---
@@ -4266,6 +4862,48 @@ def test_confidence_is_clamped_into_range(monkeypatch):
 
 def test_model_is_opus_5():
     assert llm.MODEL == "claude-opus-5"
+
+
+@pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  "])
+def test_a_kill_switch_set_to_something_meaning_no_does_not_disable(monkeypatch, value):
+    # Bare truthiness would read WING_DISABLE_LLM=0 as "disable", which is
+    # the opposite of what anyone typing that expects.
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv(llm.DISABLE_VAR, value)
+    monkeypatch.setitem(sys.modules, "anthropic", types.ModuleType("anthropic"))
+    assert llm.available() is True
+
+
+@pytest.mark.parametrize("value", ["1", "true", "yes", "on", "anything"])
+def test_a_kill_switch_set_to_anything_else_disables(monkeypatch, value):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    monkeypatch.setenv(llm.DISABLE_VAR, value)
+    monkeypatch.setitem(sys.modules, "anthropic", types.ModuleType("anthropic"))
+    assert llm.available() is False
+
+
+@pytest.mark.parametrize("bad", [None, "high", object()])
+def test_a_non_numeric_confidence_degrades_instead_of_raising(monkeypatch, bad):
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: ("utility.playback", bad))
+    assert llm.classify("My Lap", "channels") is None
+
+
+@pytest.mark.parametrize("kind", ["unknown", "Unknown", "UNKNOWN", " unknown ", "\tUnKnOwN"])
+def test_a_refusal_is_caught_whatever_its_casing(monkeypatch, kind):
+    # A capitalised "Unknown" that slipped through became a Classification,
+    # and Task 17 would have cached it as a real answer.
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: (kind, 0.0))
+    assert llm.classify("HS4", "channels") is None
+
+
+def test_a_kind_is_normalized_to_the_lowercase_taxonomy(monkeypatch):
+    # patterns.yaml kinds are lowercase dotted; a model answering
+    # "Utility.Playback" must not become a kind no rule can ever match.
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "_ask", lambda *a: ("  Utility.Playback  ", 0.8))
+    assert llm.classify("My Lap", "channels").kind == "utility.playback"
 ```
 
 - [ ] **Step 2: Run the test and verify it fails**
@@ -4287,7 +4925,10 @@ cached so it is asked at most once per name.
 
 Every failure path returns None. This tool is used in venues where the
 network is unreliable or absent, so an unreachable API must degrade to
-"unknown", never to an exception.
+"unknown", never to an exception. That covers a safety refusal too:
+claude-opus-5 can answer with stop_reason "refusal" and no parsed
+output, which surfaces here as an exception and lands on the same
+"unknown" path as a dead uplink.
 """
 
 from __future__ import annotations
@@ -4322,8 +4963,20 @@ confidence of 0. Do not guess to be helpful.
 _DOMAIN_WORD = {"channels": "channel", "buses": "bus"}
 
 
+_OFF = {"", "0", "false", "no", "off"}
+
+
+def _kill_switch_thrown() -> bool:
+    """True unless the variable is unset or set to something meaning "no".
+
+    Bare truthiness would make WING_DISABLE_LLM=0 disable the fallback,
+    which is the opposite of what anyone typing that expects.
+    """
+    return os.environ.get(DISABLE_VAR, "").strip().casefold() not in _OFF
+
+
 def available() -> bool:
-    if os.environ.get(DISABLE_VAR):
+    if _kill_switch_thrown():
         return False
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return False
@@ -4346,7 +4999,14 @@ def _ask(name: str, domain: str, context: str) -> tuple[str, float]:
     client = anthropic.Anthropic()
     response = client.messages.parse(
         model=MODEL,
-        max_tokens=1024,
+        # Headroom, not appetite. On claude-opus-5 thinking is ON by default
+        # -- unlike opus-4-8, where omitting the parameter meant no thinking
+        # -- and max_tokens caps thinking PLUS the reply. The answer here is
+        # two short fields, but 1024 would truncate the moment the model
+        # thinks first, and classify() swallows the resulting exception into
+        # a silent None. Overshooting costs nothing: billing is per token
+        # emitted, not per token allowed.
+        max_tokens=4096,
         messages=[
             {
                 "role": "user",
@@ -4368,21 +5028,26 @@ def classify(name: str, domain: str, context: str = "") -> Classification | None
         return None
     try:
         kind, confidence = _ask(name, domain, context)
+        # Coercion belongs inside the guard. A model that answers with a
+        # confidence of "high" instead of 0.9 must land on the same
+        # "unknown" path as a dead uplink -- float() would otherwise raise
+        # straight through the promise this module makes.
+        kind = str(kind).strip().casefold()
+        score = min(1.0, max(0.0, float(confidence)))
     except Exception:            # noqa: BLE001 - offline must never raise
         return None
+    # casefold above is what makes this catch "Unknown" and "UNKNOWN" too.
+    # Without it a capitalised refusal became a Classification, and Task 17
+    # would have written it into the knowledge file as a real answer.
     if not kind or kind == "unknown":
         return None
-    return Classification(
-        kind=kind,
-        confidence=min(1.0, max(0.0, float(confidence))),
-        origin="llm",
-    )
+    return Classification(kind=kind, confidence=score, origin="llm")
 ```
 
 - [ ] **Step 4: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_llm.py -v`
-Expected: PASS — 7 tests. No test makes a real API call.
+Expected: PASS — 26 tests (7 base + 19 parametrized cases). No test makes a real API call.
 
 - [ ] **Step 5: Commit**
 
@@ -4546,6 +5211,61 @@ def test_offline_run_still_classifies_by_pattern(vu_path, monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     scene = WingScene.load(vu_path)
     assert scene.bus(8).is_monitor is True          # MON VOX resolves offline
+
+
+def test_a_blank_name_costs_nothing_and_is_not_a_naming_problem(knowledge, monkeypatch):
+    # Six channels in the real file are unnamed. An empty slot is not a
+    # name that needs improving, and it must never reach the model.
+    called: list[str] = []
+    monkeypatch.setattr("wing_parser.classifier.resolve.llm.available", lambda: True)
+    monkeypatch.setattr(
+        "wing_parser.classifier.resolve.llm.classify",
+        lambda name, domain, context="": called.append(name) or Classification("x", 0.9, "llm"),
+    )
+
+    classifier = Classifier(directory=knowledge, use_llm=True)
+    for blank in ("", "   ", "\t"):
+        assert classifier.resolve(blank, "channels").kind == "unknown"
+
+    assert called == []
+    assert classifier.unresolved == ()
+    assert classifier.low_confidence == ()
+
+
+def test_the_knowledge_file_is_read_once_not_once_per_name(knowledge, monkeypatch):
+    # cache.lookup() re-parses the whole file per call, and since Task 15
+    # that parse is a ruamel round-trip. Measured on a 200-entry cache:
+    # 50 per-name lookups took 3.4 s against 65 ms for one load. The file
+    # grows one entry per name ever seen, so per-name reads get slower
+    # exactly as the tool gets used.
+    from wing_parser.classifier import resolve as resolve_module
+
+    loads: list[object] = []
+    real_load = resolve_module.cache.load
+
+    def counted(directory=None):
+        loads.append(directory)
+        return real_load(directory)
+
+    monkeypatch.setattr(resolve_module.cache, "load", counted)
+
+    classifier = Classifier(directory=knowledge, use_llm=False)
+    for name in ("Kick In", "Snare Top", "My Lap", "HS4", "MON VOX"):
+        classifier.resolve(name, "channels")
+
+    assert len(loads) == 1
+
+
+def test_a_classifier_nobody_asks_touches_no_disk(monkeypatch):
+    # WingScene builds one unconditionally, including for scenes the
+    # caller only wants routing or levels from.
+    from wing_parser.classifier import resolve as resolve_module
+
+    def explode(directory=None):
+        raise AssertionError("the knowledge file was read on construction")
+
+    monkeypatch.setattr(resolve_module.cache, "load", explode)
+    Classifier(directory=None, use_llm=False)       # must not raise
 ```
 
 - [ ] **Step 2: Run the test and verify it fails**
@@ -4583,9 +5303,36 @@ class Classifier:
         self._pending: list[tuple[str, str, Classification]] = []
         self._unresolved: list[str] = []
         self._low: list[str] = []
+        # Loaded on first use, not here: WingScene builds a Classifier
+        # unconditionally, and a scene nobody asks about types for should
+        # not touch the disk at all.
+        self._disk: dict[str, dict[str, Classification]] | None = None
+
+    def _cached(self, name: str, domain: str) -> Classification | None:
+        """One read of the knowledge file per Classifier, not per name.
+
+        cache.lookup() re-reads and re-parses the whole file on every
+        call, and since Task 15 that parse is a ruamel round-trip that
+        rebuilds the comment tree. Measured on a 200-entry cache: 50
+        per-name lookups took 3.4 s, one load plus 50 in-memory lookups
+        took 65 ms. The file is designed to grow one entry per name ever
+        seen, so the per-name version gets slower exactly as ToanAZ uses
+        the tool more -- 17 s at a thousand entries.
+        """
+        if self._disk is None:
+            self._disk = cache.load(self._directory)
+        return self._disk.get(domain, {}).get(clean(name))
 
     def resolve(self, name: str, domain: str) -> Classification:
-        key = (domain, clean(name))
+        target = clean(name)
+        # An unnamed channel is an empty slot, not a naming problem. Without
+        # this, all six blank channels in the real file would land in
+        # `unresolved` as an empty string, and the first one would spend a
+        # model call asking what "" is.
+        if not target:
+            return UNKNOWN
+
+        key = (domain, target)
         if key in self._memo:
             return self._memo[key]
 
@@ -4600,7 +5347,7 @@ class Classifier:
         return result
 
     def _first_answer(self, name: str, domain: str) -> Classification:
-        cached = cache.lookup(name, domain, directory=self._directory)
+        cached = self._cached(name, domain)
         if cached is not None:
             return cached
 
@@ -4614,12 +5361,17 @@ class Classifier:
                 self._pending.append((name, domain, guessed))
                 return guessed
 
-        return found if found is not UNKNOWN else UNKNOWN
+        # A weak pattern hit still beats nothing: `found` is already UNKNOWN
+        # when nothing matched, so returning it covers both cases.
+        return found
 
     def flush(self) -> None:
         for name, domain, result in self._pending:
             cache.remember(name, domain, result, directory=self._directory)
         self._pending.clear()
+        # The in-memory copy is now behind the file. Drop it rather than
+        # patch it, so the next read is honest.
+        self._disk = None
 
     @property
     def unresolved(self) -> tuple[str, ...]:
@@ -4697,7 +5449,7 @@ and add:
 - [ ] **Step 6: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_classifier_resolve.py -v`
-Expected: PASS — 11 tests. The last two are the offline guarantee: with no API key, `MON VOX` still resolves by pattern.
+Expected: PASS — 14 tests. `test_offline_run_still_classifies_by_pattern` is the offline guarantee: with no API key, `MON VOX` still resolves by pattern.
 
 - [ ] **Step 7: Run the whole suite**
 
@@ -5300,9 +6052,17 @@ def _channels(scene) -> Iterator[Target]:
 
 
 def _channel_sends(scene) -> Iterator[Target]:
+    """One target per bus send.
+
+    Matrix sends live in the same tuple and are skipped here: matrix 3 is
+    not bus 3, and binding one to the other would let a bus-role rule fire
+    against a matrix destination.
+    """
     buses = {bus.number: bus for bus in scene.buses()}
     for channel in scene.channels():
         for send in channel.sends:
+            if send.dest_kind != "bus":
+                continue
             destination = buses.get(send.dest)
             yield Target(
                 name=f"ch.{channel.number}.send.{send.dest}",
@@ -5373,7 +6133,7 @@ def evaluate_all(scene, rules: Iterable[Rule]) -> list[Finding]:
 - [ ] **Step 4: Run the test and verify it passes**
 
 Run: `python -m pytest tests/test_advisory_evaluator.py -v`
-Expected: PASS — 12 tests
+Expected: PASS — 16 tests
 
 - [ ] **Step 5: Commit**
 

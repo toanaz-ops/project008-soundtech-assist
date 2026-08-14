@@ -1,0 +1,17 @@
+# Source groups addressable by ch.in.conn.grp.
+# Source: WING_Series_Manual_Knowledge_Base.md section 1.1
+groups:
+  LCL:  { label: "Local In",        channels: 24 }
+  AUX:  { label: "Aux In",          channels: 8 }
+  A:    { label: "AES50-A",         channels: 48 }
+  B:    { label: "AES50-B",         channels: 48 }
+  C:    { label: "AES50-C",         channels: 48 }
+  SC:   { label: "StageConnect",    channels: 32 }
+  USB:  { label: "USB Audio",       channels: 48 }
+  CRD:  { label: "Expansion Card",  channels: 64 }
+  MOD:  { label: "Internal Module", channels: 64 }
+  PLAY: { label: "USB Player",      channels: 4 }
+  AES:  { label: "AES/EBU",         channels: 2 }
+  USR:  { label: "User Signal",     channels: 24 }
+  OSC:  { label: "Oscillator",      channels: 2 }
+  "OFF":  { label: "Not patched",     channels: 0 }

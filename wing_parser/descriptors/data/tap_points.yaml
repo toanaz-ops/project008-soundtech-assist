@@ -1,0 +1,11 @@
+# ch.ptap selects where TAP-mode sends draw their signal.
+# Values are stored as strings in the file, e.g. "5".
+# Source: WING_Series_Manual_Knowledge_Base.md section 5.1
+points:
+  "1": { id: INPUT,     label: "Input",           note: "immediately after the preamp" }
+  "2": { id: FILTER,    label: "Post filter",     note: "after low-cut / high-cut" }
+  "3": { id: TAP3,      label: "Tap 3",           note: "inter-processing slot" }
+  "4": { id: PRE_FDR,   label: "Pre-fader",       note: "post processing, pre-fader" }
+  "5": { id: POST_FDR,  label: "Post-fader",      note: "post fader, pre-INS2" }
+  "6": { id: POST_PROC, label: "Post processing", note: "post INS2, pre-width" }
+unknown: UNKNOWN_TAP

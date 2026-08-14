@@ -1,0 +1,28 @@
+# Schema deltas between WING snapshot versions.
+# The ae_data/ce_data payload is identical across all known versions;
+# only the outer envelope differs. Adding a firmware means adding an
+# entry here — no Python change.
+newest: snapshot.11
+
+versions:
+  snapshot.10:
+    label: "Wing-Edit 3.2.x"
+    meta_keys:
+      - creator_fw
+      - creator_sn
+      - creator_model
+      - creator_version
+      - creator_name
+      - created
+    has_globals: true
+    cards: [wlive]
+
+  snapshot.11:
+    label: "Wing-Edit 3.3.x"
+    meta_keys:
+      - creator
+      - creator_vers
+      - creator_model
+      - creator_name
+    has_globals: false
+    cards: [wlive, wmadi]

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wing-parser"
+version = "0.1.0"
+description = "Read and analyse Behringer WING .snap scene files"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "ToanAZ" }]
+dependencies = ["PyYAML>=6.0", "ruamel.yaml>=0.18"]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.40"]
+mcp = ["mcp>=1.2"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0"]
+
+[project.scripts]
+wing = "wing_parser.cli.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["wing_parser*"]
+
+[tool.setuptools.package-data]
+wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]
