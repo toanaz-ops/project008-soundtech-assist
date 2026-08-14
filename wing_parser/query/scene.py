@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from wing_parser.advisory.resolver import AdvisoryFacade
 from wing_parser.classifier.resolve import Classifier
 from wing_parser.core.loader import RawScene, load_raw
 from wing_parser.core.models import Anomaly, DcaData, MuteGroupData, SourceData, SourceRef
@@ -147,6 +148,10 @@ class WingScene:
     @property
     def routing(self) -> RoutingFacade:
         return RoutingFacade(self)
+
+    @property
+    def advisory(self) -> AdvisoryFacade:
+        return AdvisoryFacade(self)
 
     def diff(self, other: "WingScene") -> tuple[Change, ...]:
         return compare(self, other)

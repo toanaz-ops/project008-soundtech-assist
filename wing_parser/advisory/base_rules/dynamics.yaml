@@ -1,0 +1,29 @@
+rules:
+  - id: E6
+    title: "Gate and automix on the same channel"
+    severity: warning
+    source: >
+      docs/knowledge-base/01-live-audio-ai/AI-Plugins-In-Live-Sound.md L383-385;
+      docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md section 4.4
+    rationale: >
+      The gate opens late, the automixer reads that as speech onset, and the
+      first syllable gets a 20-40 ms gain ramp. Note this checks postins.on,
+      not just postins.mode: a channel can carry a configured but inactive
+      automix assignment, and flagging that would be a false positive.
+      Where a channel genuinely needs both, the sources allow a gate range
+      of no more than 6 dB with a hold of at least 200 ms.
+    requires_classifier: false
+    when:
+      for_each: channel
+      where:
+        channel.gate.on: true
+        channel.post_insert.on: true
+        channel.post_insert.automix_group:
+          not: null
+        channel.gate.range_dB:
+          gt: 6.0
+    message: >
+      Channel {channel.number} ({channel.name}) has both an active gate
+      (range {channel.gate.range_dB} dB) and automix group
+      {channel.post_insert.automix_group}. The gate opens late and the
+      automixer reads that as speech onset, ramping the first syllable.

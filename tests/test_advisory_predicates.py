@@ -188,7 +188,6 @@ def test_loader_requires_source_and_rationale(tmp_path: Path):
         load_rules(path, layer="base")
 
 
-@pytest.mark.xfail(strict=True, reason="base_rules/*.yaml land in Task 20; strict xfail turns green again into a failure, forcing this marker's removal then")
 def test_base_rules_load_from_the_package():
     rules = load_base_rules()
     assert {r.id for r in rules} == {"G8", "G7", "E6"}
