@@ -1,0 +1,42 @@
+rules:
+  - id: E6
+    title: "Gate and automix on the same channel"
+    severity: warning
+    source: >
+      docs/knowledge-base/01-live-audio-ai/AI-Plugins-In-Live-Sound.md L383-384;
+      docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md section 4.4,
+      section 4.1 L549
+    rationale: >
+      The gate opens late, the automixer reads that as speech onset, and the
+      first syllable gets a 20-40 ms gain ramp. Note this checks postins.on,
+      not just postins.mode: a channel can carry a configured but inactive
+      automix assignment, and flagging that would be a false positive.
+      AI-Plugins-In-Live-Sound.md L383-384 gives an unconditional "do not
+      gate and automix the same channel," with no exception; only
+      Corporate-B2B-Events.md section 4.4 grants one, allowing a gate range
+      of no more than 6 dB with a 200 ms hold if a channel truly needs both.
+      Section 4.1's lectern gate row does not contradict section 4.4: its
+      own guidance text says to prefer automix over gating and, if gating,
+      keep the range shallow, the same direction as 4.4. But the row's own
+      tabulated starting values are range 12 dB, hold 120 ms (L549), so a
+      lectern gate built to that table and later assigned to an automix
+      group trips this rule anyway -- a tension between the table's
+      numbers and the prose ceiling, not a self-contradiction. This rule
+      keeps section 4.4's 6 dB range ceiling, because 4.4 is the passage
+      that directly addresses a channel running gate and automix together,
+      and does not check hold time.
+    requires_classifier: false
+    when:
+      for_each: channel
+      where:
+        channel.gate.on: true
+        channel.post_insert.on: true
+        channel.post_insert.automix_group:
+          not: null
+        channel.gate.range_dB:
+          gt: 6.0
+    message: >
+      Channel {channel.number} ({channel.name}) has both an active gate
+      (range {channel.gate.range_dB} dB) and automix group
+      {channel.post_insert.automix_group}. The gate opens late and the
+      automixer reads that as speech onset, ramping the first syllable.

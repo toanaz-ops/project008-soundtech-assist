@@ -42,3 +42,10 @@ def test_missing_type_field_is_an_error(tmp_path):
     bad.write_text('{"ae_data": {}, "ce_data": {}}', encoding="utf-8")
     with pytest.raises(ValueError, match="type"):
         load_raw(bad)
+
+
+def test_top_level_array_is_an_error(tmp_path):
+    bad = tmp_path / "bad.snap"
+    bad.write_text("[1, 2]", encoding="utf-8")
+    with pytest.raises(ValueError, match="list"):
+        load_raw(bad)

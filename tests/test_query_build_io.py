@@ -38,6 +38,19 @@ def test_mute_groups(vu_path):
     assert groups[3].name == ""
 
 
+def test_dcas_reject_a_non_numeric_key():
+    # build_dcas reuses core.normalizer.int_keyed rather than reimplementing
+    # the same string-to-int conversion inline; this pins that it still
+    # names the bad key rather than raising a bare ValueError from int().
+    with pytest.raises(ValueError, match="oops"):
+        build_dcas({"1": {"name": "a"}, "oops": {"name": "b"}})
+
+
+def test_mute_groups_reject_a_non_numeric_key():
+    with pytest.raises(ValueError, match="oops"):
+        build_mute_groups({"1": {"name": "a"}, "oops": {"name": "b"}})
+
+
 def test_bus_eight_is_mon_vox_with_a_compressor(vu_path):
     data, anomalies = build_bus("bus", 8, load_raw(vu_path).ae["bus"]["8"])
 

@@ -1,0 +1,56 @@
+# Generic monitor-path rules mined from docs/knowledge-base/.
+# These are the textbook. ToanAZ's principles override them; see
+# knowledge/toanaz/principles.yaml.
+rules:
+  - id: G8
+    title: "Monitor send is post-fader"
+    severity: warning
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 2"
+    rationale: >
+      A post-fader monitor send means a FOH fader move changes what the
+      performer hears. The knowledge base calls post-fader monitor sends
+      a common and disruptive misconfiguration.
+    requires_classifier: true
+    when:
+      for_each: channel.sends
+      where:
+        destination_bus.role: monitor
+        # Both keys are prefixed `send.`, and must stay that way. The
+        # channel.sends context binds three names -- channel, send and
+        # destination_bus -- so a bare `mode` resolves against the context
+        # dict itself, finds nothing, and the rule silently never fires.
+        # The prefix also dodges YAML 1.1: a bare `on:` key parses as the
+        # boolean True, and resolve_path then dies on True.split(".").
+        send.mode: POST
+        send.on: true
+    message: >
+      Channel {channel.number} ({channel.name}) sends post-fader to bus
+      {destination_bus.number} ({destination_bus.name}), which looks like a
+      monitor bus. FOH fader moves will change this performer's mix.
+
+  - id: G7
+    title: "Monitor bus has no limiter"
+    severity: error
+    source: >
+      docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md section 4.1;
+      docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8
+    rationale: >
+      A feedback burst into in-ear moulds is a hearing injury. Core-Skills-
+      Overview section 3.4 step 8 calls a hard limiter on every IEM mix
+      non-optional, typically -6 to -10 dBFS. The rider's section 4.1 table
+      also lists a limiter as a requirement, but unlike its neighbouring
+      "Ambient mics" row it carries no [R] contractual tag and states no
+      ceiling -- so only Core-Skills makes the non-optional claim. This rule
+      checks only that a limiter is present, because the correct ceiling
+      depends on the IEM pack and cannot be read from the scene file.
+    requires_classifier: true
+    when:
+      for_each: bus
+      where:
+        bus.role: monitor
+        bus.dyn.model:
+          not_in: [LIM, LIMIT, PRECISION_LIM, BRICK]
+    message: >
+      Bus {bus.number} ({bus.name}) looks like a monitor bus but its
+      dynamics slot holds {bus.dyn.model}, not a limiter. Every in-ear mix
+      needs a hard limiter for hearing protection.

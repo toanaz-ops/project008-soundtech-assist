@@ -49,7 +49,12 @@ def _feeds_anything(view) -> bool:
 
 def feeds_into(scene: "WingScene", kind: str, number: int) -> tuple[Feed, ...]:
     """Every enabled send from any channel or bus into the named destination."""
-    attribute, dest_kind = SEND_SECTION.get(kind, ("sends", "bus"))
+    if kind not in SEND_SECTION:
+        raise ValueError(
+            f"unrecognised destination kind {kind!r}; expected one of "
+            f"{sorted(SEND_SECTION)}"
+        )
+    attribute, dest_kind = SEND_SECTION[kind]
     found: list[Feed] = []
 
     sources = [("channel", ch) for ch in scene.channels()]
