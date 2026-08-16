@@ -15,7 +15,9 @@ def scene(vu_path):
 
 
 def test_three_base_rules_ship(scene):
-    assert {r.id for r in load_base_rules()} == {"G8", "G7", "G9", "E6"}
+    assert {r.id for r in load_base_rules()} == {
+        "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
+    }
 
 
 def test_every_base_rule_cites_a_source_and_a_rationale():

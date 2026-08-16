@@ -1,0 +1,90 @@
+# Signal-routing rules: things that must never reach an output family.
+# All universal. loader.load_base_rules globs this directory, so the file
+# is picked up with no registration step.
+rules:
+  - id: R1
+    title: "Click track reaches a FOH main"
+    severity: error
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L175: click is 'To monitors only, hard-muted at FOH'"
+    rationale: >
+      A click in the PA is audible to the audience. The rider states the
+      routing baldly and bolds it: to monitors only, hard-muted at FOH
+      (input list row 26, repeated verbatim at L1092). Only a main whose
+      role is confidently `main` counts as FOH here: main 4 on the real
+      console is named TB OUT and classifies as talkback, and a click
+      send to a monitor matrix is exactly where a click belongs.
+    requires_classifier: true
+    when:
+      for_each: channel.main_sends
+      where:
+        channel.source_type: utility.click
+        main_send.on: true
+        destination_main.role: main
+    message: >
+      Channel {channel.number} ({channel.name}) looks like a click track
+      and its send to main {destination_main.number}
+      ({destination_main.name}) is on.
+
+  - id: R2
+    title: "Talkback reaches a FOH main"
+    severity: error
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L180: talkback 'Stage left, not in FOH mains'"
+    rationale: >
+      Talkback is engineer-to-stage, never programme (the same fact the
+      talkback bus pattern records in patterns.yaml). The rider's input
+      row 31 bolds "not in FOH mains". The destination-role test is what
+      lets the real console's dedicated TB OUT main pass: it classifies
+      as talkback, not main, so feeding it is the intended routing.
+    requires_classifier: true
+    when:
+      for_each: channel.main_sends
+      where:
+        channel.source_type: utility.talkback
+        main_send.on: true
+        destination_main.role: main
+    message: >
+      Channel {channel.number} ({channel.name}) looks like a talkback mic
+      and its send to main {destination_main.number}
+      ({destination_main.name}) is on.
+
+  - id: R3
+    title: "Timecode routed into a mix destination"
+    severity: error
+    source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L46: LTC 'sounds like audio noise -- never patch it through a normal audio channel'"
+    rationale: >
+      LTC rides XLR and sounds like noise; any bus or matrix send that is
+      on is a route toward ears. requires_classifier is deliberately
+      false: the confidence bound to a send target is the destination's
+      role, and an unnamed destination must not exempt a timecode channel
+      -- the channel-side kind equality in `where` is the classification
+      doing the work. R3M is the same rule over main sends; rule ids must
+      be unique, so the pair shares this rationale.
+    requires_classifier: false
+    when:
+      for_each: channel.sends
+      where:
+        channel.source_type: utility.timecode
+        send.on: true
+    message: >
+      Channel {channel.number} ({channel.name}) looks like timecode and
+      its send to {destination_bus.kind} {destination_bus.number}
+      ({destination_bus.name}) is on. LTC sounds like audio noise on a
+      loudspeaker.
+
+  - id: R3M
+    title: "Timecode routed into a main"
+    severity: error
+    source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L46: LTC 'sounds like audio noise -- never patch it through a normal audio channel'"
+    rationale: >
+      The main-send half of R3; see R3. Split because one rule has one
+      for_each.
+    requires_classifier: false
+    when:
+      for_each: channel.main_sends
+      where:
+        channel.source_type: utility.timecode
+        main_send.on: true
+    message: >
+      Channel {channel.number} ({channel.name}) looks like timecode and
+      its send to main {destination_main.number}
+      ({destination_main.name}) is on.

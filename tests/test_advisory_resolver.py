@@ -37,7 +37,9 @@ def scene(vu_path, monkeypatch):
 
 
 def test_only_base_rules_are_active_with_an_empty_principles_file(scene, knowledge):
-    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "G9", "E6"}
+    assert {r.id for r in active_rules(scene, directory=knowledge)} == {
+        "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
+    }
 
 
 def test_the_shipped_principles_file_loads_without_raising(scene, monkeypatch):
@@ -702,7 +704,9 @@ def test_no_profile_loads_no_show_file(scene, knowledge):
     (knowledge / "shows" / "small.yaml").write_text(
         yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
     )
-    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "G9", "E6"}
+    assert {r.id for r in active_rules(scene, directory=knowledge)} == {
+        "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
+    }
 
 
 def test_a_profile_loads_only_its_own_file(scene, knowledge):
