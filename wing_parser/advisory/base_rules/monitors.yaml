@@ -47,6 +47,13 @@ rules:
       repository and must not be guessed; the only models observed in real
       data are COMP and CMB. See the design spec section 7.1 for the exact
       clause to add once that token is known.
+      One caveat on the predicate itself, the same hazard E6's clause
+      documents for hold_ms: build_dyn defaults a bus's dyn.on to False
+      when the scene file's raw dyn block is absent entirely, so a bus with
+      no dynamics block at all reads as on: False and would satisfy this
+      rule's condition. Both sample files carry a dyn block on every bus,
+      so this cannot fire on known data, but a future scene that omits the
+      block would trip it on a bus that never stated dyn.on at all.
     requires_classifier: true
     when:
       for_each: bus
