@@ -13,14 +13,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from wing_parser import config
-from wing_parser.advisory.loader import (
-    _load_yaml,
-    _optional,
-    _validate_any_of,
-    _validate_where,
-    load_rules,
-)
+from wing_parser.advisory.loader import _load_yaml, load_rules
 from wing_parser.advisory.models import SEVERITIES, Rule
+from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
 
 PRINCIPLES_FILE = "principles.yaml"
 SHOWS_DIR = "shows"

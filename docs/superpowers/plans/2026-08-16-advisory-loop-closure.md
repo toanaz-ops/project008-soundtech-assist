@@ -42,7 +42,7 @@
 - Consumes: `Rule`, `all_match`, `resolve_path`, `_validate_where`
 - Produces:
   - `Rule.any_of: tuple[dict[str, Any], ...]` — defaults to `()`
-  - `wing_parser.advisory.loader._validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]`
+  - `wing_parser.advisory.validation._validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]`
   - `Finding.evidence["_any_of"]` — the index of the matched clause, present only on rules that have `any_of`
 
 - [ ] **Step 1: Write the failing loader tests**
@@ -154,7 +154,7 @@ In `wing_parser/advisory/models.py`, add to `Rule`, after `applies_when` and bef
 
 - [ ] **Step 4: Add the loader validation**
 
-In `wing_parser/advisory/loader.py`, add after `_validate_where`:
+In `wing_parser/advisory/validation.py`, add after `_validate_where`:
 
 ```python
 def _validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]:
@@ -244,7 +244,7 @@ In `layers.py::_as_rules`, make the identical change: after the existing
 ```
 
 and `any_of=any_of,` in its `Rule(...)` call after `applies_when=...`. Add
-`_validate_any_of` to the existing `from wing_parser.advisory.loader import ...` line.
+`_validate_any_of` to the existing `from wing_parser.advisory.validation import ...` line.
 
 - [ ] **Step 6: Run the loader tests**
 
