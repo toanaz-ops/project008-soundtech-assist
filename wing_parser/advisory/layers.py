@@ -13,7 +13,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from wing_parser import config
-from wing_parser.advisory.loader import _load_yaml, _optional, _validate_where, load_rules
+from wing_parser.advisory.loader import (
+    _load_yaml,
+    _optional,
+    _validate_any_of,
+    _validate_where,
+    load_rules,
+)
 from wing_parser.advisory.models import SEVERITIES, Rule
 
 PRINCIPLES_FILE = "principles.yaml"
@@ -113,6 +119,11 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
 
         where = dict(when.get("where") or {})
         _validate_where(where, path, entry["id"])
+        any_of = (
+            _validate_any_of(when["any_of"], path, entry["id"])
+            if "any_of" in when
+            else ()
+        )
 
         rules.append(
             Rule(
@@ -129,6 +140,7 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 enabled=bool(_optional(entry, "enabled", True)),
                 hardness=_optional(entry, "hardness", "hard"),
                 applies_when=dict(entry.get("applies_when") or {}),
+                any_of=any_of,
                 supersedes=tuple(entry.get("supersedes") or ()),
             )
         )

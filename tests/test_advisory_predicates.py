@@ -246,3 +246,91 @@ def test_loader_rejects_a_non_mapping_when_block(tmp_path: Path):
     )
     with pytest.raises(ValueError, match="when"):
         load_rules(path, layer="base")
+
+
+def _rule_doc(**when_extra):
+    when = {"for_each": "channel", "where": {"channel.muted": True}}
+    when.update(when_extra)
+    return {"rules": [{"id": "T", "title": "t", "severity": "warning",
+                       "source": "s", "rationale": "r", "when": when,
+                       "message": "m"}]}
+
+
+def test_any_of_clauses_are_read_into_the_rule(tmp_path: Path):
+    path = tmp_path / "r.yaml"
+    path.write_text(
+        yaml.safe_dump(_rule_doc(any_of=[{"channel.number": 8},
+                                         {"channel.name": "HS4"}])),
+        encoding="utf-8",
+    )
+    rule = load_rules(path, layer="base")[0]
+    assert rule.any_of == ({"channel.number": 8}, {"channel.name": "HS4"})
+
+
+def test_an_empty_any_of_is_rejected(tmp_path: Path):
+    """`any_of:` with the value left off would make any() False and kill
+    the rule in silence -- the same present-but-null shape as `enabled:`."""
+    path = tmp_path / "empty.yaml"
+    path.write_text(
+        "rules:\n"
+        "  - id: T\n    title: t\n    severity: warning\n    source: s\n"
+        "    rationale: r\n    message: m\n"
+        "    when:\n      for_each: channel\n      where: {}\n"
+        "      any_of:\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="any_of"):
+        load_rules(path, layer="base")
+
+
+def test_an_any_of_that_is_a_list_but_empty_is_rejected(tmp_path: Path):
+    path = tmp_path / "empty-list.yaml"
+    path.write_text(yaml.safe_dump(_rule_doc(any_of=[])), encoding="utf-8")
+    with pytest.raises(ValueError, match="any_of"):
+        load_rules(path, layer="base")
+
+
+def test_a_non_list_any_of_is_rejected(tmp_path: Path):
+    path = tmp_path / "scalar.yaml"
+    path.write_text(yaml.safe_dump(_rule_doc(any_of="channel.number")), encoding="utf-8")
+    with pytest.raises(ValueError, match="any_of"):
+        load_rules(path, layer="base")
+
+
+def test_a_nested_any_of_is_rejected(tmp_path: Path):
+    """One level only. The predicate language stays small on purpose."""
+    path = tmp_path / "nested.yaml"
+    path.write_text(
+        yaml.safe_dump(_rule_doc(any_of=[{"any_of": [{"channel.number": 8}]}])),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="nest"):
+        load_rules(path, layer="base")
+
+
+def test_an_unknown_operator_inside_an_any_of_clause_is_rejected(tmp_path: Path):
+    """Operator validation stopped at `where` and must reach in here too."""
+    path = tmp_path / "op.yaml"
+    path.write_text(
+        yaml.safe_dump(_rule_doc(any_of=[{"channel.number": {"greater": 8}}])),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="greater"):
+        load_rules(path, layer="base")
+
+
+def test_a_principle_may_also_carry_any_of(tmp_path: Path):
+    """layers._as_rules reads the same when: block and must validate it
+    the same way; the toanaz layer is the hand-edited one."""
+    directory = tmp_path / "knowledge"
+    directory.mkdir()
+    (directory / "principles.yaml").write_text(
+        "principles:\n"
+        "  - id: p1\n    principle: x\n    source: s\n    rationale: r\n"
+        "    when:\n      for_each: channel\n      where: {}\n"
+        "      any_of:\n",
+        encoding="utf-8",
+    )
+    from wing_parser.advisory.layers import _principles
+    with pytest.raises(ValueError, match="any_of"):
+        _principles(directory)

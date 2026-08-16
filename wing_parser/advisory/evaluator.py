@@ -78,6 +78,14 @@ def targets_for(scene, for_each: str) -> Iterator[Target]:
     return ITERATORS[for_each](scene)
 
 
+def _matched_clause(context: dict[str, Any], clauses: tuple[dict, ...]) -> int | None:
+    """Index of the first `any_of` clause that matches, or None."""
+    for index, clause in enumerate(clauses):
+        if all_match(context, clause):
+            return index
+    return None
+
+
 def evaluate(scene, rule: Rule) -> list[Finding]:
     if not rule.enabled:
         return []
@@ -88,6 +96,20 @@ def evaluate(scene, rule: Rule) -> list[Finding]:
             continue
         if not all_match(target.context, rule.where):
             continue
+
+        matched = None
+        if rule.any_of:
+            matched = _matched_clause(target.context, rule.any_of)
+            if matched is None:
+                continue
+
+        evidence = {path: resolve_path(target.context, path) for path in rule.where}
+        if matched is not None:
+            evidence.update(
+                {path: resolve_path(target.context, path) for path in rule.any_of[matched]}
+            )
+            evidence["_any_of"] = matched
+
         findings.append(
             Finding(
                 rule_id=rule.id,
@@ -95,9 +117,7 @@ def evaluate(scene, rule: Rule) -> list[Finding]:
                 severity=rule.severity,
                 target=target.name,
                 message=render(rule.message, target.context),
-                evidence={
-                    path: resolve_path(target.context, path) for path in rule.where
-                },
+                evidence=evidence,
                 confidence=target.confidence if rule.requires_classifier else 1.0,
             )
         )

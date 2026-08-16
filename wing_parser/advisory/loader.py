@@ -49,6 +49,49 @@ def _validate_where(where: dict, path: Path, rule_id: str) -> None:
                 )
 
 
+def _validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]:
+    """Read and check an `any_of` block. One level, never empty.
+
+    `when.get("any_of")` returns None both when the key is absent and
+    when it is present with the value left off, so the caller tests
+    membership and only reaches here in the second case. That distinction
+    is the whole point: an absent `any_of` means "this rule has no OR",
+    while a blank one would make `any(...)` False and silently kill the
+    rule -- the same present-but-null hazard `_optional` exists for.
+    """
+    if raw is None:
+        raise ValueError(
+            f"{path}: rule {rule_id} has an empty any_of; remove the key "
+            "or give it at least one clause"
+        )
+    if not isinstance(raw, list):
+        raise ValueError(
+            f"{path}: rule {rule_id} has an any_of that must be a list, not "
+            f"{type(raw).__name__} ({raw!r})"
+        )
+    if not raw:
+        raise ValueError(
+            f"{path}: rule {rule_id} has an empty any_of; remove the key "
+            "or give it at least one clause"
+        )
+
+    clauses: list[dict] = []
+    for clause in raw:
+        if not isinstance(clause, dict):
+            raise ValueError(
+                f"{path}: rule {rule_id} has an any_of clause that must be a "
+                f"mapping, not {type(clause).__name__} ({clause!r})"
+            )
+        if "any_of" in clause:
+            raise ValueError(
+                f"{path}: rule {rule_id} nests any_of inside an any_of clause; "
+                "one level of OR only"
+            )
+        _validate_where(clause, path, rule_id)
+        clauses.append(dict(clause))
+    return tuple(clauses)
+
+
 def _optional(entry: dict, key: str, default):
     """Read an optional field, treating an explicit YAML null as unset.
 
@@ -92,6 +135,11 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
 
     where = dict(when.get("where") or {})
     _validate_where(where, where_from, entry["id"])
+    any_of = (
+        _validate_any_of(when["any_of"], where_from, entry["id"])
+        if "any_of" in when
+        else ()
+    )
 
     return Rule(
         id=entry["id"],
@@ -107,6 +155,7 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         enabled=bool(_optional(entry, "enabled", True)),
         hardness=_optional(entry, "hardness", "hard"),
         applies_when=dict(entry.get("applies_when") or {}),
+        any_of=any_of,
         supersedes=tuple(entry.get("supersedes") or ()),
     )
 
