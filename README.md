@@ -349,10 +349,18 @@ is required beyond re-running the command.
   - `bus` — every bus, excluding auxes, mains and matrices, bound as
     `bus`.
   - `output` — every summing destination — buses, auxes, mains *and*
-    matrices — bound as `bus` regardless of family. This is how G7/G8/G9
-    see monitor mixes that live on a matrix, not just a bus.
-  - `channel.sends` — one target per active bus or matrix send, binding
-    `channel`, `send`, and `destination_bus`.
+    matrices — bound as `bus` regardless of family. This is how G7 and G9
+    (both `for_each: output`) see monitor mixes that live on a matrix, not
+    just a bus.
+  - `channel.sends` — one target per bus or matrix send, **on or off** —
+    binding `channel`, `send`, and `destination_bus`. The iterator itself
+    applies no `send.on` filter; a rule that only cares about active sends
+    must say so in its own `where` clause, the way G8 states
+    `send.on: true` explicitly (see `monitors.yaml`) — omitting it is an
+    easy trap that fires the rule on a send that is switched off, too.
+    This is also G8's route to matrix destinations: the iterator handles
+    `send.dest_kind == "matrix"` directly, a different mechanism from the
+    `output` iterator above.
   - `channel.main_sends` — one target per channel's send to a main,
     binding `channel`, `main_send`, and `destination_main`.
   - `none` — no targets at all, for a rule that exists only to
