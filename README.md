@@ -198,8 +198,10 @@ Rules pick the granularity they actually need:
 unless a `toanaz` principle or a `show` profile supersedes it (see
 above), and an `info`-severity rule is never wrong to see fire — it is
 a note, not an alarm. `PB*` and `PC*` are event-scoped **presets**: an
-info-tier rule set for one kind of show, only live when a profile
-declares the matching `event` (see below). `N2` ships
+info-tier rule set for one kind of show. With no profile declared, all
+rules run, presets included; declaring a profile with an `event` set
+switches off base rules tagged with a *different* event (see below).
+`N2` ships
 `enabled: false` — its rationale (in `naming.yaml`) explains that the
 fader-floor discriminator it needs does not reliably separate a
 factory-default bus from one genuinely in use, so it stays off rather

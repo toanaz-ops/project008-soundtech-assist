@@ -32,8 +32,8 @@ The header line gives the channel's number and its raw name. Below it:
 - **EQ** — the model name and, if a descriptor exists for that model,
   each band's gain, frequency, and Q. If no descriptor is registered for
   the model, the bands are left unparsed rather than guessed at.
-- **sends** — only the active sends, each with its destination bus,
-  level, and pre/post mode.
+- **sends** — only the active sends, each with its destination (a bus
+  or a matrix), level, and pre/post mode.
 
 ## What this does not check
 

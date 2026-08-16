@@ -188,3 +188,11 @@ class TestReceives:
         from wing_parser import WingScene
         scene = WingScene.load(vu_path)
         assert scene.main(1).receives_any   # 28 main-sends are on in this file
+
+    def test_receives_any_false_when_nothing_feeds_it(self, vu_path, monkeypatch):
+        monkeypatch.setenv("WING_DISABLE_LLM", "1")
+        from wing_parser import WingScene
+        scene = WingScene.load(vu_path)
+        # bus 5 (HEADSET) has no channel send targeting it in this file --
+        # the False case a constant-True receives_any mutant would miss.
+        assert not scene.bus(5).receives_any

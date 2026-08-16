@@ -83,7 +83,7 @@ def channel_detail(channel) -> str:
     live = [s for s in channel.sends if s.on]
     lines.append(f"  sends       {len(live)} active")
     for send in live:
-        lines.append(f"{BULLET}-> bus {send.dest:<3} {level(send.level_dB):>9}  {send.mode}")
+        lines.append(f"{BULLET}-> {send.dest_kind} {send.dest:<3} {level(send.level_dB):>9}  {send.mode}")
     return "\n".join(lines)
 
 
