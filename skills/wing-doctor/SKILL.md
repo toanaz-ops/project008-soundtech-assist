@@ -12,6 +12,10 @@ python -m wing_parser.cli doctor <path-to-.snap>
 ```
 
 Add `--json` when you need to process the findings rather than show them.
+Add `--profile <name>` to apply one named show profile — `<name>` is a
+`*.yaml` or `*.yml` file's stem in `knowledge/toanaz/shows/`; nothing
+there applies unless named this way, and an unrecognised name raises
+and lists what profiles exist.
 
 ## Reading the output
 
@@ -43,10 +47,16 @@ When ToanAZ says a finding is wrong, record it:
 
 ```bash
 python -m wing_parser.cli feedback G8:ch.8.send.8 --verdict false-positive \
-  --scene <path-to-.snap> --note "shared band IEM, guitar is the exception"
+  --scene <path-to-.snap> --note "small show, post-fader is the deliberate shortcut"
 ```
 
 Verdicts are `correct`, `false-positive`, `irrelevant`. They append to
 `knowledge/toanaz/feedback.jsonl`. Read that log across several shows to
 spot a pattern worth turning into a principle in
 `knowledge/toanaz/principles.yaml`.
+
+`feedback` also accepts `--profile <name>`. Give it the same profile
+`doctor` was run under: `feedback` resolves the finding id by
+re-running the same advisory rules `doctor` printed, so an id `doctor`
+just listed under a profile will not resolve without that same
+`--profile`.
