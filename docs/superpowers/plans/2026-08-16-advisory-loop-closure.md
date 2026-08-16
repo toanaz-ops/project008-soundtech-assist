@@ -70,8 +70,9 @@ def test_any_of_clauses_are_read_into_the_rule(tmp_path: Path):
 
 
 def test_an_empty_any_of_is_rejected(tmp_path: Path):
-    """`any_of:` with the value left off would make any() False and kill
-    the rule in silence -- the same present-but-null shape as `enabled:`."""
+    """`any_of:` with the value left off would leave the rule with no OR at
+    all, firing on every target that satisfies `where` -- the same
+    present-but-null shape as `enabled:`."""
     path = tmp_path / "empty.yaml"
     path.write_text(
         "rules:\n"
@@ -371,9 +372,11 @@ hold under 200". One level of OR beside where covers both without
 turning a small declarative language into a big one, so nesting an
 any_of inside an any_of is rejected at load.
 
-An empty any_of raises rather than defaulting. any() over an empty list
-is False, so a blank `any_of:` would disable the whole rule in silence --
-the same present-but-null shape that has bitten this project five times.
+An empty any_of raises rather than defaulting. evaluate() only consults
+any_of when it is truthy, so a blank `any_of:` that slipped through
+would leave the rule with no OR at all, firing on every target that
+satisfies where -- wider than written, not silent. The same
+present-but-null shape has bitten this project five times.
 EOF
 ```
 

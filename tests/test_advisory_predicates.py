@@ -268,8 +268,9 @@ def test_any_of_clauses_are_read_into_the_rule(tmp_path: Path):
 
 
 def test_an_empty_any_of_is_rejected(tmp_path: Path):
-    """`any_of:` with the value left off would make any() False and kill
-    the rule in silence -- the same present-but-null shape as `enabled:`."""
+    """`any_of:` with the value left off would leave the rule with no OR at
+    all, firing on every target that satisfies `where` -- the same
+    present-but-null shape as `enabled:`."""
     path = tmp_path / "empty.yaml"
     path.write_text(
         "rules:\n"
