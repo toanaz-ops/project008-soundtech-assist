@@ -155,8 +155,18 @@ def test_the_small_profile_records_who_switched_g8_off(scene, monkeypatch):
 
 def test_the_shipped_principles_file_still_loads(scene, monkeypatch):
     """principles.yaml holds no principles now. It must still parse, and
-    it must not quietly stop being read."""
+    it must not quietly stop being read.
+
+    `layers._principles` returns [] both when the shipped file parses to
+    `principles: []` and when the file is simply absent, so asserting only
+    on `.rules()` / `.layer == "toanaz"` would pass identically either way.
+    Assert the file's on-disk text directly so this test can only pass
+    against the real shipped file, not against its absence.
+    """
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    principles_path = config.knowledge_dir() / "principles.yaml"
+    assert principles_path.is_file()
+    assert "principles: []" in principles_path.read_text(encoding="utf-8")
     assert scene.advisory.rules()
     assert [r for r in scene.advisory.rules() if r.layer == "toanaz"] == []
