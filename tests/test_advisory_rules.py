@@ -17,6 +17,7 @@ def scene(vu_path):
 def test_three_base_rules_ship(scene):
     assert {r.id for r in load_base_rules()} == {
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
+        "R4", "R5", "R6", "N1", "N2",
     }
 
 
@@ -107,6 +108,28 @@ def test_the_sample_scene_finding_counts(scene, monkeypatch):
     `dyn.on: False`; the rest are True. So G9 fires exactly once, on
     bus.7, matching the old G7 finding at one severity lower. Net count
     is unchanged: 14 total, same as before this task.
+
+    Task 9 (2026-08-17) added R4, R5, R6, N1, N2 and re-probed the same
+    file for all five; none appear in `found`, so this test's `len(found)
+    == 14` total still holds:
+      - R4/R5 (record feed post-fader): no bus or main in the raw
+        `ae_data` classifies as `record` -- `main.3` is named `RECODING`,
+        a typo that the `\\brec\\b|record|multitrack` pattern does not
+        match (unclassified by design), and no other bus/main name
+        matches either. `requires_classifier: true` skips both rules for
+        every target at confidence 0.
+      - R6 (caller feeds its own mix-minus): no channel name matches
+        `\\bzoom\\b|\\bteams\\b|\\bcaller\\b|\\bremote\\b|\\bskype\\b` and
+        no bus/main/mtx/aux name matches
+        `mix\\s*minus|\\bmm\\s*\\d*\\b|\\bn-1\\b` anywhere in the file --
+        checked by regex against every name in `ae_data` directly.
+      - N1 (channel in use, unnamed): channels 31-36 are the file's only
+        empty-named channels; all six read `fdr: -144` (so
+        `Channel.in_use` is False on the fader floor alone, independent
+        of the also-true `muted: True` on all six).
+      - N2 (output receives signal, unnamed): ships `enabled: false`
+        (see `naming.yaml`), so `evaluate()` returns `[]` for it
+        unconditionally regardless of the file's contents.
     """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run()

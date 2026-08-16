@@ -85,3 +85,103 @@ def test_routing_rules_are_silent_on_the_untouched_real_file(vu_scene, monkeypat
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = {f.rule_id for f in vu_scene.advisory.run()}
     assert found.isdisjoint({"R1", "R2", "R3", "R3M"})
+
+
+def test_r4_fires_on_a_post_fader_send_to_a_record_bus(vu_path, tmp_path, monkeypatch):
+    # Bus 12 (HALL) is not exclusive to ch.1 in the real file: chs 1-4
+    # and 7 all already send to it POST and on (probed 2026-08-17), so
+    # renaming it to RECORD legitimately makes R4 fire on all five, not
+    # just ch.1 -- correct behaviour, since the rule is "any post-fader
+    # send to a record destination", not "ch.1's send only". The
+    # assertion below checks membership rather than the plan's original
+    # exact-list equality for that reason.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["bus"]["12"]["name"] = "RECORD"
+        ae["ch"]["1"]["send"]["12"]["on"] = True
+        ae["ch"]["1"]["send"]["12"]["mode"] = "POST"
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    findings = [f for f in scene.advisory.run() if f.rule_id == "R4"]
+    assert ("ch.1.send.12", "warning") in [(f.target, f.severity) for f in findings]
+
+
+def test_r4_is_silent_when_the_record_send_is_pre(vu_path, tmp_path, monkeypatch):
+    # Same bus-12-is-shared caveat as the fires-test above: chs 2, 3, 4
+    # and 7 stay POST and on, so they correctly keep firing R4 on their
+    # own targets. Only ch.1's own send is under test here, so the
+    # assertion checks that specific target is absent rather than that
+    # the rule produced no findings at all.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["bus"]["12"]["name"] = "RECORD"
+        ae["ch"]["1"]["send"]["12"]["on"] = True
+        ae["ch"]["1"]["send"]["12"]["mode"] = "PRE"
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    findings = [f for f in scene.advisory.run() if f.rule_id == "R4"]
+    assert "ch.1.send.12" not in [f.target for f in findings]
+
+
+def test_r5_fires_on_a_post_fader_main_send_to_a_record_main(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["main"]["3"]["name"] = "RECORD"       # was RECODING (typo, unclassified)
+        # ch 1 already has main 3 on with pre False in the real file
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    findings = [f for f in scene.advisory.run() if f.rule_id == "R5"]
+    assert ("ch.1.main.3", "warning") in [(f.target, f.severity) for f in findings]
+
+
+def test_r6_fires_when_the_caller_feeds_its_own_mix_minus(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "ZOOM"
+        ae["bus"]["12"]["name"] = "MIX MINUS"
+        ae["ch"]["20"]["send"]["12"]["on"] = True
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    findings = [f for f in scene.advisory.run() if f.rule_id == "R6"]
+    assert [(f.target, f.severity) for f in findings] == [("ch.20.send.12", "error")]
+
+
+def test_n1_fires_on_an_unnamed_channel_that_is_actually_in_use(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ch = ae["ch"]["20"]
+        ch["name"] = ""
+        ch["fdr"] = 0
+        ch["mute"] = False
+        ch["main"]["1"]["on"] = True
+        ch["in"]["conn"]["grp"] = "A"
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in scene.advisory.run() if f.rule_id == "N1"] == ["ch.20"]
+
+
+def test_n1_and_n2_are_silent_on_the_factory_scene(factory_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    scene = WingScene.load(factory_path)
+    assert scene.advisory.run() == []   # the whole base set, not just N1/N2
+
+
+def test_n2_ships_disabled_because_factory_bus_faders_are_not_all_floored(
+    vu_path, tmp_path, monkeypatch
+):
+    """Step 2's probe of user-files/factory-scene.snap found bus faders in
+    {-144, 0} -- buses 9-16 sit at raw fdr 0 (unity), not the -144 "off"
+    sentinel main/mtx/aux all use. N2 as designed (bus.receives_any AND
+    bus.fader_dB > -90) cannot rely on the fader condition to keep the
+    factory scene finding-free the way N1 relies on it for channels, so
+    it ships with `enabled: false` (see naming.yaml) instead of silently
+    narrowing its own semantics. This mutation recreates the exact shape
+    N2's `where` clause targets -- unnamed bus, floored fader raised,
+    a live send landing on it -- to prove the rule would otherwise have
+    matched; `run()` must still report nothing for it because it never
+    evaluates a disabled rule at all (see evaluator.evaluate).
+    """
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["bus"]["12"]["name"] = ""
+        ae["bus"]["12"]["fdr"] = 0
+        ae["ch"]["1"]["send"]["12"]["on"] = True
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    rule = next(r for r in scene.advisory.rules() if r.id == "N2")
+    assert rule.enabled is False
+    assert [f.target for f in scene.advisory.run() if f.rule_id == "N2"] == []

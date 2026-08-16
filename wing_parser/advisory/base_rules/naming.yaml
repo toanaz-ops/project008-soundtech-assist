@@ -1,0 +1,62 @@
+# Naming rules: things that are live on the console but carry no label a
+# deputy engineer could read. All universal, all info-severity.
+# loader.load_base_rules globs this directory, so the file is picked up
+# with no registration step. Split out of routing.yaml 2026-08-17 once
+# R4-R6 pushed that file's line count toward the ~200-line review
+# ceiling; there is no dependency between the two files, only a shared
+# directory.
+rules:
+  - id: N1
+    title: "Channel is in use but unnamed"
+    severity: info
+    source: "docs/knowledge-base/04-templates-and-matrices/Risk-Contingency-Matrix.md L135: 'undocumented setups are the real failure here'; L362 sign-off row 52"
+    rationale: >
+      A deputy cannot drive an unlabelled console. In use means patched,
+      unmuted, routed somewhere, and fader above -90 dB -- the last
+      condition is the discriminator that keeps a factory-default scene
+      (every fader at -144) silent, which is this rule's acceptance
+      constraint from the 2026-08-16 spec.
+    requires_classifier: false
+    when:
+      for_each: channel
+      where:
+        channel.in_use: true
+        channel.name: ""
+    message: >
+      Channel {channel.number} is patched, unmuted and routed, but has no
+      name.
+
+  - id: N2
+    title: "Output receives signal but is unnamed"
+    severity: info
+    enabled: false
+    source: "docs/knowledge-base/04-templates-and-matrices/Risk-Contingency-Matrix.md L135; L362"
+    rationale: >
+      The output-side half of N1, meant to reuse the same fader-floor
+      discriminator against bus.receives_any. It does not survive contact
+      with the factory scene. Probed 2026-08-17 against
+      user-files/factory-scene.snap's raw ae_data:
+      bus fdr in {-144, 0}, main fdr in {-144}, mtx fdr in {-144},
+      aux fdr in {-144}. Eight buses (9-16) sit at the raw value 0 --
+      unity gain, not the -144 "off" sentinel -- so "every output fader
+      at the floor" is false for the bus family, unlike the channel side
+      N1 relies on. A gt: -90.0 fader condition on bus.fader_dB therefore
+      cannot be trusted to separate "factory default" from "genuinely in
+      use" the way it does for N1; per the 2026-08-16 spec's Sec.4
+      fallback, an honest silence beats noise on every factory scene, so
+      this rule ships disabled rather than risk firing on an
+      unconfigured console's bus 9-16. (Those eight buses do not actually
+      receive any signal in the factory scene either -- receives_any is
+      False there, since no channel send is on out of the box -- so
+      shipping enabled would happen to stay silent today; the fader
+      condition it is built on is still unsound, and unsound-but-silent
+      is not a basis to ship a rule live.)
+    requires_classifier: false
+    when:
+      for_each: output
+      where:
+        bus.receives_any: true
+        bus.name: ""
+        bus.fader_dB: {gt: -90.0}
+    message: >
+      {bus.kind} {bus.number} receives signal but has no name.

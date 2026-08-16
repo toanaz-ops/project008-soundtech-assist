@@ -88,3 +88,73 @@ rules:
       Channel {channel.number} ({channel.name}) looks like timecode and
       its send to main {destination_main.number}
       ({destination_main.name}) is on.
+
+  - id: R4
+    title: "Send to a record destination is post-fader"
+    severity: warning
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L260: 'Record feed is pre-fader [R] -- post-gain, pre-fader, pre-EQ. A FOH fader move must not damage the archive.'"
+    rationale: >
+      A post-fader record feed bakes every FOH move into the archive.
+      Marked [R] (contractual) in the rider and restated at L1475. Only
+      the fader half is checkable: tap_point cannot carry the pre-EQ
+      half, because POST_FDR is the stored value on all 80 channels of
+      both sample files including factory defaults (probed 2026-08-16:
+      ch.ptap == "5" == POST_FDR for every channel in both
+      example-Vu.snap and factory-scene.snap), so a tap_point clause
+      would fire on everything or nothing. Known silence on the real
+      file: its record main is named RECODING, a typo that stays
+      unclassified by design, and reporting the unclassified name is the
+      tool's existing, correct behaviour.
+    requires_classifier: true
+    when:
+      for_each: channel.sends
+      where:
+        destination_bus.role: record
+        send.on: true
+        send.mode: POST
+    message: >
+      Channel {channel.number} ({channel.name}) feeds record destination
+      {destination_bus.number} ({destination_bus.name}) post-fader: a FOH
+      fader move changes the archive.
+
+  - id: R5
+    title: "Main-send to a record main is post-fader"
+    severity: warning
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L260: 'Record feed is pre-fader [R]'"
+    rationale: >
+      The main-send half of R4; see R4. MainSend carries its own pre
+      flag, so this checks main_send.pre directly.
+    requires_classifier: true
+    when:
+      for_each: channel.main_sends
+      where:
+        destination_main.role: record
+        main_send.on: true
+        main_send.pre: false
+    message: >
+      Channel {channel.number} ({channel.name}) feeds record main
+      {destination_main.number} ({destination_main.name}) post-fader.
+
+  - id: R6
+    title: "Remote caller feeds its own mix-minus bus"
+    severity: error
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L208: 'Ch15 must be fed a bus that excludes itself... This is the single most common corporate audio failure.'; L879: 'No bus = no show, this is non-negotiable.'"
+    rationale: >
+      A mix-minus bus exists to exclude exactly one channel: the caller
+      it returns to. The caller appearing in its own return means the
+      remote end hears itself delayed by the platform round trip and
+      stops talking. The general obligation (every caller must HAVE a
+      mix-minus) is not decidable from names alone and is out of scope
+      per the spec's blocked list; this narrow, unambiguous form is.
+    requires_classifier: true
+    when:
+      for_each: channel.sends
+      where:
+        channel.source_type: utility.remote_caller
+        destination_bus.role: mix_minus
+        send.on: true
+    message: >
+      Channel {channel.number} ({channel.name}) looks like a remote
+      caller and its send into mix-minus bus {destination_bus.number}
+      ({destination_bus.name}) is on -- the caller will hear itself
+      delayed.
