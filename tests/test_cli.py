@@ -283,9 +283,14 @@ def test_feedback_sees_the_same_findings_doctor_printed(
                  "--scene", str(vu_path), "--profile", "small"]) == 0
 
 
-def test_feedback_without_the_profile_cannot_find_a_suppressed_finding(
+def test_feedback_with_the_profile_cannot_find_a_finding_the_profile_suppressed(
     vu_path, tmp_path, capsys, monkeypatch
 ):
+    # G8:ch.8.send.8 only exists as a finding when no profile suppresses
+    # G8. Passing --profile small here makes feedback run the advisory
+    # under the same profile doctor would, G8 is superseded, and the id
+    # is not among that run's findings -- so it correctly fails to
+    # resolve, the same way a typo'd id would.
     monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
     _write_small_profile(tmp_path)
     assert main(["feedback", "G8:ch.8.send.8", "--verdict", "correct",
