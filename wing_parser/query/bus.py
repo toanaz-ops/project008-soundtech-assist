@@ -70,4 +70,5 @@ class Bus:
     @property
     def is_monitor(self) -> bool:
         found = self.role
-        return found.kind == "monitor" and is_confident(found)
+        is_monitor_kind = found.kind == "monitor" or found.kind.startswith("monitor.")
+        return is_monitor_kind and is_confident(found)

@@ -95,7 +95,9 @@ def test_empty_name_is_unknown():
 def test_bus_roles():
     assert classify("MON VOX", "buses").kind == "monitor"
     assert classify("MON L", "buses").kind == "monitor"
-    assert classify("SIDEFILL", "buses").kind == "monitor"
+    # SIDEFILL split 2026-08-16 into its own monitor.wedge kind; see
+    # test_wedge_and_sidefill_classify_as_monitor_wedge below.
+    assert classify("SIDEFILL", "buses").kind == "monitor.wedge"
     assert classify("HALL", "buses").kind == "fx"
     assert classify("DRUM FX", "buses").kind == "fx"
     assert classify("HAHA", "buses").kind == "fx"
@@ -138,18 +140,20 @@ def test_fx_buses_in_the_real_file(vu_path):
 )
 def test_an_iem_bus_is_a_monitor_however_it_is_numbered(name):
     # \biem\b has no word boundary between M and 3, so IEM1/IEM2/IEM3 --
-    # the commonest numbering -- silently missed. Rules G8 and G7 only fire
-    # on buses classified `monitor`, so a missed IEM bus is a skipped bus.
+    # the commonest numbering -- silently missed. Rule G8 fires on any
+    # `monitor`-prefixed role; G7 (error) and G9 (warning) split on this
+    # kind since 2026-08-16, so a missed IEM bus is a skipped bus.
     result = classify(name, "buses")
-    assert result.kind == "monitor"
+    assert result.kind == "monitor.iem"
     assert result.confidence == pytest.approx(0.95)
 
 
 def test_a_sidefill_bus_is_a_monitor_even_when_named_just_side():
     # ToanAZ: "Side = sidefill speakers". The band hears a sidefill, not
     # the audience, so it is a monitor send rather than a house zone.
-    assert classify("SIDE", "buses").kind == "monitor"
-    assert classify("SIDEFILL", "buses").kind == "monitor"
+    # Split 2026-08-16: sidefills carry the monitor.wedge kind now.
+    assert classify("SIDE", "buses").kind == "monitor.wedge"
+    assert classify("SIDEFILL", "buses").kind == "monitor.wedge"
 
 
 @pytest.mark.parametrize(
@@ -177,6 +181,21 @@ def test_a_headset_mic_is_found_however_it_is_numbered(name):
     # Same word-boundary flaw as the IEM one: \bhs\b has no boundary
     # between S and 4, so HS4 -- channel 11 in the real file -- missed.
     assert classify(name, "channels").kind == "speech.headset"
+
+
+def test_iem_buses_classify_as_monitor_iem():
+    for name in ("IEM1", "IEM MC", "in ear 2", "iem3 bakup"):
+        assert classify(name, "buses").kind == "monitor.iem", name
+
+
+def test_wedge_and_sidefill_classify_as_monitor_wedge():
+    for name in ("WEDGE 1", "SIDEFILL", "side fill L", "SIDE"):
+        assert classify(name, "buses").kind == "monitor.wedge", name
+
+
+def test_generic_monitor_names_stay_plain_monitor():
+    for name in ("MON VOX", "MON L", "Monitor 3"):
+        assert classify(name, "buses").kind == "monitor", name
 
 
 def test_a_headset_bus_groups_mics_and_is_not_a_monitor_send():

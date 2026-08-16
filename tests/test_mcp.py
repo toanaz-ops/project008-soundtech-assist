@@ -36,8 +36,10 @@ def test_channel_returns_detail(vu_path):
 
 
 def test_doctor_returns_the_findings(vu_path):
+    # G7 is silent on this file since the 2026-08-16 monitor split (all
+    # IEM matrices have dyn.on True); its old sole finding moved to G9.
     out = tools.doctor(str(vu_path))
-    assert "G8" in out and "G7" in out
+    assert "G8" in out and "G9" in out
 
 
 def test_routing_returns_the_summary(vu_path):

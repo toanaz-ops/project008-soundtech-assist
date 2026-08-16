@@ -56,11 +56,15 @@ def test_channel_reports_an_unknown_number_without_a_traceback(vu_path, capsys):
 
 
 def test_doctor_lists_the_findings(vu_path, capsys):
+    # G7 (error, IEM-only) is silent on this file since the 2026-08-16
+    # monitor split -- all IEM matrices have dyn.on True. Its old sole
+    # finding (bus.7 SIDEFILL) now belongs to G9 (warning). Total finding
+    # count is unaffected: still 14.
     assert main(["doctor", str(vu_path)]) == 0
     out = capsys.readouterr().out
     assert "14 findings" in out
     assert "G8" in out
-    assert "G7" in out
+    assert "G9" in out
     assert "MON VOX" in out
 
 
@@ -250,13 +254,15 @@ def test_doctor_with_a_profile_suppresses_the_superseded_rule(
     # test_advisory_resolver.py) -- so a bare "G8" not in out would fail
     # even when suppression worked correctly. Use --json, which reports
     # only the active findings, to test what this test actually means:
-    # G8 is no longer an active rule_id, and G7 still is.
+    # G8 is no longer an active rule_id, and G9 still is (G7 is silent on
+    # this file since the 2026-08-16 monitor split -- see
+    # test_doctor_lists_the_findings above).
     monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
     _write_small_profile(tmp_path)
     assert main(["doctor", str(vu_path), "--profile", "small", "--json"]) == 0
     rule_ids = {f["rule_id"] for f in json.loads(capsys.readouterr().out)}
     assert "G8" not in rule_ids
-    assert "G7" in rule_ids
+    assert "G9" in rule_ids
 
 
 def test_an_unknown_profile_exits_cleanly(vu_path, tmp_path, capsys, monkeypatch):

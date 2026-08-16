@@ -21,7 +21,7 @@ and lists what profiles exist.
 
 Each finding carries:
 
-- **rule id** — `G8`, `G7`, `E6`
+- **rule id** — `G8`, `G7`, `G9`, `E6`
 - **target** — `ch.8.send.8`, `bus.8`
 - **layer** — which rule layer decided:
   - `base` — generic industry practice mined from the knowledge base

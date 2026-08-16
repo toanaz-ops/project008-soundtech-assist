@@ -10,11 +10,18 @@ rules:
       A post-fader monitor send means a FOH fader move changes what the
       performer hears. The knowledge base calls post-fader monitor sends
       a common and disruptive misconfiguration.
+
+      Two facts recorded 2026-08-16. ToanAZ on TAP sends: "Tap tren wing
+      mac dinh la pre-fader hoac pre eq" -- a TAP send draws from a tap
+      point that defaults to pre-fader or pre-EQ, so TAP is not evidence
+      of a post-fader monitor send and this rule deliberately matches
+      POST only. And matrix destinations became visible to this rule the
+      same day: on the real console the IEM mixes are matrices.
     requires_classifier: true
     when:
       for_each: channel.sends
       where:
-        destination_bus.role: monitor
+        destination_bus.role: {starts_with: monitor}
         # Both keys are prefixed `send.`, and must stay that way. The
         # channel.sends context binds three names -- channel, send and
         # destination_bus -- so a bare `mode` resolves against the context
@@ -24,42 +31,65 @@ rules:
         send.mode: POST
         send.on: true
     message: >
-      Channel {channel.number} ({channel.name}) sends post-fader to bus
-      {destination_bus.number} ({destination_bus.name}), which looks like a
-      monitor bus. FOH fader moves will change this performer's mix.
+      Channel {channel.number} ({channel.name}) sends post-fader to
+      {destination_bus.kind} {destination_bus.number}
+      ({destination_bus.name}), which looks like a monitor bus. FOH fader
+      moves will change this performer's mix.
 
   - id: G7
-    title: "Monitor bus has no limiter"
+    title: "IEM output has no active dynamics"
     severity: error
     source: >
-      docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md section 4.1;
-      docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8
+      docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8;
+      docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md section 4.1
     rationale: >
-      A feedback burst into in-ear moulds is a hearing injury. Core-Skills-
-      Overview section 3.4 step 8 calls a hard limiter on every IEM mix
-      non-optional, typically -6 to -10 dBFS. The rider's section 4.1 table
-      also lists a limiter as a requirement, but unlike its neighbouring
-      "Ambient mics" row it carries no [R] contractual tag and states no
-      ceiling -- so only Core-Skills makes the non-optional claim. This rule
-      currently checks only that the dynamics processor is switched on. It
-      cannot also check that the loaded model is a limiter, because the
-      dyn.mdl token a WING stores for one is not recorded anywhere in this
-      repository and must not be guessed; the only models observed in real
-      data are COMP and CMB. See the design spec section 7.1 for the exact
-      clause to add once that token is known.
-      One caveat on the predicate itself, the same hazard E6's clause
-      documents for hold_ms: build_dyn defaults a bus's dyn.on to False
-      when the scene file's raw dyn block is absent entirely, so a bus with
-      no dynamics block at all reads as on: False and would satisfy this
-      rule's condition. Both sample files carry a dyn block on every bus,
-      so this cannot fire on known data, but a future scene that omits the
-      block would trip it on a bus that never stated dyn.on at all.
+      A feedback burst into in-ear moulds is a hearing injury.
+      Core-Skills-Overview section 3.4 step 8 calls a hard limiter on
+      every IEM output non-optional, typically -6 to -10 dBFS; the
+      rider's section 4.1 limiter row says "A feedback burst into moulds
+      is an injury". Split 2026-08-16: error is reserved for outputs
+      confidently classified monitor.iem, because both sources scope the
+      injury claim to in-ears; wedges and unspecified monitors are G9 at
+      warning. This rule still checks only that the dynamics processor
+      is switched on. It cannot also check that the loaded model is a
+      limiter: the dyn.mdl token a WING stores for one is not recorded
+      anywhere in this repository and must not be guessed; the only
+      models observed in real data are COMP and CMB. See the 2026-08-16
+      advisory-closure spec section 7.1 for the clause to add once that
+      token is known. Same build_dyn caveat as before: a bus whose raw
+      dyn block is absent entirely reads as on: False and would trip
+      this rule without the scene stating it.
     requires_classifier: true
     when:
-      for_each: bus
+      for_each: output
       where:
-        bus.role: monitor
+        bus.role: monitor.iem
         bus.dyn.on: false
     message: >
-      Bus {bus.number} ({bus.name}) is a monitor bus with its dynamics
-      processor bypassed: slot holds {bus.dyn.model}, on = {bus.dyn.on}.
+      {bus.kind} {bus.number} ({bus.name}) is an IEM output with its
+      dynamics processor bypassed: slot holds {bus.dyn.model}, on =
+      {bus.dyn.on}. A feedback burst into moulds is a hearing injury.
+
+  - id: G9
+    title: "Wedge or monitor output has no active dynamics"
+    severity: warning
+    source: >
+      docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8;
+      docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md section 4.1
+    rationale: >
+      The same sources as G7, one severity lower, by ToanAZ's decision of
+      2026-08-16: the hearing-injury claim is IEM-scoped in both cited
+      passages, and on a wedge or sidefill a limiter chiefly protects
+      drivers and the room. Generic monitor-role outputs (a bus named MON
+      VOX says monitor but not which flavour) sit here too -- error is
+      reserved for a confirmed IEM.
+    requires_classifier: true
+    when:
+      for_each: output
+      where:
+        bus.role: {in: [monitor, monitor.wedge]}
+        bus.dyn.on: false
+    message: >
+      {bus.kind} {bus.number} ({bus.name}) is a monitor output with its
+      dynamics processor bypassed: slot holds {bus.dyn.model}, on =
+      {bus.dyn.on}.

@@ -125,9 +125,12 @@ which layer decided it:
   `docs/knowledge-base/`, shipped inside the package at
   `wing_parser/advisory/base_rules/*.yaml`. This is the textbook: rules
   like G8 ("a post-fader monitor send lets FOH fader moves change what
-  a performer hears") or G7 ("a monitor bus should carry a limiter")
-  fire whenever their condition matches, with no knowledge of any
-  specific show.
+  a performer hears"), G7 ("an IEM output should carry a limiter",
+  error), or G9 ("a wedge or unspecified monitor output should carry a
+  limiter", warning — the same check one severity down, split off
+  2026-08-16 because the hearing-injury claim is IEM-scoped) fire
+  whenever their condition matches, with no knowledge of any specific
+  show.
 - **`toanaz`** — ToanAZ's own principles, hand-edited in
   `knowledge/toanaz/principles.yaml`. A principle can `supersede` one
   or more base rules, either unconditionally (`hardness: hard`) or only
@@ -150,12 +153,13 @@ which layer decided it:
   the deviation as deliberate rather than leaving G8 to re-flag it on
   every check.
 
-Base rules are not beyond question. G7, for instance, checks only that
-a monitor bus's dynamics processor is switched on (`bus.dyn.on`), not
-that the model loaded there is actually a limiter — the `dyn.mdl`
-token a WING stores for a limiter is not recorded anywhere in this
-repository and must not be guessed, so a monitor bus carrying a
-compressor that is switched **on** is deliberately not reported (see
+Base rules are not beyond question. G7 and G9, for instance, check only
+that a monitor output's dynamics processor is switched on
+(`bus.dyn.on`), not that the model loaded there is actually a limiter
+— the `dyn.mdl` token a WING stores for a limiter is not recorded
+anywhere in this repository and must not be guessed, so a monitor
+output carrying a compressor that is switched **on** is deliberately
+not reported (see
 [design spec §7.1](docs/superpowers/specs/2026-08-16-advisory-loop-closure-design.md#71-the-limiter-token)
 for the exact clause to add once that token is known). Treat
 `doctor`'s output as what the stated rule checks, not as ground truth

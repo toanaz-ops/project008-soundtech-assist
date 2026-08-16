@@ -6,6 +6,8 @@ from wing_parser import WingScene
 from wing_parser import config
 from wing_parser.advisory.loader import load_base_rules
 
+from tests.conftest import _mutated_scene
+
 
 @pytest.fixture(scope="module")
 def scene(vu_path):
@@ -13,7 +15,7 @@ def scene(vu_path):
 
 
 def test_three_base_rules_ship(scene):
-    assert {r.id for r in load_base_rules()} == {"G8", "G7", "E6"}
+    assert {r.id for r in load_base_rules()} == {"G8", "G7", "G9", "E6"}
 
 
 def test_every_base_rule_cites_a_source_and_a_rationale():
@@ -33,32 +35,53 @@ def test_g8_fires_on_channel_eight_into_bus_eight(scene, monkeypatch):
     assert match.confidence >= 0.8
 
 
-def test_g7_fires_only_where_the_dynamics_are_bypassed(scene, monkeypatch):
+def test_g7_is_silent_because_every_iem_matrix_has_dynamics_on(scene, monkeypatch):
+    # Split 2026-08-16: G7 now only looks at bus.role == monitor.iem, and
+    # for_each is `output` so its domain is the whole bus family. Probed
+    # 2026-08-16 against the raw ae_data: matrix 5 (IEM MC), 6 (IEM CA SI
+    # 1), 7 (IEM CA SI 2) and 8 (IEM3 BAKUP) -- the only monitor.iem
+    # outputs in the file -- all read dyn.on: True, dyn.mdl: "COMP". Bus 7
+    # SIDEFILL, the old sole G7 target, is monitor.wedge now and moved to
+    # G9 below.
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    findings = [f for f in scene.advisory.run() if f.rule_id == "G7"]
-    # Bus 7 SIDEFILL has dyn.on False; buses 8, 9 and 10 have it True.
-    # The model half of G7 is held back until a real limiter token is
-    # known, so a bus carrying COMP switched on is no longer reported.
-    assert [f.target for f in findings] == ["bus.7"]
-    assert findings[0].severity == "error"
+    assert [f for f in scene.advisory.run() if f.rule_id == "G7"] == []
 
 
-def test_g7_states_facts_rather_than_asserting_a_conclusion(scene, monkeypatch):
+def test_g9_fires_on_the_sidefill_at_warning(scene, monkeypatch):
+    # Probed 2026-08-16: bus 7 SIDEFILL (monitor.wedge) is the only
+    # monitor-role output in the file with dyn.on: False. Bus 8/9/10
+    # (MON VOX/L/R, plain `monitor`) and matrix 3 SIDE (monitor.wedge) all
+    # read dyn.on: True, so they do not join this list.
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    message = next(f for f in scene.advisory.run() if f.rule_id == "G7").message
+    findings = [f for f in scene.advisory.run() if f.rule_id == "G9"]
+    assert [(f.target, f.severity) for f in findings] == [("bus.7", "warning")]
+
+
+def test_g9_states_facts_rather_than_asserting_a_conclusion(scene, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    message = next(f for f in scene.advisory.run() if f.rule_id == "G9").message
     assert "COMP" in message
     assert "not a limiter" not in message
 
 
-def test_the_sample_scene_finding_counts(scene, monkeypatch):
-    """Task 2 (2026-08-17) made `channel.sends` yield matrix destinations
-    alongside buses, bound under the same `destination_bus` key G8 already
-    reads. That puts the IEM matrices (IEM MC, IEM CA SI 1/2, IEM3 BAKUP --
-    all `\\biem\\d*\\b` -> monitor 0.95) and SIDE (`^side\\b` -> monitor
-    0.85) inside G8's domain for the first time, without editing G8's
-    `where` at all.
+def test_g7_fires_when_an_iem_matrix_bypasses_dynamics(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    scene = _mutated_scene(vu_path, tmp_path,
+                           lambda ae: ae["mtx"]["5"]["dyn"].__setitem__("on", False))
+    findings = [f for f in scene.advisory.run() if f.rule_id == "G7"]
+    assert [(f.target, f.severity) for f in findings] == [("matrix.5", "error")]
 
-    Probed 2026-08-17 with:
+
+def test_the_sample_scene_finding_counts(scene, monkeypatch):
+    """Task 2 made `channel.sends` yield matrix destinations alongside
+    buses, bound under the same `destination_bus` key G8 already reads.
+    That puts the IEM matrices (IEM MC, IEM CA SI 1/2, IEM3 BAKUP -- all
+    `\\biem\\d*\\b`) and SIDE (`^side\\b`) inside G8's domain, without
+    editing G8's `where` at all -- G8 still matches any `monitor`-prefixed
+    role after this task's `{starts_with: monitor}` change.
+
+    Task 3 (2026-08-16) split the `monitor` role and G7 along with it.
+    Re-probed against `user-files/example-Vu.snap`:
         python - <<'EOF'
         import os; os.environ["WING_DISABLE_LLM"] = "1"
         from wing_parser import WingScene
@@ -69,24 +92,25 @@ def test_the_sample_scene_finding_counts(scene, monkeypatch):
         print("total", len(found))
         EOF
     Output: 14 findings total -- G8: 12 (all `ch.N.send.{7,8}`, unchanged
-    from before this task), G7: 1 (bus.7), E6: 1 (ch.11). No `ch.N.send.MX*`
-    target appears. Spot-checked directly against the raw JSON
-    (`doc["ae_data"]["ch"][n]["send"]["MX*"]`) rather than trusting the
-    built objects: every matrix send in the file is `mode: PRE` except
-    ch.39's and ch.40's MX8, which are `mode: POST` but `on: False`
-    (`{'on': False, 'lvl': -144, 'pon': False, 'mode': 'POST', 'plink': 0,
-    'pan': 0}` for both) -- G8 requires `send.mode: POST` AND `send.on:
-    true` together, and no send in this file satisfies both. So matrices
-    entering G8's domain adds zero targets here, not because the new code
-    path is unreachable, but because this particular show never leaves a
-    POST monitor send switched on. The count is unchanged from the
-    pre-task 14, verified rather than assumed.
+    from before this task), G7: 0, G9: 1 (bus.7), E6: 1 (ch.11). No
+    `ch.N.send.MX*` target appears for G8 (matrix sends in this file are
+    all PRE, or POST with on: False -- unchanged from Task 2's probe).
+
+    G7 went from 1 to 0 and G9 picked up that one finding: checked every
+    monitor-role output's raw `dyn.on` directly against `ae_data` rather
+    than trusting the built objects. All four monitor.iem matrices (5, 6,
+    7, 8) read `dyn.on: True, dyn.mdl: "COMP"`, so G7 (error, IEM only)
+    is silent. Among monitor/monitor.wedge outputs (bus 8/9/10 MON
+    VOX/L/R, bus 7 SIDEFILL, matrix 3 SIDE) only bus 7 SIDEFILL reads
+    `dyn.on: False`; the rest are True. So G9 fires exactly once, on
+    bus.7, matching the old G7 finding at one severity lower. Net count
+    is unchanged: 14 total, same as before this task.
     """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run()
     counts = {rule_id: sum(1 for f in found if f.rule_id == rule_id)
-              for rule_id in ("G8", "G7", "E6")}
-    assert counts == {"G8": 12, "G7": 1, "E6": 1}
+              for rule_id in ("G8", "G7", "G9", "E6")}
+    assert counts == {"G8": 12, "G7": 0, "G9": 1, "E6": 1}
     assert len(found) == 14
 
 
@@ -168,11 +192,14 @@ def test_every_finding_records_its_layer(scene, monkeypatch):
 
 
 def test_the_shipped_small_profile_loads_and_suppresses_g8(scene, monkeypatch):
+    # G7 no longer fires on this file post-split (all IEM matrices have
+    # dyn.on True); bus.7 SIDEFILL's finding moved to G9. Probed
+    # 2026-08-16 with profile="small": {E6 ch.11, G9 bus.7}, G8 absent.
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run(profile="small")
     assert [f.rule_id for f in found if f.rule_id == "G8"] == []
-    assert {f.rule_id for f in found} == {"G7", "E6"}
+    assert {f.rule_id for f in found} == {"G9", "E6"}
     assert len(found) == 2
 
 

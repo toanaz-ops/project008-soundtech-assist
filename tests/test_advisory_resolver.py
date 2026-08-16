@@ -36,7 +36,7 @@ def scene(vu_path, monkeypatch):
 
 
 def test_only_base_rules_are_active_with_an_empty_principles_file(scene, knowledge):
-    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "E6"}
+    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "G9", "E6"}
 
 
 def test_the_shipped_principles_file_loads_without_raising(scene, monkeypatch):
@@ -52,12 +52,17 @@ def test_the_shipped_principles_file_loads_without_raising(scene, monkeypatch):
 
 
 def test_monitor_bus_count_condition_reads_the_scene(scene):
-    # MON VOX, MON L, MON R and SIDEFILL all classify as monitor buses:
-    # the real count on the sample scene is 4. Both the failing value (1)
-    # and the actual value (4) are pinned so a probe that always returns
-    # 0, or any other wrong constant, cannot leave this test green.
+    # `_monitor_bus_count` counts over bus_family() since 2026-08-16 (Task
+    # 3): monitor-role matrices count too, because on the real console
+    # the IEM mixes are matrices. MON VOX, MON L, MON R and SIDEFILL are
+    # the four buses; matrix 3 SIDE and matrices 5-8 (IEM MC, IEM CA SI
+    # 1/2, IEM3 BAKUP) are five more monitor-role matrices. Probed
+    # 2026-08-16 via wing_parser.advisory.resolver._monitor_bus_count on
+    # user-files/example-Vu.snap: 9. Both the failing value (1) and the
+    # actual value (9) are pinned so a probe that always returns 0, or
+    # any other wrong constant, cannot leave this test green.
     assert condition_holds(scene, {"monitor_bus_count": 1}) is False
-    assert condition_holds(scene, {"monitor_bus_count": 4}) is True
+    assert condition_holds(scene, {"monitor_bus_count": 9}) is True
     assert condition_holds(scene, {}) is True
 
 
@@ -103,19 +108,21 @@ def test_a_matching_hard_principle_supersedes_its_base_rule(scene, knowledge, mo
 def test_a_matching_flexible_principle_supersedes_its_base_rule(scene, knowledge):
     # This is the path the previous test's name claimed to cover but
     # did not: hardness: flexible, with an applies_when that actually
-    # matches this scene (4 monitor buses), so condition_holds runs a
-    # real probe and returns True. That is the whole point of the
-    # three-layer design -- a base rule switched off only under a
-    # stated, checkable condition -- and until now nothing exercised it.
+    # matches this scene (9 monitor-role outputs, counted over
+    # bus_family() since Task 3 -- see test_monitor_bus_count_condition_
+    # reads_the_scene above), so condition_holds runs a real probe and
+    # returns True. That is the whole point of the three-layer design --
+    # a base rule switched off only under a stated, checkable condition
+    # -- and until now nothing exercised it.
     (knowledge / "principles.yaml").write_text(
         yaml.safe_dump(
             {
                 "principles": [
                     {
-                        "id": "toanaz.four-monitor-rig",
-                        "principle": "This rig always runs 4 monitor buses; G8 does not apply",
+                        "id": "toanaz.nine-monitor-rig",
+                        "principle": "This rig always runs 9 monitor outputs; G8 does not apply",
                         "hardness": "flexible",
-                        "applies_when": {"monitor_bus_count": 4},
+                        "applies_when": {"monitor_bus_count": 9},
                         "supersedes": ["G8"],
                         "rationale": "field practice",
                         "source": "ToanAZ",
@@ -129,7 +136,7 @@ def test_a_matching_flexible_principle_supersedes_its_base_rule(scene, knowledge
 
     ids = {r.id for r in active_rules(scene, directory=knowledge)}
     assert "G8" not in ids
-    assert "toanaz.four-monitor-rig" in ids
+    assert "toanaz.nine-monitor-rig" in ids
 
     assert [f for f in run(scene, directory=knowledge) if f.rule_id == "G8"] == []
 
@@ -694,7 +701,7 @@ def test_no_profile_loads_no_show_file(scene, knowledge):
     (knowledge / "shows" / "small.yaml").write_text(
         yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
     )
-    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "E6"}
+    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "G9", "E6"}
 
 
 def test_a_profile_loads_only_its_own_file(scene, knowledge):

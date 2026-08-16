@@ -24,7 +24,13 @@ from wing_parser.advisory.models import Finding, Rule
 
 
 def _monitor_bus_count(scene) -> int:
-    return sum(1 for bus in scene.buses() if bus.is_monitor)
+    """Confident monitor-role outputs across the whole bus family.
+
+    Counted over bus_family() since 2026-08-16: on the real console the
+    IEM mixes are matrices, and a scene whose monitors are all matrices
+    used to count as having none.
+    """
+    return sum(1 for bus in scene.bus_family() if bus.is_monitor)
 
 
 CONDITIONS: dict[str, Callable[[Any], Any]] = {
