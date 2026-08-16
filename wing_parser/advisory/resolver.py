@@ -77,8 +77,9 @@ def _validate_applies_when(rule: Rule) -> None:
             )
 
 
-def active_rules(scene, directory: Path | None = None) -> list[Rule]:
-    candidates = _principles(directory) + _show_rules(directory)
+def active_rules(scene, directory: Path | None = None,
+                 profile: str | None = None) -> list[Rule]:
+    candidates = _principles(directory) + _show_rules(directory, profile)
     for rule in candidates:
         _validate_applies_when(rule)
     higher = [r for r in candidates if _is_active(scene, r)]
@@ -115,14 +116,17 @@ def active_rules(scene, directory: Path | None = None) -> list[Rule]:
     return [r for r in base if r.id not in suppressed] + higher
 
 
-def suppressed_ids(scene, directory: Path | None = None) -> dict[str, str]:
+def suppressed_ids(scene, directory: Path | None = None,
+                   profile: str | None = None) -> dict[str, str]:
     """Map each switched-off base rule to the higher-layer rule that did it."""
-    higher = [r for r in _principles(directory) + _show_rules(directory) if _is_active(scene, r)]
+    higher = [r for r in _principles(directory) + _show_rules(directory, profile)
+              if _is_active(scene, r)]
     return {rule_id: r.id for r in higher for rule_id in r.supersedes}
 
 
-def run(scene, directory: Path | None = None) -> list[Finding]:
-    return evaluate_all(scene, active_rules(scene, directory))
+def run(scene, directory: Path | None = None,
+        profile: str | None = None) -> list[Finding]:
+    return evaluate_all(scene, active_rules(scene, directory, profile))
 
 
 class AdvisoryFacade:
@@ -130,11 +134,11 @@ class AdvisoryFacade:
         self._scene = scene
         self._directory = directory
 
-    def run(self) -> list[Finding]:
-        return run(self._scene, self._directory)
+    def run(self, profile: str | None = None) -> list[Finding]:
+        return run(self._scene, self._directory, profile)
 
-    def rules(self) -> list[Rule]:
-        return active_rules(self._scene, self._directory)
+    def rules(self, profile: str | None = None) -> list[Rule]:
+        return active_rules(self._scene, self._directory, profile)
 
-    def suppressed(self) -> dict[str, str]:
-        return suppressed_ids(self._scene, self._directory)
+    def suppressed(self, profile: str | None = None) -> dict[str, str]:
+        return suppressed_ids(self._scene, self._directory, profile)

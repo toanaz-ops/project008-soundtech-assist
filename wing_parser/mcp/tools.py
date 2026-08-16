@@ -104,19 +104,22 @@ def routing(path: str) -> str:
 
 
 @_guard
-def doctor(path: str) -> str:
+def doctor(path: str, profile: str | None = None) -> str:
     """Run the advisory rules and report likely misconfigurations.
 
     Use when asked to check, review, or find problems in a scene. Each
     finding names the rule, the target, and which rule layer decided it
     (base for generic industry practice, toanaz for personal principles,
     show for one-off overrides). Rules switched off by a higher layer are
-    listed too.
+    listed too. Pass `profile` to apply one show profile from the
+    knowledge directory, which can switch base rules off for a show whose
+    author is deviating from them on purpose.
     """
     scene = WingScene.load(path)
-    out = render.findings(scene.advisory.run(), scene.advisory.suppressed())
+    found = scene.advisory.run(profile)
+    text = render.findings(found, scene.advisory.suppressed(profile))
     scene.classifier.flush()
-    return out
+    return text
 
 
 TOOLS: dict[str, Callable[..., str]] = {

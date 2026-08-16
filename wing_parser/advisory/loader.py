@@ -12,7 +12,7 @@ from pathlib import Path
 import yaml
 
 from wing_parser.advisory.models import SEVERITIES, Rule
-from wing_parser.advisory.predicates import OPERATORS
+from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
 
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
 
@@ -27,42 +27,6 @@ def _load_yaml(path: Path) -> dict:
         raise ValueError(f"{path}: invalid YAML: {exc}") from exc
 
 
-def _validate_where(where: dict, path: Path, rule_id: str) -> None:
-    """Reject an unknown predicate operator at load time.
-
-    `predicates.matches` raises `ValueError` for this too, but only when
-    a target happens to reach that `where` clause mid-run -- a rule that
-    is rarely evaluated could ship a typo'd operator for a long time
-    before it ever surfaces. Checking every operator key up front means a
-    hand-edited rule file fails at load, the same moment every other slip
-    in it would.
-    """
-    for field_path, expected in where.items():
-        if not isinstance(expected, dict):
-            continue
-        for operator in expected:
-            if operator not in OPERATORS:
-                raise ValueError(
-                    f"{path}: rule {rule_id} has an unknown predicate "
-                    f"operator {operator!r} on {field_path!r}; expected "
-                    f"one of {sorted(OPERATORS)}"
-                )
-
-
-def _optional(entry: dict, key: str, default):
-    """Read an optional field, treating an explicit YAML null as unset.
-
-    `.get(key, default)` only defaults when the key is absent. A rule file
-    is hand-edited, and `enabled:` with the value left off is a plausible
-    slip — under `.get` it would come back None, silently disabling a rule
-    its author meant to leave on. The sibling fields (`where`,
-    `applies_when`, `supersedes`) already collapse null to their default
-    via `or`; this keeps the scalar ones consistent with them.
-    """
-    value = entry.get(key)
-    return default if value is None else value
-
-
 def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
     if not isinstance(entry, dict):
         raise ValueError(
@@ -70,9 +34,26 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
             f"{type(entry).__name__} ({entry!r})"
         )
 
-    for required in ("id", "title", "severity", "source", "rationale", "message"):
-        if not entry.get(required):
-            raise ValueError(f"{where_from}: rule is missing required field {required!r}")
+    if not entry.get("id"):
+        raise ValueError(f"{where_from}: rule is missing required field 'id'")
+
+    when = entry.get("when")
+    # `entry.get("when")` returns None both when the key is absent (the
+    # supersede-only case) and when it is present but left blank -- a
+    # plausible hand-edit slip. Testing key membership instead of the
+    # resolved value keeps a blank `when:` from silently becoming a
+    # match-nothing supersede-only rule: it falls through to the
+    # `isinstance(when, dict)` guard below and raises instead.
+    supersede_only = "when" not in entry
+
+    required = ["title", "severity", "source", "rationale"]
+    if not supersede_only:
+        required.append("message")
+    for field in required:
+        if not entry.get(field):
+            raise ValueError(
+                f"{where_from}: rule {entry['id']} is missing required field {field!r}"
+            )
 
     severity = entry["severity"]
     if severity not in SEVERITIES:
@@ -81,7 +62,8 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
             f"expected one of {SEVERITIES}"
         )
 
-    when = entry.get("when") or {}
+    if supersede_only:
+        when = {"for_each": "none", "where": {}}
     if not isinstance(when, dict):
         raise ValueError(
             f"{where_from}: rule {entry['id']} has a when: block that must "
@@ -92,6 +74,11 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
 
     where = dict(when.get("where") or {})
     _validate_where(where, where_from, entry["id"])
+    any_of = (
+        _validate_any_of(when["any_of"], where_from, entry["id"])
+        if "any_of" in when
+        else ()
+    )
 
     return Rule(
         id=entry["id"],
@@ -101,12 +88,13 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         rationale=entry["rationale"],
         for_each=when["for_each"],
         where=where,
-        message=entry["message"],
+        message=entry.get("message") or entry["title"],
         layer=layer,
         requires_classifier=bool(_optional(entry, "requires_classifier", False)),
         enabled=bool(_optional(entry, "enabled", True)),
         hardness=_optional(entry, "hardness", "hard"),
         applies_when=dict(entry.get("applies_when") or {}),
+        any_of=any_of,
         supersedes=tuple(entry.get("supersedes") or ()),
     )
 

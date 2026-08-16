@@ -141,9 +141,13 @@ A rule with no `any_of` behaves exactly as today.
 | `any_of` is present but empty | `ValueError` |
 | an unknown operator inside an `any_of` entry | `ValueError` |
 
-The empty case matters most. `any(...)` over an empty list is `False`, so
-`any_of:` with the value left off would silently disable the whole rule — the same
-present-but-null shape that has bitten this project five times. It must raise.
+The empty case matters most. `evaluate()` only consults `any_of` when it is
+truthy (`if rule.any_of:`); there is no unconditional `any(...)` in the path.
+So `any_of:` with the value left off, if it slipped through as `()`, would not
+disable the rule — it would be read as "no OR was written" and the rule would
+fire on every target that satisfies `where`, wider than its author intended.
+That is the same present-but-null shape that has bitten this project five
+times, just manifesting as over-firing rather than silence. It must raise.
 
 The operator-name validation added in the Phase 2 fix wave currently inspects
 `where` only. It must recurse into `any_of` entries.
@@ -342,7 +346,7 @@ Every count below is measured against `user-files/example-Vu.snap`.
 | `--profile small` → 2 findings | The profile actually suppresses G8 |
 | `--profile smal` → raises, listing available names | The silent-typo failure |
 | an id printed by `doctor --profile X` resolves under `feedback --profile X` | The two surfaces cannot diverge |
-| `any_of: []` → raises | An empty value silently disabling a whole rule |
+| `any_of: []` → raises | An empty value leaving the rule with no OR, firing wider than written |
 | nested `any_of` → raises | The one-level constraint |
 | unknown operator inside an `any_of` entry → raises at load | Validation currently stops at `where` |
 | a target matching neither clause does not fire; matching either does | `any_of` semantics in both directions |
@@ -352,10 +356,13 @@ Every count below is measured against `user-files/example-Vu.snap`.
 | a **synthesised** channel with range ≤ 6 and hold < 200 fires E6 | The hold clause, which the real file cannot discriminate |
 | E6's message names both range and hold | A hold-raised finding must not report only the range |
 
-Two mutations must be demonstrated, because both defects are silent:
+Two mutations must be demonstrated, because both defects are hard to notice
+from a rule's own output:
 
 - Revert the glob fix — the two-file test goes red.
-- Delete the empty-`any_of` guard — a rule stops firing with nothing reported.
+- Delete the empty-`any_of` guard — `any_of: []` stops raising and a rule
+  written with an OR fires on every target that satisfies `where` instead,
+  wider than its author intended.
 
 ## 9. Constraints inherited
 

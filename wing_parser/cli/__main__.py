@@ -33,6 +33,11 @@ def build_parser() -> argparse.ArgumentParser:
     node = sub.add_parser("doctor", help="advisory findings only")
     node.add_argument("file")
     node.add_argument("--json", action="store_true", help="machine-readable output")
+    node.add_argument(
+        "--profile",
+        default=None,
+        help="apply one show profile from knowledge/toanaz/shows/<name>.yaml",
+    )
     node.set_defaults(handler=commands.doctor)
 
     node = sub.add_parser("diff", help="compare two scenes")
@@ -46,6 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
     node.add_argument("--verdict", required=True, choices=VERDICTS)
     node.add_argument("--scene", required=True, help="the .snap the finding came from")
     node.add_argument("--note", default="")
+    node.add_argument(
+        "--profile",
+        default=None,
+        help="apply one show profile from knowledge/toanaz/shows/<name>.yaml",
+    )
     node.set_defaults(handler=commands.feedback)
 
     return parser

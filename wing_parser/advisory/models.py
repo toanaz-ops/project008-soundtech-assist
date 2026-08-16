@@ -24,6 +24,7 @@ class Rule:
     enabled: bool = True
     hardness: str = "hard"
     applies_when: dict[str, Any] = field(default_factory=dict)
+    any_of: tuple[dict[str, Any], ...] = ()
     supersedes: tuple[str, ...] = ()
 
 

@@ -22,19 +22,19 @@ def _load(path: str) -> WingScene | None:
     return None
 
 
-def _run_advisory(scene: WingScene) -> list | None:
+def _run_advisory(scene: WingScene, profile: str | None = None) -> list | None:
     """Run the advisory rules, turning a hand-edited rule file's error
     into the same `error: <message>` shape `_load` already gives a bad
     scene file, instead of a traceback. `scene.advisory.run()` reads and
     validates `principles.yaml` and every show file on every call, so a
     typo'd `supersedes` id, a rule missing `id:`, a bare-string list
-    entry, an unknown predicate operator, an unknown `for_each`, or a
-    YAML syntax error can all still surface here — this is the CLI's
-    copy of the same guard the MCP `_guard` decorator already gives
-    those tools.
+    entry, an unknown predicate operator, an unknown `for_each`, an
+    unknown profile name, or a YAML syntax error can all still surface
+    here — this is the CLI's copy of the same guard the MCP `_guard`
+    decorator already gives those tools.
     """
     try:
-        return scene.advisory.run()
+        return scene.advisory.run(profile)
     except (KeyError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return None
@@ -67,13 +67,13 @@ def doctor(args) -> int:
     scene = _load(args.file)
     if scene is None:
         return 1
-    found = _run_advisory(scene)
+    found = _run_advisory(scene, getattr(args, "profile", None))
     if found is None:
         return 1
     if getattr(args, "json", False):
         print(json.dumps([asdict(f) for f in found], indent=2, ensure_ascii=False))
     else:
-        print(render.findings(found, scene.advisory.suppressed()))
+        print(render.findings(found, scene.advisory.suppressed(getattr(args, "profile", None))))
     scene.classifier.flush()
     return 0
 
@@ -102,7 +102,7 @@ def feedback(args) -> int:
     if scene is None:
         return 1
 
-    findings = _run_advisory(scene)
+    findings = _run_advisory(scene, getattr(args, "profile", None))
     if findings is None:
         return 1
 

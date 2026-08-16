@@ -79,7 +79,11 @@ python -m wing_parser.cli doctor user-files/example-Vu.snap
 Runs the three-layer advisory rules (see below) and prints each
 finding's rule id, target, deciding layer, and confidence when the
 rule depended on a name-based classification. Add `--json` for
-machine-readable output. See [The advisory model](#the-advisory-model).
+machine-readable output. Add `--profile <name>` to apply one named
+show profile — `<name>` is a `*.yaml` or `*.yml` file's stem in
+`knowledge/toanaz/shows/`; nothing in that directory applies unless
+named this way, and an unrecognised name raises and lists what
+profiles exist. See [The advisory model](#the-advisory-model).
 
 ### `diff` — what changed between two scenes
 
@@ -96,7 +100,7 @@ differences is always the true total.
 
 ```bash
 python -m wing_parser.cli feedback G8:ch.8.send.8 --verdict false-positive \
-  --scene user-files/example-Vu.snap --note "shared band IEM, guitar is the exception"
+  --scene user-files/example-Vu.snap --note "small show, post-fader is the deliberate shortcut"
 ```
 
 Verdicts are `correct`, `false-positive`, or `irrelevant`. Each call
@@ -104,7 +108,13 @@ appends one record to `feedback.jsonl` in the active knowledge
 directory (see [Knowledge directory](#knowledge-directory-and-search-order)
 below); it never rewrites history. The finding id must match a finding
 `doctor` currently reports for that scene — `wing doctor` lists the
-current ids.
+current ids. `feedback` also accepts `--profile <name>`, with the same
+meaning as on `doctor`, and it matters here for a specific reason:
+`feedback` resolves the finding id by re-running the same advisory
+rules `doctor` printed, so the two commands must be given the same
+`--profile` or an id `doctor` just listed will not resolve — a finding
+that a profile's rule supersedes is not among that run's findings at
+all.
 
 ## The advisory model
 
@@ -122,20 +132,32 @@ which layer decided it:
   `knowledge/toanaz/principles.yaml`. A principle can `supersede` one
   or more base rules, either unconditionally (`hardness: hard`) or only
   when a stated condition holds (`hardness: flexible`, gated by
-  `applies_when`). For example, a shared-band-IEM principle can
-  supersede G8 — the generic rule says every post-fader monitor send is
-  suspect, but a working engineer's practice may be that only the
-  guitarist needs a pre-fader send and everyone else tracks FOH on
-  purpose. When a principle suppresses a base rule, `doctor` reports
-  the suppression and names the rule that did it, rather than silently
-  dropping the finding.
-- **`show`** — one-off overrides for a single show, dropped as
-  `*.yaml` or `*.yml` files in `knowledge/toanaz/shows/`.
+  `applies_when`). The shipped file holds no principle yet — nothing
+  he does depends on the show alone regardless of what kind of show it
+  is — so the worked example of a rule superseding a base rule lives
+  one layer down, in `show`. When a principle or show rule suppresses a
+  base rule, `doctor` reports the suppression and names the rule that
+  did it, rather than silently dropping the finding.
+- **`show`** — a named profile for one kind of show, hand-edited as
+  `*.yaml` or `*.yml` files in `knowledge/toanaz/shows/` and selected
+  with `--profile <name>`, where `<name>` is the file's stem. Nothing
+  in that directory applies unless it is named on the command line; an
+  unrecognised name raises and lists what profiles exist. The shipped
+  `shows/small.yaml` supersedes G8 on a small or easy show: pre-fader
+  monitor sends are ToanAZ's norm, especially on a big show, but on a
+  small or easy show he deliberately runs them post-fader instead,
+  trading monitor independence for setup speed. That profile records
+  the deviation as deliberate rather than leaving G8 to re-flag it on
+  every check.
 
-Base rules are not beyond question. G7, for instance, checks a bus's
-dynamics model against a hardcoded list of limiter identifiers; only
-`COMP` and `CMB` appear as dynamics models anywhere in the sample
-files, so G7 currently fires on every monitor bus it evaluates. Treat
+Base rules are not beyond question. G7, for instance, checks only that
+a monitor bus's dynamics processor is switched on (`bus.dyn.on`), not
+that the model loaded there is actually a limiter — the `dyn.mdl`
+token a WING stores for a limiter is not recorded anywhere in this
+repository and must not be guessed, so a monitor bus carrying a
+compressor that is switched **on** is deliberately not reported (see
+[design spec §7.1](docs/superpowers/specs/2026-08-16-advisory-loop-closure-design.md#71-the-limiter-token)
+for the exact clause to add once that token is known). Treat
 `doctor`'s output as what the stated rule checks, not as ground truth
 — that is exactly what the `toanaz` and `show` layers exist to correct
 once a human has looked at the finding and rendered a verdict.
@@ -208,7 +230,17 @@ is required beyond re-running the command.
   block of its own.
 - **Add a show-specific override** — drop a `.yaml` or `.yml` file into
   `knowledge/toanaz/shows/`, using the same rule shape as a base rule.
-  These load with `layer: show`, the highest-priority layer.
+  The filename (without its extension) becomes the profile name; the
+  file is a **named profile**, and nothing in it applies until that
+  name is passed as `--profile <name>` to `doctor` or `feedback`. An
+  unrecognised `--profile` name raises rather than silently running
+  with no profile, and lists what profiles exist. These load with
+  `layer: show`, the highest-priority layer. A show rule whose only job
+  is to `supersede` a base rule needs no `when` or `message` either —
+  the same supersede-only shape "Add a principle" describes above. The
+  shipped `knowledge/toanaz/shows/small.yaml` is exactly that: no
+  `when:`, no `message:`, just `supersedes: [G8]` and the rationale for
+  switching it off.
 - **Add a descriptor** — the descriptors under
   `wing_parser/descriptors/data/*.yaml` interpret encoded fields the
   console stores as raw numbers or short codes. For example,

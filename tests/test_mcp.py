@@ -2,6 +2,7 @@ import inspect
 import json
 
 import pytest
+import yaml
 
 from wing_parser.mcp import tools
 
@@ -106,6 +107,40 @@ def test_server_builds_when_the_mcp_package_is_installed():
     from wing_parser.mcp.server import build
 
     assert build() is not None
+
+
+def test_doctor_accepts_a_profile(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    shows = tmp_path / "shows"
+    shows.mkdir(parents=True, exist_ok=True)
+    (shows / "small.yaml").write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "show.small", "title": "Small show",
+                        "severity": "info", "source": "s", "rationale": "r",
+                        "supersedes": ["G8"]}]}
+        ),
+        encoding="utf-8",
+    )
+    # render.findings() names every switched-off rule id in a transparency
+    # line ("[suppressed] G8 switched off by show.small"), so a bare "G8"
+    # not in out would fail even on correct suppression -- the MCP tool
+    # has no --json escape hatch, so assert the *only* remaining "G8" is
+    # that transparency line, not an active finding.
+    with_profile = tools.doctor(str(vu_path), profile="small")
+    assert with_profile.count("G8") == 1
+    assert "G8 switched off by show.small" in with_profile
+    assert "G8" in tools.doctor(str(vu_path))
+
+
+def test_doctor_with_an_unknown_profile_returns_a_message(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    out = tools.doctor(str(vu_path), profile="nope")
+    assert out.lower().startswith("error")
+    assert "nope" in out
+
+
+def test_the_doctor_tool_still_exposes_its_parameters():
+    assert list(inspect.signature(tools.doctor).parameters) == ["path", "profile"]
 
 
 def test_main_names_the_fix_when_the_mcp_extra_is_missing(capsys):

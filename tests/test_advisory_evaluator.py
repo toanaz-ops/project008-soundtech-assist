@@ -151,9 +151,69 @@ def test_dest_kind_guard_prevents_a_phantom_monitor_finding_on_a_matrix_send(
     assert all(f.target != "ch.39.send.8" for f in findings)
 
 
+def test_any_of_fires_when_either_clause_matches(scene):
+    findings = evaluate(
+        scene,
+        rule(where={"channel.number": 8},
+             any_of=({"channel.name": "nothing"}, {"channel.muted": False})),
+    )
+    assert [f.target for f in findings] == ["ch.8"]
+
+
+def test_any_of_does_not_fire_when_no_clause_matches(scene):
+    assert evaluate(
+        scene,
+        rule(where={"channel.number": 8},
+             any_of=({"channel.name": "nothing"}, {"channel.muted": True})),
+    ) == []
+
+
+def test_where_still_gates_a_rule_that_has_any_of(scene):
+    """`where` is AND with the whole any_of block, not an alternative to it."""
+    assert evaluate(
+        scene,
+        rule(where={"channel.number": 999}, any_of=({"channel.muted": False},)),
+    ) == []
+
+
+def test_evidence_records_which_clause_matched(scene):
+    finding = evaluate(
+        scene,
+        rule(where={"channel.number": 8},
+             any_of=({"channel.name": "nothing"}, {"channel.muted": False})),
+    )[0]
+    assert finding.evidence["_any_of"] == 1
+    assert finding.evidence["channel.muted"] is False
+    assert finding.evidence["channel.number"] == 8
+
+
+def test_evidence_records_the_first_clause_when_more_than_one_matches(scene):
+    """`_matched_clause` must return the first match, not merely a match --
+    the finding order this advisory tool produces has to be stable, and a
+    test built from one non-matching clause and one matching clause (as
+    above) cannot distinguish "first" from "last" from "any". Both clauses
+    below match channel 8, so only checking for index 0 pins the guarantee."""
+    finding = evaluate(
+        scene,
+        rule(where={"channel.number": 8},
+             any_of=({"channel.muted": False}, {"channel.name": "M8 MC"})),
+    )[0]
+    assert finding.evidence["_any_of"] == 0
+
+
+def test_a_rule_without_any_of_carries_no_marker(scene):
+    finding = evaluate(scene, rule(where={"channel.number": 8}))[0]
+    assert "_any_of" not in finding.evidence
+
+
 def test_evaluate_all_concatenates(scene):
     findings = evaluate_all(
         scene,
         [rule(id="A", where={"channel.number": 8}), rule(id="B", where={"channel.number": 9})],
     )
     assert {f.rule_id for f in findings} == {"A", "B"}
+
+
+def test_the_none_iterator_yields_no_targets(scene):
+    assert list(targets_for(scene, "none")) == []
+    assert evaluate(scene, rule(for_each="none", where={})) == []

@@ -13,8 +13,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from wing_parser import config
-from wing_parser.advisory.loader import _load_yaml, _optional, _validate_where, load_rules
+from wing_parser.advisory.loader import _load_yaml, load_rules
 from wing_parser.advisory.models import SEVERITIES, Rule
+from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
 
 PRINCIPLES_FILE = "principles.yaml"
 SHOWS_DIR = "shows"
@@ -27,31 +28,45 @@ def _principles(directory: Path | None) -> list[Rule]:
     return _as_rules(path, layer="toanaz", key="principles")
 
 
-def _show_rules(directory: Path | None) -> list[Rule]:
-    """A show file may be saved `.yaml` or `.yml`.
+def _show_rules(directory: Path | None, profile: str | None = None) -> list[Rule]:
+    """Load exactly the named show file, or none at all.
 
-    Globbing only `*.yaml` makes a `.yml` file silently invisible --
-    not loaded, not warned about, indistinguishable from "no overrides
-    tonight." Both extensions are gathered into one sorted list so
-    load order stays deterministic regardless of which spelling a show
-    file used.
+    This used to glob every `*.yaml` and `*.yml` under `shows/` and apply
+    all of them, which meant two show files were both active for ever --
+    last week's overrides still in force tonight, with nothing to say so.
+    Nothing caught it because the directory ships empty.
+
+    A profile is selected by name and nothing is loaded without one. An
+    unrecognised name raises rather than degrading to "no profile": a
+    mistyped `--profile smal` would otherwise run with the base rule still
+    active while its author believes it is switched off, which is the
+    worst shape this failure can take.
     """
-    shows = config.knowledge_dir(directory) / SHOWS_DIR
-    if not shows.is_dir():
+    if profile is None:
         return []
-    paths = sorted(list(shows.glob("*.yaml")) + list(shows.glob("*.yml")))
-    rules: list[Rule] = []
-    for path in paths:
-        rules.extend(load_rules(path, layer="show"))
-    return rules
+
+    shows = config.knowledge_dir(directory) / SHOWS_DIR
+    for suffix in (".yaml", ".yml"):
+        path = shows / f"{profile}{suffix}"
+        if path.is_file():
+            return load_rules(path, layer="show")
+
+    available = sorted(
+        {p.stem for p in list(shows.glob("*.yaml")) + list(shows.glob("*.yml"))}
+    ) if shows.is_dir() else []
+    raise ValueError(
+        f"no profile named {profile!r} in {shows}; "
+        f"available: {', '.join(available) if available else '(none)'}"
+    )
 
 
 def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
     """principles.yaml uses `principles:` and may omit the `when` block.
 
     A principle whose only job is to switch a base rule off needs no
-    target of its own, so a missing `when` becomes a rule that matches
-    nothing and exists purely for its `supersedes` list. An explicit
+    target of its own, so a missing `when` becomes a rule that uses the
+    `none` iterator -- which yields no targets -- and exists purely for
+    its `supersedes` list. An explicit
     `when` block with no `for_each` is a different, invalid case and is
     rejected the same way `loader.load_rules` rejects it, rather than
     left to raise a bare `KeyError` a few lines down.
@@ -99,8 +114,14 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 f"{path}: rule {entry['id']} has severity {severity!r}; "
                 f"expected one of {SEVERITIES}"
             )
-        when = entry.get("when")
-        if when is not None:
+        # Twin of the loader.py hazard: `entry.get("when")` returns None
+        # both when the key is absent (supersede-only) and when it is
+        # present but left blank. Testing key membership instead of the
+        # resolved value keeps a blank `when:` from silently becoming a
+        # match-nothing supersede-only rule -- it falls through to the
+        # `isinstance(when, dict)` guard below and raises instead.
+        if "when" in entry:
+            when = entry["when"]
             if not isinstance(when, dict):
                 raise ValueError(
                     f"{path}: rule {entry['id']} has a when: block that must "
@@ -109,10 +130,15 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
             if not when.get("for_each"):
                 raise ValueError(f"{path}: rule {entry['id']} has no when.for_each")
         else:
-            when = {"for_each": "channel", "where": {"channel.number": -1}}
+            when = {"for_each": "none", "where": {}}
 
         where = dict(when.get("where") or {})
         _validate_where(where, path, entry["id"])
+        any_of = (
+            _validate_any_of(when["any_of"], path, entry["id"])
+            if "any_of" in when
+            else ()
+        )
 
         rules.append(
             Rule(
@@ -129,6 +155,7 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 enabled=bool(_optional(entry, "enabled", True)),
                 hardness=_optional(entry, "hardness", "hard"),
                 applies_when=dict(entry.get("applies_when") or {}),
+                any_of=any_of,
                 supersedes=tuple(entry.get("supersedes") or ()),
             )
         )

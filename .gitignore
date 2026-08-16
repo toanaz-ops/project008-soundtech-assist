@@ -14,6 +14,7 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+build/
 
 # Local secrets — the Anthropic key for the classifier fallback lives here
 .env
