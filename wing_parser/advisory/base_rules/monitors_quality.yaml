@@ -1,0 +1,68 @@
+rules:
+  - id: G10
+    title: "IEM output receives no ambient mic"
+    severity: info
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L471: 'For IEM, supply ambient mics... Without ambience, performers over-sing because they cannot hear the room.'; Technical-Rider-Spec.md L292 marks ambient-into-every-IEM [R]"
+    rationale: >
+      Without ambience, IEM performers are acoustically isolated and
+      over-sing. Info, not warning: a small show may deliberately run
+      IEM without ambient mics, and the profile mechanism exists for
+      recording exactly that; on the known real file this fires on all
+      four IEM matrices because no ambient channel exists at all.
+    requires_classifier: true
+    when:
+      for_each: output
+      where:
+        bus.role: monitor.iem
+        bus.receives_ambient: false
+    message: >
+      {bus.kind} {bus.number} ({bus.name}) is an IEM output and no
+      confidently-classified ambient mic channel sends to it.
+
+  - id: G11
+    title: "More than five narrow notches on a monitor output"
+    severity: warning
+    source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L556: 'Five is the typical maximum -- beyond that, more notches are indicative of a placement problem, not an EQ problem.'; Core-Skills-Overview.md L470; Risk-Contingency-Matrix.md L88"
+    rationale: >
+      The three sources disagree on notch geometry and count and this
+      rule records the chosen envelope. Core-Skills L470: Q 20-30, -6 to
+      -12 dB, 2-3 modes maximum. Live-Entertainment L554-556: Q 8-10,
+      6-12 dB deep, five maximum. Risk-Contingency L88: Q 8-12, 3-6 dB.
+      Chosen: a notch is q >= 8 with a cut of 6 dB or more (the loosest
+      bound all three call a notch), threshold above five (the loosest
+      maximum) -- the permissive envelope, so a finding means every
+      source agrees something is wrong, and the fix is physical, not EQ.
+    requires_classifier: true
+    when:
+      for_each: output
+      where:
+        bus.role: {starts_with: monitor}
+        bus.notch_count: {gt: 5}
+    message: >
+      {bus.kind} {bus.number} ({bus.name}) carries {bus.notch_count}
+      narrow deep EQ cuts. Beyond five, the sources call this a
+      loudspeaker-placement or mic-pattern problem, not an EQ problem.
+
+  - id: G12
+    title: "EQ boost above 8 kHz on a house output"
+    severity: info
+    source: "docs/knowledge-base/01-live-audio-ai/AI-Plugins-In-Live-Sound.md L490-492: 'Do not EQ it back in at the console -- you will only overdrive the HF drivers for the front rows. Use a delay zone with its own HF trim instead.'"
+    rationale: >
+      Air absorption rolls off 6-10 dB above 8 kHz at the back of a
+      large room; boosting it back at the console overdrives the HF
+      drivers for the front rows. Info, not warning, because the same
+      document's L486 house-curve table prescribes "+2 dB above 8 kHz"
+      for a small-format live band: L490 is about compensating a large
+      room, L486 about voicing a small rig, and a scene file cannot
+      tell the rooms apart.
+    requires_classifier: true
+    when:
+      for_each: output
+      where:
+        bus.role: {in: [main, pa_zone]}
+        bus.max_boost_above_8k: {not: null}
+    message: >
+      {bus.kind} {bus.number} ({bus.name}) boosts {bus.max_boost_above_8k}
+      dB above 8 kHz. If this compensates air absorption at the back of
+      the room, the sources say to use a delay zone with its own HF trim
+      instead.

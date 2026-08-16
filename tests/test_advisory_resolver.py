@@ -40,6 +40,7 @@ def test_only_base_rules_are_active_with_an_empty_principles_file(scene, knowled
     assert {r.id for r in active_rules(scene, directory=knowledge)} == {
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
         "R4", "R5", "R6", "N1", "N2",
+        "S1", "S2", "G10", "G11", "G12",
     }
 
 
@@ -708,6 +709,7 @@ def test_no_profile_loads_no_show_file(scene, knowledge):
     assert {r.id for r in active_rules(scene, directory=knowledge)} == {
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
         "R4", "R5", "R6", "N1", "N2",
+        "S1", "S2", "G10", "G11", "G12",
     }
 
 

@@ -58,11 +58,13 @@ def test_channel_reports_an_unknown_number_without_a_traceback(vu_path, capsys):
 def test_doctor_lists_the_findings(vu_path, capsys):
     # G7 (error, IEM-only) is silent on this file since the 2026-08-16
     # monitor split -- all IEM matrices have dyn.on True. Its old sole
-    # finding (bus.7 SIDEFILL) now belongs to G9 (warning). Total finding
-    # count is unaffected: still 14.
+    # finding (bus.7 SIDEFILL) now belongs to G9 (warning). Task 10
+    # (2026-08-17) added G10, which fires on all four IEM matrices (no
+    # ambient channel exists in this file), moving the total from 14 to
+    # 18 -- see test_the_sample_scene_finding_counts for the full probe.
     assert main(["doctor", str(vu_path)]) == 0
     out = capsys.readouterr().out
-    assert "14 findings" in out
+    assert "18 findings" in out
     assert "G8" in out
     assert "G9" in out
     assert "MON VOX" in out
@@ -77,12 +79,16 @@ def test_doctor_orders_findings_naturally_not_lexicographically(vu_path, capsys)
     main(["doctor", str(vu_path)])
     out = capsys.readouterr().out
     targets = re.findall(r"^\s*\[\S+\s*\]\s+\S+\s+(\S+)\s+via base", out, re.MULTILINE)
+    # Task 10 (2026-08-17) added G10 (info), which now sorts after every
+    # warning-severity finding above -- its four matrices append at the
+    # end in target order, matrix.5 through matrix.8.
     assert targets == [
         "bus.7",
         "ch.1.send.8", "ch.2.send.8", "ch.3.send.8",
         "ch.4.send.7", "ch.4.send.8", "ch.5.send.8",
         "ch.7.send.7", "ch.7.send.8", "ch.8.send.7", "ch.8.send.8",
         "ch.10.send.8", "ch.11", "ch.12.send.8",
+        "matrix.5", "matrix.6", "matrix.7", "matrix.8",
     ]
 
 

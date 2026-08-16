@@ -18,6 +18,7 @@ def test_three_base_rules_ship(scene):
     assert {r.id for r in load_base_rules()} == {
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
         "R4", "R5", "R6", "N1", "N2",
+        "S1", "S2", "G10", "G11", "G12",
     }
 
 
@@ -130,13 +131,40 @@ def test_the_sample_scene_finding_counts(scene, monkeypatch):
       - N2 (output receives signal, unnamed): ships `enabled: false`
         (see `naming.yaml`), so `evaluate()` returns `[]` for it
         unconditionally regardless of the file's contents.
+
+    Task 10 (2026-08-17) added S1, S2, G10, G11, G12 and re-probed:
+        python - <<'EOF'
+        import os; os.environ["WING_DISABLE_LLM"] = "1"
+        from wing_parser import WingScene
+        scene = WingScene.load("user-files/example-Vu.snap")
+        found = scene.advisory.run()
+        from collections import Counter
+        print(Counter(f.rule_id for f in found), "total", len(found))
+        EOF
+    Output: Counter({'G8': 12, 'G10': 4, 'E6': 1, 'G9': 1}) total 18.
+      - S1: silent -- all five speech-classified channels (ch.1/2/3 VOX,
+        ch.8 MC, ch.11 HS4) already read `flt.lc: True`.
+      - S2: silent -- no channel in the file has `postins.on: True` with
+        a non-null `automix_group` (checked directly against `ae_data`).
+      - G10: fires on all four IEM matrices (5, 6, 7, 8) at info -- the
+        file has no `utility.ambient`-classified channel at all, so
+        `bus.receives_ambient` is False for every output. New count: 4.
+      - G11: silent -- no output's raw EQ has more than five bands
+        meeting the q>=8/gain<=-6 notch geometry (all real EQ blocks in
+        this file read `notch_count: 0`).
+      - G12: silent -- `bus.max_boost_above_8k` is None for `main.1`,
+        `matrix.1` (FLOWN) and `matrix.4` (CEN), the only `main`/
+        `pa_zone` outputs in the file. Matrix 5 (IEM MC) does carry a
+        +0.3 dB band above 8k, but its role is `monitor.iem`, outside
+        G12's `{in: [main, pa_zone]}` where-clause.
+    Net: 14 -> 18, entirely from G10's four new findings.
     """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run()
     counts = {rule_id: sum(1 for f in found if f.rule_id == rule_id)
-              for rule_id in ("G8", "G7", "G9", "E6")}
-    assert counts == {"G8": 12, "G7": 0, "G9": 1, "E6": 1}
-    assert len(found) == 14
+              for rule_id in ("G8", "G7", "G9", "E6", "G10")}
+    assert counts == {"G8": 12, "G7": 0, "G9": 1, "E6": 1, "G10": 4}
+    assert len(found) == 18
 
 
 def test_e6_still_fires_only_on_the_headset_channel(scene, monkeypatch):
@@ -220,12 +248,17 @@ def test_the_shipped_small_profile_loads_and_suppresses_g8(scene, monkeypatch):
     # G7 no longer fires on this file post-split (all IEM matrices have
     # dyn.on True); bus.7 SIDEFILL's finding moved to G9. Probed
     # 2026-08-16 with profile="small": {E6 ch.11, G9 bus.7}, G8 absent.
+    # Task 10 (2026-08-17) added G10, which fires on the same four IEM
+    # matrices as the untouched-file probe in
+    # test_the_sample_scene_finding_counts (no ambient channel exists
+    # anywhere in this file) -- re-probed with profile="small":
+    # {E6 ch.11, G9 bus.7, G10 x4}, G8 still absent.
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run(profile="small")
     assert [f.rule_id for f in found if f.rule_id == "G8"] == []
-    assert {f.rule_id for f in found} == {"G9", "E6"}
-    assert len(found) == 2
+    assert {f.rule_id for f in found} == {"G9", "E6", "G10"}
+    assert len(found) == 6
 
 
 def test_the_small_profile_records_who_switched_g8_off(scene, monkeypatch):

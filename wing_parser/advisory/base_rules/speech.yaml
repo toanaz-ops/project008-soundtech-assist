@@ -1,0 +1,55 @@
+rules:
+  - id: S1
+    title: "Speech channel without a high-pass filter"
+    severity: warning
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L690: 'Non-negotiable rule: every speech channel gets an HPF.'; L752 targets 100% by 'Configuration audit'"
+    rationale: >
+      A lectern mic with no HPF in a room with typical HVAC wastes 6-10
+      dB of usable headroom on inaudible rumble and reduces gain before
+      feedback for no benefit (L690, quoted). L752's metrics table names
+      "Configuration audit" as the measurement method -- the source
+      itself says this is a file-inspectable rule. Fires on any channel
+      whose classified kind starts with speech.; sung-vocal HPF corners
+      differ from spoken ones (L680-681) but every row of the L674 table
+      has SOME high-pass, so absence is flaggable at one severity for
+      all of them.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: {starts_with: "speech."}
+        channel.filter.low_cut_on: false
+    message: >
+      Channel {channel.number} ({channel.name}) classifies as
+      {channel.source_type} and its low-cut filter is off.
+
+  - id: S2
+    title: "Music-family channel inside an active automix group"
+    severity: error
+    source: "docs/knowledge-base/01-live-audio-ai/AI-Plugins-In-Live-Sound.md L385-386: 'Do not put a music channel (playback, walk-in, a performing instrument) into an automix group.'; Core-Skills-Overview.md L711; Corporate-B2B-Events.md L657"
+    rationale: >
+      Sustained broadband content wins the gain-sharing fight permanently
+      and ducks all speech mics (L385-386, quoted). Checks
+      post_insert.on, not just the group assignment, for the same reason
+      E6 does: a configured-but-inactive automix is a false positive.
+      Checks post_insert because that is where WING automix lives
+      (Corporate-B2B L646 puts Automix in the INS 2 slot; the observed
+      raw postins block carries mode AUTO_X) -- an assumption to
+      re-verify if a future scene shows automix in preins. Lectern mics
+      are deliberately out of scope: Corporate-B2B L657 hedges them
+      ("or, better, assign it to X too and let it win by weight").
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.post_insert.on: true
+        channel.post_insert.automix_group: {not: null}
+      any_of:
+        - channel.source_type: {in: [utility.playback, utility.click]}
+        - channel.source_type: {starts_with: "instrument."}
+        - channel.source_type: {starts_with: "drums."}
+    message: >
+      Channel {channel.number} ({channel.name}) classifies as
+      {channel.source_type} and sits in automix group
+      {channel.post_insert.automix_group} with the insert on. Sustained
+      broadband content ducks every speech mic in the group.
