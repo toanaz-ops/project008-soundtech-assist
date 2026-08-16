@@ -413,3 +413,24 @@ def test_a_rule_with_a_target_still_needs_a_message(tmp_path: Path):
     )
     with pytest.raises(ValueError, match="message"):
         load_rules(path, layer="show")
+
+
+class TestStartsWith:
+    def test_matches_a_prefix(self):
+        assert matches("monitor.iem", {"starts_with": "monitor"})
+
+    def test_exact_value_counts_as_its_own_prefix(self):
+        assert matches("monitor", {"starts_with": "monitor"})
+
+    def test_rejects_a_non_prefix(self):
+        assert not matches("subgroup", {"starts_with": "monitor"})
+
+    def test_none_is_false_not_an_error(self):
+        assert not matches(None, {"starts_with": "monitor"})
+
+    def test_a_number_is_false_not_an_error(self):
+        assert not matches(7, {"starts_with": "monitor"})
+
+    def test_registered_in_operators(self):
+        from wing_parser.advisory.predicates import OPERATORS
+        assert "starts_with" in OPERATORS

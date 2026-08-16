@@ -18,7 +18,7 @@ _MISSING = object()
 # dict form, e.g. `{"gt": 6.0}`. The loader validates a rule's `where`
 # against this set at load time, so an unknown operator is a clean error
 # naming the file rather than a `ValueError` raised from mid-run.
-OPERATORS: frozenset[str] = frozenset({"not", "in", "not_in", "gt", "lt", "is_null"})
+OPERATORS: frozenset[str] = frozenset({"not", "in", "not_in", "gt", "lt", "is_null", "starts_with"})
 
 
 def resolve_path(context: dict[str, Any], path: str) -> Any:
@@ -58,6 +58,9 @@ def matches(value: Any, expected: Any) -> bool:
                 return False
         elif operator == "is_null":
             if (value is None) is not bool(operand):
+                return False
+        elif operator == "starts_with":
+            if not isinstance(value, str) or not value.startswith(operand):
                 return False
         else:
             raise ValueError(
