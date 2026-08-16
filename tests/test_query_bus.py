@@ -80,11 +80,14 @@ class TestNotchCount:
             eq = ae["bus"]["7"]["eq"]
             eq["on"] = True
             eq["leq"], eq["heq"] = "PEQ", "PEQ"  # bells, not shelves
-            # all six bands the parser actually reads for a bus (low, 1-4, high)
+            # all six bands the parser actually reads for a bus (low, 1-4, high).
+            # Band "2" pins gain exactly to -6.0 (the <=-6.0 boundary) and
+            # band "4" pins q exactly to 8.0 (the >=8.0 boundary) -- both
+            # boundary values must still count as notches.
             for prefix, gain, q in [
                 ("l", -8, 9),
                 ("1", -7, 10),
-                ("2", -6.5, 8.5),
+                ("2", -6.0, 8.5),
                 ("3", -9, 12),
                 ("4", -6.1, 8.0),
                 ("h", -12, 20),
@@ -106,7 +109,7 @@ class TestNotchCount:
             eq["lg"], eq["lq"] = 0.0, 1.0     # untouched -> not a notch
             eq["1g"], eq["1q"] = -8, 4        # deep but wide -> not a notch
             eq["2g"], eq["2q"] = -3, 12       # narrow but shallow -> not a notch
-            eq["3g"], eq["3q"] = -6.1, 8.0    # exactly at the gate -> IS a notch
+            eq["3g"], eq["3q"] = -6.1, 8.0    # q exactly at the gate, gain past it -> IS a notch
             eq["4g"], eq["4q"] = 0.0, 1.0     # untouched -> not a notch
             eq["hg"], eq["hq"] = 0.0, 1.0     # untouched -> not a notch
 
