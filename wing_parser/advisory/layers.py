@@ -56,8 +56,9 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
     """principles.yaml uses `principles:` and may omit the `when` block.
 
     A principle whose only job is to switch a base rule off needs no
-    target of its own, so a missing `when` becomes a rule that matches
-    nothing and exists purely for its `supersedes` list. An explicit
+    target of its own, so a missing `when` becomes a rule that uses the
+    `none` iterator -- which yields no targets -- and exists purely for
+    its `supersedes` list. An explicit
     `when` block with no `for_each` is a different, invalid case and is
     rejected the same way `loader.load_rules` rejects it, rather than
     left to raise a bare `KeyError` a few lines down.
@@ -115,7 +116,7 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
             if not when.get("for_each"):
                 raise ValueError(f"{path}: rule {entry['id']} has no when.for_each")
         else:
-            when = {"for_each": "channel", "where": {"channel.number": -1}}
+            when = {"for_each": "none", "where": {}}
 
         where = dict(when.get("where") or {})
         _validate_where(where, path, entry["id"])

@@ -221,8 +221,6 @@ def test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule(
                         "source": "show sheet",
                         "rationale": "no in-ear packs on this show",
                         "supersedes": ["G7"],
-                        "when": {"for_each": "bus", "where": {"bus.number": -1}},
-                        "message": "never fires",
                     }
                 ]
             }
@@ -659,8 +657,6 @@ def test_show_rules_load_from_a_yml_extension_too(scene, knowledge):
                         "source": "show sheet",
                         "rationale": "no in-ear packs on this show",
                         "supersedes": ["G7"],
-                        "when": {"for_each": "bus", "where": {"bus.number": -1}},
-                        "message": "never fires",
                     }
                 ]
             }

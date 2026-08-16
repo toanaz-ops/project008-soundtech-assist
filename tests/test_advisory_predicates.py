@@ -335,3 +335,49 @@ def test_a_principle_may_also_carry_any_of(tmp_path: Path):
     from wing_parser.advisory.layers import _principles
     with pytest.raises(ValueError, match="any_of"):
         _principles(directory)
+
+
+def test_a_supersede_only_rule_needs_no_when_or_message(tmp_path: Path):
+    path = tmp_path / "show.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "show.off", "title": "Wedges tonight",
+                        "severity": "info", "source": "show sheet",
+                        "rationale": "no in-ear packs", "supersedes": ["G8"]}]}
+        ),
+        encoding="utf-8",
+    )
+    rule = load_rules(path, layer="show")[0]
+    assert rule.for_each == "none"
+    assert rule.where == {}
+    assert rule.supersedes == ("G8",)
+
+
+def test_a_rule_with_a_when_block_still_needs_for_each(tmp_path: Path):
+    """Omitting `when` entirely is the supersede-only case. Writing one
+    with no for_each is a different thing and stays an error."""
+    path = tmp_path / "bad.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "T", "title": "t", "severity": "warning",
+                        "source": "s", "rationale": "r", "message": "m",
+                        "when": {"where": {}}}]}
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="for_each"):
+        load_rules(path, layer="show")
+
+
+def test_a_rule_with_a_target_still_needs_a_message(tmp_path: Path):
+    path = tmp_path / "nomsg.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "T", "title": "t", "severity": "warning",
+                        "source": "s", "rationale": "r",
+                        "when": {"for_each": "channel", "where": {}}}]}
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="message"):
+        load_rules(path, layer="show")

@@ -65,10 +65,16 @@ def _buses(scene) -> Iterator[Target]:
         )
 
 
+def _nothing(scene) -> Iterator[Target]:
+    """No targets at all, for a rule that exists only to supersede another."""
+    return iter(())
+
+
 ITERATORS: dict[str, Callable[[Any], Iterator[Target]]] = {
     "channel": _channels,
     "channel.sends": _channel_sends,
     "bus": _buses,
+    "none": _nothing,
 }
 
 

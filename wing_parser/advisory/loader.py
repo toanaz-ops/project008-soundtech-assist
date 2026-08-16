@@ -129,9 +129,20 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
             f"{type(entry).__name__} ({entry!r})"
         )
 
-    for required in ("id", "title", "severity", "source", "rationale", "message"):
-        if not entry.get(required):
-            raise ValueError(f"{where_from}: rule is missing required field {required!r}")
+    if not entry.get("id"):
+        raise ValueError(f"{where_from}: rule is missing required field 'id'")
+
+    when = entry.get("when")
+    supersede_only = when is None
+
+    required = ["title", "severity", "source", "rationale"]
+    if not supersede_only:
+        required.append("message")
+    for field in required:
+        if not entry.get(field):
+            raise ValueError(
+                f"{where_from}: rule {entry['id']} is missing required field {field!r}"
+            )
 
     severity = entry["severity"]
     if severity not in SEVERITIES:
@@ -140,7 +151,8 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
             f"expected one of {SEVERITIES}"
         )
 
-    when = entry.get("when") or {}
+    if supersede_only:
+        when = {"for_each": "none", "where": {}}
     if not isinstance(when, dict):
         raise ValueError(
             f"{where_from}: rule {entry['id']} has a when: block that must "
@@ -165,7 +177,7 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         rationale=entry["rationale"],
         for_each=when["for_each"],
         where=where,
-        message=entry["message"],
+        message=entry.get("message") or entry["title"],
         layer=layer,
         requires_classifier=bool(_optional(entry, "requires_classifier", False)),
         enabled=bool(_optional(entry, "enabled", True)),

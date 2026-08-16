@@ -212,3 +212,8 @@ def test_evaluate_all_concatenates(scene):
         [rule(id="A", where={"channel.number": 8}), rule(id="B", where={"channel.number": 9})],
     )
     assert {f.rule_id for f in findings} == {"A", "B"}
+
+
+def test_the_none_iterator_yields_no_targets(scene):
+    assert list(targets_for(scene, "none")) == []
+    assert evaluate(scene, rule(for_each="none", where={})) == []
