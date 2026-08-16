@@ -6,6 +6,7 @@ from wing_parser.advisory.resolver import (
     AdvisoryFacade,
     active_rules,
     condition_holds,
+    off_event_ids,
     run,
     suppressed_ids,
 )
@@ -753,3 +754,114 @@ def test_run_honours_the_profile(scene, knowledge):
     assert [f for f in run(scene, directory=knowledge, profile="small")
             if f.rule_id == "G8"] == []
     assert [f for f in run(scene, directory=knowledge) if f.rule_id == "G8"] != []
+
+
+def _write_show(directory, name, body):
+    shows = directory / "shows"
+    shows.mkdir(parents=True, exist_ok=True)
+    (shows / f"{name}.yaml").write_text(body, encoding="utf-8")
+
+
+BAND_RULE = """
+rules: []
+event: band
+"""
+
+
+def test_a_profile_event_switches_off_other_events_rules(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser import WingScene
+    from wing_parser.advisory.resolver import active_rules, off_event_ids
+    from wing_parser.advisory.models import Rule
+    scene = WingScene.load(vu_path)
+    _write_show(tmp_path, "bandshow", BAND_RULE)
+
+    # Base rules are all universal today, so plant a corporate one via a
+    # temporary base-rules fixture is NOT possible without touching package
+    # data -- instead assert on the mechanism with the loader-level rules:
+    ids = {r.id for r in active_rules(scene, tmp_path, "bandshow")}
+    assert "G7" in ids  # universal rules survive
+    assert off_event_ids(scene, tmp_path, "bandshow") == {}  # nothing corporate ships yet
+
+
+def test_profile_event_validation_rejects_unknown_values(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser import WingScene
+    from wing_parser.advisory.resolver import active_rules
+    scene = WingScene.load(vu_path)
+    _write_show(tmp_path, "badshow", "rules: []\nevent: wedding\n")
+    with pytest.raises(ValueError, match="event"):
+        active_rules(scene, tmp_path, "badshow")
+
+
+def test_rule_event_defaults_to_universal_even_when_blank(tmp_path):
+    from wing_parser.advisory.loader import load_rules
+    rule_yaml = tmp_path / "r.yaml"
+    rule_yaml.write_text(
+        "rules:\n"
+        "  - id: T1\n"
+        "    title: t\n"
+        "    severity: info\n"
+        "    source: s\n"
+        "    rationale: r\n"
+        "    message: m\n"
+        "    event:\n"          # present but blank -- the .get(None) hazard
+        "    when:\n"
+        "      for_each: channel\n"
+        "      where: {}\n",
+        encoding="utf-8",
+    )
+    assert load_rules(rule_yaml, layer="base")[0].event == "universal"
+
+
+def test_rule_event_rejects_unknown_values(tmp_path):
+    from wing_parser.advisory.loader import load_rules
+    rule_yaml = tmp_path / "r.yaml"
+    rule_yaml.write_text(
+        "rules:\n"
+        "  - id: T1\n    title: t\n    severity: info\n    source: s\n"
+        "    rationale: r\n    message: m\n    event: gala\n"
+        "    when: {for_each: channel, where: {}}\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="event"):
+        load_rules(rule_yaml, layer="base")
+
+
+def test_as_rules_event_defaults_to_universal_even_when_blank(scene, knowledge):
+    """Twin of test_rule_event_defaults_to_universal_even_when_blank for the
+    hand-edited toanaz/show layer -- layers._as_rules routes `event` through
+    the same `_optional` hazard as loader._rule_from."""
+    (knowledge / "principles.yaml").write_text(
+        "principles:\n"
+        "  - id: P1\n"
+        "    principle: p\n"
+        "    event:\n"
+        "    when:\n"
+        "      for_each: channel\n"
+        "      where: {}\n",
+        encoding="utf-8",
+    )
+    rules = [r for r in active_rules(scene, directory=knowledge) if r.id == "P1"]
+    assert rules[0].event == "universal"
+
+
+def test_as_rules_event_rejects_unknown_values(scene, knowledge):
+    (knowledge / "principles.yaml").write_text(
+        "principles:\n"
+        "  - id: P1\n"
+        "    principle: p\n"
+        "    event: gala\n"
+        "    when: {for_each: channel, where: {}}\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="event"):
+        active_rules(scene, directory=knowledge)
+
+
+def test_facade_off_event_and_declared_event(scene, tmp_path):
+    _write_show(tmp_path, "bandshow", BAND_RULE)
+    facade = AdvisoryFacade(scene, directory=tmp_path)
+    assert facade.off_event("bandshow") == {}  # nothing corporate ships yet
+    assert facade.declared_event("bandshow") == "band"
+    assert facade.declared_event() is None

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import yaml
 
-from wing_parser.advisory.models import SEVERITIES, Rule
+from wing_parser.advisory.models import EVENTS, SEVERITIES, Rule
 from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
 
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
@@ -80,6 +80,13 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         else ()
     )
 
+    event = _optional(entry, "event", "universal")
+    if event not in EVENTS:
+        raise ValueError(
+            f"{where_from}: rule {entry['id']} has event {event!r}; "
+            f"expected one of {EVENTS}"
+        )
+
     return Rule(
         id=entry["id"],
         title=entry["title"],
@@ -93,6 +100,7 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         requires_classifier=bool(_optional(entry, "requires_classifier", False)),
         enabled=bool(_optional(entry, "enabled", True)),
         hardness=_optional(entry, "hardness", "hard"),
+        event=event,
         applies_when=dict(entry.get("applies_when") or {}),
         any_of=any_of,
         supersedes=tuple(entry.get("supersedes") or ()),

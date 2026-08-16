@@ -87,7 +87,9 @@ def channel_detail(channel) -> str:
     return "\n".join(lines)
 
 
-def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None) -> str:
+def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None,
+             off_event: dict[str, str] | None = None,
+             declared_event: str | None = None) -> str:
     items = list(items)
     if not items:
         return "No findings."
@@ -104,6 +106,12 @@ def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None) -> 
 
     for rule_id, by in (suppressed or {}).items():
         lines.append(f"  [suppressed] {rule_id} switched off by {by}")
+
+    for rule_id, rule_event in (off_event or {}).items():
+        lines.append(
+            f"  [off-event] {rule_id} is {rule_event}-only; "
+            f"profile declares event {declared_event}"
+        )
     return "\n".join(lines)
 
 

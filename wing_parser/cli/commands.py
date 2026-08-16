@@ -67,13 +67,19 @@ def doctor(args) -> int:
     scene = _load(args.file)
     if scene is None:
         return 1
-    found = _run_advisory(scene, getattr(args, "profile", None))
+    profile = getattr(args, "profile", None)
+    found = _run_advisory(scene, profile)
     if found is None:
         return 1
     if getattr(args, "json", False):
         print(json.dumps([asdict(f) for f in found], indent=2, ensure_ascii=False))
     else:
-        print(render.findings(found, scene.advisory.suppressed(getattr(args, "profile", None))))
+        print(render.findings(
+            found,
+            scene.advisory.suppressed(profile),
+            off_event=scene.advisory.off_event(profile),
+            declared_event=scene.advisory.declared_event(profile),
+        ))
     scene.classifier.flush()
     return 0
 

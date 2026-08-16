@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from wing_parser.advisory.evaluator import evaluate_all
-from wing_parser.advisory.layers import _principles, _show_rules
+from wing_parser.advisory.layers import _principles, _show_rules, profile_event
 from wing_parser.advisory.loader import load_base_rules
 from wing_parser.advisory.models import Finding, Rule
 
@@ -119,7 +119,11 @@ def active_rules(scene, directory: Path | None = None,
             raise ValueError(f"{rule.id} supersedes unknown rule id {target_id!r}")
 
     suppressed = {rule_id for r in higher for rule_id in r.supersedes}
-    return [r for r in base if r.id not in suppressed] + higher
+    declared = profile_event(directory, profile)
+    kept = [r for r in base if r.id not in suppressed]
+    if declared is not None:
+        kept = [r for r in kept if r.event in ("universal", declared)]
+    return kept + higher
 
 
 def suppressed_ids(scene, directory: Path | None = None,
@@ -128,6 +132,16 @@ def suppressed_ids(scene, directory: Path | None = None,
     higher = [r for r in _principles(directory) + _show_rules(directory, profile)
               if _is_active(scene, r)]
     return {rule_id: r.id for r in higher for rule_id in r.supersedes}
+
+
+def off_event_ids(scene, directory: Path | None = None,
+                  profile: str | None = None) -> dict[str, str]:
+    """Base rules skipped because the profile declares a different event."""
+    declared = profile_event(directory, profile)
+    if declared is None:
+        return {}
+    return {r.id: r.event for r in load_base_rules()
+            if r.event not in ("universal", declared)}
 
 
 def run(scene, directory: Path | None = None,
@@ -148,3 +162,9 @@ class AdvisoryFacade:
 
     def suppressed(self, profile: str | None = None) -> dict[str, str]:
         return suppressed_ids(self._scene, self._directory, profile)
+
+    def off_event(self, profile: str | None = None) -> dict[str, str]:
+        return off_event_ids(self._scene, self._directory, profile)
+
+    def declared_event(self, profile: str | None = None) -> str | None:
+        return profile_event(self._directory, profile)

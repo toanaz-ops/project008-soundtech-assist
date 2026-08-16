@@ -6,7 +6,7 @@ import yaml
 
 from wing_parser.classifier.resolve import Classifier
 from wing_parser.cli.__main__ import main
-from wing_parser.cli.render import changes, level
+from wing_parser.cli.render import changes, findings, level
 from wing_parser.query.diff import Change
 
 
@@ -287,6 +287,43 @@ def test_feedback_sees_the_same_findings_doctor_printed(
 
     assert main(["feedback", target_id, "--verdict", "correct",
                  "--scene", str(vu_path), "--profile", "small"]) == 0
+
+
+def test_findings_prints_an_off_event_line():
+    from wing_parser.advisory.models import Finding
+    stub = Finding(rule_id="G1", layer="base", severity="info",
+                    target="ch.1", message="m")
+    out = findings([stub], off_event={"G7": "corporate"}, declared_event="band")
+    assert "[off-event] G7 is corporate-only; profile declares event band" in out
+
+
+def _write_band_profile(directory):
+    shows = directory / "shows"
+    shows.mkdir(parents=True, exist_ok=True)
+    (shows / "bandshow.yaml").write_text(
+        yaml.safe_dump({"rules": [], "event": "band"}), encoding="utf-8"
+    )
+
+
+def test_doctor_accepts_a_profile_declared_event(vu_path, tmp_path, capsys, monkeypatch):
+    # No base rule is tagged non-universal yet (that lands in Task 12), so
+    # this is a smoke test: declaring an event on the profile must not
+    # crash doctor, and the run must not silently drop every base rule.
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    _write_band_profile(tmp_path)
+    assert main(["doctor", str(vu_path), "--profile", "bandshow"]) == 0
+    assert "G8" in capsys.readouterr().out
+
+
+def test_doctor_rejects_an_unknown_declared_event(vu_path, tmp_path, capsys, monkeypatch):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    shows = tmp_path / "shows"
+    shows.mkdir(parents=True, exist_ok=True)
+    (shows / "weddingshow.yaml").write_text(
+        yaml.safe_dump({"rules": [], "event": "wedding"}), encoding="utf-8"
+    )
+    assert main(["doctor", str(vu_path), "--profile", "weddingshow"]) == 1
+    assert "event" in capsys.readouterr().err
 
 
 def test_feedback_with_the_profile_cannot_find_a_finding_the_profile_suppressed(

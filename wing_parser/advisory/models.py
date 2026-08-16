@@ -7,6 +7,7 @@ from typing import Any
 
 SEVERITIES: tuple[str, ...] = ("info", "warning", "error")
 LAYERS: tuple[str, ...] = ("base", "toanaz", "show")
+EVENTS: tuple[str, ...] = ("universal", "corporate", "band")
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,7 @@ class Rule:
     requires_classifier: bool = False
     enabled: bool = True
     hardness: str = "hard"
+    event: str = "universal"
     applies_when: dict[str, Any] = field(default_factory=dict)
     any_of: tuple[dict[str, Any], ...] = ()
     supersedes: tuple[str, ...] = ()

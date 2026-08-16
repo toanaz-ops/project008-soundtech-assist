@@ -14,7 +14,7 @@ from pathlib import Path
 
 from wing_parser import config
 from wing_parser.advisory.loader import _load_yaml, load_rules
-from wing_parser.advisory.models import SEVERITIES, Rule
+from wing_parser.advisory.models import EVENTS, SEVERITIES, Rule
 from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
 
 PRINCIPLES_FILE = "principles.yaml"
@@ -140,6 +140,15 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
             else ()
         )
 
+        # Same `_optional` route as loader._rule_from -- a blank `event:`
+        # in a hand-edited principles or show file must not become `None`.
+        event = _optional(entry, "event", "universal")
+        if event not in EVENTS:
+            raise ValueError(
+                f"{path}: rule {entry['id']} has event {event!r}; "
+                f"expected one of {EVENTS}"
+            )
+
         rules.append(
             Rule(
                 id=entry["id"],
@@ -154,9 +163,34 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 requires_classifier=bool(_optional(entry, "requires_classifier", False)),
                 enabled=bool(_optional(entry, "enabled", True)),
                 hardness=_optional(entry, "hardness", "hard"),
+                event=event,
                 applies_when=dict(entry.get("applies_when") or {}),
                 any_of=any_of,
                 supersedes=tuple(entry.get("supersedes") or ()),
             )
         )
     return rules
+
+
+def profile_event(directory: Path | None, profile: str | None) -> str | None:
+    """The event a show file declares at its top level, or None.
+
+    Validated here so a typo'd event fails at load, not silently runs
+    everything -- the same failure direction _show_rules chose for a
+    mistyped profile name.
+    """
+    if profile is None:
+        return None
+    shows = config.knowledge_dir(directory) / SHOWS_DIR
+    for suffix in (".yaml", ".yml"):
+        path = shows / f"{profile}{suffix}"
+        if path.is_file():
+            declared = _load_yaml(path).get("event")
+            if declared is None:
+                return None
+            if declared not in EVENTS:
+                raise ValueError(
+                    f"{path}: event {declared!r}; expected one of {EVENTS}"
+                )
+            return declared
+    return None
