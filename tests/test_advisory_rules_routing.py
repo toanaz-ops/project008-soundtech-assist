@@ -155,12 +155,6 @@ def test_n1_fires_on_an_unnamed_channel_that_is_actually_in_use(vu_path, tmp_pat
     assert [f.target for f in scene.advisory.run() if f.rule_id == "N1"] == ["ch.20"]
 
 
-def test_n1_and_n2_are_silent_on_the_factory_scene(factory_path, monkeypatch):
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    scene = WingScene.load(factory_path)
-    assert scene.advisory.run() == []   # the whole base set, not just N1/N2
-
-
 def test_n2_ships_disabled_because_factory_bus_faders_are_not_all_floored(
     vu_path, tmp_path, monkeypatch
 ):

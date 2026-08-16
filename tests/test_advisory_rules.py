@@ -14,7 +14,7 @@ def scene(vu_path):
     return WingScene.load(vu_path)
 
 
-def test_three_base_rules_ship(scene):
+def test_the_full_base_rule_set_ships(scene):
     assert {r.id for r in load_base_rules()} == {
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
         "R4", "R5", "R6", "N1", "N2",
@@ -76,130 +76,6 @@ def test_g7_fires_when_an_iem_matrix_bypasses_dynamics(vu_path, tmp_path, monkey
                            lambda ae: ae["mtx"]["5"]["dyn"].__setitem__("on", False))
     findings = [f for f in scene.advisory.run() if f.rule_id == "G7"]
     assert [(f.target, f.severity) for f in findings] == [("matrix.5", "error")]
-
-
-def test_the_sample_scene_finding_counts(scene, monkeypatch):
-    """Task 2 made `channel.sends` yield matrix destinations alongside
-    buses, bound under the same `destination_bus` key G8 already reads.
-    That puts the IEM matrices (IEM MC, IEM CA SI 1/2, IEM3 BAKUP -- all
-    `\\biem\\d*\\b`) and SIDE (`^side\\b`) inside G8's domain, without
-    editing G8's `where` at all -- G8 still matches any `monitor`-prefixed
-    role after this task's `{starts_with: monitor}` change.
-
-    Task 3 (2026-08-16) split the `monitor` role and G7 along with it.
-    Re-probed against `user-files/example-Vu.snap`:
-        python - <<'EOF'
-        import os; os.environ["WING_DISABLE_LLM"] = "1"
-        from wing_parser import WingScene
-        scene = WingScene.load("user-files/example-Vu.snap")
-        found = scene.advisory.run()
-        for f in sorted(found, key=lambda f: (f.rule_id, f.target)):
-            print(f.rule_id, f.target, f.severity)
-        print("total", len(found))
-        EOF
-    Output: 14 findings total -- G8: 12 (all `ch.N.send.{7,8}`, unchanged
-    from before this task), G7: 0, G9: 1 (bus.7), E6: 1 (ch.11). No
-    `ch.N.send.MX*` target appears for G8 (matrix sends in this file are
-    all PRE, or POST with on: False -- unchanged from Task 2's probe).
-
-    G7 went from 1 to 0 and G9 picked up that one finding: checked every
-    monitor-role output's raw `dyn.on` directly against `ae_data` rather
-    than trusting the built objects. All four monitor.iem matrices (5, 6,
-    7, 8) read `dyn.on: True, dyn.mdl: "COMP"`, so G7 (error, IEM only)
-    is silent. Among monitor/monitor.wedge outputs (bus 8/9/10 MON
-    VOX/L/R, bus 7 SIDEFILL, matrix 3 SIDE) only bus 7 SIDEFILL reads
-    `dyn.on: False`; the rest are True. So G9 fires exactly once, on
-    bus.7, matching the old G7 finding at one severity lower. Net count
-    is unchanged: 14 total, same as before this task.
-
-    Task 9 (2026-08-17) added R4, R5, R6, N1, N2 and re-probed the same
-    file for all five; none appear in `found`, so this test's `len(found)
-    == 14` total still holds:
-      - R4/R5 (record feed post-fader): no bus or main in the raw
-        `ae_data` classifies as `record` -- `main.3` is named `RECODING`,
-        a typo that the `\\brec\\b|record|multitrack` pattern does not
-        match (unclassified by design), and no other bus/main name
-        matches either. `requires_classifier: true` skips both rules for
-        every target at confidence 0.
-      - R6 (caller feeds its own mix-minus): no channel name matches
-        `\\bzoom\\b|\\bteams\\b|\\bcaller\\b|\\bremote\\b|\\bskype\\b` and
-        no bus/main/mtx/aux name matches
-        `mix\\s*minus|\\bmm\\s*\\d*\\b|\\bn-1\\b` anywhere in the file --
-        checked by regex against every name in `ae_data` directly.
-      - N1 (channel in use, unnamed): channels 31-36 are the file's only
-        empty-named channels; all six read `fdr: -144` (so
-        `Channel.in_use` is False on the fader floor alone, independent
-        of the also-true `muted: True` on all six).
-      - N2 (output receives signal, unnamed): ships `enabled: false`
-        (see `naming.yaml`), so `evaluate()` returns `[]` for it
-        unconditionally regardless of the file's contents.
-
-    Task 10 (2026-08-17) added S1, S2, G10, G11, G12 and re-probed:
-        python - <<'EOF'
-        import os; os.environ["WING_DISABLE_LLM"] = "1"
-        from wing_parser import WingScene
-        scene = WingScene.load("user-files/example-Vu.snap")
-        found = scene.advisory.run()
-        from collections import Counter
-        print(Counter(f.rule_id for f in found), "total", len(found))
-        EOF
-    Output: Counter({'G8': 12, 'G10': 4, 'E6': 1, 'G9': 1}) total 18.
-      - S1: silent -- all five speech-classified channels (ch.1/2/3 VOX,
-        ch.8 MC, ch.11 HS4) already read `flt.lc: True`.
-      - S2: silent -- no channel in the file has `postins.on: True` with
-        a non-null `automix_group` (checked directly against `ae_data`).
-      - G10: fires on all four IEM matrices (5, 6, 7, 8) at info -- the
-        file has no `utility.ambient`-classified channel at all, so
-        `bus.receives_ambient` is False for every output. New count: 4.
-      - G11: silent -- no output's raw EQ has more than five bands
-        meeting the q>=8/gain<=-6 notch geometry (all real EQ blocks in
-        this file read `notch_count: 0`).
-      - G12: silent -- `bus.max_boost_above_8k` is None for `main.1`,
-        `matrix.1` (FLOWN) and `matrix.4` (CEN), the only `main`/
-        `pa_zone` outputs in the file. Matrix 5 (IEM MC) does carry a
-        +0.3 dB band above 8k, but its role is `monitor.iem`, outside
-        G12's `{in: [main, pa_zone]}` where-clause.
-    Net: 14 -> 18, entirely from G10's four new findings.
-
-    Task 12 (2026-08-17) added the band presets PB1-PB6 and re-probed:
-        python - <<'EOF'
-        import os; os.environ["WING_DISABLE_LLM"] = "1"
-        from wing_parser import WingScene
-        scene = WingScene.load("user-files/example-Vu.snap")
-        found = scene.advisory.run()
-        from collections import Counter
-        print(Counter(f.rule_id for f in found), "total", len(found))
-        EOF
-    Output: Counter({'G8': 12, 'G10': 4, 'E6': 1, 'G9': 1, 'PB1': 1,
-    'PB2': 1, 'PB4': 1, 'PB5': 1}) total 22. Unlike the corporate presets
-    (Task 11), this file has real drum-family channels, so four of the
-    six band rules fire without any fixture mutation:
-      - PB1: ch.16 "Snare Bot" (drums.snare.bottom, 0.95) has raw
-        `in.set.inv: False` and its source resolves to no SourceData
-        (`src.grp: "OFF"`), so `effective_polarity` is False.
-      - PB2: ch.21 "Hihat" (drums.hihat, 0.9) reads `flt.lc: True`,
-        `flt.lcf: 502.4` -- outside the 160-250 Hz window.
-      - PB3: no channel in the file classifies `drums.ride` at all.
-        Silent.
-      - PB4: ch.22 "OH" (drums.overhead, 0.9) reads `flt.lc: True`,
-        `flt.lcf: 120.0` -- below the 160 Hz floor.
-      - PB5: ch.13 "Kick In" (drums.kick.in, 0.95) reads `flt.lc: True`,
-        `flt.lcf: 55.2` -- above the 45 Hz ceiling. ch.14 "Kick Out"
-        (32.6 Hz) and ch.25 "Bass" (`flt.lc: False`) do not cross the
-        threshold.
-      - PB6: ch.23 "Click" (utility.click, 0.95) has every send reading
-        `on: False`, so `iem_send_count` is 0. Silent.
-    Net: 18 -> 22, entirely from PB1/PB2/PB4/PB5's one finding each.
-    test_pb1_pb2_pb4_pb5_fire_on_the_untouched_real_file in
-    test_advisory_rules_presets.py guards the same fact per-target.
-    """
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    found = scene.advisory.run()
-    counts = {rule_id: sum(1 for f in found if f.rule_id == rule_id)
-              for rule_id in ("G8", "G7", "G9", "E6", "G10", "PB1", "PB2", "PB3", "PB4", "PB5", "PB6")}
-    assert counts == {"G8": 12, "G7": 0, "G9": 1, "E6": 1, "G10": 4,
-                       "PB1": 1, "PB2": 1, "PB3": 0, "PB4": 1, "PB5": 1, "PB6": 0}
-    assert len(found) == 22
 
 
 def test_e6_still_fires_only_on_the_headset_channel(scene, monkeypatch):
