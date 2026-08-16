@@ -25,6 +25,11 @@ rules:
       keeps section 4.4's 6 dB range ceiling, because 4.4 is the passage
       that directly addresses a channel running gate and automix together,
       and does not check hold time.
+      Section 4.4 states the permitted configuration as a conjunction --
+      no more than 6 dB of range with a hold of at least 200 ms -- so a
+      violation is either condition failing, not only the range. A 4 dB
+      range at 30 ms hold still chatters, which is the failure that
+      sentence exists to prevent.
     requires_classifier: false
     when:
       for_each: channel
@@ -33,10 +38,12 @@ rules:
         channel.post_insert.on: true
         channel.post_insert.automix_group:
           not: null
-        channel.gate.range_dB:
-          gt: 6.0
+      any_of:
+        - channel.gate.range_dB: {gt: 6.0}
+        - channel.gate.hold_ms: {lt: 200.0}
     message: >
       Channel {channel.number} ({channel.name}) has both an active gate
-      (range {channel.gate.range_dB} dB) and automix group
-      {channel.post_insert.automix_group}. The gate opens late and the
-      automixer reads that as speech onset, ramping the first syllable.
+      (range {channel.gate.range_dB} dB, hold {channel.gate.hold_ms} ms)
+      and automix group {channel.post_insert.automix_group}. The gate
+      opens late and the automixer reads that as speech onset, ramping
+      the first syllable.

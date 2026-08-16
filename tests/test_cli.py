@@ -58,7 +58,7 @@ def test_channel_reports_an_unknown_number_without_a_traceback(vu_path, capsys):
 def test_doctor_lists_the_findings(vu_path, capsys):
     assert main(["doctor", str(vu_path)]) == 0
     out = capsys.readouterr().out
-    assert "17 findings" in out
+    assert "14 findings" in out
     assert "G8" in out
     assert "G7" in out
     assert "MON VOX" in out
@@ -74,7 +74,7 @@ def test_doctor_orders_findings_naturally_not_lexicographically(vu_path, capsys)
     out = capsys.readouterr().out
     targets = re.findall(r"^\s*\[\S+\s*\]\s+\S+\s+(\S+)\s+via base", out, re.MULTILINE)
     assert targets == [
-        "bus.7", "bus.8", "bus.9", "bus.10",
+        "bus.7",
         "ch.1.send.8", "ch.2.send.8", "ch.3.send.8",
         "ch.4.send.7", "ch.4.send.8", "ch.5.send.8",
         "ch.7.send.7", "ch.7.send.8", "ch.8.send.7", "ch.8.send.8",

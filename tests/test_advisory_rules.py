@@ -32,12 +32,62 @@ def test_g8_fires_on_channel_eight_into_bus_eight(scene, monkeypatch):
     assert match.confidence >= 0.8
 
 
-def test_g7_fires_on_bus_eight(scene, monkeypatch):
+def test_g7_fires_only_where_the_dynamics_are_bypassed(scene, monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    match = next(f for f in scene.advisory.run() if f.rule_id == "G7" and f.target == "bus.8")
+    findings = [f for f in scene.advisory.run() if f.rule_id == "G7"]
+    # Bus 7 SIDEFILL has dyn.on False; buses 8, 9 and 10 have it True.
+    # The model half of G7 is held back until a real limiter token is
+    # known, so a bus carrying COMP switched on is no longer reported.
+    assert [f.target for f in findings] == ["bus.7"]
+    assert findings[0].severity == "error"
 
-    assert match.severity == "error"
-    assert "COMP" in match.message
+
+def test_g7_states_facts_rather_than_asserting_a_conclusion(scene, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    message = next(f for f in scene.advisory.run() if f.rule_id == "G7").message
+    assert "COMP" in message
+    assert "not a limiter" not in message
+
+
+def test_the_sample_scene_reports_fourteen_findings(scene, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    found = scene.advisory.run()
+    counts = {rule_id: sum(1 for f in found if f.rule_id == rule_id)
+              for rule_id in ("G8", "G7", "E6")}
+    assert counts == {"G8": 12, "G7": 1, "E6": 1}
+    assert len(found) == 14
+
+
+def test_e6_still_fires_only_on_the_headset_channel(scene, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    findings = [f for f in scene.advisory.run() if f.rule_id == "E6"]
+    assert [f.target for f in findings] == ["ch.11"]
+
+
+def test_e6_fires_on_a_short_hold_even_when_the_range_is_acceptable(
+    vu_path, tmp_path, monkeypatch
+):
+    """The real file cannot discriminate E6's two clauses -- channel 11 is
+    the only channel meeting the preconditions and it fails both -- so the
+    hold clause needs a synthesised case."""
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    gate = doc["ae_data"]["ch"]["11"]["gate"]
+    gate["range"] = 4      # the raw key is "range"; the view exposes range_dB
+    gate["hld"] = 30       # the raw key is "hld"; the view exposes hold_ms
+    live = tmp_path / "short_hold.snap"
+    live.write_text(json.dumps(doc), encoding="utf-8")
+
+    findings = [f for f in WingScene.load(live).advisory.run() if f.rule_id == "E6"]
+    assert [f.target for f in findings] == ["ch.11"]
+    assert findings[0].evidence["_any_of"] == 1
+
+
+def test_e6_message_names_both_range_and_hold(scene, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    message = next(f for f in scene.advisory.run() if f.rule_id == "E6").message
+    assert "40.0" in message
+    assert "10.0" in message
 
 
 def test_e6_fires_on_the_headset_channel_and_nothing_else(scene, monkeypatch):
