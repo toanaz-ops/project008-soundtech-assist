@@ -3,6 +3,7 @@ import json
 import pytest
 
 from wing_parser import WingScene
+from wing_parser import config
 from wing_parser.advisory.loader import load_base_rules
 
 
@@ -133,3 +134,29 @@ def test_every_finding_records_its_layer(scene, monkeypatch):
     # list would pass this assertion without actually exercising anything.
     assert findings
     assert all(f.layer in {"base", "toanaz", "show"} for f in findings)
+
+
+def test_the_shipped_small_profile_loads_and_suppresses_g8(scene, monkeypatch):
+    monkeypatch.delenv(config.ENV_VAR, raising=False)
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    found = scene.advisory.run(profile="small")
+    assert [f.rule_id for f in found if f.rule_id == "G8"] == []
+    assert {f.rule_id for f in found} == {"G7", "E6"}
+    assert len(found) == 2
+
+
+def test_the_small_profile_records_who_switched_g8_off(scene, monkeypatch):
+    monkeypatch.delenv(config.ENV_VAR, raising=False)
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    assert scene.advisory.suppressed(profile="small") == {
+        "G8": "show.small.post-monitors-are-deliberate"
+    }
+
+
+def test_the_shipped_principles_file_still_loads(scene, monkeypatch):
+    """principles.yaml holds no principles now. It must still parse, and
+    it must not quietly stop being read."""
+    monkeypatch.delenv(config.ENV_VAR, raising=False)
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    assert scene.advisory.rules()
+    assert [r for r in scene.advisory.rules() if r.layer == "toanaz"] == []

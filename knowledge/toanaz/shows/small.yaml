@@ -1,0 +1,18 @@
+# Show profiles, selected by name with --profile <name>.
+#
+# Nothing here applies unless it is named on the command line. A profile
+# records a deliberate deviation from a base rule for a kind of show, so
+# that the deviation is written down rather than remembered.
+rules:
+  - id: show.small.post-monitors-are-deliberate
+    title: "Small show: post-fader monitor sends are the deliberate shortcut"
+    severity: info
+    source: "ToanAZ, field practice, 2026-08-16"
+    rationale: >
+      Pre-fader is the norm, especially on a big show. On a small or easy
+      show, post-fader monitor sends trade monitor independence for setup
+      speed, deliberately. Base rule G8 states the generic rule correctly;
+      this profile records when its author is choosing against it on
+      purpose, rather than leaving twelve findings to be re-read and
+      re-dismissed every time the scene is checked.
+    supersedes: [G8]
