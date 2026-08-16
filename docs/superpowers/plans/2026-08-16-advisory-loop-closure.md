@@ -715,16 +715,25 @@ and in `AdvisoryFacade`:
 
 `_principles` is unchanged and takes no profile — principles always apply.
 
-- [ ] **Step 5: Run the full suite**
+- [ ] **Step 5: Update the two existing tests this change inverts**
+
+Two tests in `tests/test_advisory_resolver.py` write a file into `shows/` and expect it to take effect with no profile — which is precisely the behaviour this task removes. They will fail, and they are not wrong to have been written that way; they encoded the old contract.
+
+- `test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule` (around line 213) writes `shows/tonight.yaml`.
+- The `.yml`-spelling test (around line 651) writes `shows/tonight.yml`.
+
+Update both to pass `profile="tonight"` to `active_rules`. **Do not weaken what either one asserts** — the first still proves a show rule and an inactive principle can name the same base rule; the second still proves the `.yml` spelling is found. Only the selection mechanism changes.
+
+- [ ] **Step 6: Run the full suite**
 
 Run: `python -m pytest`
-Expected: PASS, **387 passed, 1 skipped, 1 warning**. The 17-finding count is unchanged, because `knowledge/toanaz/shows/` is still empty.
+Expected: PASS. This task adds 6 tests and rewrites 2, so the total rises by 6 from the previous task's figure. Report the number you actually get rather than matching it to a prediction. The 17-finding count is unchanged, because `knowledge/toanaz/shows/` is still empty.
 
-- [ ] **Step 6: Prove the glob fix discriminates**
+- [ ] **Step 7: Prove the glob fix discriminates**
 
 Temporarily restore the old globbing body of `_show_rules` (ignoring `profile` and loading every file), run `python -m pytest tests/test_advisory_resolver.py -k profile_loads_only -v`, and confirm `test_a_profile_loads_only_its_own_file` goes red because `show.wedges` also took effect. Restore and confirm green. Paste both outputs into the report.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add wing_parser/advisory/ tests/test_advisory_resolver.py
@@ -952,7 +961,7 @@ Keep the existing docstring's substance if it differs; it must stay over 60 char
 - [ ] **Step 6: Run the full suite**
 
 Run: `python -m pytest`
-Expected: PASS, **396 passed, 1 skipped, 1 warning**.
+Expected: PASS. This task adds 8 tests. Report the number you actually get; the skip and the warning must both still be present.
 
 - [ ] **Step 7: Check it by hand**
 
@@ -1125,7 +1134,7 @@ and append to its `rationale`:
 - [ ] **Step 5: Run the full suite**
 
 Run: `python -m pytest`
-Expected: PASS, **400 passed, 1 skipped, 1 warning**. The sample scene now reports **14** findings.
+Expected: PASS. This task adds 6 tests and replaces 1, so the total rises by 5. The sample scene now reports **14** findings — that number is the one that matters here, and it is measured, not predicted.
 
 - [ ] **Step 6: Commit**
 
@@ -1250,7 +1259,7 @@ The removed entry, `toanaz.iem-shared-band.guitar-prefader`, was a worked exampl
 - [ ] **Step 5: Run the full suite**
 
 Run: `python -m pytest`
-Expected: PASS, **403 passed, 1 skipped, 1 warning**.
+Expected: PASS. This task adds 3 tests.
 
 - [ ] **Step 6: Check both paths by hand**
 
@@ -1284,9 +1293,9 @@ EOF
 
 After Task 6, confirm all of the following and report each:
 
-- `python -m pytest` → **403 passed, 1 skipped, 1 warning**. The skip is the FastMCP build test; the warning is the deliberate one in `test_read_log_skips_a_corrupt_line`.
+- `python -m pytest` → all green, with exactly one skip and one warning. The skip is the FastMCP build test; the warning is the deliberate one in `test_read_log_skips_a_corrupt_line`. Starting from 364, the six tasks add 12, 4, 6, 8, 5 and 3 tests respectively — report the total you get and reconcile it against that sum rather than against a number written here in advance.
 - `doctor` on `user-files/example-Vu.snap` → 14 findings; with `--profile small` → 2.
-- `grep -rn "channel.number.: -1" wing_parser/ tests/` returns nothing.
+- `grep -rnE "(channel|bus)\.number.: -1" wing_parser/ tests/` returns nothing. Both spellings existed; `tests/test_advisory_resolver.py` carried the `bus` form at two places.
 - `grep -rn "PRECISION_LIM" wing_parser/` returns nothing outside a comment or rationale explaining why the token list was removed.
 - The wheel still builds: `python -m pip wheel . --no-deps -w <a temp dir>`.
 - Every source file touched is still under ~200 lines.
