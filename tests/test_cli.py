@@ -2,6 +2,7 @@ import json
 import re
 
 import pytest
+import yaml
 
 from wing_parser.classifier.resolve import Classifier
 from wing_parser.cli.__main__ import main
@@ -218,3 +219,74 @@ def test_flush_is_called_by_every_command_that_resolves_names(
     assert len(calls) == expected, (
         f"{name}: expected {expected} flush() call(s), got {len(calls)}"
     )
+
+
+def _write_small_profile(directory):
+    shows = directory / "shows"
+    shows.mkdir(parents=True, exist_ok=True)
+    (shows / "small.yaml").write_text(
+        yaml.safe_dump(
+            {"rules": [{"id": "show.small", "title": "Small show",
+                        "severity": "info", "source": "s", "rationale": "r",
+                        "supersedes": ["G8"]}]}
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_doctor_without_a_profile_is_unchanged(vu_path, tmp_path, capsys, monkeypatch):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    _write_small_profile(tmp_path)
+    assert main(["doctor", str(vu_path)]) == 0
+    assert "G8" in capsys.readouterr().out
+
+
+def test_doctor_with_a_profile_suppresses_the_superseded_rule(
+    vu_path, tmp_path, capsys, monkeypatch
+):
+    # render.findings() also prints a transparency line naming every
+    # switched-off rule id ("[suppressed] G8 switched off by show.small"),
+    # by design (see suppressed_ids() and its tests in
+    # test_advisory_resolver.py) -- so a bare "G8" not in out would fail
+    # even when suppression worked correctly. Use --json, which reports
+    # only the active findings, to test what this test actually means:
+    # G8 is no longer an active rule_id, and G7 still is.
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    _write_small_profile(tmp_path)
+    assert main(["doctor", str(vu_path), "--profile", "small", "--json"]) == 0
+    rule_ids = {f["rule_id"] for f in json.loads(capsys.readouterr().out)}
+    assert "G8" not in rule_ids
+    assert "G7" in rule_ids
+
+
+def test_an_unknown_profile_exits_cleanly(vu_path, tmp_path, capsys, monkeypatch):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    _write_small_profile(tmp_path)
+    assert main(["doctor", str(vu_path), "--profile", "smal"]) == 1
+    err = capsys.readouterr().err
+    assert "smal" in err
+    assert "small" in err
+
+
+def test_feedback_sees_the_same_findings_doctor_printed(
+    vu_path, tmp_path, capsys, monkeypatch
+):
+    """An id doctor prints under a profile must resolve under the same
+    profile, or the two surfaces have diverged."""
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    _write_small_profile(tmp_path)
+    assert main(["doctor", str(vu_path), "--profile", "small", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    target_id = f"{payload[0]['rule_id']}:{payload[0]['target']}"
+
+    assert main(["feedback", target_id, "--verdict", "correct",
+                 "--scene", str(vu_path), "--profile", "small"]) == 0
+
+
+def test_feedback_without_the_profile_cannot_find_a_suppressed_finding(
+    vu_path, tmp_path, capsys, monkeypatch
+):
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    _write_small_profile(tmp_path)
+    assert main(["feedback", "G8:ch.8.send.8", "--verdict", "correct",
+                 "--scene", str(vu_path), "--profile", "small"]) == 1
