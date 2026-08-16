@@ -41,15 +41,12 @@ rules:
       also lists a limiter as a requirement, but unlike its neighbouring
       "Ambient mics" row it carries no [R] contractual tag and states no
       ceiling -- so only Core-Skills makes the non-optional claim. This rule
-      checks only that a limiter is present, because the correct ceiling
-      depends on the IEM pack and cannot be read from the scene file.
-      This rule currently checks only that the dynamics processor is
-      switched on. It cannot also check that the loaded model is a
-      limiter, because the dyn.mdl token a WING stores for one is not
-      recorded anywhere in this repository and must not be guessed; the
-      only models observed in real data are COMP and CMB. See the design
-      spec section 7.1 for the exact clause to add once that token is
-      known.
+      currently checks only that the dynamics processor is switched on. It
+      cannot also check that the loaded model is a limiter, because the
+      dyn.mdl token a WING stores for one is not recorded anywhere in this
+      repository and must not be guessed; the only models observed in real
+      data are COMP and CMB. See the design spec section 7.1 for the exact
+      clause to add once that token is known.
     requires_classifier: true
     when:
       for_each: bus
@@ -59,4 +56,3 @@ rules:
     message: >
       Bus {bus.number} ({bus.name}) is a monitor bus with its dynamics
       processor bypassed: slot holds {bus.dyn.model}, on = {bus.dyn.on}.
-      Nothing is limiting this mix.

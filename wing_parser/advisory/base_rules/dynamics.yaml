@@ -24,12 +24,26 @@ rules:
       numbers and the prose ceiling, not a self-contradiction. This rule
       keeps section 4.4's 6 dB range ceiling, because 4.4 is the passage
       that directly addresses a channel running gate and automix together,
-      and does not check hold time.
+      and now also enforces its hold-time half.
       Section 4.4 states the permitted configuration as a conjunction --
-      no more than 6 dB of range with a hold of at least 200 ms -- so a
-      violation is either condition failing, not only the range. A 4 dB
-      range at 30 ms hold still chatters, which is the failure that
-      sentence exists to prevent.
+      no more than 6 dB of range with a 200 ms hold -- so a violation is
+      either condition failing, not only the range. The source states 200
+      ms as a bare value, not explicitly as a floor; reading it as a
+      minimum, so hold_ms below it fails this rule, is our reading of that
+      passage, not a quoted claim. Likewise, that a 4 dB range at 30 ms
+      hold would chatter is not stated by either cited passage -- L549
+      ties chatter to a wide range, L669 ties it to gating ahead of an
+      automixer generally, neither to a short hold specifically -- it is
+      an inference from those two constraints, not a sourced claim.
+      One caveat on the predicate itself: build_channel.py defaults a
+      gate's hold to 0.0 ms when the scene file's raw hld key is absent,
+      the same fallback range_dB already used. Before this clause that
+      default was harmless (0.0 dB never exceeds the 6 dB ceiling); now a
+      missing hld would satisfy hold_ms < 200 and render "hold 0.0 ms", a
+      value the scene never stated. Every channel with a gate block in
+      both sample files carries hld, so this cannot fire on known data,
+      but a future scene that omits the key would trip it on a fabricated
+      number.
     requires_classifier: false
     when:
       for_each: channel
@@ -44,6 +58,4 @@ rules:
     message: >
       Channel {channel.number} ({channel.name}) has both an active gate
       (range {channel.gate.range_dB} dB, hold {channel.gate.hold_ms} ms)
-      and automix group {channel.post_insert.automix_group}. The gate
-      opens late and the automixer reads that as speech onset, ramping
-      the first syllable.
+      and automix group {channel.post_insert.automix_group}.
