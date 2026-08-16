@@ -1,0 +1,130 @@
+# Textbook starting values for band shows. Info severity throughout;
+# event: band switches the family off under a corporate profile.
+rules:
+  - id: PB1
+    title: "Snare-bottom channel is not polarity inverted"
+    severity: info
+    event: band
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L153: snare btm 'Polarity invert' (bolded; repeated L1070)"
+    rationale: >
+      The bottom mic faces the opposite head; un-inverted it cancels the
+      top mic. Checks effective_polarity -- channel inversion XOR source
+      inversion -- because inverting twice is not inverting.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: drums.snare.bottom
+        channel.effective_polarity: false
+    message: >
+      Channel {channel.number} ({channel.name}) classifies as snare
+      bottom and its effective polarity is not inverted.
+
+  - id: PB2
+    title: "Hi-hat HPF outside the 160-250 Hz window"
+    severity: info
+    event: band
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L154: hi-hat 'HPF 200 Hz'"
+    rationale: >
+      The hat mic needs nothing below 200 Hz; what is there is snare and
+      kick bleed.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: drums.hihat
+      any_of:
+        - channel.filter.low_cut_on: false
+        - channel.filter.low_cut_hz: {lt: 160.0}
+        - channel.filter.low_cut_hz: {gt: 250.0}
+    message: >
+      Channel {channel.number} ({channel.name}): hi-hat preset is a
+      high-pass near 200 Hz; low cut on = {channel.filter.low_cut_on},
+      corner = {channel.filter.low_cut_hz} Hz.
+
+  - id: PB3
+    title: "Ride HPF outside the 200-300 Hz window"
+    severity: info
+    event: band
+    source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L160: ride 'HPF 250 Hz'"
+    rationale: >
+      Same reasoning as the hi-hat, one row down the input list.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: drums.ride
+      any_of:
+        - channel.filter.low_cut_on: false
+        - channel.filter.low_cut_hz: {lt: 200.0}
+        - channel.filter.low_cut_hz: {gt: 300.0}
+    message: >
+      Channel {channel.number} ({channel.name}): ride preset is a
+      high-pass near 250 Hz; low cut on = {channel.filter.low_cut_on},
+      corner = {channel.filter.low_cut_hz} Hz.
+
+  - id: PB4
+    title: "Overhead HPF outside the 160-450 Hz window"
+    severity: info
+    event: band
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L686: 'Overheads / cymbals | 200-400 Hz | 12-18 dB/oct | Reject kick and tom bleed'"
+    rationale: >
+      Overheads carry cymbals; kick and tom energy under 200 Hz is bleed
+      by definition.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: drums.overhead
+      any_of:
+        - channel.filter.low_cut_on: false
+        - channel.filter.low_cut_hz: {lt: 160.0}
+        - channel.filter.low_cut_hz: {gt: 450.0}
+    message: >
+      Channel {channel.number} ({channel.name}): overhead preset is a
+      high-pass at 200-400 Hz; low cut on = {channel.filter.low_cut_on},
+      corner = {channel.filter.low_cut_hz} Hz.
+
+  - id: PB5
+    title: "Kick or bass high-passed above 45 Hz"
+    severity: info
+    event: band
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L687: 'Kick / bass | Off, or 30 Hz | 12 dB/oct | Protect sub drivers from DC/subsonic only'"
+    rationale: >
+      The one row of the HPF table where off is correct. Only a HIGH
+      corner is flagged: it eats the instrument's fundamentals. HPF off
+      never fires this rule.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.filter.low_cut_on: true
+        channel.filter.low_cut_hz: {gt: 45.0}
+      any_of:
+        - channel.source_type: {starts_with: drums.kick}
+        - channel.source_type: instrument.bass
+    message: >
+      Channel {channel.number} ({channel.name}): kick/bass preset is HPF
+      off or 30 Hz; this channel's corner is
+      {channel.filter.low_cut_hz} Hz.
+
+  - id: PB6
+    title: "Click reaches more than two IEM mixes"
+    severity: info
+    event: band
+    source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L609: click 'Drummer only'; L635: 'Click track audible to drummer and bassist only'"
+    rationale: >
+      The document disagrees with itself -- L609 says drummer only, L635
+      says drummer and bassist -- so the chosen threshold is the
+      permissive reading: more than two IEM destinations. The
+      unconditional half (click into a FOH main) is R1 at error.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: utility.click
+        channel.iem_send_count: {gt: 2}
+    message: >
+      Channel {channel.number} ({channel.name}) looks like a click track
+      and reaches {channel.iem_send_count} IEM mixes; the sources allow
+      the drummer, at most the bassist too.

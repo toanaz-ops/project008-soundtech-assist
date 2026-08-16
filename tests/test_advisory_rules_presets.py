@@ -179,6 +179,180 @@ def test_pc8_accepts_a_muted_qa_mic(vu_path, tmp_path, monkeypatch):
     assert _presets(scene, "PC8") == []
 
 
+def test_pb1_fires_on_a_non_inverted_snare_bottom(vu_path, tmp_path, monkeypatch):
+    # The untouched real file already carries ch.16 "Snare Bot" (effective
+    # polarity False), so PB1 fires there independent of this fixture --
+    # confirmed by the real-file probe below. Channel 20's default source
+    # is already effective_polarity False (source_ref grp="OFF" resolves
+    # to no SourceData, so the XOR is False ^ False), so the "fire" case
+    # only needs the classifier name; the raw `inv` flag is set to False
+    # explicitly anyway to make the fixture self-documenting.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "SNARE BOT"
+        ae["ch"]["20"]["in"]["set"]["inv"] = False
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB1")] == ["ch.16", "ch.20"]
+
+def test_pb1_silent_when_inverted(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "SNARE BOT"
+        ae["ch"]["20"]["in"]["set"]["inv"] = True
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    # ch.16 (Snare Bot) still fires on the untouched real data; only ch.20
+    # is suppressed by the inversion.
+    assert [f.target for f in _presets(scene, "PB1")] == ["ch.16"]
+
+def test_pb2_fires_on_a_hihat_hpf_outside_the_window(vu_path, tmp_path, monkeypatch):
+    # ch.21 "Hihat" (low cut 502.4 Hz) already fires on the untouched real
+    # file -- see the real-file probe test below.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "HI HAT"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 100.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB2")] == ["ch.20", "ch.21"]
+
+def test_pb2_accepts_200_hz(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "HI HAT"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 200.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB2")] == ["ch.21"]
+
+def test_pb3_fires_on_a_ride_hpf_outside_the_window(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "RIDE"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 150.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB3")] == ["ch.20"]
+
+def test_pb3_accepts_250_hz(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "RIDE"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 250.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert _presets(scene, "PB3") == []
+
+def test_pb4_fires_on_an_overhead_hpf_outside_the_window(vu_path, tmp_path, monkeypatch):
+    # ch.22 "OH" (low cut 120.0 Hz) already fires on the untouched real
+    # file -- see the real-file probe test below.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "OH L"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 100.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB4")] == ["ch.20", "ch.22"]
+
+def test_pb4_accepts_300_hz(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "OH L"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 300.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB4")] == ["ch.22"]
+
+def test_pb5_fires_on_a_kick_hpf_above_45_hz(vu_path, tmp_path, monkeypatch):
+    # ch.13 "Kick In" (low cut 55.2 Hz) already fires on the untouched
+    # real file -- see the real-file probe test below.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "KICK"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 80.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB5")] == ["ch.13", "ch.20"]
+
+def test_pb5_accepts_30_hz(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "KICK"
+        ae["ch"]["20"]["flt"]["lc"] = True
+        ae["ch"]["20"]["flt"]["lcf"] = 30.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB5")] == ["ch.13"]
+
+def test_pb5_silent_with_hpf_off(vu_path, tmp_path, monkeypatch):
+    # HPF off is the documented correct state for kick/bass; the rule
+    # must stay silent even at a corner that would otherwise be flagged.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "KICK"
+        ae["ch"]["20"]["flt"]["lc"] = False
+        ae["ch"]["20"]["flt"]["lcf"] = 80.0
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB5")] == ["ch.13"]
+
+def test_pb6_fires_when_click_reaches_three_iem_mixes(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "CLICK"
+        for mx in ("MX5", "MX6", "MX7"):        # IEM MC, IEM CA SI 1/2
+            ae["ch"]["20"]["send"][mx]["on"] = True
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert [f.target for f in _presets(scene, "PB6")] == ["ch.20"]
+
+def test_pb6_accepts_two_iem_mixes(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    def mutate(ae):
+        ae["ch"]["20"]["name"] = "CLICK"
+        for mx in ("MX5", "MX6"):
+            ae["ch"]["20"]["send"][mx]["on"] = True
+    scene = _mutated_scene(vu_path, tmp_path, mutate)
+    assert _presets(scene, "PB6") == []
+
+
+def test_band_presets_are_off_under_a_corporate_profile(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser.advisory.resolver import off_event_ids
+    scene = WingScene.load(vu_path)
+    shows = tmp_path / "shows"; shows.mkdir(parents=True, exist_ok=True)
+    (shows / "corp.yaml").write_text("rules: []\nevent: corporate\n", encoding="utf-8")
+    off = off_event_ids(scene, tmp_path, "corp")
+    assert {f"PB{i}" for i in range(1, 7)} <= set(off)
+
+
+def test_pb1_pb2_pb4_pb5_fire_on_the_untouched_real_file(vu_scene, monkeypatch):
+    """Probed directly against `user-files/example-Vu.snap` (2026-08-17):
+    unlike the corporate presets, this file has real drum-family channels,
+    so four of the six band rules fire without any fixture mutation.
+
+    - PB1: ch.16 "Snare Bot" classifies drums.snare.bottom at confidence
+      0.95; raw `in.set.inv` is False and its source resolves to no
+      SourceData (grp "OFF"), so effective_polarity is False. Fires.
+    - PB2: ch.21 "Hihat" classifies drums.hihat; raw `flt.lc` is True,
+      `flt.lcf` is 502.4 Hz, outside the 160-250 Hz window. Fires.
+    - PB3: no channel in the file classifies drums.ride at all. Silent.
+    - PB4: ch.22 "OH" classifies drums.overhead; raw `flt.lc` is True,
+      `flt.lcf` is 120.0 Hz, below the 160 Hz floor. Fires.
+    - PB5: ch.13 "Kick In" classifies drums.kick.in; raw `flt.lc` is True,
+      `flt.lcf` is 55.2 Hz, above the 45 Hz ceiling. ch.14 "Kick Out"
+      (32.6 Hz) and ch.25 "Bass" (`flt.lc` False) both stay under/below
+      threshold and do not fire.
+    - PB6: ch.23 "Click" classifies utility.click but every send on it
+      reads `on: False`, so `iem_send_count` is 0. Silent.
+
+    `test_the_sample_scene_finding_counts` in test_advisory_rules.py
+    guards the same fact from the total-count side: 22 findings, with
+    PB1/PB2/PB4/PB5 each contributing exactly one.
+    """
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    found = {f.rule_id: f.target for f in vu_scene.advisory.run() if f.rule_id.startswith("PB")}
+    assert found == {"PB1": "ch.16", "PB2": "ch.21", "PB4": "ch.22", "PB5": "ch.13"}
+    all_ids = {f.rule_id for f in vu_scene.advisory.run()}
+    assert all_ids.isdisjoint({"PB3", "PB6"})
+
+
 def test_corporate_presets_are_off_under_a_band_profile(vu_path, tmp_path, monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     from wing_parser.advisory.resolver import off_event_ids

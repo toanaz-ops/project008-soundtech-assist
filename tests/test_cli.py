@@ -61,10 +61,13 @@ def test_doctor_lists_the_findings(vu_path, capsys):
     # finding (bus.7 SIDEFILL) now belongs to G9 (warning). Task 10
     # (2026-08-17) added G10, which fires on all four IEM matrices (no
     # ambient channel exists in this file), moving the total from 14 to
-    # 18 -- see test_the_sample_scene_finding_counts for the full probe.
+    # 18. Task 12 (2026-08-17) added the band presets PB1-PB6; this
+    # file's real drum channels fire PB1/PB2/PB4/PB5, moving the total
+    # from 18 to 22 -- see test_the_sample_scene_finding_counts for the
+    # full probe.
     assert main(["doctor", str(vu_path)]) == 0
     out = capsys.readouterr().out
-    assert "18 findings" in out
+    assert "22 findings" in out
     assert "G8" in out
     assert "G9" in out
     assert "MON VOX" in out
@@ -81,13 +84,17 @@ def test_doctor_orders_findings_naturally_not_lexicographically(vu_path, capsys)
     targets = re.findall(r"^\s*\[\S+\s*\]\s+\S+\s+(\S+)\s+via base", out, re.MULTILINE)
     # Task 10 (2026-08-17) added G10 (info), which now sorts after every
     # warning-severity finding above -- its four matrices append at the
-    # end in target order, matrix.5 through matrix.8.
+    # end in target order, matrix.5 through matrix.8. Task 12
+    # (2026-08-17) added the band presets PB1-PB6, also info severity;
+    # PB1/PB2/PB4/PB5 fire on real drum channels 13, 16, 21, 22 and sort
+    # in target order ahead of G10's matrix targets.
     assert targets == [
         "bus.7",
         "ch.1.send.8", "ch.2.send.8", "ch.3.send.8",
         "ch.4.send.7", "ch.4.send.8", "ch.5.send.8",
         "ch.7.send.7", "ch.7.send.8", "ch.8.send.7", "ch.8.send.8",
         "ch.10.send.8", "ch.11", "ch.12.send.8",
+        "ch.13", "ch.16", "ch.21", "ch.22",
         "matrix.5", "matrix.6", "matrix.7", "matrix.8",
     ]
 

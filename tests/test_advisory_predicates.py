@@ -195,6 +195,7 @@ def test_base_rules_load_from_the_package():
         "R4", "R5", "R6", "N1", "N2",
         "S1", "S2", "G10", "G11", "G12",
         "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8",
+        "PB1", "PB2", "PB3", "PB4", "PB5", "PB6",
     }
     assert all(r.layer == "base" for r in rules)
     assert all(r.source and r.rationale for r in rules)

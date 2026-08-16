@@ -42,6 +42,7 @@ def test_only_base_rules_are_active_with_an_empty_principles_file(scene, knowled
         "R4", "R5", "R6", "N1", "N2",
         "S1", "S2", "G10", "G11", "G12",
         "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8",
+        "PB1", "PB2", "PB3", "PB4", "PB5", "PB6",
     }
 
 
@@ -712,6 +713,7 @@ def test_no_profile_loads_no_show_file(scene, knowledge):
         "R4", "R5", "R6", "N1", "N2",
         "S1", "S2", "G10", "G11", "G12",
         "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8",
+        "PB1", "PB2", "PB3", "PB4", "PB5", "PB6",
     }
 
 

@@ -20,6 +20,7 @@ def test_three_base_rules_ship(scene):
         "R4", "R5", "R6", "N1", "N2",
         "S1", "S2", "G10", "G11", "G12",
         "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8",
+        "PB1", "PB2", "PB3", "PB4", "PB5", "PB6",
     }
 
 
@@ -159,13 +160,46 @@ def test_the_sample_scene_finding_counts(scene, monkeypatch):
         +0.3 dB band above 8k, but its role is `monitor.iem`, outside
         G12's `{in: [main, pa_zone]}` where-clause.
     Net: 14 -> 18, entirely from G10's four new findings.
+
+    Task 12 (2026-08-17) added the band presets PB1-PB6 and re-probed:
+        python - <<'EOF'
+        import os; os.environ["WING_DISABLE_LLM"] = "1"
+        from wing_parser import WingScene
+        scene = WingScene.load("user-files/example-Vu.snap")
+        found = scene.advisory.run()
+        from collections import Counter
+        print(Counter(f.rule_id for f in found), "total", len(found))
+        EOF
+    Output: Counter({'G8': 12, 'G10': 4, 'E6': 1, 'G9': 1, 'PB1': 1,
+    'PB2': 1, 'PB4': 1, 'PB5': 1}) total 22. Unlike the corporate presets
+    (Task 11), this file has real drum-family channels, so four of the
+    six band rules fire without any fixture mutation:
+      - PB1: ch.16 "Snare Bot" (drums.snare.bottom, 0.95) has raw
+        `in.set.inv: False` and its source resolves to no SourceData
+        (`src.grp: "OFF"`), so `effective_polarity` is False.
+      - PB2: ch.21 "Hihat" (drums.hihat, 0.9) reads `flt.lc: True`,
+        `flt.lcf: 502.4` -- outside the 160-250 Hz window.
+      - PB3: no channel in the file classifies `drums.ride` at all.
+        Silent.
+      - PB4: ch.22 "OH" (drums.overhead, 0.9) reads `flt.lc: True`,
+        `flt.lcf: 120.0` -- below the 160 Hz floor.
+      - PB5: ch.13 "Kick In" (drums.kick.in, 0.95) reads `flt.lc: True`,
+        `flt.lcf: 55.2` -- above the 45 Hz ceiling. ch.14 "Kick Out"
+        (32.6 Hz) and ch.25 "Bass" (`flt.lc: False`) do not cross the
+        threshold.
+      - PB6: ch.23 "Click" (utility.click, 0.95) has every send reading
+        `on: False`, so `iem_send_count` is 0. Silent.
+    Net: 18 -> 22, entirely from PB1/PB2/PB4/PB5's one finding each.
+    test_pb1_pb2_pb4_pb5_fire_on_the_untouched_real_file in
+    test_advisory_rules_presets.py guards the same fact per-target.
     """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run()
     counts = {rule_id: sum(1 for f in found if f.rule_id == rule_id)
-              for rule_id in ("G8", "G7", "G9", "E6", "G10")}
-    assert counts == {"G8": 12, "G7": 0, "G9": 1, "E6": 1, "G10": 4}
-    assert len(found) == 18
+              for rule_id in ("G8", "G7", "G9", "E6", "G10", "PB1", "PB2", "PB3", "PB4", "PB5", "PB6")}
+    assert counts == {"G8": 12, "G7": 0, "G9": 1, "E6": 1, "G10": 4,
+                       "PB1": 1, "PB2": 1, "PB3": 0, "PB4": 1, "PB5": 1, "PB6": 0}
+    assert len(found) == 22
 
 
 def test_e6_still_fires_only_on_the_headset_channel(scene, monkeypatch):
@@ -254,12 +288,18 @@ def test_the_shipped_small_profile_loads_and_suppresses_g8(scene, monkeypatch):
     # test_the_sample_scene_finding_counts (no ambient channel exists
     # anywhere in this file) -- re-probed with profile="small":
     # {E6 ch.11, G9 bus.7, G10 x4}, G8 still absent.
+    # Task 12 (2026-08-17) added the band presets. The shipped "small"
+    # profile sets no `event`, so it does not switch the band family off,
+    # and this file's real drum channels fire PB1/PB2/PB4/PB5 the same as
+    # the unprofiled run in test_the_sample_scene_finding_counts --
+    # re-probed with profile="small": {E6 ch.11, G9 bus.7, G10 x4,
+    # PB1/PB2/PB4/PB5 x1 each}, G8 still absent.
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run(profile="small")
     assert [f.rule_id for f in found if f.rule_id == "G8"] == []
-    assert {f.rule_id for f in found} == {"G9", "E6", "G10"}
-    assert len(found) == 6
+    assert {f.rule_id for f in found} == {"G9", "E6", "G10", "PB1", "PB2", "PB4", "PB5"}
+    assert len(found) == 10
 
 
 def test_the_small_profile_records_who_switched_g8_off(scene, monkeypatch):
