@@ -33,25 +33,26 @@ def _channels(scene) -> Iterator[Target]:
 
 
 def _channel_sends(scene) -> Iterator[Target]:
-    """One target per bus send.
+    """One target per bus or matrix send.
 
-    Matrix sends live in the same tuple and are skipped here: matrix 3 is
-    not bus 3, and binding one to the other would let a bus-role rule fire
-    against a matrix destination.
+    Both destination families bind under the context key `destination_bus`
+    so one rule can range over both; the target name keeps the raw file's
+    MX prefix so bus 8 and matrix 8 stay distinct. Mains are a different
+    record shape (MainSend) and have their own iterator below.
     """
     buses = {bus.number: bus for bus in scene.buses()}
+    matrices = {m.number: m for m in scene.matrices()}
     for channel in scene.channels():
         for send in channel.sends:
-            if send.dest_kind != "bus":
+            if send.dest_kind == "bus":
+                destination, name = buses.get(send.dest), f"ch.{channel.number}.send.{send.dest}"
+            elif send.dest_kind == "matrix":
+                destination, name = matrices.get(send.dest), f"ch.{channel.number}.send.MX{send.dest}"
+            else:
                 continue
-            destination = buses.get(send.dest)
             yield Target(
-                name=f"ch.{channel.number}.send.{send.dest}",
-                context={
-                    "channel": channel,
-                    "send": send,
-                    "destination_bus": destination,
-                },
+                name=name,
+                context={"channel": channel, "send": send, "destination_bus": destination},
                 confidence=destination.role.confidence if destination else 0.0,
             )
 
@@ -65,6 +66,32 @@ def _buses(scene) -> Iterator[Target]:
         )
 
 
+def _outputs(scene) -> Iterator[Target]:
+    """Every summing destination: buses, auxes, mains and matrices."""
+    for bus in scene.bus_family():
+        yield Target(
+            name=f"{bus.kind}.{bus.number}",
+            context={"bus": bus},
+            confidence=bus.role.confidence,
+        )
+
+
+def _channel_main_sends(scene) -> Iterator[Target]:
+    mains = scene.family("main")
+    for channel in scene.channels():
+        for main_send in channel.main_sends:
+            destination = mains.get(main_send.dest)
+            yield Target(
+                name=f"ch.{channel.number}.main.{main_send.dest}",
+                context={
+                    "channel": channel,
+                    "main_send": main_send,
+                    "destination_main": destination,
+                },
+                confidence=destination.role.confidence if destination else 0.0,
+            )
+
+
 def _nothing(scene) -> Iterator[Target]:
     """No targets at all, for a rule that exists only to supersede another."""
     return iter(())
@@ -73,7 +100,9 @@ def _nothing(scene) -> Iterator[Target]:
 ITERATORS: dict[str, Callable[[Any], Iterator[Target]]] = {
     "channel": _channels,
     "channel.sends": _channel_sends,
+    "channel.main_sends": _channel_main_sends,
     "bus": _buses,
+    "output": _outputs,
     "none": _nothing,
 }
 

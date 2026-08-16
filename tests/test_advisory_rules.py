@@ -50,7 +50,38 @@ def test_g7_states_facts_rather_than_asserting_a_conclusion(scene, monkeypatch):
     assert "not a limiter" not in message
 
 
-def test_the_sample_scene_reports_fourteen_findings(scene, monkeypatch):
+def test_the_sample_scene_finding_counts(scene, monkeypatch):
+    """Task 2 (2026-08-17) made `channel.sends` yield matrix destinations
+    alongside buses, bound under the same `destination_bus` key G8 already
+    reads. That puts the IEM matrices (IEM MC, IEM CA SI 1/2, IEM3 BAKUP --
+    all `\\biem\\d*\\b` -> monitor 0.95) and SIDE (`^side\\b` -> monitor
+    0.85) inside G8's domain for the first time, without editing G8's
+    `where` at all.
+
+    Probed 2026-08-17 with:
+        python - <<'EOF'
+        import os; os.environ["WING_DISABLE_LLM"] = "1"
+        from wing_parser import WingScene
+        scene = WingScene.load("user-files/example-Vu.snap")
+        found = scene.advisory.run()
+        for f in sorted(found, key=lambda f: (f.rule_id, f.target)):
+            print(f.rule_id, f.target, f.severity)
+        print("total", len(found))
+        EOF
+    Output: 14 findings total -- G8: 12 (all `ch.N.send.{7,8}`, unchanged
+    from before this task), G7: 1 (bus.7), E6: 1 (ch.11). No `ch.N.send.MX*`
+    target appears. Spot-checked directly against the raw JSON
+    (`doc["ae_data"]["ch"][n]["send"]["MX*"]`) rather than trusting the
+    built objects: every matrix send in the file is `mode: PRE` except
+    ch.39's and ch.40's MX8, which are `mode: POST` but `on: False`
+    (`{'on': False, 'lvl': -144, 'pon': False, 'mode': 'POST', 'plink': 0,
+    'pan': 0}` for both) -- G8 requires `send.mode: POST` AND `send.on:
+    true` together, and no send in this file satisfies both. So matrices
+    entering G8's domain adds zero targets here, not because the new code
+    path is unreachable, but because this particular show never leaves a
+    POST monitor send switched on. The count is unchanged from the
+    pre-task 14, verified rather than assumed.
+    """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run()
     counts = {rule_id: sum(1 for f in found if f.rule_id == rule_id)

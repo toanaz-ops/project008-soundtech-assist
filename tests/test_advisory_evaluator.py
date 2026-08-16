@@ -22,6 +22,11 @@ def scene(vu_path):
     return WingScene.load(vu_path)
 
 
+@pytest.fixture(scope="module")
+def vu_scene(vu_path):
+    return WingScene.load(vu_path)
+
+
 def rule(**overrides) -> Rule:
     base = dict(
         id="T", title="t", severity="warning", source="test", rationale="test",
@@ -126,20 +131,32 @@ def _g8_rule() -> Rule:
     return next(r for r in load_base_rules() if r.id == "G8")
 
 
-def test_dest_kind_guard_prevents_a_phantom_monitor_finding_on_a_matrix_send(
+def test_matrix_and_bus_destinations_sharing_a_number_stay_distinct(
     vu_path, tmp_path
 ):
-    """Channel 39 (BOH Talk) and channel 40 (FOH Tak) both carry a POST
-    send to MX8 -- a matrix, not bus 8 -- in the sample file, and matrix
-    number 8 collides exactly with bus 8 (MON VOX): monitor buses are 7,
-    8, 9 and 10. `_channel_sends` in evaluator.py tells the two apart
-    only by `send.dest_kind != "bus": continue`; the sample file's own
-    `on: false` on both sends is the only other thing standing between
-    this and a phantom "talkback mic feeding a monitor bus" finding. Flip
-    channel 39's MX8 send on -- an entirely ordinary thing, a talkback
-    send switched on mid-show -- and confirm G8 still does not fire. This
-    is real data, not a synthetic fixture: it is the near-miss the review
-    found when it removed the guard and still got 343 passed, 1 skipped.
+    """Channel 39 (BOH Talk) carries a POST send to MX8 -- a matrix, not
+    bus 8 -- in the sample file, and matrix number 8 collides exactly with
+    bus 8 (MON VOX): monitor buses are 7, 8, 9 and 10.
+
+    Before this task, `_channel_sends` skipped every matrix send outright
+    (`send.dest_kind != "bus": continue`), so this send was invisible to
+    G8 regardless of its `on` flag and this test asserted G8 stayed silent
+    on all of channel 39. Task 2 (2026-08-17, probed with the command in
+    `test_the_sample_scene_finding_counts`) made matrices visible, bound
+    under the same `destination_bus` key as buses but named with the raw
+    file's `MX` prefix (`ch.39.send.MX8`) so they cannot be confused with
+    bus 8 (`ch.39.send.8`).
+
+    Flip channel 39's MX8 send on -- an entirely ordinary thing, a
+    talkback send switched on mid-show -- and confirm G8 now fires, but
+    only against the matrix (MX8 is IEM3 BAKUP, classified monitor 0.95),
+    never against the identically-numbered bus 8 (MON VOX) that channel
+    39 never actually sends to (raw `ch.39.send["8"]` stays `mode: PRE,
+    on: False`, unmodified by this test). This is real data, not a
+    synthetic fixture: it is the near-miss the review found when it first
+    removed the old guard and still got 343 passed, 1 skipped -- the risk
+    was a phantom finding on `ch.39.send.8`, not the legitimate one this
+    task now intentionally produces on `ch.39.send.MX8`.
     """
     doc = json.loads(vu_path.read_text(encoding="utf-8"))
     doc["ae_data"]["ch"]["39"]["send"]["MX8"]["on"] = True
@@ -147,7 +164,8 @@ def test_dest_kind_guard_prevents_a_phantom_monitor_finding_on_a_matrix_send(
     live.write_text(json.dumps(doc), encoding="utf-8")
 
     findings = evaluate(WingScene.load(live), _g8_rule())
-    assert all(not f.target.startswith("ch.39.") for f in findings)
+    ch39_targets = [f.target for f in findings if f.target.startswith("ch.39.")]
+    assert ch39_targets == ["ch.39.send.MX8"]
     assert all(f.target != "ch.39.send.8" for f in findings)
 
 
@@ -217,3 +235,42 @@ def test_evaluate_all_concatenates(scene):
 def test_the_none_iterator_yields_no_targets(scene):
     assert list(targets_for(scene, "none")) == []
     assert evaluate(scene, rule(for_each="none", where={})) == []
+
+
+class TestOutputIterator:
+    def test_output_yields_buses_mains_and_matrices(self, vu_scene):
+        names = [t.name for t in targets_for(vu_scene, "output")]
+        assert "bus.7" in names        # SIDEFILL
+        assert "main.1" in names       # MAIN FOH
+        assert "matrix.5" in names     # IEM MC
+        assert len(names) == 16 + 8 + 4 + 8  # bus + aux + main + matrix
+
+    def test_output_binds_the_bus_context_key(self, vu_scene):
+        target = next(t for t in targets_for(vu_scene, "output") if t.name == "matrix.5")
+        assert target.context["bus"].name == "IEM MC"
+
+
+class TestChannelMainSendsIterator:
+    def test_one_target_per_main_send(self, vu_scene):
+        names = [t.name for t in targets_for(vu_scene, "channel.main_sends")]
+        assert "ch.1.main.1" in names
+        assert len(names) == 40 * 4
+
+    def test_binds_channel_send_and_destination(self, vu_scene):
+        target = next(t for t in targets_for(vu_scene, "channel.main_sends")
+                      if t.name == "ch.1.main.2")
+        assert target.context["channel"].number == 1
+        assert target.context["main_send"].dest == 2
+        assert target.context["destination_main"].name == "LiveStream"
+
+
+class TestChannelSendsSeesMatrices:
+    def test_matrix_destinations_are_yielded(self, vu_scene):
+        names = [t.name for t in targets_for(vu_scene, "channel.sends")]
+        assert "ch.1.send.MX5" in names
+
+    def test_matrix_destination_binds_destination_bus(self, vu_scene):
+        target = next(t for t in targets_for(vu_scene, "channel.sends")
+                      if t.name == "ch.1.send.MX5")
+        assert target.context["destination_bus"].kind == "matrix"
+        assert target.context["destination_bus"].name == "IEM MC"

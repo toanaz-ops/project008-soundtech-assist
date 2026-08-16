@@ -1,12 +1,29 @@
+import json
 import os
 from pathlib import Path
 
 import pytest
 
-from wing_parser import config
+from wing_parser import WingScene, config
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 USER_FILES = REPO_ROOT / "user-files"
+
+
+def _mutated_scene(vu_path, tmp_path, mutate, name="mutated.snap"):
+    """Load the sample scene with a caller-supplied mutation applied to its
+    raw `ae_data`, without ever writing directly to the checked-in fixture.
+
+    `mutate` receives `doc["ae_data"]` and edits it in place (e.g. flip a
+    send's `on` flag, drop a dyn block). Later tasks that need a synthetic
+    real-file variant import this rather than repeating the read/mutate/
+    write dance each test in this suite already does by hand.
+    """
+    doc = json.loads(vu_path.read_text(encoding="utf-8"))
+    mutate(doc["ae_data"])
+    out = tmp_path / name
+    out.write_text(json.dumps(doc), encoding="utf-8")
+    return WingScene.load(out)
 
 
 @pytest.fixture(scope="session")
