@@ -141,9 +141,13 @@ A rule with no `any_of` behaves exactly as today.
 | `any_of` is present but empty | `ValueError` |
 | an unknown operator inside an `any_of` entry | `ValueError` |
 
-The empty case matters most. `any(...)` over an empty list is `False`, so
-`any_of:` with the value left off would silently disable the whole rule — the same
-present-but-null shape that has bitten this project five times. It must raise.
+The empty case matters most. `evaluate()` only consults `any_of` when it is
+truthy (`if rule.any_of:`); there is no unconditional `any(...)` in the path.
+So `any_of:` with the value left off, if it slipped through as `()`, would not
+disable the rule — it would be read as "no OR was written" and the rule would
+fire on every target that satisfies `where`, wider than its author intended.
+That is the same present-but-null shape that has bitten this project five
+times, just manifesting as over-firing rather than silence. It must raise.
 
 The operator-name validation added in the Phase 2 fix wave currently inspects
 `where` only. It must recurse into `any_of` entries.

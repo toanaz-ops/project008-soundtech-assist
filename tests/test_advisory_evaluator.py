@@ -187,6 +187,20 @@ def test_evidence_records_which_clause_matched(scene):
     assert finding.evidence["channel.number"] == 8
 
 
+def test_evidence_records_the_first_clause_when_more_than_one_matches(scene):
+    """`_matched_clause` must return the first match, not merely a match --
+    the finding order this advisory tool produces has to be stable, and a
+    test built from one non-matching clause and one matching clause (as
+    above) cannot distinguish "first" from "last" from "any". Both clauses
+    below match channel 8, so only checking for index 0 pins the guarantee."""
+    finding = evaluate(
+        scene,
+        rule(where={"channel.number": 8},
+             any_of=({"channel.muted": False}, {"channel.name": "M8 MC"})),
+    )[0]
+    assert finding.evidence["_any_of"] == 0
+
+
 def test_a_rule_without_any_of_carries_no_marker(scene):
     finding = evaluate(scene, rule(where={"channel.number": 8}))[0]
     assert "_any_of" not in finding.evidence

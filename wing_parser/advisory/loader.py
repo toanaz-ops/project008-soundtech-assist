@@ -56,8 +56,24 @@ def _validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]:
     when it is present with the value left off, so the caller tests
     membership and only reaches here in the second case. That distinction
     is the whole point: an absent `any_of` means "this rule has no OR",
-    while a blank one would make `any(...)` False and silently kill the
-    rule -- the same present-but-null hazard `_optional` exists for.
+    while a blank one that slipped through would leave `Rule.any_of` at
+    `()` -- the same present-but-null hazard `_optional` exists for. There
+    is no unconditional `any(...)` in this path: `evaluate()` only
+    consults `any_of` when it is truthy (`if rule.any_of:`), so an empty
+    tuple would not be read as "nothing matched" and skipped -- it would
+    be read as "no OR was written" and the rule would fire on every
+    target that satisfies `where`, wider than its author intended, not
+    silent.
+
+    Of the two guards below, `if raw is None:` is not the one carrying the
+    safety burden -- `isinstance(raw, list)` rejects `None` on its own,
+    since `None` is not a `list`. The `None` branch exists only to give a
+    better message ("remove the key or give it at least one clause")
+    than the generic "must be a list, not NoneType" the `isinstance`
+    check would otherwise produce. `if not raw:` is the guard that
+    actually matters: `any_of: []` is a syntactically valid empty list,
+    passes `isinstance(raw, list)` cleanly, and has nothing else standing
+    between it and the over-firing described above.
     """
     if raw is None:
         raise ValueError(

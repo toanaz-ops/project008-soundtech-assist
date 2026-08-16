@@ -163,8 +163,24 @@ def _validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]:
     when it is present with the value left off, so the caller tests
     membership and only reaches here in the second case. That distinction
     is the whole point: an absent `any_of` means "this rule has no OR",
-    while a blank one would make `any(...)` False and silently kill the
-    rule -- the same present-but-null hazard `_optional` exists for.
+    while a blank one that slipped through would leave `Rule.any_of` at
+    `()` -- the same present-but-null hazard `_optional` exists for. There
+    is no unconditional `any(...)` in this path: `evaluate()` only
+    consults `any_of` when it is truthy (`if rule.any_of:`), so an empty
+    tuple would not be read as "nothing matched" and skipped -- it would
+    be read as "no OR was written" and the rule would fire on every
+    target that satisfies `where`, wider than its author intended, not
+    silent.
+
+    Of the two guards below, `if raw is None:` is not the one carrying the
+    safety burden -- `isinstance(raw, list)` rejects `None` on its own,
+    since `None` is not a `list`. The `None` branch exists only to give a
+    better message ("remove the key or give it at least one clause")
+    than the generic "must be a list, not NoneType" the `isinstance`
+    check would otherwise produce. `if not raw:` is the guard that
+    actually matters: `any_of: []` is a syntactically valid empty list,
+    passes `isinstance(raw, list)` cleanly, and has nothing else standing
+    between it and the over-firing described above.
     """
     if raw is None:
         raise ValueError(
@@ -340,7 +356,7 @@ Expected: PASS, 364 + 12 new = **376 passed, 1 skipped, 1 warning**. The 17-find
 
 - [ ] **Step 11: Prove the empty-`any_of` guard discriminates**
 
-Temporarily delete the two `if raw is None:` / `if not raw:` blocks from `_validate_any_of`, run `python -m pytest tests/test_advisory_predicates.py -k empty -v`, and confirm both tests go red. Restore them and confirm green. Paste both outputs into the report — this guard is the one whose absence fails silently.
+Temporarily delete the two `if raw is None:` / `if not raw:` blocks from `_validate_any_of`, run `python -m pytest tests/test_advisory_predicates.py -k empty -v`, and see which of the two `any_of`-specific tests actually go red. Only `if not raw:` is load-bearing: `any_of: []` is a valid empty list that reaches it directly, with nothing else standing in the way. `if raw is None:` is not — `isinstance(raw, list)` already rejects `None` on its own, so deleting only the `None`-specific branch still leaves that case raising (with a worse message) and the test guarding it still green. Restore both blocks and confirm green. Paste both outputs into the report.
 
 - [ ] **Step 12: Commit**
 
