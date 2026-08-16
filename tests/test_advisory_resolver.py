@@ -612,6 +612,23 @@ def test_a_principle_with_a_non_mapping_when_block_raises(scene, knowledge):
         active_rules(scene, directory=knowledge)
 
 
+def test_a_principle_with_a_blank_when_is_not_treated_as_supersede_only(scene, knowledge):
+    """Twin of test_a_blank_when_is_not_treated_as_supersede_only in
+    test_advisory_predicates.py, for the layers.py reader of the same
+    idea. A `when:` key present but left blank parses as YAML null, the
+    same value `entry.get("when")` returns for an absent key -- the
+    hazard this branch must not reintroduce."""
+    (knowledge / "principles.yaml").write_text(
+        "principles:\n"
+        "  - id: toanaz.blank-when\n    principle: x\n    hardness: hard\n"
+        "    supersedes: [G8]\n    rationale: r\n    source: ToanAZ\n"
+        "    enabled: true\n    when:\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="NoneType"):
+        active_rules(scene, directory=knowledge)
+
+
 def test_a_principles_file_with_a_yaml_syntax_error_names_the_file(scene, knowledge):
     (knowledge / "principles.yaml").write_text(
         "principles:\n  - id: [unterminated\n", encoding="utf-8"

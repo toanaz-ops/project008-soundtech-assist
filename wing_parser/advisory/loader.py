@@ -38,7 +38,13 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         raise ValueError(f"{where_from}: rule is missing required field 'id'")
 
     when = entry.get("when")
-    supersede_only = when is None
+    # `entry.get("when")` returns None both when the key is absent (the
+    # supersede-only case) and when it is present but left blank -- a
+    # plausible hand-edit slip. Testing key membership instead of the
+    # resolved value keeps a blank `when:` from silently becoming a
+    # match-nothing supersede-only rule: it falls through to the
+    # `isinstance(when, dict)` guard below and raises instead.
+    supersede_only = "when" not in entry
 
     required = ["title", "severity", "source", "rationale"]
     if not supersede_only:

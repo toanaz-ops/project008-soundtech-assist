@@ -298,6 +298,19 @@ def test_a_non_list_any_of_is_rejected(tmp_path: Path):
         load_rules(path, layer="base")
 
 
+def test_a_non_mapping_any_of_clause_is_rejected(tmp_path: Path):
+    """Each element of `any_of:` must itself be a mapping. A bare string
+    dropped into the list (design spec section 4.2's table) used to reach
+    `_validate_where` a few lines down and fail confusingly instead of
+    naming the file, the rule and the offending clause directly."""
+    path = tmp_path / "clause-string.yaml"
+    path.write_text(
+        yaml.safe_dump(_rule_doc(any_of=["channel.number"])), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="mapping"):
+        load_rules(path, layer="base")
+
+
 def test_a_nested_any_of_is_rejected(tmp_path: Path):
     """One level only. The predicate language stays small on purpose."""
     path = tmp_path / "nested.yaml"
@@ -366,6 +379,25 @@ def test_a_rule_with_a_when_block_still_needs_for_each(tmp_path: Path):
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="for_each"):
+        load_rules(path, layer="show")
+
+
+def test_a_blank_when_is_not_treated_as_supersede_only(tmp_path: Path):
+    """A `when:` key present but left blank (a plausible hand-edit slip)
+    parses as YAML null, the same value `entry.get("when")` returns for a
+    key that is simply absent. Testing key presence rather than the
+    resolved value is what tells these apart: the blank case must still
+    raise, not silently become a match-nothing supersede-only rule that
+    also drops the `message` requirement with it."""
+    path = tmp_path / "blank_when.yaml"
+    path.write_text(
+        "rules:\n"
+        "  - id: T9\n    title: t\n    severity: warning\n    source: s\n"
+        "    rationale: r\n    message: m\n    supersedes: [G8]\n"
+        "    when:\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="NoneType"):
         load_rules(path, layer="show")
 
 

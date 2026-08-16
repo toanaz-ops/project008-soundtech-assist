@@ -114,8 +114,14 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 f"{path}: rule {entry['id']} has severity {severity!r}; "
                 f"expected one of {SEVERITIES}"
             )
-        when = entry.get("when")
-        if when is not None:
+        # Twin of the loader.py hazard: `entry.get("when")` returns None
+        # both when the key is absent (supersede-only) and when it is
+        # present but left blank. Testing key membership instead of the
+        # resolved value keeps a blank `when:` from silently becoming a
+        # match-nothing supersede-only rule -- it falls through to the
+        # `isinstance(when, dict)` guard below and raises instead.
+        if "when" in entry:
+            when = entry["when"]
             if not isinstance(when, dict):
                 raise ValueError(
                     f"{path}: rule {entry['id']} has a when: block that must "
