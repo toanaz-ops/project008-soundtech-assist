@@ -1,0 +1,180 @@
+# Textbook starting values for corporate speech events. Deviation is
+# information, never an error: the sources call these "starting point"
+# values, and ToanAZ chose (2026-08-16) to ship them at info with the
+# profile mechanism available to switch whole event families off.
+rules:
+  - id: PC1
+    title: "Lectern HPF outside the 90-160 Hz window"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L545: 'HPF 100 Hz, 12 dB/oct (raise to 120 Hz for a boomy male voice)'; Core-Skills-Overview.md L679: lectern gooseneck 100-150 Hz"
+    rationale: >
+      The two sources give 100-120 and 100-150; the window here is 90-160
+      -- wide enough to span both plus boundary tolerance, so a finding
+      means the corner is genuinely somewhere else.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: speech.lectern
+      any_of:
+        - channel.filter.low_cut_on: false
+        - channel.filter.low_cut_hz: {lt: 90.0}
+        - channel.filter.low_cut_hz: {gt: 160.0}
+    message: >
+      Channel {channel.number} ({channel.name}): lectern preset expects a
+      high-pass near 100-120 Hz; low cut on = {channel.filter.low_cut_on},
+      corner = {channel.filter.low_cut_hz} Hz.
+
+  - id: PC2
+    title: "Lectern/panel channel missing the low-mid boundary cut"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L546: '-3 to -4 dB, 300 Hz, Q 1.4'; L678: '-3 dB @ 250 Hz, Q 1.4'"
+    rationale: >
+      A hard lectern or table top reflects into the capsule and builds
+      200-500 Hz by 4-6 dB (L546 reason column). The check is presence of
+      ANY cut in 200-500 Hz, not its exact depth: L499 of
+      AI-Plugins-In-Live-Sound notes rooms where the panel cut should be
+      -6, so depth is a room call.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: {in: [speech.lectern, speech.panel]}
+        channel.eq.on: true
+        channel.eq_has_lowmid_cut: false
+    message: >
+      Channel {channel.number} ({channel.name}): the corporate preset
+      carries a boundary cut near 250-300 Hz and this EQ has no cut
+      anywhere in 200-500 Hz.
+
+  - id: PC3
+    title: "Lectern/panel channel missing the presence lift"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L547: '+2 to +3 dB, 3 kHz, Q 1.0 -- Consonant articulation; the biggest single STI improvement available'; L679: '+2 dB @ 3.5 kHz'"
+    rationale: >
+      Consonant articulation lives at 2-4 kHz; the preset lift there is
+      the cheapest intelligibility gain the sources name.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: {in: [speech.lectern, speech.panel]}
+        channel.eq.on: true
+        channel.eq_has_presence_lift: false
+    message: >
+      Channel {channel.number} ({channel.name}): the corporate preset
+      lifts 3-3.5 kHz and this EQ has no boost anywhere in 2-4 kHz.
+
+  - id: PC4
+    title: "Lectern gate outside the documented envelope"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L549: 'Threshold -48 dBFS, range 12 dB... Prefer automix over gating. If gating, keep range shallow so it never chatters'"
+    rationale: >
+      The preset gates a lectern at -48 dBFS with 12 dB of range at most;
+      a deeper range chatters, a threshold far above -40 gates on speech
+      itself. ROS L274 verifies -60 dB for panel goosenecks -- this rule
+      deliberately bounds only the lectern case.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: speech.lectern
+        channel.gate.on: true
+      any_of:
+        - channel.gate.range_dB: {gt: 12.0}
+        - channel.gate.threshold_dB: {gt: -40.0}
+    message: >
+      Channel {channel.number} ({channel.name}): lectern gate at
+      threshold {channel.gate.threshold_dB} dBFS, range
+      {channel.gate.range_dB} dB; the preset is -48 dBFS with range 12.
+
+  - id: PC5
+    title: "Speech compression ratio above 4:1"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L438: 'compression 2:1 to 3:1 with 3-6 dB gain reduction on peaks for speech'; Corporate-B2B-Events.md L550, L680 both 3:1"
+    rationale: >
+      Every speech preset in the knowledge base sits at 2:1-3:1. Above
+      4:1 speech starts pumping; the threshold here is 4 so the
+      documented 3:1 passes with margin.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: {starts_with: "speech."}
+        channel.dyn.on: true
+        channel.dyn.ratio: {gt: 4.0}
+    message: >
+      Channel {channel.number} ({channel.name}): speech compression at
+      {channel.dyn.ratio}:1; the presets sit at 2:1-3:1.
+
+  - id: PC6
+    title: "Panel HPF outside the 100-160 Hz window"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L677: 'HPF 120 Hz, 12 dB/oct (table mics pick up more LF than lectern mics)'"
+    rationale: >
+      Table mics take more structure-borne LF than lectern mics, so the
+      panel preset corner is higher (120 vs 100). Window 100-160.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: speech.panel
+      any_of:
+        - channel.filter.low_cut_on: false
+        - channel.filter.low_cut_hz: {lt: 100.0}
+        - channel.filter.low_cut_hz: {gt: 160.0}
+    message: >
+      Channel {channel.number} ({channel.name}): panel preset expects a
+      high-pass near 120 Hz; low cut on = {channel.filter.low_cut_on},
+      corner = {channel.filter.low_cut_hz} Hz.
+
+  - id: PC7
+    title: "MC in an automix group without a weight advantage"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L648: 'raise the moderator +3 to +6 dB so they can always cut in'; L681: '(moderator +4 dB)'"
+    rationale: >
+      The moderator must win a simultaneous-talk fight. speech.mc is the
+      moderator/host proxy -- on ToanAZ's shows the MC is the host. The
+      DSL has no lte, so the check is lt 3.0: a null weight fails lt and
+      stays silent, which is correct -- an absent weight is not a stated
+      value.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: speech.mc
+        channel.post_insert.on: true
+        channel.post_insert.automix_group: {not: null}
+        channel.post_insert.automix_weight: {lt: 3.0}
+    message: >
+      Channel {channel.number} ({channel.name}) is the MC in automix
+      group {channel.post_insert.automix_group} at weight
+      {channel.post_insert.automix_weight} dB; the preset gives the
+      moderator +3 to +6 dB.
+
+  - id: PC8
+    title: "Q&A mic unmuted in the saved scene"
+    severity: info
+    event: corporate
+    source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L499: audience Q&A mics 'Killed by default, opened only during Q&A'; L741: 'Q&A mic feeds back instantly'"
+    rationale: >
+      An audience-facing mic that is open by default is the fastest
+      feedback in the book (L741). The stated exception is real -- a
+      scene saved DURING Q&A legitimately trips this -- which is why it
+      is info, and why the profile mechanism exists.
+    requires_classifier: true
+    when:
+      for_each: channel
+      where:
+        channel.source_type: speech.qa
+        channel.muted: false
+    message: >
+      Channel {channel.number} ({channel.name}) classifies as an
+      audience/Q&A mic and is not muted in this scene.

@@ -41,6 +41,7 @@ def test_only_base_rules_are_active_with_an_empty_principles_file(scene, knowled
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
         "R4", "R5", "R6", "N1", "N2",
         "S1", "S2", "G10", "G11", "G12",
+        "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8",
     }
 
 
@@ -710,6 +711,7 @@ def test_no_profile_loads_no_show_file(scene, knowledge):
         "G8", "G7", "G9", "E6", "R1", "R2", "R3", "R3M",
         "R4", "R5", "R6", "N1", "N2",
         "S1", "S2", "G10", "G11", "G12",
+        "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8",
     }
 
 
@@ -784,12 +786,16 @@ def test_a_profile_event_switches_off_other_events_rules(vu_path, tmp_path, monk
     scene = WingScene.load(vu_path)
     _write_show(tmp_path, "bandshow", BAND_RULE)
 
-    # Base rules are all universal today, so plant a corporate one via a
-    # temporary base-rules fixture is NOT possible without touching package
-    # data -- instead assert on the mechanism with the loader-level rules:
+    # Task 11 (2026-08-17) shipped the corporate presets (PC1-PC8), the
+    # first non-universal base rules -- this now exercises the mechanism
+    # against real package data instead of only the loader-level rules
+    # the comment here used to describe before that task landed.
     ids = {r.id for r in active_rules(scene, tmp_path, "bandshow")}
     assert "G7" in ids  # universal rules survive
-    assert off_event_ids(scene, tmp_path, "bandshow") == {}  # nothing corporate ships yet
+    assert ids.isdisjoint({f"PC{i}" for i in range(1, 9)})  # corporate rules are off
+    off = off_event_ids(scene, tmp_path, "bandshow")
+    assert {f"PC{i}" for i in range(1, 9)} <= set(off)
+    assert all(v == "corporate" for k, v in off.items() if k.startswith("PC"))
 
 
 def test_profile_event_validation_rejects_unknown_values(vu_path, tmp_path, monkeypatch):
@@ -870,6 +876,11 @@ def test_as_rules_event_rejects_unknown_values(scene, knowledge):
 def test_facade_off_event_and_declared_event(scene, tmp_path):
     _write_show(tmp_path, "bandshow", BAND_RULE)
     facade = AdvisoryFacade(scene, directory=tmp_path)
-    assert facade.off_event("bandshow") == {}  # nothing corporate ships yet
+    # Task 11 (2026-08-17) shipped the corporate presets (PC1-PC8) as the
+    # first non-universal base rules, so a declared "band" event now
+    # switches all eight of them off.
+    off = facade.off_event("bandshow")
+    assert {f"PC{i}" for i in range(1, 9)} <= set(off)
+    assert all(v == "corporate" for k, v in off.items() if k.startswith("PC"))
     assert facade.declared_event("bandshow") == "band"
     assert facade.declared_event() is None
