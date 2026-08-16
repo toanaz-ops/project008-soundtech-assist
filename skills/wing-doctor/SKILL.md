@@ -26,7 +26,7 @@ Each finding carries:
 - **layer** — which rule layer decided:
   - `base` — generic industry practice mined from the knowledge base
   - `toanaz` — ToanAZ's personal principles, which override base rules
-  - `show` — a one-off override for this specific show
+  - `show` — a named profile for one kind of show
 - **confidence** — present only when the rule depended on inferring what a
   channel or bus is from its name. Below 1.0, word the finding as a
   question rather than an assertion.
@@ -57,6 +57,7 @@ spot a pattern worth turning into a principle in
 
 `feedback` also accepts `--profile <name>`. Give it the same profile
 `doctor` was run under: `feedback` resolves the finding id by
-re-running the same advisory rules `doctor` printed, so an id `doctor`
-just listed under a profile will not resolve without that same
-`--profile`.
+re-running the same advisory rules `doctor` printed, so the two
+commands must be given the same `--profile` or an id `doctor` just
+listed will not resolve — a finding that a profile's rule supersedes
+is not among that run's findings at all.

@@ -235,7 +235,12 @@ is required beyond re-running the command.
   name is passed as `--profile <name>` to `doctor` or `feedback`. An
   unrecognised `--profile` name raises rather than silently running
   with no profile, and lists what profiles exist. These load with
-  `layer: show`, the highest-priority layer.
+  `layer: show`, the highest-priority layer. A show rule whose only job
+  is to `supersede` a base rule needs no `when` or `message` either —
+  the same supersede-only shape "Add a principle" describes above. The
+  shipped `knowledge/toanaz/shows/small.yaml` is exactly that: no
+  `when:`, no `message:`, just `supersedes: [G8]` and the rationale for
+  switching it off.
 - **Add a descriptor** — the descriptors under
   `wing_parser/descriptors/data/*.yaml` interpret encoded fields the
   console stores as raw numbers or short codes. For example,
