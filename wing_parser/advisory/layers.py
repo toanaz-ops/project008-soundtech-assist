@@ -28,23 +28,36 @@ def _principles(directory: Path | None) -> list[Rule]:
     return _as_rules(path, layer="toanaz", key="principles")
 
 
-def _show_rules(directory: Path | None) -> list[Rule]:
-    """A show file may be saved `.yaml` or `.yml`.
+def _show_rules(directory: Path | None, profile: str | None = None) -> list[Rule]:
+    """Load exactly the named show file, or none at all.
 
-    Globbing only `*.yaml` makes a `.yml` file silently invisible --
-    not loaded, not warned about, indistinguishable from "no overrides
-    tonight." Both extensions are gathered into one sorted list so
-    load order stays deterministic regardless of which spelling a show
-    file used.
+    This used to glob every `*.yaml` and `*.yml` under `shows/` and apply
+    all of them, which meant two show files were both active for ever --
+    last week's overrides still in force tonight, with nothing to say so.
+    Nothing caught it because the directory ships empty.
+
+    A profile is selected by name and nothing is loaded without one. An
+    unrecognised name raises rather than degrading to "no profile": a
+    mistyped `--profile smal` would otherwise run with the base rule still
+    active while its author believes it is switched off, which is the
+    worst shape this failure can take.
     """
-    shows = config.knowledge_dir(directory) / SHOWS_DIR
-    if not shows.is_dir():
+    if profile is None:
         return []
-    paths = sorted(list(shows.glob("*.yaml")) + list(shows.glob("*.yml")))
-    rules: list[Rule] = []
-    for path in paths:
-        rules.extend(load_rules(path, layer="show"))
-    return rules
+
+    shows = config.knowledge_dir(directory) / SHOWS_DIR
+    for suffix in (".yaml", ".yml"):
+        path = shows / f"{profile}{suffix}"
+        if path.is_file():
+            return load_rules(path, layer="show")
+
+    available = sorted(
+        {p.stem for p in list(shows.glob("*.yaml")) + list(shows.glob("*.yml"))}
+    ) if shows.is_dir() else []
+    raise ValueError(
+        f"no profile named {profile!r} in {shows}; "
+        f"available: {', '.join(available) if available else '(none)'}"
+    )
 
 
 def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:

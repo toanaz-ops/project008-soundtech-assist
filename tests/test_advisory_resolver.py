@@ -11,6 +11,11 @@ from wing_parser.advisory.resolver import (
 )
 
 
+def _supersede_only(rule_id: str, target: str) -> dict:
+    return {"rules": [{"id": rule_id, "title": "t", "severity": "info",
+                       "source": "s", "rationale": "r", "supersedes": [target]}]}
+
+
 @pytest.fixture
 def knowledge(tmp_path):
     directory = tmp_path / "knowledge"
@@ -228,7 +233,7 @@ def test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule(
         encoding="utf-8",
     )
 
-    ids = {r.id for r in active_rules(scene, directory=knowledge)}
+    ids = {r.id for r in active_rules(scene, directory=knowledge, profile="tonight")}
     assert "G7" not in ids
     assert "show.no-g7" in ids
     # The principle's own condition failed, so it is not even active --
@@ -663,6 +668,64 @@ def test_show_rules_load_from_a_yml_extension_too(scene, knowledge):
         ),
         encoding="utf-8",
     )
-    ids = {r.id for r in active_rules(scene, directory=knowledge)}
+    ids = {r.id for r in active_rules(scene, directory=knowledge, profile="tonight")}
     assert "G7" not in ids
     assert "show.no-g7-yml" in ids
+
+
+def test_no_profile_loads_no_show_file(scene, knowledge):
+    (knowledge / "shows" / "small.yaml").write_text(
+        yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
+    )
+    assert {r.id for r in active_rules(scene, directory=knowledge)} == {"G8", "G7", "E6"}
+
+
+def test_a_profile_loads_only_its_own_file(scene, knowledge):
+    """The regression test for the glob defect: with two files present,
+    only the named one may take effect."""
+    (knowledge / "shows" / "small.yaml").write_text(
+        yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
+    )
+    (knowledge / "shows" / "wedges.yaml").write_text(
+        yaml.safe_dump(_supersede_only("show.wedges", "G7")), encoding="utf-8"
+    )
+
+    ids = {r.id for r in active_rules(scene, directory=knowledge, profile="small")}
+    assert "G8" not in ids
+    assert "G7" in ids
+    assert "show.small" in ids
+    assert "show.wedges" not in ids
+
+
+def test_a_yml_spelling_is_found_too(scene, knowledge):
+    (knowledge / "shows" / "small.yml").write_text(
+        yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
+    )
+    assert "G8" not in {r.id for r in active_rules(scene, directory=knowledge, profile="small")}
+
+
+def test_an_unknown_profile_raises_and_lists_what_exists(scene, knowledge):
+    (knowledge / "shows" / "small.yaml").write_text(
+        yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="smal"):
+        active_rules(scene, directory=knowledge, profile="smal")
+    with pytest.raises(ValueError, match="small"):
+        active_rules(scene, directory=knowledge, profile="smal")
+
+
+def test_suppressed_ids_honours_the_profile(scene, knowledge):
+    (knowledge / "shows" / "small.yaml").write_text(
+        yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
+    )
+    assert suppressed_ids(scene, directory=knowledge) == {}
+    assert suppressed_ids(scene, directory=knowledge, profile="small") == {"G8": "show.small"}
+
+
+def test_run_honours_the_profile(scene, knowledge):
+    (knowledge / "shows" / "small.yaml").write_text(
+        yaml.safe_dump(_supersede_only("show.small", "G8")), encoding="utf-8"
+    )
+    assert [f for f in run(scene, directory=knowledge, profile="small")
+            if f.rule_id == "G8"] == []
+    assert [f for f in run(scene, directory=knowledge) if f.rule_id == "G8"] != []
