@@ -21,7 +21,10 @@ and lists what profiles exist.
 
 Each finding carries:
 
-- **rule id** — `G8`, `G7`, `G9`, `E6`
+- **rule id** — one of the 32 shipped base rules (`G8`, `G7`, `G9`, `E6`,
+  `R1`-`R6`/`R3M`, `S1`, `S2`, `N1`, `N2`, `G10`-`G12`, and the
+  event-scoped presets `PC1`-`PC8`/`PB1`-`PB6`), or a `toanaz`/`show`
+  layer rule id.
 - **target** — `ch.8.send.8`, `bus.8`
 - **layer** — which rule layer decided:
   - `base` — generic industry practice mined from the knowledge base
@@ -33,6 +36,13 @@ Each finding carries:
 
 Rules switched off by a higher layer are listed as `[suppressed]` with the
 rule that switched them off. That line is information, not a problem.
+
+If `--profile <name>` names a show that declares an `event` (`corporate`
+or `band`), any base rule tagged for a *different* event is listed as
+`[off-event]` instead of being silently dropped — for example
+`[off-event] PB1 is band-only; profile declares event corporate`. That
+line is also information, not a problem: it just means the rule did not
+apply to this kind of show.
 
 ## What this does not check
 

@@ -166,6 +166,124 @@ for the exact clause to add once that token is known). Treat
 — that is exactly what the `toanaz` and `show` layers exist to correct
 once a human has looked at the finding and rendered a verdict.
 
+### Monitor role hierarchy
+
+The classifier resolves a bus, aux, main or matrix's role from its name
+using the patterns in `wing_parser/classifier/data/patterns.yaml`. A
+monitor destination classifies at one of three levels of specificity:
+
+- `monitor` — a generic monitor send (`MON ...`), flavour unspecified.
+- `monitor.iem` — an in-ear mix (`IEM1`, `in ear`).
+- `monitor.wedge` — a floor wedge or sidefill (`wedge`, `SIDE`,
+  `sidefill`).
+
+`Bus.is_monitor` is true for any of the three, confidence permitting.
+Rules pick the granularity they actually need:
+
+- **G8** (post-fader monitor send) matches `destination_bus.role` with
+  the `starts_with: monitor` predicate operator, so it fires on all
+  three kinds alike — a FOH fader move changes what a performer hears
+  the same way regardless of which monitor flavour carries it.
+- **G7** (no active dynamics, error) fires only on a confidently
+  classified `monitor.iem` — the hearing-injury claim in the knowledge
+  base is scoped to in-ears.
+- **G9** (no active dynamics, warning) fires on `monitor` or
+  `monitor.wedge` — the same check, one severity down, for outputs the
+  injury claim doesn't cover as directly.
+
+### Rule reference
+
+`doctor` ships 32 base rules across eight files in
+`wing_parser/advisory/base_rules/`. Every rule fires at `base` layer
+unless a `toanaz` principle or a `show` profile supersedes it (see
+above), and an `info`-severity rule is never wrong to see fire — it is
+a note, not an alarm. `PB*` and `PC*` are event-scoped **presets**: an
+info-tier rule set for one kind of show, only live when a profile
+declares the matching `event` (see below). `N2` ships
+`enabled: false` — its rationale (in `naming.yaml`) explains that the
+fader-floor discriminator it needs does not reliably separate a
+factory-default bus from one genuinely in use, so it stays off rather
+than risk noise on an unconfigured console.
+
+| id | severity | event | file | what it flags |
+| --- | --- | --- | --- | --- |
+| E6 | warning | universal | dynamics.yaml | Gate and automix on the same channel |
+| G7 | error | universal | monitors.yaml | IEM output has no active dynamics |
+| G8 | warning | universal | monitors.yaml | Monitor send is post-fader |
+| G9 | warning | universal | monitors.yaml | Wedge or monitor output has no active dynamics |
+| G10 | info | universal | monitors_quality.yaml | IEM output receives no ambient mic |
+| G11 | warning | universal | monitors_quality.yaml | More than five narrow notches on a monitor output |
+| G12 | info | universal | monitors_quality.yaml | EQ boost above 8 kHz on a house output |
+| N1 | info | universal | naming.yaml | Channel is in use but unnamed |
+| N2 | info, **disabled** | universal | naming.yaml | Output receives signal but is unnamed |
+| PB1 | info (preset) | band | presets_band.yaml | Snare-bottom channel is not polarity inverted |
+| PB2 | info (preset) | band | presets_band.yaml | Hi-hat HPF outside the 160-250 Hz window |
+| PB3 | info (preset) | band | presets_band.yaml | Ride HPF outside the 200-300 Hz window |
+| PB4 | info (preset) | band | presets_band.yaml | Overhead HPF outside the 160-450 Hz window |
+| PB5 | info (preset) | band | presets_band.yaml | Kick or bass high-passed above 45 Hz |
+| PB6 | info (preset) | band | presets_band.yaml | Click reaches more than two IEM mixes |
+| PC1 | info (preset) | corporate | presets_corporate.yaml | Lectern HPF outside the 90-160 Hz window |
+| PC2 | info (preset) | corporate | presets_corporate.yaml | Lectern/panel channel missing the low-mid boundary cut |
+| PC3 | info (preset) | corporate | presets_corporate.yaml | Lectern/panel channel missing the presence lift |
+| PC4 | info (preset) | corporate | presets_corporate.yaml | Lectern gate outside the documented envelope |
+| PC5 | info (preset) | corporate | presets_corporate.yaml | Speech compression ratio above 4:1 |
+| PC6 | info (preset) | corporate | presets_corporate.yaml | Panel HPF outside the 100-160 Hz window |
+| PC7 | info (preset) | corporate | presets_corporate.yaml | MC in an automix group without a weight advantage |
+| PC8 | info (preset) | corporate | presets_corporate.yaml | Q&A mic unmuted in the saved scene |
+| R1 | error | universal | routing.yaml | Click track reaches a FOH main |
+| R2 | error | universal | routing.yaml | Talkback reaches a FOH main |
+| R3 | error | universal | routing.yaml | Timecode routed into a mix destination |
+| R3M | error | universal | routing.yaml | Timecode routed into a main |
+| R4 | warning | universal | routing.yaml | Send to a record destination is post-fader |
+| R5 | warning | universal | routing.yaml | Main-send to a record main is post-fader |
+| R6 | error | universal | routing.yaml | Remote caller feeds its own mix-minus bus |
+| S1 | warning | universal | speech.yaml | Speech channel without a high-pass filter |
+| S2 | error | universal | speech.yaml | Music-family channel inside an active automix group |
+
+This table is generated from the shipped YAML, not hand-maintained
+prose; to regenerate it against whatever is actually loaded, run:
+
+```bash
+python -c "from wing_parser.advisory.loader import load_base_rules; \
+[print(r.id, r.severity, r.event, r.title) for r in sorted(load_base_rules(), key=lambda r: r.id)]"
+```
+
+The untouched shipped `user-files/example-Vu.snap` currently yields 22
+findings under this rule set with no profile; `user-files/factory-scene.snap`
+yields 0.
+
+### The event mechanism
+
+Every rule — base, principle, or show — carries an `event` field:
+`universal` (the default), `corporate`, or `band`. Of the 32 base
+rules, 14 are event-scoped: the eight `presets_corporate.yaml` rules
+(PC1-PC8) are `corporate`; the six `presets_band.yaml` rules (PB1-PB6)
+are `band`. Everything else is `universal` and always eligible.
+
+A show profile can declare its own event at the top of its YAML file:
+
+```yaml
+# knowledge/toanaz/shows/gala.yaml
+event: corporate
+rules: []
+```
+
+When `--profile gala` is passed, `doctor` and `feedback` keep every
+`universal` rule plus every rule whose `event` matches the declared
+one, and print the rest as a separate transparency line rather than
+silently dropping them:
+
+```
+  [off-event] PB1 is band-only; profile declares event corporate
+```
+
+A profile with no `event:` key at all — like the shipped
+`shows/small.yaml` — declares nothing, and every base rule stays
+event-eligible; only its `supersedes` entries (see above) suppress
+anything. Declaring an unrecognised event value (anything other than
+`universal`, `corporate`, or `band`) raises at load time, the same way
+an unrecognised `--profile` name does.
+
 ### Knowledge directory and search order
 
 `knowledge/toanaz/` holds `principles.yaml`, `classifier.yaml` (manual
@@ -220,12 +338,37 @@ Everything below is plain YAML; no code change or restart of anything
 is required beyond re-running the command.
 
 - **Add a rule** — new base rules go in
-  `wing_parser/advisory/base_rules/*.yaml` (any filename; both
-  `monitors.yaml` and `dynamics.yaml` are loaded together). Each entry
-  needs `id`, `title`, `severity` (`error`, `warning`, or `info`), a
-  `when.for_each` (`channel`, `bus`, or `channel.sends`) with a `where`
-  predicate, and a `message` template that can reference the bound
-  context (`{channel.number}`, `{bus.name}`, and so on).
+  `wing_parser/advisory/base_rules/*.yaml` (any filename; every `*.yaml`
+  file in that directory — currently eight of them — is loaded
+  together). Each entry needs `id`, `title`, `severity` (`error`,
+  `warning`, or `info`), a `when.for_each` with a `where` predicate, and
+  a `message` template that can reference the bound context
+  (`{channel.number}`, `{bus.name}`, and so on). `when.for_each` is one
+  of:
+  - `channel` — every channel, bound as `channel`.
+  - `bus` — every bus, excluding auxes, mains and matrices, bound as
+    `bus`.
+  - `output` — every summing destination — buses, auxes, mains *and*
+    matrices — bound as `bus` regardless of family. This is how G7/G8/G9
+    see monitor mixes that live on a matrix, not just a bus.
+  - `channel.sends` — one target per active bus or matrix send, binding
+    `channel`, `send`, and `destination_bus`.
+  - `channel.main_sends` — one target per channel's send to a main,
+    binding `channel`, `main_send`, and `destination_main`.
+  - `none` — no targets at all, for a rule that exists only to
+    `supersede` another (see the show-profile bullet below).
+
+  A `where` (or `any_of` clause) value is either a bare literal
+  (equality) or a single-key operator mapping: `not`, `in`, `not_in`,
+  `gt`, `lt`, `is_null`, or `starts_with` (a string-prefix match — G8
+  uses `destination_bus.role: {starts_with: monitor}` to catch
+  `monitor`, `monitor.iem` and `monitor.wedge` in one clause; see
+  [Monitor role hierarchy](#monitor-role-hierarchy)). An unknown
+  operator name is a load-time error naming the offending file, not a
+  runtime `ValueError`. An optional `event` field (`universal` by
+  default, or `corporate`/`band`) scopes the rule to a show profile
+  declaring the matching event — see
+  [The event mechanism](#the-event-mechanism).
 - **Add a principle** — append to the `principles:` list in
   `knowledge/toanaz/principles.yaml`. Give it an `id`, a `hardness`
   (`hard` always active, `flexible` gated by `applies_when`), and a
@@ -258,6 +401,22 @@ is required beyond re-running the command.
   under `channels:` or `buses:` in `knowledge/toanaz/classifier.yaml`.
   A manual entry is checked before the pattern matcher and the LLM
   fallback, so it always wins and costs nothing to resolve again.
+- **Derived properties** — beyond the raw fields a `.snap` file stores,
+  a `where` or `message` path can reach a handful of computed
+  properties (`wing_parser/query/bus.py`, `wing_parser/query/channel.py`):
+  - **Bus** (`bus.<name>`): `role`, `is_monitor`, `notch_count` (EQ bands
+    narrow and deep enough to read as feedback notches: `q >= 8`,
+    `gain <= -6 dB`), `max_boost_above_8k` (the highest EQ boost above
+    8 kHz, or `None` if there isn't one), `receives_ambient` (fed by a
+    confidently classified ambient-mic channel), `receives_any` (fed by
+    any channel at all).
+  - **Channel** (`channel.<name>`): `iem_send_count` (active sends
+    landing on a confidently classified `monitor.iem` destination),
+    `eq_has_lowmid_cut` (an EQ band pulled down between 200-500 Hz),
+    `eq_has_presence_lift` (a band pushed up between 2-4 kHz), `in_use`
+    (patched, unmuted, routed somewhere, and fader above -90 dB — the
+    discriminator N1 relies on to keep a factory-default scene, every
+    fader at the -144 sentinel, from reading as in use).
 
 ## MCP server
 
