@@ -57,6 +57,22 @@ channels:
   - { match: 'd\.?\s*phoi|du\s*phong', kind: utility.spare, confidence: 0.85 }
   - { match: '\bspare\b|\bbackup\b', kind: utility.spare,  confidence: 0.9 }
 
+  # Corporate / conferencing utility signals that must never reach programme
+  # outputs.
+  - { match: '\bltc\b|time\s*code|\btc\s*in\b|\btc\d*\b', kind: utility.timecode, confidence: 0.9 }
+  - { match: '\bzoom\b|\bteams\b|\bcaller\b|\bremote\b|\bskype\b', kind: utility.remote_caller, confidence: 0.85 }
+
+  # Corporate speech roles
+  - { match: '\bpanel\s*\d*\b|\bseat\s*\d+\b', kind: speech.panel, confidence: 0.85 }
+  - { match: 'q\s*&\s*a|\bqa\s*\d*\b|\brov(er|ing)\b', kind: speech.qa, confidence: 0.8 }
+  # utility.ambient's bare 'audience' alt above sits at 0.85, so a plain
+  # "audience mic" match at 0.8 would lose to it and misfile a Q&A roving
+  # mic as room ambience. This variant carries its own, higher confidence
+  # so "AUDIENCE MIC" -> speech.qa while a bare "AUDIENCE" or "ROOM MIC" --
+  # neither of which mentions qa/rover/panel -- still resolves to
+  # utility.ambient via the pattern above.
+  - { match: 'audience\s*mic', kind: speech.qa, confidence: 0.9 }
+
   # Weak fallbacks — deliberately below the 0.8 gate.
   - { match: '^mic\s*\d+$',     kind: unknown.bare_mic,    confidence: 0.3 }
   - { match: '^m\d+$',          kind: unknown.bare_mic,    confidence: 0.3 }
@@ -91,3 +107,5 @@ buses:
   # The monitor reading was wrong, not merely under-confident.
   - { match: 'head\s*set|\bstring', kind: subgroup,        confidence: 0.6 }
   - { match: '\bdrum\b|\bband\b|\bmic\b|\bmusic\b', kind: subgroup, confidence: 0.6 }
+  # A bus built to exclude exactly one remote caller (rider: "n-1")
+  - { match: 'mix\s*minus|\bmm\s*\d*\b|\bn-1\b', kind: mix_minus, confidence: 0.85 }

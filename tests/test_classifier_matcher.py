@@ -205,3 +205,43 @@ def test_a_headset_bus_groups_mics_and_is_not_a_monitor_send():
     # subgroup in front of rules written for monitor sends.
     assert classify("HEADSET", "buses").kind == "subgroup"
     assert classify("STRING", "buses").kind == "subgroup"
+
+
+def test_timecode_channels_classify():
+    for name in ("LTC", "TIME CODE", "TC IN", "LTC 2"):
+        assert classify(name, "channels").kind == "utility.timecode", name
+
+
+def test_remote_caller_channels_classify():
+    for name in ("ZOOM", "Teams 1", "REMOTE CALLER", "CALLER 2"):
+        assert classify(name, "channels").kind == "utility.remote_caller", name
+
+
+def test_panel_channels_classify():
+    for name in ("PANEL 1", "Panel3", "SEAT 2"):
+        assert classify(name, "channels").kind == "speech.panel", name
+
+
+def test_qa_channels_classify():
+    for name in ("Q&A 1", "QA 2", "ROVER", "ROVING 1", "AUDIENCE MIC"):
+        assert classify(name, "channels").kind == "speech.qa", name
+
+
+def test_mix_minus_buses_classify():
+    for name in ("MIX MINUS", "MM 1", "N-1 ZOOM"):
+        assert classify(name, "buses").kind == "mix_minus", name
+
+
+def test_new_patterns_do_not_steal_existing_names():
+    # 'TC IN' must not break talkback; 'SEAT' must not break strings, etc.
+    assert classify("TB", "buses").kind == "talkback"
+    assert classify("MON VOX", "buses").kind == "monitor"
+    assert classify("HS4", "channels").kind == "speech.headset"
+    # speech.qa's 'audience mic' variant is deliberately higher-confidence
+    # than utility.ambient's bare 'audience' (0.85) so it wins on "AUDIENCE
+    # MIC" -- but a bare AUDIENCE or ROOM MIC, with no qa signal, must stay
+    # utility.ambient rather than being swept into speech.qa.
+    assert classify("AUDIENCE", "channels").kind == "utility.ambient"
+    assert classify("ROOM MIC", "channels").kind == "utility.ambient"
+    assert classify("AUDIENCE MIC", "channels").kind == "speech.qa"
+    assert classify("STRING", "channels").kind == "instrument.strings"
