@@ -97,7 +97,13 @@ def test_q7_ships_disabled_and_therefore_never_fires(fire):
     q7 = next(r for r in load_base_rules() if r.id == "Q7")
     assert q7.enabled is False
     assert "threshold" in q7.rationale.lower()
+    # SQ 2's time runs BACKWARDS from SQ 1's on purpose, giving a NEGATIVE
+    # gap -- exactly what Q7's predicate ({lt: 0}) matches. With
+    # chronological times the gap would be non-negative and fire(...) ==
+    # [] would pass regardless of enabled: false, since the predicate
+    # would never match either way; that would not prove "disabled" is
+    # what keeps Q7 silent. Do not "fix" these times into order.
     assert fire([{"id": "S1", "cues": [
         {"id": "SQ 1", "action": "open", "channels": [8], "time": "T+00:10:00"},
-        {"id": "SQ 2", "action": "close", "channels": [8], "time": "T+00:10:01"}]}],
+        {"id": "SQ 2", "action": "close", "channels": [8], "time": "T+00:09:59"}]}],
         "Q7") == []
