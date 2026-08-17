@@ -60,9 +60,15 @@ Recorded so they are not re-litigated. Each names who decided it.
   design affordable.
 - **A finding's `target` is nearly the raw JSON path.** `doctor --json` yields
   targets such as `ch.1.send.8`, and the raw document holds
-  `ae.ch.1.send.8 = {"on": true, "lvl": -15, "pon": false, "mode": "POST", ...}`.
+  `ae_data.ch.1.send.8 = {"on": true, "lvl": -15, "pon": false, "mode": "POST", ...}`.
   The correspondence is close because both mirror how the WING organises a scene.
   It is *not* exact, and §5 refuses to rely on it.
+
+  Paths in this document are written against the **whole `.snap` document**, so
+  they begin with the file's own top-level key, `ae_data` — not with `RawScene.ae`.
+  The existing tests already address the file this way
+  (`tests/test_query_scene.py:56`), and a path that names a real key in a real
+  file is one fewer translation to get wrong.
 
 ## 3. Architecture — where the Qt boundary sits
 
@@ -106,7 +112,7 @@ The application never mutates the loaded document. It holds:
 ```python
 @dataclass(frozen=True)
 class Patch:
-    path: str          # "ae.ch.1.send.8.mode"
+    path: str          # "ae_data.ch.1.send.8.mode"
     before: Any        # what was there, captured at append time
     after: Any         # what it becomes
     because: str       # "G8:ch.1.send.8", or "manual"
@@ -127,7 +133,7 @@ over mutating in place:
 2. **"What have I changed?"** is the journal, displayed as a list before saving —
    not a diff the user must compute against the original file.
 3. **It is the bridge to sub-project C/D.** Writing
-   `ae.ch.1.send.8.mode = "PRE"` into a file and sending the equivalent OSC
+   `ae_data.ch.1.send.8.mode = "PRE"` into a file and sending the equivalent OSC
    message to a live console are the *same patch* leaving through two different
    doors. Choosing this structure now means the OSC work is a new sink, not a
    rewrite of the edit layer.
@@ -153,7 +159,7 @@ entry simply shows no repair control, and that is a complete and honest answer.
 repairs:
   - rule: G8
     kind: set                     # set | toggle | text | number
-    path: "ae.ch.{channel}.send.{send}.mode"
+    path: "ae_data.ch.{channel}.send.{send}.mode"
     to: "PRE"
     label: "Đổi send sang PRE"
     rationale: >
@@ -168,7 +174,18 @@ Two categories, and the difference is decided by the rule's own predicate:
   destinations), `R1`/`R2`/`R3`/`R3M`/`R6` (turn the offending send `on: false`),
   `PC8` (`mute: true`), `S1` (`flt.lc: true` — the channel already carries an
   `lcf` frequency; the rule complains the filter is off, not that it is
-  mistuned), `PB1` (`in.set.inv: true`). These get a one-click repair.
+  mistuned), `PB1` (**toggle** `in.set.inv`). These get a one-click repair.
+
+  **`PB1` is why `toggle` exists as a descriptor kind, and it is worth stating
+  why the obvious version is wrong.** `query/channel.py:63` defines
+  `effective_polarity` as channel inversion **XOR** source inversion — *"inverting
+  twice is not inverting."* PB1 fires when the effective polarity is `False`,
+  which means `inv` currently *equals* the source's polarity. Writing
+  `inv: true` therefore clears the finding only when the source is not inverted;
+  when the source *is* inverted, `inv` is already `true`, the write changes
+  nothing, and the button reports a repair that did not happen. Flipping the
+  current value clears it in both cases. This defect was caught by writing the
+  clearance test before the descriptor, which is the whole argument for the test.
 - **Undetermined repair** — the rule states a *window* or a *count*, so no single
   value follows. Every HPF-window rule (`PB2`–`PB5`, `PC1`, `PC6`), `G11` (which
   notch?), `G12` (reduce to what?), `PC7` (which weight?), `G7`/`G9` (a whole
