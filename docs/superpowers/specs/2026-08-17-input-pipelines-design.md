@@ -74,9 +74,19 @@ act from mapping free text: the first is decidable and its failures are
 detectable, the second is open-ended and fails silently. So the loader repairs,
 but only as far as it can prove it is right.
 
-The radius comes from a measurement, not a preference. `expects:` draws on the
-`channels` domain of `wing_parser/classifier/data/patterns.yaml` — **35 distinct
-kinds**, whose **minimum pairwise Levenshtein distance is 2**:
+The metric is **Damerau-Levenshtein** — Levenshtein plus adjacent transposition
+as a single edit. Corrected during implementation on 2026-08-17: plain
+Levenshtein scores a transposition as 2, which would refuse `instrument.kyes`
+for `instrument.keys`, and swapping two adjacent letters is the most common typo
+there is. Because Damerau-Levenshtein is never larger than Levenshtein, adopting
+it could only have shrunk the distances the safety argument rests on, so the
+measurement below was re-run under it: the minimum is unchanged at 2, on the
+same two pairs, and the only six pairs whose distance drops at all sit at 12 or
+more — nowhere near the radius.
+
+The radius comes from that measurement, not a preference. `expects:` draws on
+the `channels` domain of `wing_parser/classifier/data/patterns.yaml` — **35
+distinct kinds**, whose **minimum pairwise distance is 2**:
 `speech.lav` ↔ `speech.qa` and `speech.mc` ↔ `speech.qa`. (The `buses` domain,
 12 kinds, sits at minimum distance 4; `expects` does not accept bus kinds today —
 see §11.) A code with minimum distance 2 can detect a single
