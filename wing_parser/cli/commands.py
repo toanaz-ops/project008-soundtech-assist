@@ -68,8 +68,9 @@ def doctor(args) -> int:
     if scene is None:
         return 1
     if scene.show is not None:
-        for note in scene.show.anomalies:
-            print(f"show context: {note}")
+        text = render.show_anomalies(scene.show.anomalies)
+        if text:
+            print(text)
     profile = getattr(args, "profile", None)
     found = _run_advisory(scene, profile)
     if found is None:

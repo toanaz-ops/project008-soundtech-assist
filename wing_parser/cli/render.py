@@ -87,6 +87,13 @@ def channel_detail(channel) -> str:
     return "\n".join(lines)
 
 
+def show_anomalies(notes: Iterable[str]) -> str:
+    notes = list(notes)
+    if not notes:
+        return ""
+    return "\n".join(f"show context: {note}" for note in notes)
+
+
 def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None,
              off_event: dict[str, str] | None = None,
              declared_event: str | None = None) -> str:
