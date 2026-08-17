@@ -1,14 +1,16 @@
 """What the show context means once a scene is loaded beside it.
 
-Derivations are exposed as counts, never as collections. The predicate
-language has no emptiness operator, so a tuple-returning property would
-have to be written `{not: []}` in a rule -- which is always true in
-Python, since `() != []`. The rule would sit silent forever and no test
-against a stub would catch it. Counts match with `gt: 0`, the shape
-`Bus.notch_count` already uses.
+Derivations on `Cue` are exposed as counts, never as collections. The
+predicate language has no emptiness operator, so a tuple-returning
+property would have to be written `{not: []}` in a rule -- which is
+always true in Python, since `() != []`. The rule would sit silent
+forever and no test against a stub would catch it. Counts match with
+`gt: 0`, the shape `Bus.notch_count` already uses.
 
 Each count has a `*_text` twin so a finding can name the actual channel
-numbers instead of reporting "3".
+numbers instead of reporting "3". `ExpectationView` derives booleans
+instead -- see its own docstring for why that granularity calls for
+`is`, not `how many`.
 """
 
 from __future__ import annotations
@@ -196,7 +198,9 @@ def build_expectations(context: ShowContext, scene) -> tuple[ExpectationView, ..
     seen: dict[str, list[str]] = {}
     for segment in context.segments:
         for kind in segment.expects:
-            seen.setdefault(kind, []).append(segment.id)
+            ids = seen.setdefault(kind, [])
+            if segment.id not in ids:
+                ids.append(segment.id)
     return tuple(
         ExpectationView(kind, tuple(ids), scene) for kind, ids in seen.items()
     )

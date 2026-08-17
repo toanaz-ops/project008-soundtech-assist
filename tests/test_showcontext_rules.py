@@ -68,6 +68,13 @@ def test_q4_stays_silent_when_the_kind_is_present(fire):
     assert fire([{"id": "S1", "expects": ["instrument.keys"]}], "Q4") == []
 
 
+def test_q4_reports_one_finding_for_a_kind_two_segments_expect(fire):
+    found = fire([{"id": "S1", "expects": ["instrument.horns"]},
+                  {"id": "S2", "expects": ["instrument.horns"]}], "Q4")
+    assert [f.target for f in found] == ["expects.instrument.horns"]
+    assert "S1, S2" in found[0].message
+
+
 def test_q5_fires_when_the_kind_is_present_but_parked(fire):
     # Every instrument.keys channel on the sample file sits at -inf.
     found = fire([{"id": "S1", "expects": ["instrument.keys"]}], "Q5")

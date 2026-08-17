@@ -117,6 +117,17 @@ def test_an_expectation_names_every_segment_that_calls_for_it(scene):
     assert horns.target_name == "expects.instrument.horns"
 
 
+def test_a_segment_naming_a_kind_twice_is_listed_once(scene):
+    # A segment can list the same kind twice verbatim, or list two entries
+    # that normalise to the same kind; either way build_expectations must
+    # not append the segment id a second time.
+    context = _context(
+        Segment(id="S1", expects=("instrument.horns", "instrument.horns")),
+    )
+    horns = view.build_expectations(context, scene)[0]
+    assert horns.segments_text == "S1"
+
+
 def test_a_kind_with_no_channel_is_unmet_and_not_dark(scene):
     context = _context(Segment(id="S1", expects=("instrument.horns",)))
     horns = view.build_expectations(context, scene)[0]

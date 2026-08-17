@@ -70,7 +70,7 @@ rules:
       {cue.missing_dcas_text}, which the console does not have.
 
   - id: Q4
-    title: "Segment expects a source with no channel for it"
+    title: "Show expects a source with no channel for it"
     severity: warning
     source: >
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md
@@ -96,11 +96,11 @@ rules:
       where:
         expectation.is_unmet: true
     message: >
-      Segments {expectation.segments_text} expect {expectation.kind}, and no
+      {expectation.kind} is expected by {expectation.segments_text}, and no
       confidently-classified channel of that kind exists in the scene.
 
   - id: Q5
-    title: "Segment expects a source whose channels are all parked"
+    title: "Show expects a source whose channels are all parked"
     severity: info
     source: >
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md
@@ -124,7 +124,7 @@ rules:
       where:
         expectation.is_dark: true
     message: >
-      Segments {expectation.segments_text} expect {expectation.kind};
+      {expectation.kind} is expected by {expectation.segments_text};
       channels of that kind exist but none is in use.
 
   - id: Q6
@@ -137,18 +137,20 @@ rules:
     rationale: >
       Walking the cues in file order gives every channel an open/closed
       book; opening one already open is a cue restating a state an
-      earlier cue already set, not a contradiction -- a caller repeating
-      "mics open" at the top of a segment is correct practice, the way a
-      show is actually run, not a fault in the paperwork. ToanAZ
-      confirmed this 2026-08-17, spec section 6.1, which is why this is
-      info: worth seeing when reading a sheet, never an alarm. Only open
-      and close move the book -- a level move on a closed channel is not
-      redundant, and what a recall does to a given channel is not
-      knowable from the cue sheet. Closing a channel the book has never
-      seen opened is not caught either: an unseen channel reads as
-      neither open nor closed, so that close is silent -- the right
-      behaviour, since a sheet may be describing a desk that started with
-      things open, not a gap in this check.
+      earlier cue already set -- redundant, not a fault, the way a
+      caller repeating "mics open" at the top of a segment is correct
+      practice, the way a show is actually run. Closing one the book has
+      already seen closed is the same case on the other half of the
+      book, and fires the same way. ToanAZ confirmed this 2026-08-17,
+      spec section 6.1, which is why this is info: worth seeing when
+      reading a sheet, never an alarm. Only open and close move the
+      book -- a level move leaves it untouched, and what a recall does
+      to a given channel is not knowable from the cue sheet, so neither
+      is ever evaluated here. The one case this rule cannot catch is
+      closing a channel the book has never seen opened: an unseen
+      channel reads as neither open nor closed, so that close is
+      silent -- the right behaviour, since a sheet may be describing a
+      desk that started with things open, not a gap in this check.
     when:
       for_each: cue
       where:

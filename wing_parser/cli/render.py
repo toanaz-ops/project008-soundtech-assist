@@ -121,7 +121,7 @@ def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None,
     for finding in sorted(items, key=lambda f: (order.get(f.severity, 9), _natural(f.target))):
         confidence = "" if finding.confidence >= 1.0 else f"  (confidence {finding.confidence:.2f})"
         lines.append(
-            f"  [{finding.severity:<7}] {finding.rule_id:<6} {finding.target:<18} "
+            f"  [{finding.severity:<7}] {finding.rule_id:<6} {finding.target:<24} "
             f"via {finding.layer}{confidence}"
         )
         lines.append(f"      {' '.join(finding.message.split())}")

@@ -126,16 +126,22 @@ one. This is the standing "never fabricate a value the file does not state"
 constraint applied to a new file format.
 
 **Channel state is derived by walking the cues in order**, keeping an open/closed
-book per channel. That turns "two cues disagree" into something decidable:
-closing a channel already closed, opening one already open.
+book per channel. That turns a repeated state into something decidable: opening
+a channel already open, and closing one the book has already seen closed, are
+the same case on opposite sides of the book — a cue restating a state an
+earlier cue already set, not two cues disagreeing — and both are caught the
+same way. The one case the book cannot decide is closing a channel it has
+never seen opened: an unseen channel reads as neither open nor closed, so that
+close is silent — correctly, since a sheet may be describing a desk that
+started with things open, not a gap in the check (§6.1).
 
 Only `open` and `close` move that book. `up`, `down` and `recall` are recorded
 and checked for channel and DCA existence (Q1–Q3) but leave the open/closed
-state untouched — a level move on a closed channel is not a contradiction, and
-what a `recall` does to any given channel is not knowable from the cue sheet.
-Segments and cues are read in file order; `time:` never reorders them, because a
-cue sheet with times out of order is a document error the tool should show
-rather than silently sort away.
+state untouched, so neither is ever evaluated for a repeat — a level move on a
+closed channel is simply not tracked, and what a `recall` does to any given
+channel is not knowable from the cue sheet. Segments and cues are read in file
+order; `time:` never reorders them, because a cue sheet with times out of order
+is a document error the tool should show rather than silently sort away.
 
 ## 4. Where it plugs in
 
@@ -148,12 +154,20 @@ New package `wing_parser/showcontext/`, split by responsibility, each file short
 Loaded through `WingScene.load(path, show=...)`; `scene.show` is `None` when no
 file was given.
 
-Two iterators join `ITERATORS` in `wing_parser/advisory/evaluator.py:100`:
-`cue` and `segment`. **Both yield nothing when `scene.show is None`** — the same
-shape as the existing `_nothing` iterator, which is what keeps every current
-behaviour bit-identical. `targets_for` takes only `(scene, for_each)`, so the
-context must hang off the scene; changing that signature would touch every
-iterator for no gain.
+Three iterators join `ITERATORS` in `wing_parser/advisory/evaluator.py:100`:
+`cue`, `segment`, and `expects` (added §6.1, one target per expected kind
+rather than per cue or per segment). **All three yield nothing when
+`scene.show is None`** — the same shape as the existing `_nothing` iterator,
+which is what keeps every current behaviour bit-identical. `targets_for` takes
+only `(scene, for_each)`, so the context must hang off the scene; changing that
+signature would touch every iterator for no gain.
+
+`segment` currently has no rule consumer — Q4 and Q5 moved to `expects` when
+they were reworked to report per kind instead of per segment (§6.1), and
+nothing else needs one-target-per-segment today. It stays registered anyway,
+deliberately: a future rule may want to report at segment granularity, the
+iterator is already tested (`tests/test_showcontext_view.py`), and an unused
+iterator with no consumer costs nothing to keep.
 
 Target names follow the existing convention (`ch.8.send.MX5`): `cue.S2.SQ8` and
 `segment.S2`. Cue ids are written the way a show caller says them (`SQ 8`), so
@@ -161,7 +175,7 @@ internal whitespace is stripped when building the target name; the id keeps its
 spaces everywhere it is displayed. Two cues in one segment whose ids differ only
 by whitespace are a duplicate-id error, caught at load time.
 
-## 5. Derived properties expose counts, not collections
+## 5. Derived properties expose counts and booleans, not collections
 
 The predicate language has seven operators — `not`, `in`, `not_in`, `gt`, `lt`,
 `is_null`, `starts_with` (`wing_parser/advisory/predicates.py:21`) — and no
@@ -170,15 +184,24 @@ emptiness test. A property returning a tuple would have to be tested as
 sit silent forever and no test written against a tuple-returning stub would
 catch it.
 
-So every derivation is exposed as a count, matched with `gt: 0`. This is the
-existing `notch_count` pattern, not a new one.
+So every derivation is exposed as either a count, matched with `gt: 0` (the
+existing `notch_count` pattern), or, where the question is "is it" rather than
+"how many", a boolean, matched with a plain `true`. Booleans do not carry the
+`{not: []}` trap: `matches()` compares `value == expected` directly, and a
+`bool` compares correctly against another `bool` — the trap is specific to a
+tuple compared against a list, which are never equal regardless of contents.
 
 On `Cue`: `missing_channel_count`, `unnamed_channel_count`, `missing_dca_count`,
 `contradiction_count`, `seconds_after_previous` (float or `None`).
-On `Segment`: `unmet_expect_count`, `dark_expect_count`.
+On `ExpectationView` (§6.1, one per expected kind rather than per segment):
+`is_unmet`, `is_dark` — booleans, not counts, because a segment is not itself
+a classified object and there is nothing to count, only a fact to state.
 
 Each count has a companion `*_text` string property for the message template,
 so a finding names the actual channel numbers rather than a bare count.
+`ExpectationView` instead carries `segments_text`, naming every segment that
+called for the kind, since the aggregation would otherwise lose exactly the
+information per-segment reporting used to carry.
 
 ## 6. The rules
 
@@ -190,9 +213,9 @@ rules use E, G, N, R, S, PB and PC — `Q` is free.
 | Q1 | warning | `cue.missing_channel_count > 0` — the cue names a channel the scene does not have |
 | Q2 | info | `cue.unnamed_channel_count > 0` — the channel exists but carries no name |
 | Q3 | warning | `cue.missing_dca_count > 0` — the cue names a DCA the scene does not configure |
-| Q4 | warning | `segment.unmet_expect_count > 0` — an expected kind has no confidently-classified channel |
-| Q5 | info | `segment.dark_expect_count > 0` — a channel of that kind exists but `Channel.in_use` is False |
-| Q6 | warning | `cue.contradiction_count > 0` — the cue contradicts the state the previous cues left |
+| Q4 | warning | `expectation.is_unmet: true` — an expected kind has no confidently-classified channel anywhere in the scene, reported once per kind (§6.1) |
+| Q5 | info | `expectation.is_dark: true` — channels of that kind exist but none is `Channel.in_use`, reported once per kind (§6.1) |
+| Q6 | info | `cue.contradiction_count > 0` — the cue redundantly repeats a state an earlier cue already set (§6.1) |
 | Q7 | warning | the gap to the previous timed cue is shorter than the operation needs |
 
 Q5 reuses `Channel.in_use` (`wing_parser/query/channel.py:128`) rather than
@@ -201,18 +224,18 @@ defining a second liveness test: patched, unmuted, routed, and fader above the
 invented its own "is this channel on" check would drift from N1's.
 
 Q4 and Q5 depend on classification but **do not** set `requires_classifier`.
-That flag gates on the *target's* confidence, and a segment is not a classified
-object — it has no confidence of its own to gate on. Instead the derivation
-counts only channels classified at or above `HIGH`, exactly the way
-`Bus.receives_ambient` already does. Same protection, applied where the
-classification actually lives.
+That flag gates on the *target's* confidence, and neither a segment nor an
+expected kind is a classified object — it has no confidence of its own to gate
+on. Instead the derivation counts only channels classified at or above `HIGH`,
+exactly the way `Bus.receives_ambient` already does. Same protection, applied
+where the classification actually lives.
 
 ### 6.1 Noise profile — decided with ToanAZ 2026-08-17, after the final review
 
 The table above describes what G1 shipped. The final whole-branch review raised,
 and ToanAZ settled, two things about how these rules read on a real fifteen-segment
-cue sheet rather than on a two-segment fixture. **Both are decided and pending
-implementation.**
+cue sheet rather than on a two-segment fixture. **Both are implemented**, on
+branch `claude_desk/next-session-handoff-bc5fa5`.
 
 **Q4 and Q5 aggregate per kind, not per segment.** `_channels_of` reads the
 static scene, so a missing horns channel is missing for every segment. A sheet
@@ -234,11 +257,18 @@ open is still worth seeing, but its severity and its wording must say *redundant
 rather than *two cues disagree about the state of the desk*.
 
 While rewording it, correct an overstatement the review also caught: Q6's
-rationale and §3 both say "closing one already closed" is a contradiction, but
-the state walk treats a channel it has never seen as neither open nor closed, so
-closing a channel the sheet never opened is silent. That is the right behaviour —
-a sheet may be describing a desk that started with things open — and the
-rationale should say so rather than claim a check it does not perform.
+rationale and §3 both implied that closing a channel is *always* checked
+against the book, including a close on a channel the sheet never opened. It
+is not — the state walk treats an unseen channel as neither open nor closed,
+so that particular close is silent. Opening one already open, and closing one
+the book has already seen closed, are unaffected by this: they are the same
+case on opposite sides of the book and both still fire. Only the
+never-opened close is the gap, and it is the right behaviour, not a fault in
+the check — a sheet may be describing a desk that started with things open.
+A second review pass (2026-08-17, after the first fix landed) caught that the
+initial correction had overcorrected, dropping the true "close-after-close
+fires" claim along with the false "close-of-never-opened fires" one; the
+rationale must state both facts, not neither.
 
 **Q7 ships `enabled: false`.** No source in this repository states how long a
 mic change, a scene recall or a patch change takes, and ToanAZ chose (2026-08-17)

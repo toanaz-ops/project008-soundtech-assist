@@ -311,9 +311,9 @@ It catches three failures a purely static read cannot see: a cue
 naming a channel the scene does not have (or one that exists but
 carries no name), an expected source kind with no confidently
 classified channel anywhere in the scene (or one whose channels exist
-but are all parked) -- reported once per kind, naming every segment
+but are all parked) — reported once per kind, naming every segment
 that calls for it, since the scene is static and the answer cannot
-differ between segments -- and one cue redundantly repeating a
+differ between segments — and one cue redundantly repeating a
 channel state an earlier cue already set.
 
 A show context is a hand-written YAML file, loaded beside the scene —
@@ -337,14 +337,16 @@ segments:
 ```
 
 `expects:` draws on the classifier's own kind vocabulary
-(`instrument.keys`, not free text), so Q4 is set subtraction rather
-than a second layer of name-guessing. `time:` is optional at both
-levels; a file that never states one gets silence from Q7 rather than
-an assumed time. Channel state is derived by walking every segment's
-cues in file order and keeping an open/closed book per channel — only
-`open` and `close` move that book, so a level move (`up`/`down`) on a
-closed channel is not a contradiction, and what `recall` does to a
-given channel is not knowable from the cue sheet alone.
+(`instrument.keys`, not free text), so Q4 is set subtraction —
+checked once per expected kind against the whole scene, not per
+segment — rather than a second layer of name-guessing. `time:` is
+optional at both levels; a file that never states one gets silence
+from Q7 rather than an assumed time. Channel state is derived by
+walking every segment's cues in file order and keeping an open/closed
+book per channel — only `open` and `close` move that book, so a level
+move (`up`/`down`) on a closed channel leaves it untouched rather than
+registering as a repeat, and what `recall` does to a given channel is
+not knowable from the cue sheet alone.
 
 Pass the file with `--show <file>` on `doctor`, combinable with
 `--profile`:
