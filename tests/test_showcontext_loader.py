@@ -59,6 +59,17 @@ def test_an_unresolvable_kind_raises_naming_the_file(tmp_path):
     assert "S1" in str(caught.value)
 
 
+def test_an_unresolvable_action_raises_naming_the_file_and_cue(tmp_path):
+    doc = {"show": "x", "segments": [{"id": "S1", "cues": [
+        {"id": "SQ 1", "action": "frobnicate"}]}]}
+    path = _write(tmp_path, doc)
+    with pytest.raises(ValueError) as caught:
+        load_show_context(path)
+    assert path.name in str(caught.value)
+    assert "S1" in str(caught.value)
+    assert "SQ 1" in str(caught.value)
+
+
 def test_a_duplicate_segment_id_raises(tmp_path):
     doc = {"show": "x", "segments": [{"id": "S1"}, {"id": "s1"}]}
     with pytest.raises(ValueError, match="duplicate segment id"):
