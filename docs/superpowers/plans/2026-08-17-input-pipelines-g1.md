@@ -1976,7 +1976,12 @@ segments:
     cues:
       - id: "SQ 2"
         action: open
-        channels: [25, 29, 99]
+        # 99 is absent (the file stops at 40) -> Q1. 31 exists but carries
+        # no name -> Q2. Q2 has no other end-to-end test in the suite, and
+        # render() leaves a bad {path} token visible instead of raising, so
+        # without this row a typo in Q2's message would reach a show
+        # unnoticed. Verify 31 is still blank-named before pinning.
+        channels: [25, 29, 31, 99]
       - id: "SQ 3"
         action: open
         channels: [29]
@@ -2006,9 +2011,15 @@ SHOW = "tests/data/example-Vu-show.yaml"
 EXPECTED_Q = [
     # Fill from the regeneration command above, then justify each row
     # here with the evidence, the way tests/test_advisory_realfile.py
-    # does. Channel 99 does not exist -> Q1 on SQ 2. Channel 29 is
-    # opened twice -> Q6 on SQ 3. instrument.horns has no channel ->
-    # Q4 on S2. instrument.keys exists but is parked -> Q5 on S2.
+    # does. Channel 99 does not exist -> Q1 on SQ 2. Channel 31 exists
+    # with a blank name -> Q2 on SQ 2. Channel 29 is opened twice -> Q6
+    # on SQ 3. instrument.horns has no channel -> Q4 on S2.
+    # instrument.keys exists but is parked -> Q5 on S2.
+    #
+    # Assert on the rendered message of at least one row, not only on
+    # (rule_id, target, severity): render() leaves an unresolvable
+    # {dotted.path} visible rather than raising, so a mistyped message
+    # path produces a finding nobody's test catches.
 ]
 
 
