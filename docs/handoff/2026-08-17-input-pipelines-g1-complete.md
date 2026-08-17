@@ -60,7 +60,36 @@ scene; seven rules report where the paperwork and the console disagree.
 - **PyYAML reads, ruamel writes.** `showcontext lint --fix` round-trips so the
   engineer's comments and ordering survive.
 
-## Pending — ToanAZ decided, implementation not started
+## Delivered after the first merge — his two decisions, now built
+
+Both items below were pending when this document was first written. They are
+implemented, reviewed and merged; the section is kept because the *reasoning*
+is the part worth carrying forward. Spec §6.1 is the authority.
+
+- **Q4 and Q5 aggregate per expected kind.** New `ExpectationView` in
+  `showcontext/view.py`, `build_expectations`, `scene.show_expectations()`, and an
+  `expects` iterator; targets read `expects.instrument.horns`. `is_unmet` and
+  `is_dark` are **booleans**, not counts — at kind granularity a count would
+  always be 1. The six segment-level expect properties were deleted rather than
+  left dead, and `_channels_of` was lifted to module level rather than copied, so
+  the two views cannot drift on what satisfies an expectation.
+- **Q6 is `info` and says "redundant".** A caller restating "mics open" at the
+  top of a segment is correct practice.
+- **The `segment` iterator now has no rule consumer.** Kept deliberately as a
+  tested extension point, recorded in §4 rather than left to drift.
+
+**Q6's rationale took three attempts to state truthfully, and that is the most
+transferable lesson here.** It first *overstated* — claiming it caught closing an
+already-closed channel. The fix *understated* — implying closes are never caught.
+Only the third version was exact: opening one already open fires, closing one the
+book has already seen closed fires the same way, and only closing a channel the
+book has **never seen opened** is silent, because an unseen channel reads as
+neither open nor closed. The code was correct all three times. Every wrong version
+was caught by **running** the walk, not by reading it — including the second, which
+was itself based on a correct reading of `None == False` that happened to answer
+only half the question.
+
+## Superseded — what was pending when this file was first written
 
 Recorded in spec §6.1. This is the next piece of work, and it is not optional:
 the final review said the branch should not merge with this undecided, and the

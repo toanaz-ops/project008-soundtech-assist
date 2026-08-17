@@ -194,8 +194,10 @@ tuple compared against a list, which are never equal regardless of contents.
 On `Cue`: `missing_channel_count`, `unnamed_channel_count`, `missing_dca_count`,
 `contradiction_count`, `seconds_after_previous` (float or `None`).
 On `ExpectationView` (§6.1, one per expected kind rather than per segment):
-`is_unmet`, `is_dark` — booleans, not counts, because a segment is not itself
-a classified object and there is nothing to count, only a fact to state.
+`is_unmet`, `is_dark` — booleans, not counts, because at this granularity the
+question is "is it", not "how many": one kind either has a confidently-classified
+channel or it does not. Counting would always yield 1, which is a number that
+looks meaningful and is not.
 
 Each count has a companion `*_text` string property for the message template,
 so a finding names the actual channel numbers rather than a bare count.
