@@ -68,6 +68,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     node.set_defaults(handler=commands.feedback)
 
+    node = sub.add_parser("showcontext", help="work with a show-context file")
+    inner = node.add_subparsers(dest="showcontext_command", required=True)
+    lint = inner.add_parser("lint", help="check a show-context file on its own")
+    lint.add_argument("file")
+    lint.add_argument("--fix", action="store_true",
+                      help="write the repairs back into the file")
+    lint.set_defaults(handler=commands.showcontext_lint)
+
     return parser
 
 

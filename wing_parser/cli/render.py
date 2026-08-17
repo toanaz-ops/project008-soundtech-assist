@@ -94,6 +94,21 @@ def show_anomalies(notes: Iterable[str]) -> str:
     return "\n".join(f"show context: {note}" for note in notes)
 
 
+def show_repairs(repairs: Iterable[str]) -> str:
+    repairs = list(repairs)
+    if not repairs:
+        return ""
+    return "\n".join(f"fixed: {repair}" for repair in repairs)
+
+
+def lint_hint() -> str:
+    return "run again with --fix to write these into the file"
+
+
+def lint_clean(file: str, segment_count: int) -> str:
+    return f"{file}: {segment_count} segments, nothing to repair"
+
+
 def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None,
              off_event: dict[str, str] | None = None,
              declared_event: str | None = None) -> str:

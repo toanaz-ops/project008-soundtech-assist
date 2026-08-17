@@ -10,6 +10,8 @@ from pathlib import Path
 from wing_parser import WingScene
 from wing_parser.advisory import feedback as feedback_log
 from wing_parser.cli import render
+from wing_parser.showcontext import load_show_context
+from wing_parser.showcontext.rewrite import apply_repairs
 
 
 def _load(path: str, show: str | None = None) -> WingScene | None:
@@ -134,4 +136,25 @@ def feedback(args) -> int:
     )
     print(f"recorded {entry.verdict} for {entry.finding_id}")
     scene.classifier.flush()
+    return 0
+
+
+def showcontext_lint(args) -> int:
+    try:
+        context = load_show_context(args.file)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    if not context.anomalies:
+        print(render.lint_clean(args.file, len(context.segments)))
+        return 0
+
+    print(render.show_anomalies(context.anomalies))
+    if args.fix:
+        text = render.show_repairs(apply_repairs(args.file))
+        if text:
+            print(text)
+    else:
+        print(render.lint_hint())
     return 0
