@@ -25,7 +25,7 @@ wing-mcp = "wing_parser.mcp.server:main"
 include = ["wing_parser*"]
 
 [tool.setuptools.package-data]
-wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml"]
+wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "edit/data/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

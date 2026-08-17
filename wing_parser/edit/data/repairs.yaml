@@ -1,0 +1,44 @@
+# How to repair a finding -- declared, never inferred.
+#
+# A rule with no entry here shows no repair button, and that is a
+# complete answer rather than a gap. Most rules state a window or a
+# count, so no single value follows from them: PB2-PB5, PC1 and PC6
+# give an acceptable frequency *range*; G11 says there are too many
+# notches without saying which to remove; G12 says a boost is too high
+# without saying what it should be; G7 and G9 want a whole dynamics
+# configuration; E6 and S2 have two defensible answers each. Q1-Q7 are
+# findings about the cue sheet, not the scene, so no scene edit
+# answers them at all.
+#
+# Every entry needs a rationale. `parse_repairs` refuses one without,
+# the same way advisory/loader.py:49 refuses a rule without one.
+#
+# Placeholders are filled from the finding's own target: "ch.1.send.8"
+# supplies {ch: "1", send: "8"}, "ch.16" supplies {ch: "16"}.
+repairs:
+  - rule: G8
+    kind: set
+    path: "ae_data.ch.{ch}.send.{send}.mode"
+    to: "PRE"
+    label: "Set the send to PRE"
+    rationale: >
+      G8 fires only on a send whose mode is POST reaching a
+      monitor-role bus, so PRE is the single value that clears it. No
+      other key is touched: the send stays on, at the same level, to
+      the same bus. Only the performer's mix stops following the FOH
+      fader, which is the whole of what the rule objects to.
+
+  - rule: PB1
+    kind: toggle
+    path: "ae_data.ch.{ch}.in.set.inv"
+    label: "Flip the channel polarity"
+    rationale: >
+      PB1 fires when a snare-bottom channel's effective polarity is not
+      inverted, and query/channel.py:63 defines effective polarity as
+      channel inversion XOR source inversion -- inverting twice is not
+      inverting. So the rule fires exactly when `inv` equals the
+      source's polarity, and flipping `inv` clears it whichever value
+      that is. Writing `true` instead would be a no-op on a channel
+      whose source is already inverted: the button would report a
+      repair that did not happen. This is why `toggle` exists as a
+      kind.
