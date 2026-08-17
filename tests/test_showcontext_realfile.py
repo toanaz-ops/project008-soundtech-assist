@@ -28,8 +28,10 @@ EXPECTED_Q = [
     #     "1".."40" only (40 channels, no gap) -- 99 does not exist, which
     #     is exactly what Q1's `missing_channel_count` counts.
     #   - Q2 "cue.S2.SQ2": SQ 2 also names channel 31. `ae_data["ch"]["31"]`
-    #     is present (the channel exists) but its
-    #     `config["name"]` is `None` -- carries no name -- which is what
+    #     is present (the channel exists) -- there is no `config` object
+    #     anywhere under it in this schema, `name` sits directly on the
+    #     channel dict -- and `ae_data["ch"]["31"]["name"]` reads `""`, an
+    #     empty string, not absent -- carries no name -- which is what
     #     `unnamed_channel_count` counts. Channels 32-36 are blank the same
     #     way but are not named by any cue, so they do not add rows.
     #   - Q4 "segment.S2": S2 expects `instrument.horns`. Iterating every
@@ -81,6 +83,7 @@ def test_the_q2_message_is_rendered_not_a_bare_triple(vu_path, monkeypatch):
     # notice. Assert on the rendered text itself: the Q2 message must name
     # channel 31 by number, and no finding's message may contain a "{" --
     # proof every token in every Q1-Q7 message actually resolved.
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
     scene = WingScene.load(vu_path, show=SHOW)
     q_findings = [f for f in scene.advisory.run() if f.rule_id.startswith("Q")]
     q2 = next(f for f in q_findings if f.rule_id == "Q2")
