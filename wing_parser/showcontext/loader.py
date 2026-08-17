@@ -60,6 +60,32 @@ def _numbers(raw, where: str, field: str) -> tuple[int, ...]:
     return tuple(out)
 
 
+def _list_of(raw, where: str, field: str) -> list:
+    """Guard a field that must be a YAML list before iterating it.
+
+    `raw.get(field) or []` only guards falsiness, not type -- a scalar
+    like `segments: 5` or `cues: 3` is truthy and not iterable, so it
+    would reach a bare `for` loop and raise `TypeError: 'int' object is
+    not iterable`, a traceback with no file name in it. And a bare string
+    like `expects: instrument.keys` (the brackets left off a one-item
+    list, the single most likely slip in this format) is truthy *and*
+    iterable -- it would iterate its characters one at a time instead of
+    raising here at all. Both cases are caught the same way: only a list
+    is accepted, everything else names the file, the field, and what it
+    actually got.
+    """
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        hint = ""
+        if isinstance(raw, str):
+            hint = " (missing the [ ] brackets around a one-item list?)"
+        raise ValueError(
+            f"{where}: {field} must be a list, not {type(raw).__name__}{hint}"
+        )
+    return raw
+
+
 def parse_show_context(doc: dict, where_from: Path) -> ShowContext:
     if not isinstance(doc, dict):
         raise ValueError(f"{where_from}: the file must be a mapping at the top level")
@@ -69,7 +95,7 @@ def parse_show_context(doc: dict, where_from: Path) -> ShowContext:
     segments: list[Segment] = []
     seen_segments: set[str] = set()
 
-    for entry in doc.get("segments") or []:
+    for entry in _list_of(doc.get("segments"), where_from, "segments"):
         if not isinstance(entry, dict):
             raise ValueError(f"{where_from}: each segment must be a mapping")
         segment_id = str(entry.get("id") or "").strip()
@@ -81,7 +107,7 @@ def parse_show_context(doc: dict, where_from: Path) -> ShowContext:
         where = f"{where_from}: segment {segment_id}"
 
         expects: list[str] = []
-        for written in entry.get("expects") or []:
+        for written in _list_of(entry.get("expects"), where, "expects"):
             try:
                 resolved = vocabulary.resolve(str(written), kinds, what="kind")
             except ValueError as exc:
@@ -94,7 +120,7 @@ def parse_show_context(doc: dict, where_from: Path) -> ShowContext:
 
         cues: list[Cue] = []
         seen_cues: set[str] = set()
-        for raw_cue in entry.get("cues") or []:
+        for raw_cue in _list_of(entry.get("cues"), where, "cues"):
             if not isinstance(raw_cue, dict):
                 raise ValueError(f"{where}: each cue must be a mapping")
             cue_id = str(raw_cue.get("id") or "").strip()

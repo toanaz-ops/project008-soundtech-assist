@@ -1,4 +1,6 @@
 # tests/test_cli_showcontext.py
+import json
+
 import yaml
 
 from wing_parser.cli.__main__ import main
@@ -36,5 +38,22 @@ def test_show_anomalies_are_printed(vu_path, tmp_path, capsys, monkeypatch):
     path.write_text(yaml.safe_dump({"show": "t", "segments": [
         {"id": "S1", "expects": ["instrument.kyes"]}]}), encoding="utf-8")
     main(["doctor", str(vu_path), "--show", str(path)])
-    out = capsys.readouterr().out
-    assert "instrument.kyes" in out and "instrument.keys" in out
+    err = capsys.readouterr().err
+    assert "instrument.kyes" in err and "instrument.keys" in err
+
+
+def test_doctor_show_json_keeps_stdout_pure_json(vu_path, tmp_path, capsys, monkeypatch):
+    """`--show` plus `--json` is the combination Finding 1 caught: show
+    anomalies used to print to stdout ahead of the JSON envelope, so
+    `json.loads` on stdout broke the moment a --show file had a repairable
+    typo. Anomalies belong on stderr, same as every other diagnostic in
+    this module."""
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    path = tmp_path / "typo.yaml"
+    path.write_text(yaml.safe_dump({"show": "t", "segments": [
+        {"id": "S1", "expects": ["instrument.kyes"]}]}), encoding="utf-8")
+    assert main(["doctor", str(vu_path), "--show", str(path), "--json"]) == 0
+    captured = capsys.readouterr()
+    findings = json.loads(captured.out)
+    assert isinstance(findings, list)
+    assert "instrument.kyes" in captured.err and "instrument.keys" in captured.err

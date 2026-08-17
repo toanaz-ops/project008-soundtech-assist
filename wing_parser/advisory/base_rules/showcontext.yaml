@@ -44,7 +44,7 @@ rules:
       {cue.unnamed_channels_text}, which exist but carry no name.
 
   - id: Q3
-    title: "Cue names a DCA the scene does not configure"
+    title: "Cue names a DCA number the console does not have"
     severity: warning
     source: >
       docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
@@ -52,16 +52,22 @@ rules:
       DCA2 up".
     rationale: >
       Same failure as Q1 on the other half of the cue's vocabulary. A DCA
-      move is the fastest lever on the desk during a show; calling one
-      that is not built means the operator reaches for a fader that does
-      nothing.
+      move is the fastest lever on the desk during a show; calling a
+      number the console does not have means the operator reaches for a
+      fader that cannot exist. This only checks the DCA number against
+      the console's fixed 1-16 range (missing_dca_count in
+      wing_parser/showcontext/view.py) -- every WING scene carries all 16
+      DCA slots, so this never catches a DCA that exists but has no
+      members assigned to it. That gap has no rule yet; the index a
+      future one would use is already built and tested, Dca.members in
+      wing_parser/query/groups.py.
     when:
       for_each: cue
       where:
         cue.missing_dca_count: {gt: 0}
     message: >
       Cue {cue.id} in segment {segment.id} names DCA(s)
-      {cue.missing_dcas_text}, which the scene does not configure.
+      {cue.missing_dcas_text}, which the console does not have.
 
   - id: Q4
     title: "Segment expects a source with no channel for it"

@@ -241,7 +241,7 @@ than risk noise on an unconfigured console.
 | PC8 | info (preset) | corporate | presets_corporate.yaml | Q&A mic unmuted in the saved scene |
 | Q1 | warning | universal | showcontext.yaml | Cue names a channel the scene does not have |
 | Q2 | info | universal | showcontext.yaml | Cue names a channel that carries no name |
-| Q3 | warning | universal | showcontext.yaml | Cue names a DCA the scene does not configure |
+| Q3 | warning | universal | showcontext.yaml | Cue names a DCA number the console does not have |
 | Q4 | warning | universal | showcontext.yaml | Segment expects a source with no channel for it |
 | Q5 | info | universal | showcontext.yaml | Segment expects a source whose channels are all parked |
 | Q6 | warning | universal | showcontext.yaml | Cue contradicts the state the earlier cues left |

@@ -94,3 +94,37 @@ def test_a_malformed_time_is_an_anomaly_not_an_exception(tmp_path):
 def test_a_missing_file_raises_naming_the_path(tmp_path):
     with pytest.raises(ValueError, match="nope.yaml"):
         load_show_context(tmp_path / "nope.yaml")
+
+
+def test_a_scalar_segments_field_raises_naming_the_file_and_field(tmp_path):
+    # `segments: 5` is truthy, so `doc.get("segments") or []` lets it
+    # through to a bare `for` loop, which used to raise `TypeError: 'int'
+    # object is not iterable` -- a traceback with no file name in it.
+    doc = {"show": "x", "segments": 5}
+    path = _write(tmp_path, doc)
+    with pytest.raises(ValueError) as caught:
+        load_show_context(path)
+    assert path.name in str(caught.value)
+    assert "segments" in str(caught.value)
+
+
+def test_a_scalar_cues_field_raises_naming_the_file_and_field(tmp_path):
+    doc = {"show": "x", "segments": [{"id": "S1", "cues": 3}]}
+    path = _write(tmp_path, doc)
+    with pytest.raises(ValueError) as caught:
+        load_show_context(path)
+    assert path.name in str(caught.value)
+    assert "cues" in str(caught.value)
+
+
+def test_expects_without_brackets_raises_naming_the_file_and_field(tmp_path):
+    # The single most likely YAML slip in this format: leaving off the
+    # `[ ]` around a one-item `expects` list. A bare string is truthy and
+    # iterable, so the old `entry.get("expects") or []` guard would iterate
+    # its characters one at a time instead of raising here.
+    doc = {"show": "x", "segments": [{"id": "S1", "expects": "instrument.keys"}]}
+    path = _write(tmp_path, doc)
+    with pytest.raises(ValueError) as caught:
+        load_show_context(path)
+    assert path.name in str(caught.value)
+    assert "expects" in str(caught.value)

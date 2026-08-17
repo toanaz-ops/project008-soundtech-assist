@@ -15,6 +15,7 @@ venv/
 .coverage
 htmlcov/
 build/
+junit.xml
 
 # Local secrets — the Anthropic key for the classifier fallback lives here
 .env

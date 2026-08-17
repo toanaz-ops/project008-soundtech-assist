@@ -72,7 +72,7 @@ def doctor(args) -> int:
     if scene.show is not None:
         text = render.show_anomalies(scene.show.anomalies)
         if text:
-            print(text)
+            print(text, file=sys.stderr)
     profile = getattr(args, "profile", None)
     found = _run_advisory(scene, profile)
     if found is None:
