@@ -52,6 +52,14 @@ class CueView:
     def _present(self) -> dict[int, object]:
         return self._scene.channel_map()
 
+    # Private from here down: these tuples exist only to back a count and
+    # a text property, never to be read on their own -- the module's
+    # contract is counts. That naming buys nothing at the predicate layer:
+    # advisory/predicates.py's resolve_path() walks a dotted path with a
+    # plain getattr() and does not distinguish public from private, so a
+    # rule that named e.g. `cue._missing_channels` would still resolve it
+    # and still hit the `{not: []}` always-true trap. This is documentation
+    # of a known limit, not a guard against it.
     @property
     def _missing_channels(self) -> tuple[int, ...]:
         present = self._present
