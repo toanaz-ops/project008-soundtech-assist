@@ -84,15 +84,20 @@ rules:
       channels classified at or above the confident band count -- a weak
       name guess must not satisfy an expectation, or the rule quietly
       stops catching the thing it exists for. Same threshold
-      Bus.receives_ambient uses.
+      Bus.receives_ambient uses. Reported once per expected kind rather
+      than once per segment: the scene is static, so a kind with no
+      channel is missing for every segment naming it, and per-segment
+      reporting turned one fact into fifteen identical warnings on a
+      fifteen-segment sheet. ToanAZ's decision, 2026-08-17, spec section
+      6.1. The message names the segments so the aggregation loses
+      nothing.
     when:
-      for_each: segment
+      for_each: expects
       where:
-        segment.unmet_expect_count: {gt: 0}
+        expectation.is_unmet: true
     message: >
-      Segment {segment.id} ({segment.title}) expects
-      {segment.unmet_expects_text}, and no confidently-classified channel
-      of that kind exists in the scene.
+      Segments {expectation.segments_text} expect {expectation.kind}, and no
+      confidently-classified channel of that kind exists in the scene.
 
   - id: Q5
     title: "Segment expects a source whose channels are all parked"
@@ -107,38 +112,51 @@ rules:
       is normal, which is why this is info and not warning; it is a
       checklist line, not an alarm. Reuses Channel.in_use rather than
       defining a second liveness test, so it cannot drift from N1's.
+      Reported once per expected kind rather than once per segment: the
+      scene is static, so a kind that is parked is parked for every
+      segment naming it, and his scenes are templates with far more
+      parked channels than live ones, so per-segment reporting would fire
+      on nearly every segment. ToanAZ's decision, 2026-08-17, spec
+      section 6.1. The message names the segments so the aggregation
+      loses nothing.
     when:
-      for_each: segment
+      for_each: expects
       where:
-        segment.dark_expect_count: {gt: 0}
+        expectation.is_dark: true
     message: >
-      Segment {segment.id} ({segment.title}) expects
-      {segment.dark_expects_text}; channels of that kind exist but none
-      is in use.
+      Segments {expectation.segments_text} expect {expectation.kind};
+      channels of that kind exist but none is in use.
 
   - id: Q6
-    title: "Cue contradicts the state the earlier cues left"
-    severity: warning
+    title: "Cue repeats a channel state an earlier cue already set"
+    severity: info
     source: >
       docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
       section 2.3 on point numbering, and section 1.3 step 6, rehearsal
       markup reconciled the same evening.
     rationale: >
       Walking the cues in file order gives every channel an open/closed
-      book; opening one already open, or closing one already closed,
-      means two cues disagree about the state of the desk. Usually a cue
-      inserted during rehearsal that was never reconciled. Only open and
-      close move the book -- a level move on a closed channel is not a
-      contradiction, and what a recall does to a given channel is not
-      knowable from the cue sheet.
+      book; opening one already open is a cue restating a state an
+      earlier cue already set, not a contradiction -- a caller repeating
+      "mics open" at the top of a segment is correct practice, the way a
+      show is actually run, not a fault in the paperwork. ToanAZ
+      confirmed this 2026-08-17, spec section 6.1, which is why this is
+      info: worth seeing when reading a sheet, never an alarm. Only open
+      and close move the book -- a level move on a closed channel is not
+      redundant, and what a recall does to a given channel is not
+      knowable from the cue sheet. Closing a channel the book has never
+      seen opened is not caught either: an unseen channel reads as
+      neither open nor closed, so that close is silent -- the right
+      behaviour, since a sheet may be describing a desk that started with
+      things open, not a gap in this check.
     when:
       for_each: cue
       where:
         cue.contradiction_count: {gt: 0}
     message: >
       Cue {cue.id} in segment {segment.id} runs "{cue.action}" on
-      channel(s) {cue.contradictions_text}, which earlier cues already
-      left in that state.
+      channel(s) {cue.contradictions_text}, which earlier cues in this
+      show already left in that state -- redundant, not a fault.
 
   - id: Q7
     title: "Two cues sit closer together than the operation needs"

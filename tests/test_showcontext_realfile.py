@@ -20,9 +20,9 @@ SHOW = "tests/data/example-Vu-show.yaml"
 EXPECTED_Q = [
     ("Q1", "cue.S2.SQ2", "warning"),
     ("Q2", "cue.S2.SQ2", "info"),
-    ("Q4", "segment.S2", "warning"),
-    ("Q5", "segment.S2", "info"),
-    ("Q6", "cue.S2.SQ3", "warning"),
+    ("Q4", "expects.instrument.horns", "warning"),
+    ("Q5", "expects.instrument.keys", "info"),
+    ("Q6", "cue.S2.SQ3", "info"),
     # Spot-checked against raw ae_data and `wing analyze` before commit:
     #   - Q1 "cue.S2.SQ2": SQ 2 names channel 99. `ae_data["ch"]` has keys
     #     "1".."40" only (40 channels, no gap) -- 99 does not exist, which
@@ -34,22 +34,29 @@ EXPECTED_Q = [
     #     empty string, not absent -- carries no name -- which is what
     #     `unnamed_channel_count` counts. Channels 32-36 are blank the same
     #     way but are not named by any cue, so they do not add rows.
-    #   - Q4 "segment.S2": S2 expects `instrument.horns`. Iterating every
-    #     channel's `source_type.kind` in the loaded scene finds zero
-    #     channels classified `instrument.horns` (`horns channels: []`),
-    #     so the expectation is unmet -- `unmet_expect_count` fires.
-    #   - Q5 "segment.S2": S2 also expects `instrument.keys`. Channels 29
-    #     ("Key 1") and 30 ("Key 2") both classify `instrument.keys` at
-    #     confidence 0.9 (>= the HIGH=0.8 threshold `_channels_of` uses),
-    #     so the expectation *is* met and Q4 does not also fire for keys.
-    #     But both channels read `fader == -inf` in `wing analyze`, so
-    #     `Channel.in_use` is False for both -- `dark_expect_count` fires.
+    #   - Q4 "expects.instrument.horns": only segment S2 expects
+    #     `instrument.horns` in this fixture, so its `segments_text` reads
+    #     just "S2" here -- `build_expectations` aggregates across every
+    #     segment naming the kind, so a second segment expecting horns
+    #     would join this same one finding rather than add a row.
+    #     Iterating every channel's `source_type.kind` in the loaded scene
+    #     finds zero channels classified `instrument.horns` (`horns
+    #     channels: []`), so `expectation.is_unmet` is true and Q4 fires
+    #     once for the kind.
+    #   - Q5 "expects.instrument.keys": S2 also expects `instrument.keys`.
+    #     Channels 29 ("Key 1") and 30 ("Key 2") both classify
+    #     `instrument.keys` at confidence 0.9 (>= the HIGH=0.8 threshold
+    #     `_channels_of` uses), so the kind *is* met and Q4 does not also
+    #     fire for it. But both channels read `fader == -inf` in `wing
+    #     analyze`, so `Channel.in_use` is False for both --
+    #     `expectation.is_dark` is true and Q5 fires once for the kind.
     #   - Q6 "cue.S2.SQ3": walking the cues in file order, SQ 2 opens
     #     channel 29 among others, then SQ 3 opens channel 29 again. The
     #     open/closed book already has 29 marked open when SQ 3 tries to
     #     open it, so `contradiction_count` fires on SQ 3, not SQ 2 (SQ 2
     #     is the cue that *set* the state, SQ 3 is the one that repeats
-    #     it).
+    #     it) -- now reported at `info`, since a repeated open is
+    #     redundant paperwork, not a fault.
     #
     # Q3 does not fire: the fixture never names a DCA on any cue, so
     # `missing_dca_count` is 0 everywhere. Q7 does not fire: it ships with

@@ -60,7 +60,7 @@ def test_q3_fires_on_an_absent_dca(fire):
 
 def test_q4_fires_when_an_expected_kind_has_no_channel(fire):
     found = fire([{"id": "S1", "expects": ["instrument.horns"]}], "Q4")
-    assert [f.target for f in found] == ["segment.S1"]
+    assert [f.target for f in found] == ["expects.instrument.horns"]
     assert "instrument.horns" in found[0].message
 
 
@@ -71,7 +71,7 @@ def test_q4_stays_silent_when_the_kind_is_present(fire):
 def test_q5_fires_when_the_kind_is_present_but_parked(fire):
     # Every instrument.keys channel on the sample file sits at -inf.
     found = fire([{"id": "S1", "expects": ["instrument.keys"]}], "Q5")
-    assert [f.target for f in found] == ["segment.S1"]
+    assert [f.target for f in found] == ["expects.instrument.keys"]
     assert found[0].severity == "info"
 
 
@@ -84,6 +84,7 @@ def test_q6_fires_on_a_second_open_of_the_same_channel(fire):
         {"id": "SQ 1", "action": "open", "channels": [8]},
         {"id": "SQ 2", "action": "open", "channels": [8]}]}], "Q6")
     assert [f.target for f in found] == ["cue.S1.SQ2"]
+    assert found[0].severity == "info"
 
 
 def test_every_q_rule_now_exists():

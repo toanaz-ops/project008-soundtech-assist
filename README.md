@@ -242,9 +242,9 @@ than risk noise on an unconfigured console.
 | Q1 | warning | universal | showcontext.yaml | Cue names a channel the scene does not have |
 | Q2 | info | universal | showcontext.yaml | Cue names a channel that carries no name |
 | Q3 | warning | universal | showcontext.yaml | Cue names a DCA number the console does not have |
-| Q4 | warning | universal | showcontext.yaml | Segment expects a source with no channel for it |
-| Q5 | info | universal | showcontext.yaml | Segment expects a source whose channels are all parked |
-| Q6 | warning | universal | showcontext.yaml | Cue contradicts the state the earlier cues left |
+| Q4 | warning | universal | showcontext.yaml | Expected source kind has no channel for it, once per kind across every segment naming it |
+| Q5 | info | universal | showcontext.yaml | Expected source kind's channels are all parked, once per kind across every segment naming it |
+| Q6 | info | universal | showcontext.yaml | Cue repeats a channel state an earlier cue already set |
 | Q7 | warning, **disabled** | universal | showcontext.yaml | Two cues sit closer together than the operation needs |
 | R1 | error | universal | routing.yaml | Click track reaches a FOH main |
 | R2 | error | universal | routing.yaml | Talkback reaches a FOH main |
@@ -309,9 +309,12 @@ for and which channels each cue touches — so `doctor` can check the
 paperwork against the console instead of the console against itself.
 It catches three failures a purely static read cannot see: a cue
 naming a channel the scene does not have (or one that exists but
-carries no name), a segment expecting a source with no confidently
-classified channel for it (or one that exists but is parked), and one
-cue contradicting the open/closed state an earlier cue already left.
+carries no name), an expected source kind with no confidently
+classified channel anywhere in the scene (or one whose channels exist
+but are all parked) -- reported once per kind, naming every segment
+that calls for it, since the scene is static and the answer cannot
+differ between segments -- and one cue redundantly repeating a
+channel state an earlier cue already set.
 
 A show context is a hand-written YAML file, loaded beside the scene —
 it is never inferred from the `.snap` file itself:

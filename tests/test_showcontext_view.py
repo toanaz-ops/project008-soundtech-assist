@@ -78,22 +78,6 @@ def test_state_carries_across_segments(scene):
     assert segments[1].cues[0].contradiction_count == 1
 
 
-def test_an_expected_kind_with_no_channel_is_unmet(scene):
-    context = _context(Segment(id="S1", expects=("instrument.horns",)))
-    segment = view.build(context, scene)[0]
-    assert segment.unmet_expect_count == 1
-    assert "instrument.horns" in segment.unmet_expects_text
-
-
-def test_an_expected_kind_whose_channels_are_all_parked_is_dark(scene):
-    # Channel 29 "Key 1" classifies instrument.keys and is at -inf on
-    # this file, so the kind is present but not in use.
-    context = _context(Segment(id="S1", expects=("instrument.keys",)))
-    segment = view.build(context, scene)[0]
-    assert segment.unmet_expect_count == 0
-    assert segment.dark_expect_count == 1
-
-
 def test_seconds_between_timed_cues(scene):
     context = _context(Segment(id="S1", cues=(
         Cue(id="SQ 1", action="open", channels=(29,), time="T+00:18:00"),

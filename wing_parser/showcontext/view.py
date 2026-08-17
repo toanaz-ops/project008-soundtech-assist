@@ -132,38 +132,6 @@ class SegmentView:
     def target_name(self) -> str:
         return f"segment.{self._segment.id}"
 
-    def _channels_of(self, kind: str) -> tuple:
-        return _channels_of(self._scene, kind)
-
-    @property
-    def _unmet_expects(self) -> tuple[str, ...]:
-        return tuple(k for k in self._segment.expects if not self._channels_of(k))
-
-    @property
-    def unmet_expect_count(self) -> int:
-        return len(self._unmet_expects)
-
-    @property
-    def unmet_expects_text(self) -> str:
-        return ", ".join(self._unmet_expects)
-
-    @property
-    def _dark_expects(self) -> tuple[str, ...]:
-        found = []
-        for kind in self._segment.expects:
-            channels = self._channels_of(kind)
-            if channels and not any(channel.in_use for channel in channels):
-                found.append(kind)
-        return tuple(found)
-
-    @property
-    def dark_expect_count(self) -> int:
-        return len(self._dark_expects)
-
-    @property
-    def dark_expects_text(self) -> str:
-        return ", ".join(self._dark_expects)
-
 
 def _channels_of(scene, kind: str) -> tuple:
     """Only confidently-classified channels count.
