@@ -1,0 +1,64 @@
+# Rules that compare the show's paperwork with the scene. Every one of
+# them yields nothing unless a show context is loaded with --show,
+# because the cue and segment iterators are empty without one.
+rules:
+  - id: Q1
+    title: "Cue names a channel the scene does not have"
+    severity: warning
+    source: >
+      docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
+      section 1.2, Audio Cue column: "State the channel or DCA number,
+      never 'open her mic' -- the console has numbers, use them."
+    rationale: >
+      The ROS standard requires the audio cue to name a console number,
+      which makes the number checkable. A cue calling a channel the scene
+      does not contain is either a stale cue sheet or a scene loaded from
+      the wrong show; both are found in seconds before doors and in the
+      worst possible way after them.
+    when:
+      for_each: cue
+      where:
+        cue.missing_channel_count: {gt: 0}
+    message: >
+      Cue {cue.id} in segment {segment.id} names channel(s)
+      {cue.missing_channels_text}, which the scene does not contain.
+
+  - id: Q2
+    title: "Cue names a channel that carries no name"
+    severity: info
+    source: >
+      docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
+      section 1.2, Audio Cue column; Core-Skills-Overview.md section 1.1
+      on department cue sheets carrying only that department's cues.
+    rationale: >
+      The channel exists, so the cue is not wrong -- but an unnamed
+      channel is one nobody else at the desk can identify under pressure,
+      and a cue sheet that calls it is relying on one person's memory.
+      Info, not warning: this is a labelling job, not a fault.
+    when:
+      for_each: cue
+      where:
+        cue.unnamed_channel_count: {gt: 0}
+    message: >
+      Cue {cue.id} in segment {segment.id} names channel(s)
+      {cue.unnamed_channels_text}, which exist but carry no name.
+
+  - id: Q3
+    title: "Cue names a DCA the scene does not configure"
+    severity: warning
+    source: >
+      docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
+      section 1.2, Audio Cue column, worked example "SQ 8 GO -- CH3 open,
+      DCA2 up".
+    rationale: >
+      Same failure as Q1 on the other half of the cue's vocabulary. A DCA
+      move is the fastest lever on the desk during a show; calling one
+      that is not built means the operator reaches for a fader that does
+      nothing.
+    when:
+      for_each: cue
+      where:
+        cue.missing_dca_count: {gt: 0}
+    message: >
+      Cue {cue.id} in segment {segment.id} names DCA(s)
+      {cue.missing_dcas_text}, which the scene does not configure.
