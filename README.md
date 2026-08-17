@@ -200,7 +200,7 @@ Rules pick the granularity they actually need:
 
 ### Rule reference
 
-`doctor` ships 32 base rules across eight files in
+`doctor` ships 39 base rules across nine files in
 `wing_parser/advisory/base_rules/`. Every rule fires at `base` layer
 unless a `toanaz` principle or a `show` profile supersedes it (see
 above), and an `info`-severity rule is never wrong to see fire — it is
@@ -239,6 +239,13 @@ than risk noise on an unconfigured console.
 | PC6 | info (preset) | corporate | presets_corporate.yaml | Panel HPF outside the 100-160 Hz window |
 | PC7 | info (preset) | corporate | presets_corporate.yaml | MC in an automix group without a weight advantage |
 | PC8 | info (preset) | corporate | presets_corporate.yaml | Q&A mic unmuted in the saved scene |
+| Q1 | warning | universal | showcontext.yaml | Cue names a channel the scene does not have |
+| Q2 | info | universal | showcontext.yaml | Cue names a channel that carries no name |
+| Q3 | warning | universal | showcontext.yaml | Cue names a DCA the scene does not configure |
+| Q4 | warning | universal | showcontext.yaml | Segment expects a source with no channel for it |
+| Q5 | info | universal | showcontext.yaml | Segment expects a source whose channels are all parked |
+| Q6 | warning | universal | showcontext.yaml | Cue contradicts the state the earlier cues left |
+| Q7 | warning, **disabled** | universal | showcontext.yaml | Two cues sit closer together than the operation needs |
 | R1 | error | universal | routing.yaml | Click track reaches a FOH main |
 | R2 | error | universal | routing.yaml | Talkback reaches a FOH main |
 | R3 | error | universal | routing.yaml | Timecode routed into a mix destination |
@@ -264,7 +271,7 @@ yields 0.
 ### The event mechanism
 
 Every rule — base, principle, or show — carries an `event` field:
-`universal` (the default), `corporate`, or `band`. Of the 32 base
+`universal` (the default), `corporate`, or `band`. Of the 39 base
 rules, 14 are event-scoped: the eight `presets_corporate.yaml` rules
 (PC1-PC8) are `corporate`; the six `presets_band.yaml` rules (PB1-PB6)
 are `band`. Everything else is `universal` and always eligible.
@@ -292,6 +299,100 @@ event-eligible; only its `supersedes` entries (see above) suppress
 anything. Declaring an unrecognised event value (anything other than
 `universal`, `corporate`, or `band`) raises at load time, the same way
 an unrecognised `--profile` name does.
+
+### Show context
+
+Everything above reads a **static** scene: one snapshot, no notion of
+when a channel is supposed to be live. A show context adds the time
+axis — the cue sheet's own claims about which sources the show calls
+for and which channels each cue touches — so `doctor` can check the
+paperwork against the console instead of the console against itself.
+It catches three failures a purely static read cannot see: a cue
+naming a channel the scene does not have (or one that exists but
+carries no name), a segment expecting a source with no confidently
+classified channel for it (or one that exists but is parked), and one
+cue contradicting the open/closed state an earlier cue already left.
+
+A show context is a hand-written YAML file, loaded beside the scene —
+it is never inferred from the `.snap` file itself:
+
+```yaml
+show: "Tiệc cuối năm Sơn Hải"
+date: 2026-09-14
+
+segments:
+  - id: S2
+    title: "Band set 1 — Bài 1: Nắng"
+    time: "T+00:18:00"          # optional, ROS column 1 format
+    expects: [drums.kick, instrument.bass, instrument.keys]
+    cues:
+      - id: "SQ 8"
+        action: open             # open | close | up | down | recall
+        channels: [13, 25, 29]
+        dcas: [2]
+        time: "T+00:18:04"       # optional
+```
+
+`expects:` draws on the classifier's own kind vocabulary
+(`instrument.keys`, not free text), so Q4 is set subtraction rather
+than a second layer of name-guessing. `time:` is optional at both
+levels; a file that never states one gets silence from Q7 rather than
+an assumed time. Channel state is derived by walking every segment's
+cues in file order and keeping an open/closed book per channel — only
+`open` and `close` move that book, so a level move (`up`/`down`) on a
+closed channel is not a contradiction, and what `recall` does to a
+given channel is not knowable from the cue sheet alone.
+
+Pass the file with `--show <file>` on `doctor`, combinable with
+`--profile`:
+
+```bash
+python -m wing_parser.cli doctor user-files/example-Vu.snap --show tonight.yaml --profile small
+```
+
+`feedback` also accepts `--show <file>`, and it matters for the same
+reason it matters for `--profile` (see above): `feedback` resolves a
+finding id by re-running the same rules `doctor` printed, so a
+Q-finding id `doctor` just listed will not resolve unless `feedback`
+is given the same `--show` file — the id belongs to that specific run,
+not to the scene in general.
+
+`showcontext lint <file> [--fix]` checks a show context on its own,
+with no scene involved, and is worth running before doors because the
+file is hand-typed and the alternative is discovering a typo while the
+band is waiting. Without `--fix` the file is never written, no matter
+what lint finds; `--fix` writes repairs back through `ruamel.yaml`,
+preserving comments and formatting.
+
+`expects:` and `action:` values are checked against a closed
+vocabulary, with three tiers of tolerance:
+
+- **Normalise** — case and separator differences (`-`, `_`, space →
+  `.`) are unified silently. The result either is a valid kind or it
+  is not; this is not a guess.
+- **Repair** — a token at Damerau-Levenshtein distance 1 from
+  **exactly one** known kind is rewritten to it and reported as an
+  anomaly (`show context: 'instrument.kyes' read as
+  'instrument.keys'`), never silently. Tokens under 4 characters are
+  never repaired — the vocabulary's minimum pairwise distance is 2, so
+  distance 1 is provably unambiguous whenever exactly one candidate
+  exists.
+- **Refuse** — a tie (distance 1 from two or more kinds) or a miss (no
+  candidate within distance 1) raises, naming the file, the line, and
+  every candidate it found (`did you mean 'speech.mc' or
+  'speech.qa'?`). Ambiguity is never resolved by picking one.
+
+Q1-Q7 live in `wing_parser/advisory/base_rules/showcontext.yaml` and
+are included in the [rule reference](#rule-reference) table above.
+Every one of them yields nothing unless a show context is loaded with
+`--show` — the `cue` and `segment` iterators they depend on are empty
+otherwise, which is what keeps `doctor`'s behaviour on an unprofiled,
+show-less run bit-identical to before this feature existed. **Q7 ships
+`enabled: false`**: no source in this repository states how long a mic
+change, a scene recall, or a patch change takes on ToanAZ's rig, and
+he chose (2026-08-17) to wait for a real number rather than accept a
+placeholder. Its rationale in `showcontext.yaml` records exactly what
+switching it on requires.
 
 ### Knowledge directory and search order
 

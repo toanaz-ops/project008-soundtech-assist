@@ -1,0 +1,26 @@
+# A show context for user-files/example-Vu.snap, written by hand to pin
+# the contract. Channel numbers verified against `wing analyze` output.
+show: "example-Vu contract fixture"
+segments:
+  - id: S1
+    title: "MC welcome"
+    expects: [speech.mc]
+    cues:
+      - id: "SQ 1"
+        action: open
+        channels: [8]
+  - id: S2
+    title: "Band set"
+    expects: [instrument.keys, instrument.horns]
+    cues:
+      - id: "SQ 2"
+        action: open
+        # 99 is absent (the file stops at 40) -> Q1. 31 exists but carries
+        # no name -> Q2. Q2 has no other end-to-end test in the suite, and
+        # render() leaves a bad {path} token visible instead of raising, so
+        # without this row a typo in Q2's message would reach a show
+        # unnoticed. Verify 31 is still blank-named before pinning.
+        channels: [25, 29, 31, 99]
+      - id: "SQ 3"
+        action: open
+        channels: [29]
