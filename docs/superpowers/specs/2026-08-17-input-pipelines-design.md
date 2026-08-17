@@ -64,8 +64,47 @@ text. Rule Q4 then becomes set subtraction rather than another layer of name
 guessing — and this project already has exactly one name-guessing layer, on
 purpose. The loader validates every entry against the known kind vocabulary and
 raises listing the valid values, the same way an unrecognised `--profile` name
-and an unrecognised `event:` value already do. The cost is that ToanAZ must
-consult the kind list while authoring; the error message prints it.
+and an unrecognised `event:` value already do.
+
+### 3.1 Typo tolerance, bounded by measurement
+
+Requiring the exact vocabulary should not mean a mistyped letter costs a re-run
+on show day. Repairing a near-miss against a **closed** vocabulary is a different
+act from mapping free text: the first is decidable and its failures are
+detectable, the second is open-ended and fails silently. So the loader repairs,
+but only as far as it can prove it is right.
+
+The radius comes from a measurement, not a preference. Over the 47 kinds in
+`wing_parser/classifier/data/patterns.yaml`, the **minimum Levenshtein distance
+between two valid kinds is 2** — `speech.mc` ↔ `speech.qa` and
+`speech.lav` ↔ `speech.qa`. A code with minimum distance 2 can detect a single
+error but cannot reliably correct one: `speech.mq` sits 1 from `speech.mc` and 2
+from `speech.qa`, so a radius-2 repair would confidently rewrite a Q&A mic into
+an MC mic. Radius 1 with a uniqueness requirement has no such case — anything
+one edit from exactly one kind is unambiguous, and anything one edit from two
+kinds is refused.
+
+Three tiers:
+
+- **Normalise** — trim, lowercase, and unify separators (`-`, `_`, space → `.`).
+  This is not guessing: the result either is a valid kind or is not. Silent.
+- **Repair** — Levenshtein distance 1 from **exactly one** valid kind, and only
+  for tokens of at least 4 characters (the shortest kind, `fx`, is 2 characters,
+  where a single edit is half the token). Accepted, and recorded as an anomaly
+  that prints with the run: `show context: 'instrument.kyes' read as
+  'instrument.keys'`. Never silent.
+- **Refuse** — distance 1 from two or more kinds, or no candidate at all. Raises,
+  naming the file, the line, and the candidates: `did you mean 'speech.mc' or
+  'speech.qa'?` Ambiguity is never resolved by picking one.
+
+`showcontext lint tonight.yaml --fix` writes the repairs back through
+`ruamel.yaml`, preserving comments and formatting per the standing constraint on
+`knowledge/` files, so the file becomes canonical and the anomaly stops
+appearing. Without `--fix` the file is never modified.
+
+The same three tiers apply to `action:`. Its vocabulary is short enough that the
+4-character floor excludes `up` from repair, which is the correct outcome — a
+2-character token has no safe repair radius.
 
 **`time:` is optional at both levels.** Q7 fires only when *both* cues in a pair
 carry a time. A file that does not state a time gets silence, never an assumed
@@ -167,7 +206,13 @@ disable beats a noisy rule.
 so a Q-finding id will not resolve unless both commands get the same flags.
 
 Hard errors, raised naming the file and listing the valid values: file not
-found, unknown `expects` kind, unknown `action`, duplicate segment or cue id.
+found, duplicate segment or cue id, and an `expects` kind or an `action` that
+§3.1 can neither normalise nor unambiguously repair.
+
+`showcontext lint tonight.yaml [--fix]` — checks a show context on its own, with
+no scene, and with `--fix` writes §3.1's repairs back through `ruamel.yaml`. This
+is the one command worth having beyond `doctor`, because the file is hand-written
+and the alternative is discovering a typo while the band is waiting.
 
 Soft error: a malformed `time:` becomes an anomaly, not an exception. Time is
 optional and feeds only Q7, which ships disabled — failing the other six rules
@@ -199,6 +244,13 @@ The load-bearing test is the invariance one: a scene loaded **without** `--show`
 still yields exactly the 22 findings pinned in `tests/test_advisory_realfile.py`.
 That is what proves the feature cannot leak into existing behaviour.
 
+One test guards §3.1's radius against the vocabulary drifting under it: assert
+that the **minimum pairwise Levenshtein distance across all classifier kinds is
+at least 2**. If someone later adds a kind one edit from an existing one, that
+test fails and forces the repair radius to be re-argued rather than silently
+becoming unsafe. Pair it with tests that a distance-1 unique near-miss is
+repaired and recorded, and that a distance-1 tie raises naming both candidates.
+
 Beyond it: unit tests per module; a hand-written show context for
 `example-Vu.snap` pinned as a contract table with its regeneration command in
 the docstring, matching the existing real-file test; `pytest.approx` for the
@@ -223,7 +275,15 @@ name, ToanAZ could not use `small` and tonight's cue sheet at the same time.
 
 **Free-text `expects:`.** Easier to type, but adds a second name-guessing layer
 whose failure mode is silence — a mis-mapped name means the rule quietly never
-fires, which is worse than an error at load time.
+fires, which is worse than an error at load time. Note that §3.1's typo repair
+is *not* this: it matches against a closed vocabulary at a radius proven
+unambiguous, refuses anything it cannot decide, and reports every repair it
+makes. Rejecting free text was never a reason to reject typo tolerance, and
+conflating them in the first pass of this design was an error.
+
+**Radius-2 typo repair.** Measured and rejected: two valid kinds sit exactly 2
+apart, so a radius-2 ball can contain a second kind and the repair would be a
+confident rewrite of the engineer's meaning. See §3.1.
 
 ## 11. Open questions
 
