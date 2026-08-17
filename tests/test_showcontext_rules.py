@@ -77,3 +77,27 @@ def test_q5_fires_when_the_kind_is_present_but_parked(fire):
 
 def test_q5_does_not_double_report_a_kind_q4_already_flagged(fire):
     assert fire([{"id": "S1", "expects": ["instrument.horns"]}], "Q5") == []
+
+
+def test_q6_fires_on_a_second_open_of_the_same_channel(fire):
+    found = fire([{"id": "S1", "cues": [
+        {"id": "SQ 1", "action": "open", "channels": [8]},
+        {"id": "SQ 2", "action": "open", "channels": [8]}]}], "Q6")
+    assert [f.target for f in found] == ["cue.S1.SQ2"]
+
+
+def test_every_q_rule_now_exists():
+    from wing_parser.advisory.loader import load_base_rules
+    rules = {r.id for r in load_base_rules() if r.id.startswith("Q")}
+    assert rules == {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7"}
+
+
+def test_q7_ships_disabled_and_therefore_never_fires(fire):
+    from wing_parser.advisory.loader import load_base_rules
+    q7 = next(r for r in load_base_rules() if r.id == "Q7")
+    assert q7.enabled is False
+    assert "threshold" in q7.rationale.lower()
+    assert fire([{"id": "S1", "cues": [
+        {"id": "SQ 1", "action": "open", "channels": [8], "time": "T+00:10:00"},
+        {"id": "SQ 2", "action": "close", "channels": [8], "time": "T+00:10:01"}]}],
+        "Q7") == []

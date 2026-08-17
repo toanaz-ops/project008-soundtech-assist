@@ -109,3 +109,70 @@ rules:
       Segment {segment.id} ({segment.title}) expects
       {segment.dark_expects_text}; channels of that kind exist but none
       is in use.
+
+  - id: Q6
+    title: "Cue contradicts the state the earlier cues left"
+    severity: warning
+    source: >
+      docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
+      section 2.4 on point numbering, and section 1.3 step 6, rehearsal
+      markup reconciled the same evening.
+    rationale: >
+      Walking the cues in file order gives every channel an open/closed
+      book; opening one already open, or closing one already closed,
+      means two cues disagree about the state of the desk. Usually a cue
+      inserted during rehearsal that was never reconciled. Only open and
+      close move the book -- a level move on a closed channel is not a
+      contradiction, and what a recall does to a given channel is not
+      knowable from the cue sheet.
+    when:
+      for_each: cue
+      where:
+        cue.contradiction_count: {gt: 0}
+    message: >
+      Cue {cue.id} in segment {segment.id} runs "{cue.action}" on
+      channel(s) {cue.contradictions_text}, which earlier cues already
+      left in that state.
+
+  - id: Q7
+    title: "Two cues sit closer together than the operation needs"
+    severity: warning
+    enabled: false
+    source: >
+      No source for a rig-specific number. ToanAZ deferred the threshold
+      on 2026-08-17 rather than accept a placeholder; Task 7 of
+      docs/superpowers/plans/2026-08-17-input-pipelines-g1.md records the
+      decision. The rule's subject -- how long the gap between two cues
+      needs to be for the operation between them to complete -- is
+      docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
+      section 4.3, transition padding by activity; that table gives
+      stage transition minimums (mic handoffs, laptop swaps), not WING
+      mic-change, scene-recall or patch-change durations, so it cannot
+      supply this rule's number.
+    rationale: >
+      A cue gap shorter than the operation between them takes is a cue
+      that will be called late. Shipped disabled because no source in
+      this repository states how long a mic change, a scene recall or a
+      patch change takes on ToanAZ's rig, and a threshold nobody can cite
+      is a threshold that produces noise. To switch it on: get one number
+      per action from him, put them in a descriptor file, add the
+      comparison to the `where` block below, and set enabled: true. The
+      derivation it needs already exists and is tested --
+      CueView.seconds_after_previous, which is None unless both cues
+      carry a readable time. Trap for whoever does this: the `where`
+      below, {lt: 0}, is also satisfied by a negative gap from cues whose
+      declared times run backwards -- a typo, or segments whose time:
+      fields are not monotonic, since the gap arithmetic has no floor at
+      zero -- so enabling the rule with this predicate unchanged will
+      fire on the cue sheet's clock running backwards and report it as
+      two cues sitting too close together, which is a different problem
+      with a different fix; land the real threshold comparison and this
+      predicate together, not the predicate alone. This is the N2
+      precedent: an honest disable beats a noisy rule.
+    when:
+      for_each: cue
+      where:
+        cue.seconds_after_previous: {lt: 0}
+    message: >
+      Cue {cue.id} in segment {segment.id} is
+      {cue.seconds_after_previous} s after the previous timed cue.
