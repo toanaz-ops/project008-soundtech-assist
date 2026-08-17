@@ -67,6 +67,7 @@ class WingScene:
         self.classifier = Classifier()
         self.show: ShowContext | None = show
         self._show_segments: tuple | None = None
+        self._show_expectations: tuple | None = None
 
     @classmethod
     def load(cls, path: str | Path, show: str | Path | None = None) -> "WingScene":
@@ -82,6 +83,14 @@ class WingScene:
         if self._show_segments is None:
             self._show_segments = show_view.build(self.show, self)
         return self._show_segments
+
+    def show_expectations(self) -> tuple:
+        """Expectation views, built once. Empty when no context is loaded."""
+        if self.show is None:
+            return ()
+        if self._show_expectations is None:
+            self._show_expectations = show_view.build_expectations(self.show, self)
+        return self._show_expectations
 
     @property
     def raw(self) -> RawScene:

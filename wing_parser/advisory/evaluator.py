@@ -118,6 +118,16 @@ def _segments(scene) -> Iterator[Target]:
         )
 
 
+def _expectations(scene) -> Iterator[Target]:
+    """One target per expected kind. Yields nothing without a show context."""
+    for expectation in scene.show_expectations():
+        yield Target(
+            name=expectation.target_name,
+            context={"expectation": expectation},
+            confidence=1.0,
+        )
+
+
 ITERATORS: dict[str, Callable[[Any], Iterator[Target]]] = {
     "channel": _channels,
     "channel.sends": _channel_sends,
@@ -126,6 +136,7 @@ ITERATORS: dict[str, Callable[[Any], Iterator[Target]]] = {
     "output": _outputs,
     "cue": _cues,
     "segment": _segments,
+    "expects": _expectations,
     "none": _nothing,
 }
 

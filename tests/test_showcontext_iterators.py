@@ -45,3 +45,26 @@ def test_the_unprofiled_real_file_contract_is_untouched(vu_path, monkeypatch):
     regression in this subsystem is caught in this subsystem's file."""
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     assert len(WingScene.load(vu_path).advisory.run()) == 22
+
+
+def test_the_expects_iterator_is_registered():
+    assert "expects" in ITERATORS
+
+
+def test_without_a_context_the_expects_iterator_yields_nothing(vu_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    scene = WingScene.load(vu_path)
+    assert list(targets_for(scene, "expects")) == []
+    assert scene.show_expectations() == ()
+
+
+def test_with_a_context_expects_targets_carry_the_kind_in_their_name(vu_path, tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    path = tmp_path / "expects.yaml"
+    path.write_text(yaml.safe_dump({"show": "t", "segments": [
+        {"id": "S1", "expects": ["instrument.horns"]}]}), encoding="utf-8")
+    scene = WingScene.load(vu_path, show=path)
+    targets = list(targets_for(scene, "expects"))
+    assert [t.name for t in targets] == ["expects.instrument.horns"]
+    assert set(targets[0].context) == {"expectation"}
+    assert targets[0].confidence == 1.0

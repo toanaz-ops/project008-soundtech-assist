@@ -108,3 +108,43 @@ def test_an_untimed_cue_yields_no_gap(scene):
         Cue(id="SQ 1", action="open", channels=(29,), time="T+00:18:00"),
         Cue(id="SQ 2", action="close", channels=(29,)),)))
     assert view.build(context, scene)[0].cues[1].seconds_after_previous is None
+
+
+def test_one_expectation_per_distinct_kind_across_segments(scene):
+    context = _context(
+        Segment(id="S1", expects=("instrument.horns", "instrument.keys")),
+        Segment(id="S2", expects=("instrument.horns",)),
+    )
+    found = view.build_expectations(context, scene)
+    assert [e.kind for e in found] == ["instrument.horns", "instrument.keys"]
+
+
+def test_an_expectation_names_every_segment_that_calls_for_it(scene):
+    context = _context(
+        Segment(id="S1", expects=("instrument.horns",)),
+        Segment(id="S3", expects=("instrument.horns",)),
+    )
+    horns = view.build_expectations(context, scene)[0]
+    assert horns.segments_text == "S1, S3"
+    assert horns.target_name == "expects.instrument.horns"
+
+
+def test_a_kind_with_no_channel_is_unmet_and_not_dark(scene):
+    context = _context(Segment(id="S1", expects=("instrument.horns",)))
+    horns = view.build_expectations(context, scene)[0]
+    assert horns.is_unmet is True
+    assert horns.is_dark is False
+
+
+def test_a_kind_whose_channels_are_all_parked_is_dark_and_not_unmet(scene):
+    # Channels 29 "Key 1" and 30 "Key 2" classify instrument.keys at 0.9 and
+    # both read in_use False on this file. Probe before trusting.
+    context = _context(Segment(id="S1", expects=("instrument.keys",)))
+    keys = view.build_expectations(context, scene)[0]
+    assert keys.is_unmet is False
+    assert keys.is_dark is True
+
+
+def test_expectations_are_empty_when_no_segment_expects_anything(scene):
+    context = _context(Segment(id="S1"))
+    assert view.build_expectations(context, scene) == ()

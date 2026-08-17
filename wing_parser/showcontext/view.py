@@ -133,17 +133,7 @@ class SegmentView:
         return f"segment.{self._segment.id}"
 
     def _channels_of(self, kind: str) -> tuple:
-        """Only confidently-classified channels count.
-
-        Same threshold Bus.receives_ambient uses: a weak guess must not
-        satisfy an expectation, or the rule silently stops firing on the
-        thing it exists to catch.
-        """
-        return tuple(
-            channel for channel in self._scene.channels()
-            if channel.source_type.kind == kind
-            and channel.source_type.confidence >= HIGH
-        )
+        return _channels_of(self._scene, kind)
 
     @property
     def _unmet_expects(self) -> tuple[str, ...]:
@@ -173,6 +163,75 @@ class SegmentView:
     @property
     def dark_expects_text(self) -> str:
         return ", ".join(self._dark_expects)
+
+
+def _channels_of(scene, kind: str) -> tuple:
+    """Only confidently-classified channels count.
+
+    Same threshold Bus.receives_ambient uses: a weak guess must not satisfy
+    an expectation, or the rule silently stops firing on the thing it
+    exists to catch.
+    """
+    return tuple(
+        channel for channel in scene.channels()
+        if channel.source_type.kind == kind
+        and channel.source_type.confidence >= HIGH
+    )
+
+
+class ExpectationView:
+    """One expected source kind, across every segment that calls for it.
+
+    Q4 and Q5 used to iterate segments, which meant a kind missing from the
+    scene was reported once per segment naming it -- fifteen identical
+    warnings on a fifteen-segment sheet, because the scene is static and
+    the answer cannot differ between segments. ToanAZ's decision, 2026-08-17
+    (spec section 6.1): report once per kind and name the segments.
+
+    `is_unmet` and `is_dark` are booleans, not counts: at this granularity
+    the question is "is it", not "how many". Rules match them with a plain
+    `true`. They are mutually exclusive by construction -- unmet means no
+    confidently-classified channel of the kind exists at all, dark means
+    some exist and none is in use.
+    """
+
+    def __init__(self, kind: str, segment_ids: tuple[str, ...], scene) -> None:
+        self.kind = kind
+        self._segment_ids = segment_ids
+        self._scene = scene
+
+    @property
+    def segments_text(self) -> str:
+        return ", ".join(self._segment_ids)
+
+    @property
+    def target_name(self) -> str:
+        return f"expects.{self.kind}"
+
+    @property
+    def is_unmet(self) -> bool:
+        return not _channels_of(self._scene, self.kind)
+
+    @property
+    def is_dark(self) -> bool:
+        channels = _channels_of(self._scene, self.kind)
+        return bool(channels) and not any(c.in_use for c in channels)
+
+
+def build_expectations(context: ShowContext, scene) -> tuple[ExpectationView, ...]:
+    """One view per distinct expected kind, in first-seen order.
+
+    Segment order is the file's order, so the first segment to name a kind
+    determines where it appears -- deterministic without sorting, and it
+    reads the way the sheet reads.
+    """
+    seen: dict[str, list[str]] = {}
+    for segment in context.segments:
+        for kind in segment.expects:
+            seen.setdefault(kind, []).append(segment.id)
+    return tuple(
+        ExpectationView(kind, tuple(ids), scene) for kind, ids in seen.items()
+    )
 
 
 def build(context: ShowContext, scene) -> tuple[SegmentView, ...]:
