@@ -1252,9 +1252,12 @@ def fire(vu_path, tmp_path, monkeypatch):
     return run
 
 
-def test_the_q_rules_load_with_source_and_rationale():
+def test_the_cue_rules_load_with_source_and_rationale():
+    """Q1-Q3 only. The all-seven assertion lands in Task 7, once every
+    rule exists -- a test that fails for two tasks is a broken gate, not
+    a pending one."""
     rules = {r.id: r for r in load_base_rules() if r.id.startswith("Q")}
-    assert set(rules) == {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7"}
+    assert {"Q1", "Q2", "Q3"} <= set(rules)
     for rule in rules.values():
         assert rule.source.strip() and rule.rationale.strip()
 
@@ -1355,14 +1358,14 @@ rules:
       {cue.missing_dcas_text}, which the scene does not configure.
 ```
 
-Note the test for all seven ids will still fail until Task 7. That is expected —
-run only the Q1/Q2/Q3 tests in step 4 and let the load test go green at the end
-of Task 7.
+- [ ] **Step 4: Run the whole file, then the suite**
 
-- [ ] **Step 4: Run the Q1–Q3 tests**
+Run: `python -m pytest tests/test_showcontext_rules.py -q`
+Expected: pass — this task's tests assert only that Q1–Q3 exist, so the file is
+green at the end of this task, not two tasks later.
 
-Run: `python -m pytest tests/test_showcontext_rules.py -q -k "q1 or q3"`
-Expected: pass.
+Run: `python -m pytest tests/ -q --junitxml=junit.xml`
+Expected: exit 0.
 
 - [ ] **Step 5: Commit**
 
@@ -1511,6 +1514,12 @@ def test_q6_fires_on_a_second_open_of_the_same_channel(fire):
         {"id": "SQ 1", "action": "open", "channels": [8]},
         {"id": "SQ 2", "action": "open", "channels": [8]}]}], "Q6")
     assert [f.target for f in found] == ["cue.S1.SQ2"]
+
+
+def test_every_q_rule_now_exists():
+    from wing_parser.advisory.loader import load_base_rules
+    rules = {r.id for r in load_base_rules() if r.id.startswith("Q")}
+    assert rules == {"Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7"}
 
 
 def test_q7_ships_disabled_and_therefore_never_fires(fire):
@@ -2091,6 +2100,9 @@ block in Tasks 5–7 (`missing_channel_count`, `unnamed_channel_count`,
 every `*_text` twin used in a message. `_parse_time` is defined in Task 2's
 loader and imported by Task 3's view.
 
-**One thing a reviewer should check hard.** Task 5's rule-loading test asserts
-all seven Q ids exist, so it fails until Task 7 lands. That is called out in
-Task 5 step 3, but a reviewer gating Task 5 in isolation should expect it.
+**Fixed during the pre-flight scan.** The first draft had Task 5 assert all
+seven Q ids, which would have left that test red until Task 7 — a broken gate,
+not a pending one, and it would have failed Task 5's and Task 6's reviews for a
+defect neither task could fix. Task 5 now asserts `{"Q1","Q2","Q3"} <= ids`;
+the exact-set assertion is Task 7's. Every task's suite is green at its own
+commit.
