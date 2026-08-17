@@ -12,9 +12,9 @@ from wing_parser.advisory import feedback as feedback_log
 from wing_parser.cli import render
 
 
-def _load(path: str) -> WingScene | None:
+def _load(path: str, show: str | None = None) -> WingScene | None:
     try:
-        return WingScene.load(path)
+        return WingScene.load(path, show=show)
     except OSError:
         print(f"error: cannot open {path}", file=sys.stderr)
     except ValueError as exc:
@@ -64,9 +64,12 @@ def channel(args) -> int:
 
 
 def doctor(args) -> int:
-    scene = _load(args.file)
+    scene = _load(args.file, getattr(args, "show", None))
     if scene is None:
         return 1
+    if scene.show is not None:
+        for note in scene.show.anomalies:
+            print(f"show context: {note}")
     profile = getattr(args, "profile", None)
     found = _run_advisory(scene, profile)
     if found is None:
@@ -104,7 +107,7 @@ def diff(args) -> int:
 
 
 def feedback(args) -> int:
-    scene = _load(args.scene)
+    scene = _load(args.scene, getattr(args, "show", None))
     if scene is None:
         return 1
 

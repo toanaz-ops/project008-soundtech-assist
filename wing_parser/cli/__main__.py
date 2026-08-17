@@ -38,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="apply one show profile from knowledge/toanaz/shows/<name>.yaml",
     )
+    node.add_argument(
+        "--show",
+        default=None,
+        help="a show-context YAML file: segments, expected sources and cues",
+    )
     node.set_defaults(handler=commands.doctor)
 
     node = sub.add_parser("diff", help="compare two scenes")
@@ -55,6 +60,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--profile",
         default=None,
         help="apply one show profile from knowledge/toanaz/shows/<name>.yaml",
+    )
+    node.add_argument(
+        "--show",
+        default=None,
+        help="a show-context YAML file: segments, expected sources and cues",
     )
     node.set_defaults(handler=commands.feedback)
 
