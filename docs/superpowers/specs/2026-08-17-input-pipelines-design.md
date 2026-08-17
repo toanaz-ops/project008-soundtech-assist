@@ -74,10 +74,12 @@ act from mapping free text: the first is decidable and its failures are
 detectable, the second is open-ended and fails silently. So the loader repairs,
 but only as far as it can prove it is right.
 
-The radius comes from a measurement, not a preference. Over the 47 kinds in
-`wing_parser/classifier/data/patterns.yaml`, the **minimum Levenshtein distance
-between two valid kinds is 2** — `speech.mc` ↔ `speech.qa` and
-`speech.lav` ↔ `speech.qa`. A code with minimum distance 2 can detect a single
+The radius comes from a measurement, not a preference. `expects:` draws on the
+`channels` domain of `wing_parser/classifier/data/patterns.yaml` — **35 distinct
+kinds**, whose **minimum pairwise Levenshtein distance is 2**:
+`speech.lav` ↔ `speech.qa` and `speech.mc` ↔ `speech.qa`. (The `buses` domain,
+12 kinds, sits at minimum distance 4; `expects` does not accept bus kinds today —
+see §11.) A code with minimum distance 2 can detect a single
 error but cannot reliably correct one: `speech.mq` sits 1 from `speech.mc` and 2
 from `speech.qa`, so a radius-2 repair would confidently rewrite a Q&A mic into
 an MC mic. Radius 1 with a uniqueness requirement has no such case — anything
@@ -89,10 +91,12 @@ Three tiers:
 - **Normalise** — trim, lowercase, and unify separators (`-`, `_`, space → `.`).
   This is not guessing: the result either is a valid kind or is not. Silent.
 - **Repair** — Levenshtein distance 1 from **exactly one** valid kind, and only
-  for tokens of at least 4 characters (the shortest kind, `fx`, is 2 characters,
-  where a single edit is half the token). Accepted, and recorded as an anomaly
-  that prints with the run: `show context: 'instrument.kyes' read as
-  'instrument.keys'`. Never silent.
+  for tokens of at least 4 characters. Accepted, and recorded as an anomaly that
+  prints with the run: `show context: 'instrument.kyes' read as
+  'instrument.keys'`. Never silent. The 4-character floor does not bind on any
+  channel kind today — the shortest is `drums.pad` at 9 — but it guards the
+  `action` vocabulary, and the `buses` domain that §11 may later admit contains
+  `fx`, where one edit is half the token.
 - **Refuse** — distance 1 from two or more kinds, or no candidate at all. Raises,
   naming the file, the line, and the candidates: `did you mean 'speech.mc' or
   'speech.qa'?` Ambiguity is never resolved by picking one.
@@ -186,10 +190,12 @@ defining a second liveness test: patched, unmuted, routed, and fader above the
 -90 dB floor that keeps a factory scene from reading as live. A rule that
 invented its own "is this channel on" check would drift from N1's.
 
-Q4 and Q5 both require the classifier, so they inherit the existing
-`requires_classifier` gate and are skipped for any target below the usable
-confidence band — the same protection that stops the rest of the advisory
-producing confident nonsense about channels nobody could identify.
+Q4 and Q5 depend on classification but **do not** set `requires_classifier`.
+That flag gates on the *target's* confidence, and a segment is not a classified
+object — it has no confidence of its own to gate on. Instead the derivation
+counts only channels classified at or above `HIGH`, exactly the way
+`Bus.receives_ambient` already does. Same protection, applied where the
+classification actually lives.
 
 **Q7 ships `enabled: false`.** No source in this repository states how long a
 mic change, a scene recall or a patch change takes, and ToanAZ chose (2026-08-17)
