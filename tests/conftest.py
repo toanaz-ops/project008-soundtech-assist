@@ -36,6 +36,18 @@ def vu_path() -> Path:
     return USER_FILES / "example-Vu.snap"
 
 
+@pytest.fixture(scope="session")
+def qt_app():
+    """One QApplication for the whole run; Qt permits only one.
+
+    `importorskip` rather than a hard import: PySide6 is the optional
+    `ui` extra, and the engine and CLI must stay testable on a machine
+    with no GUI installed at all.
+    """
+    widgets = pytest.importorskip("PySide6.QtWidgets")
+    return widgets.QApplication.instance() or widgets.QApplication([])
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _isolated_knowledge_dir(tmp_path_factory):
     """Point every test at a throwaway knowledge directory by default.
