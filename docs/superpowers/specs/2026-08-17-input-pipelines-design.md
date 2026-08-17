@@ -207,6 +207,39 @@ counts only channels classified at or above `HIGH`, exactly the way
 `Bus.receives_ambient` already does. Same protection, applied where the
 classification actually lives.
 
+### 6.1 Noise profile — decided with ToanAZ 2026-08-17, after the final review
+
+The table above describes what G1 shipped. The final whole-branch review raised,
+and ToanAZ settled, two things about how these rules read on a real fifteen-segment
+cue sheet rather than on a two-segment fixture. **Both are decided and pending
+implementation.**
+
+**Q4 and Q5 aggregate per kind, not per segment.** `_channels_of` reads the
+static scene, so a missing horns channel is missing for every segment. A sheet
+listing `expects: [instrument.horns, …]` throughout yields fifteen identical Q4
+warnings, and Q5 is worse in frequency — his scenes are templates (34 named
+channels, 3 live), so nearly every expected kind is parked before doors. §2 of
+this spec already rejected a fourth rule family for exactly this reason: it
+"would fire constantly on channels that are simply parked". Q5 inherits that
+failure mode from the other direction.
+
+His decision: **one finding per expected kind**, naming which segments call for
+it. That needs a show-level iterator rather than the per-segment one, and the
+finding's target should identify the kind rather than a segment.
+
+**Q6 drops to `info` and stops calling redundancy a contradiction.** A show
+caller restating "mics open" at the top of a segment is correct practice, not a
+fault — ToanAZ confirmed it directly. The rule keeps firing, because a repeated
+open is still worth seeing, but its severity and its wording must say *redundant*
+rather than *two cues disagree about the state of the desk*.
+
+While rewording it, correct an overstatement the review also caught: Q6's
+rationale and §3 both say "closing one already closed" is a contradiction, but
+the state walk treats a channel it has never seen as neither open nor closed, so
+closing a channel the sheet never opened is silent. That is the right behaviour —
+a sheet may be describing a desk that started with things open — and the
+rationale should say so rather than claim a check it does not perform.
+
 **Q7 ships `enabled: false`.** No source in this repository states how long a
 mic change, a scene recall or a patch change takes, and ToanAZ chose (2026-08-17)
 to wait for a real number rather than accept a placeholder. Its rationale must
@@ -309,3 +342,21 @@ confident rewrite of the engineer's meaning. See §3.1.
    IEM 3 live"). Not designed; raise it only if a real cue sheet calls for it.
 3. Unrelated and still open from earlier cycles: the limiter `dyn.mdl` token,
    closed as offline-underivable in `docs/handoff/2026-08-17-limiter-token-probe.md`.
+4. **`expects:` validates against pattern-derived kinds only.** `known_kinds`
+   reads `classifier/data/patterns.yaml`, but `channel.source_type.kind` can also
+   come from `knowledge/toanaz/classifier.yaml`, which the classifier consults
+   *first* and which accepts an arbitrary `kind:` string with no vocabulary check.
+   So the moment ToanAZ follows the README's own "declare a name manually"
+   instruction with a kind that is not in `patterns.yaml`, `expects:` will refuse
+   a kind his channels legitimately carry. Latent today — the shipped
+   `classifier.yaml` is `channels: {}` — and the fix is not free: unioning the
+   manual kinds into the vocabulary would invalidate the measured
+   minimum-distance-2 argument that §3.1's repair radius rests on. Decide whether
+   to validate manual entries against `known_kinds`, or to accept the split and
+   document it. Raised by the final review, 2026-08-17.
+5. **The MCP surface has no `show` parameter.** `wing_doctor` in
+   `wing_parser/mcp/tools.py` cannot load a show context, so a Claude session
+   driving the MCP tools cannot see Q1-Q7 at all. This spec never mentioned MCP,
+   so it is an omission rather than a departure — but the MCP surface is a
+   first-class consumer of `doctor` and the gap should be closed or declined
+   deliberately. Raised by the final review, 2026-08-17.
