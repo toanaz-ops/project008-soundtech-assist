@@ -78,3 +78,17 @@ def is_confident(c: Classification) -> bool:
 
 def is_usable(c: Classification) -> bool:
     return c.confidence >= LOW
+
+
+@lru_cache(maxsize=None)
+def known_kinds(domain: str) -> tuple[str, ...]:
+    """Every kind a pattern set can produce, sorted and deduplicated.
+
+    `_compiled` returns compiled patterns, which is the wrong shape for a
+    caller that wants the vocabulary itself -- show context validates
+    `expects:` entries against it (2026-08-17 input-pipelines spec §3).
+    """
+    doc = yaml.safe_load(_DATA.read_text(encoding="utf-8"))
+    if domain not in doc:
+        raise KeyError(f"no pattern set named {domain!r} in {_DATA}")
+    return tuple(sorted({entry["kind"] for entry in doc[domain]}))
