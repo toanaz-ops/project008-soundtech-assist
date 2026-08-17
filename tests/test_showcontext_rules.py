@@ -56,3 +56,24 @@ def test_q3_fires_on_an_absent_dca(fire):
         {"id": "SQ 1", "action": "open", "dcas": [99]}]}], "Q3")
     assert [f.target for f in found] == ["cue.S1.SQ1"]
     assert "99" in found[0].message
+
+
+def test_q4_fires_when_an_expected_kind_has_no_channel(fire):
+    found = fire([{"id": "S1", "expects": ["instrument.horns"]}], "Q4")
+    assert [f.target for f in found] == ["segment.S1"]
+    assert "instrument.horns" in found[0].message
+
+
+def test_q4_stays_silent_when_the_kind_is_present(fire):
+    assert fire([{"id": "S1", "expects": ["instrument.keys"]}], "Q4") == []
+
+
+def test_q5_fires_when_the_kind_is_present_but_parked(fire):
+    # Every instrument.keys channel on the sample file sits at -inf.
+    found = fire([{"id": "S1", "expects": ["instrument.keys"]}], "Q5")
+    assert [f.target for f in found] == ["segment.S1"]
+    assert found[0].severity == "info"
+
+
+def test_q5_does_not_double_report_a_kind_q4_already_flagged(fire):
+    assert fire([{"id": "S1", "expects": ["instrument.horns"]}], "Q5") == []

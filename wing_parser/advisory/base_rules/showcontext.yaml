@@ -62,3 +62,50 @@ rules:
     message: >
       Cue {cue.id} in segment {segment.id} names DCA(s)
       {cue.missing_dcas_text}, which the scene does not configure.
+
+  - id: Q4
+    title: "Segment expects a source with no channel for it"
+    severity: warning
+    source: >
+      docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md
+      section 1.1, on the department cue sheet carrying that department's
+      cues; docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
+      section 1.3 step 3, the department pass.
+    rationale: >
+      The paperwork says this part of the show has a source; the scene
+      has no channel confidently classified as it. Either an input is
+      unpatched or the scene predates the latest ROS revision. Only
+      channels classified at or above the confident band count -- a weak
+      name guess must not satisfy an expectation, or the rule quietly
+      stops catching the thing it exists for. Same threshold
+      Bus.receives_ambient uses.
+    when:
+      for_each: segment
+      where:
+        segment.unmet_expect_count: {gt: 0}
+    message: >
+      Segment {segment.id} ({segment.title}) expects
+      {segment.unmet_expects_text}, and no confidently-classified channel
+      of that kind exists in the scene.
+
+  - id: Q5
+    title: "Segment expects a source whose channels are all parked"
+    severity: info
+    source: >
+      docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md
+      section 1.1; the in_use definition probed for N1 in the 2026-08-16
+      rule-set-growth spec section 4.
+    rationale: >
+      The channel is there but is unpatched, muted, unrouted, or has its
+      fader below the -90 dB floor. On a scene built ahead of doors that
+      is normal, which is why this is info and not warning; it is a
+      checklist line, not an alarm. Reuses Channel.in_use rather than
+      defining a second liveness test, so it cannot drift from N1's.
+    when:
+      for_each: segment
+      where:
+        segment.dark_expect_count: {gt: 0}
+    message: >
+      Segment {segment.id} ({segment.title}) expects
+      {segment.dark_expects_text}; channels of that kind exist but none
+      is in use.
