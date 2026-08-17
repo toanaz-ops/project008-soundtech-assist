@@ -97,12 +97,35 @@ def _nothing(scene) -> Iterator[Target]:
     return iter(())
 
 
+def _cues(scene) -> Iterator[Target]:
+    """One target per cue. Yields nothing when no show context is loaded,
+    which is what keeps every existing finding unchanged."""
+    for segment in scene.show_segments():
+        for cue in segment.cues:
+            yield Target(
+                name=cue.target_name,
+                context={"cue": cue, "segment": segment},
+                confidence=1.0,
+            )
+
+
+def _segments(scene) -> Iterator[Target]:
+    for segment in scene.show_segments():
+        yield Target(
+            name=segment.target_name,
+            context={"segment": segment},
+            confidence=1.0,
+        )
+
+
 ITERATORS: dict[str, Callable[[Any], Iterator[Target]]] = {
     "channel": _channels,
     "channel.sends": _channel_sends,
     "channel.main_sends": _channel_main_sends,
     "bus": _buses,
     "output": _outputs,
+    "cue": _cues,
+    "segment": _segments,
     "none": _nothing,
 }
 

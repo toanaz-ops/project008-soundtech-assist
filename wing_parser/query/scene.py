@@ -18,10 +18,12 @@ from wing_parser.query.channel import Channel
 from wing_parser.query.diff import Change, compare
 from wing_parser.query.groups import Dca, MuteGroup, build_index
 from wing_parser.query.routing import RoutingFacade
+from wing_parser.showcontext import ShowContext, load_show_context
+from wing_parser.showcontext import view as show_view
 
 
 class WingScene:
-    def __init__(self, raw: RawScene) -> None:
+    def __init__(self, raw: RawScene, show: ShowContext | None = None) -> None:
         self._raw = raw
         self.path: Path = raw.path
         self.version = raw.version
@@ -63,10 +65,23 @@ class WingScene:
         self.anomalies: tuple[Anomaly, ...] = tuple(anomalies)
         self._dca_index, self._mute_index = build_index(self)
         self.classifier = Classifier()
+        self.show: ShowContext | None = show
+        self._show_segments: tuple | None = None
 
     @classmethod
-    def load(cls, path: str | Path) -> "WingScene":
-        return cls(load_raw(path))
+    def load(cls, path: str | Path, show: str | Path | None = None) -> "WingScene":
+        """`show` names a show-context YAML file; without one, the cue and
+        segment iterators yield nothing and behaviour is unchanged."""
+        context = load_show_context(show) if show is not None else None
+        return cls(load_raw(path), context)
+
+    def show_segments(self) -> tuple:
+        """Segment views, built once. Empty when no context is loaded."""
+        if self.show is None:
+            return ()
+        if self._show_segments is None:
+            self._show_segments = show_view.build(self.show, self)
+        return self._show_segments
 
     @property
     def raw(self) -> RawScene:
