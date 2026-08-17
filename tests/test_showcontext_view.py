@@ -111,12 +111,16 @@ def test_an_untimed_cue_yields_no_gap(scene):
 
 
 def test_one_expectation_per_distinct_kind_across_segments(scene):
+    # Kinds are named out of alphabetical order on purpose: "instrument.keys"
+    # sorts after "drums.kick", so first-seen order and sorted order diverge
+    # here. Do not "tidy" this into alphabetical order -- that would let a
+    # regression to sorted() pass this test silently.
     context = _context(
-        Segment(id="S1", expects=("instrument.horns", "instrument.keys")),
-        Segment(id="S2", expects=("instrument.horns",)),
+        Segment(id="S1", expects=("instrument.keys", "drums.kick")),
+        Segment(id="S2", expects=("instrument.keys",)),
     )
     found = view.build_expectations(context, scene)
-    assert [e.kind for e in found] == ["instrument.horns", "instrument.keys"]
+    assert [e.kind for e in found] == ["instrument.keys", "drums.kick"]
 
 
 def test_an_expectation_names_every_segment_that_calls_for_it(scene):
