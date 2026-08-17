@@ -151,7 +151,11 @@ which layer decided it:
   small or easy show he deliberately runs them post-fader instead,
   trading monitor independence for setup speed. That profile records
   the deviation as deliberate rather than leaving G8 to re-flag it on
-  every check.
+  every check. It supersedes G10 for the same reason: the rig it
+  describes carries no ambient mic at all, so "no ambient mic reaches
+  this IEM" names a microphone that does not exist and offers nothing
+  to act on. Both suppressions are opt-in — an unprofiled `doctor` run
+  still prints every G8 and G10 finding.
 
 Base rules are not beyond question. G7 and G9, for instance, check only
 that a monitor output's dynamics processor is switched on
@@ -161,7 +165,10 @@ anywhere in this repository and must not be guessed, so a monitor
 output carrying a compressor that is switched **on** is deliberately
 not reported (see
 [design spec §7.1](docs/superpowers/specs/2026-08-16-advisory-loop-closure-design.md#71-the-limiter-token)
-for the exact clause to add once that token is known). Treat
+for the exact clause to add once that token is known, and
+[the 2026-08-17 probe](docs/handoff/2026-08-17-limiter-token-probe.md)
+for why no source on this machine can supply it — the sample files
+exercise the model enum with a single value, `COMP`). Treat
 `doctor`'s output as what the stated rule checks, not as ground truth
 — that is exactly what the `toanaz` and `show` layers exist to correct
 once a human has looked at the finding and rendered a verdict.
@@ -395,9 +402,11 @@ is required beyond re-running the command.
   `layer: show`, the highest-priority layer. A show rule whose only job
   is to `supersede` a base rule needs no `when` or `message` either —
   the same supersede-only shape "Add a principle" describes above. The
-  shipped `knowledge/toanaz/shows/small.yaml` is exactly that: no
-  `when:`, no `message:`, just `supersedes: [G8]` and the rationale for
-  switching it off.
+  shipped `knowledge/toanaz/shows/small.yaml` is exactly that: two
+  rules, neither with a `when:` or a `message:`, carrying
+  `supersedes: [G8]` and `supersedes: [G10]` and the rationale for
+  switching each off. A profile may hold as many such rules as the show
+  needs; each one names its own `supersedes` list.
 - **Add a descriptor** — the descriptors under
   `wing_parser/descriptors/data/*.yaml` interpret encoded fields the
   console stores as raw numbers or short codes. For example,

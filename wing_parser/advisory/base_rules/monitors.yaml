@@ -53,10 +53,19 @@ rules:
       warning. This rule still checks only that the dynamics processor
       is switched on. It cannot also check that the loaded model is a
       limiter: the dyn.mdl token a WING stores for one is not recorded
-      anywhere in this repository and must not be guessed; the only
-      models observed in real data are COMP and CMB. See the 2026-08-16
-      advisory-closure spec section 7.1 for the clause to add once that
-      token is known. Same build_dyn caveat as before: a bus whose raw
+      anywhere in this repository and must not be guessed. Probed
+      exhaustively 2026-08-17 and closed as underivable offline -- across
+      both sample files all 139 compressor-shaped dyn blocks read mdl
+      COMP and env LOG, so the model enum is exercised by exactly one
+      value; WING-Edit.exe is packed and yields no enum table; and the
+      manual knowledge base names the limiter processors by display name
+      only. The earlier "COMP and CMB" phrasing was imprecise: CMB is an
+      aux-input dynamics model, a different block schema carrying no
+      ratio, att or rel at all. Evidence in
+      docs/handoff/2026-08-17-limiter-token-probe.md. Only a scene saved
+      from a real console with a limiter loaded can answer this. See the
+      2026-08-16 advisory-closure spec section 7.1 for the clause to add
+      once that token is known. Same build_dyn caveat as before: a bus whose raw
       dyn block is absent entirely reads as on: False and would trip
       this rule without the scene stating it.
     requires_classifier: true

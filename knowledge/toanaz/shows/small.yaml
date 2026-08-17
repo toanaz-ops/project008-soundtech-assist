@@ -16,3 +16,25 @@ rules:
       purpose, rather than leaving twelve findings to be re-read and
       re-dismissed every time the scene is checked.
     supersedes: [G8]
+
+  - id: show.small.no-ambient-mic-is-the-rig
+    title: "Small show: the rig carries no ambient mic, so IEM ambience is not available"
+    severity: info
+    source: >
+      Probed 2026-08-17 from user-files/example-Vu.snap: of 34 named
+      channels not one classifies as utility.ambient, and no channel name
+      contains "amb", "audience" or "room mic" in any case. ToanAZ
+      delegated this call in the 2026-08-17 session rather than answering
+      it directly -- confirm with him before treating it as standing
+      practice on every small show.
+    rationale: >
+      G10 states the generic rule correctly: an IEM performer with no room
+      ambience is acoustically isolated and over-sings. But on a rig that
+      carries no ambient mic at all, the finding names a microphone that
+      does not exist -- there is no knob to turn, so it repeats on every
+      check and is re-dismissed every time. G10's own rationale nominates
+      the show profile as the place to record exactly this deviation.
+      This is opt-in: without --profile small the four G10 findings still
+      print, so the base advice is switched off for a kind of show, never
+      deleted. If the rig gains a room mic, delete this rule.
+    supersedes: [G10]

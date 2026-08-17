@@ -155,7 +155,7 @@ def test_every_finding_records_its_layer(scene, monkeypatch):
     assert all(f.layer in {"base", "toanaz", "show"} for f in findings)
 
 
-def test_the_shipped_small_profile_loads_and_suppresses_g8(scene, monkeypatch):
+def test_the_shipped_small_profile_loads_and_suppresses_g8_and_g10(scene, monkeypatch):
     # G7 no longer fires on this file post-split (all IEM matrices have
     # dyn.on True); bus.7 SIDEFILL's finding moved to G9. Probed
     # 2026-08-16 with profile="small": {E6 ch.11, G9 bus.7}, G8 absent.
@@ -170,19 +170,27 @@ def test_the_shipped_small_profile_loads_and_suppresses_g8(scene, monkeypatch):
     # the unprofiled run in test_the_sample_scene_finding_counts --
     # re-probed with profile="small": {E6 ch.11, G9 bus.7, G10 x4,
     # PB1/PB2/PB4/PB5 x1 each}, G8 still absent.
+    # 2026-08-17: the profile gained a second rule superseding G10, on the
+    # probed ground that this rig carries no ambient mic at all (34 named
+    # channels, none classifying utility.ambient), so the four G10
+    # findings name a microphone that does not exist. Re-probed with
+    # profile="small": {E6 ch.11, G9 bus.7, PB1/PB2/PB4/PB5 x1 each} = 6,
+    # G8 and G10 both absent. The unprofiled run is unchanged at 22 --
+    # test_the_real_file_advisory_contract still pins all four G10 rows.
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     found = scene.advisory.run(profile="small")
-    assert [f.rule_id for f in found if f.rule_id == "G8"] == []
-    assert {f.rule_id for f in found} == {"G9", "E6", "G10", "PB1", "PB2", "PB4", "PB5"}
-    assert len(found) == 10
+    assert [f.rule_id for f in found if f.rule_id in {"G8", "G10"}] == []
+    assert {f.rule_id for f in found} == {"G9", "E6", "PB1", "PB2", "PB4", "PB5"}
+    assert len(found) == 6
 
 
-def test_the_small_profile_records_who_switched_g8_off(scene, monkeypatch):
+def test_the_small_profile_records_who_switched_each_rule_off(scene, monkeypatch):
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     assert scene.advisory.suppressed(profile="small") == {
-        "G8": "show.small.post-monitors-are-deliberate"
+        "G8": "show.small.post-monitors-are-deliberate",
+        "G10": "show.small.no-ambient-mic-is-the-rig",
     }
 
 

@@ -70,12 +70,19 @@ def test_the_factory_scene_stays_silent(factory_path, monkeypatch):
     assert WingScene.load(factory_path).advisory.run() == []
 
 
-def test_the_small_profile_still_suppresses_g8(vu_path, monkeypatch):
+def test_the_small_profile_still_suppresses_g8_and_g10(vu_path, monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    # Uses the real in-repo knowledge dir: shows/small.yaml supersedes G8.
+    # Uses the real in-repo knowledge dir: shows/small.yaml supersedes G8
+    # and, since 2026-08-17, G10 as well. EXPECTED_VU above is the
+    # unprofiled contract and still carries all four G10 rows -- the
+    # profile switches them off for one kind of show, it does not delete
+    # the base rule.
     from wing_parser import config
     monkeypatch.delenv(config.ENV_VAR, raising=False)
     scene = WingScene.load(vu_path)
     found = scene.advisory.run("small")
-    assert not any(f.rule_id == "G8" for f in found)
-    assert scene.advisory.suppressed("small") == {"G8": "show.small.post-monitors-are-deliberate"}
+    assert not any(f.rule_id in {"G8", "G10"} for f in found)
+    assert scene.advisory.suppressed("small") == {
+        "G8": "show.small.post-monitors-are-deliberate",
+        "G10": "show.small.no-ambient-mic-is-the-rig",
+    }
