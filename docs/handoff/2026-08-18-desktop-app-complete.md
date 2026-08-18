@@ -1,7 +1,7 @@
 # Sub-project H — desktop application — outcome
 
 **Date:** 2026-08-18 · **Branch** `claude_desk/soundtech-playground-handoff-6ab828`
-· **666 tests passing, 1 skipped** (FastMCP, by design) · `doctor` on the
+· **677 tests passing, 1 skipped** (FastMCP, by design) · `doctor` on the
 unprofiled real file still reports exactly **22 findings**
 
 ## What happened to the session's original plan
@@ -48,7 +48,7 @@ Each of these decided part of the design, and each is reproducible.
 | Re-derivation cost | `WingScene.load` 37 ms + `advisory.run` 104 ms; three whole-pipeline repeats at 90/103/99 ms. Cheap enough to re-run the entire engine after every single edit. |
 | Target vs raw path | `doctor --json` targets (`ch.1.send.8`) are *nearly* the raw path (`ae_data.ch.1.send.8`). Nearly, not exactly — which is why repairs are declared per rule, not derived. |
 
-## Two defects the work itself caught
+## Three defects the work itself caught
 
 **PB1's repair cannot be `set inv: true`.** `query/channel.py:63` defines
 effective polarity as channel inversion **XOR** source inversion. PB1 fires when
@@ -68,9 +68,49 @@ construction sat *before* the file named on the command line was validated. Now
 the session loads first — so a bad path costs no Qt startup at all — and the
 existing instance is reused.
 
+**The matrix-send path was correct and completely untested, which is the
+dangerous combination.** `_channel_sends` in the evaluator names a matrix send
+target `ch.N.send.MX5`, keeping the raw file's own prefix, and the document
+really does hold `ae_data.ch.N.send.MX5` beside `ae_data.ch.N.send.5` as two
+different destinations — so the declared path template fills correctly for both
+by construction. Nothing exercised it: ToanAZ's IEM matrix sends are all already
+`PRE`, which is correct practice and exactly why G8 stays silent on them. A
+template that had assumed a bare number would have looked perfect on the sample
+file and written to **bus 5 instead of matrix 5** the first time an IEM send was
+left post-fader — a silent wrong edit on the one signal path he most needs
+protected. `test_a_matrix_send_target_repairs_the_matrix_send` now induces that
+case and asserts bus 5 is untouched.
+
 ## Which rules have a repair, and why the rest do not
 
-Shipped: **G8** (`send.mode` POST → PRE) and **PB1** (toggle `in.set.inv`).
+**11 of the 39 base rules**, including **five of the seven `error`-severity
+rules**:
+
+| | Rule | What the repair writes |
+|---|---|---|
+| G8 | Monitor send is post-fader | `send.mode` → `PRE` |
+| R4 | Send to a record destination is post-fader | `send.mode` → `PRE` |
+| R5 | Main-send to a record main is post-fader | `main.pre` → `true` |
+| R1 | Click reaches a FOH main | `main.on` → `false` |
+| R2 | Talkback reaches a FOH main | `main.on` → `false` |
+| R3 | Timecode into a mix destination | `send.on` → `false` |
+| R3M | Timecode into a main | `main.on` → `false` |
+| R6 | Remote caller feeds its own mix-minus | `send.on` → `false` |
+| S1 | Speech channel without a high-pass | `flt.lc` → `true` |
+| PC8 | Q&A mic unmuted | `mute` → `true` |
+| PB1 | Snare bottom not polarity inverted | **toggle** `in.set.inv` |
+
+R1/R2/R3/R3M/R6 share one argument: each fires on a send being *on* toward a
+destination the signal must never reach, so off is the only value the predicate
+admits. S1 switches an absent high-pass on and deliberately leaves `lcf` exactly
+where the scene stored it — choosing a corner frequency is a different rule's
+job, and every rule that *does* state a corner has no one-click repair.
+
+Only two of the eleven fire on the untouched real file, so
+`tests/test_edit_clearance.py` carries an `INDUCERS` table: a mutation per rule,
+each lifted from the fixture that rule's own test already uses, so the two
+suites cannot drift on what "this rule fires" means. A descriptor with neither a
+real-file finding nor an inducer fails with a message saying exactly that.
 
 Everything else deliberately has none. The line is whether the rule's own
 predicate determines a single value:
@@ -82,11 +122,10 @@ predicate determines a single value:
 - **Two defensible answers.** E6 (gate off, or leave the automix group?), S2.
 - **Not about the scene at all.** Q1–Q7 are findings about the cue sheet.
 
-Rules that would be determined but do not fire on `example-Vu.snap` — R1, R2,
-R3, R3M, R4, R5, R6, PC8, S1 — have no descriptor **yet**, because
-`test_each_repair_clears_its_own_finding` refuses a descriptor it cannot
-exercise. Adding them means adding a fixture that makes the rule fire. That is
-the cheapest well-defined next task in this subsystem.
+The two remaining `error` rules, G7 and S2, are in that list on purpose: G7
+wants a whole dynamics configuration, and S2's answer is either "take the
+channel out of the automix group" or "turn the group off", which are different
+decisions about the same fact.
 
 ## The load-bearing tests
 
@@ -99,6 +138,8 @@ the cheapest well-defined next task in this subsystem.
 - `test_the_edit_package_never_imports_qt` — a clean subprocess, not this
   process's `sys.modules`, which would pass trivially whenever no other test had
   imported Qt first.
+- `test_a_matrix_send_target_repairs_the_matrix_send` — the `MX` branch, which
+  no rule reaches on the untouched file.
 - `test_the_unprofiled_real_file_still_yields_22_findings`.
 
 ## Next
@@ -114,8 +155,17 @@ Two things to know before starting C:
   `docs/knowledge-base/01-live-audio-ai/Behringer-WING-Integration.md` mentions
   exactly one address, `/ch/5/in/set/srcauto`, at lines 57 and 183, both times
   about assigning a User Button. No address table, no OSC code anywhere.
-- A scene's `ce` block has an `osc` key that nobody has opened. Cheapest first
-  probe available.
+- **The `ce_data.osc` probe is done, and it is a small answer.** Both sample
+  files hold exactly `{"ronly": false}` — nothing else. So the block is a
+  console *setting* for the OSC interface, not an address table, and the one
+  thing it does tell us is worth carrying: **the WING has an OSC read-only
+  toggle**, off in both files. A write path must read that flag and say so when
+  it is on, rather than sending messages a console is configured to ignore. Do
+  not re-open this looking for addresses; there are none here.
+
+**So the address vocabulary has to come from outside this repo** — the WING OSC
+documentation, or observation of a live console. That is the first real task of
+sub-project C, and it is the reason the roadmap sizes it "large".
 
 Also open, unchanged by this cycle: the four questions in
 `2026-08-18-next-session-prompt.md` §5 — the limiter `dyn.mdl` token, G10's
@@ -137,7 +187,17 @@ interpreter in use has no virtualenv.
   PB1 forms are green on `example-Vu.snap`. The response was not to weaken the
   claim but to write down, in the test file, what the fixture cannot prove.
 - **The honest-absence rule scales.** Q7 ships disabled for want of a citable
-  threshold; the repair table ships two descriptors for want of determined
-  values. Both are the same decision, and stating it in the UI — "no one-click
+  threshold; the repair table covers 11 rules of 39 and says nothing about the
+  other 28. Both are the same decision, and stating it in the UI — "no one-click
   repair for this rule, and here is why" — costs one label and buys trust in
   every button that *is* there.
+- **A correct-looking path that no test walks is a bug waiting for the worst
+  input.** The `MX` prefix was right by construction and unexercised, because the
+  only file available has that case already *correct*. The general shape:
+  when a fixture is a real working system, the paths it never lights up are
+  exactly the paths that will first be lit by a mistake. Go and induce them.
+- **The cheap probe is worth doing even when the answer is small.** Opening
+  `ce_data.osc` took a minute and returned two words — `{"ronly": false}`. That
+  is not an address table, and knowing so retires a line that had been carried
+  forward twice as "someone should look". It also produced one fact a write path
+  will need: the console can be set to refuse OSC writes.

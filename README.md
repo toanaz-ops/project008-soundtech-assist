@@ -56,10 +56,15 @@ the detail panel offers one button that applies it. Where it does not —
 any rule stating a frequency window, a count, or a choice between two
 defensible fixes — there is **no button**, and the panel says so. That
 absence is deliberate: a button that guesses is worse than no button.
-The repairs that ship are declared in
+**11 of the 39 base rules** carry one today, including five of the seven
+`error`-severity rules — the routing errors (click or talkback into a
+FOH main, timecode into any mix destination, a remote caller feeding
+its own mix-minus), both record-feed rules, the missing speech
+high-pass, an unmuted Q&A mic, a post-fader monitor send, and snare
+polarity. They are declared in
 [`wing_parser/edit/data/repairs.yaml`](wing_parser/edit/data/repairs.yaml),
 each with a rationale, and each with a test proving it removes its own
-finding and no other.
+finding **and no other**.
 
 **Editing is never destructive.** Edits are held as a journal, not
 applied to the loaded document. The Changes dock lists them with their
