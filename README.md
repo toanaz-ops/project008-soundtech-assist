@@ -422,7 +422,68 @@ code change — this is exactly how the test suite and the runnable
 examples in `examples/` isolate themselves from the real knowledge
 directory.
 
+## Talking to a live console
+
+Everything above reads a `.snap` file. `wing_parser/net/` reads the same
+scene from a console over OSC (UDP 2223) instead, and writes back to it.
+
+```powershell
+python -m wing_parser.cli net identity 192.168.128.28
+python -m wing_parser.cli net snapshot 192.168.128.28 -o today.snap
+python -m wing_parser.cli net get 192.168.128.28 /ch/1/fdr
+python -m wing_parser.cli net set 192.168.128.28 /ch/1/fdr -6.0 --confirm
+python -m wing_parser.cli net toggle 192.168.128.28 /ch/1/mute --confirm
+python -m wing_parser.cli net push 192.168.128.28 show.snap --confirm
+```
+
+`analyze`, `routing`, `channel` and `doctor` each take `--live <ip>` in
+place of a file:
+
+```powershell
+python -m wing_parser.cli doctor --live 192.168.128.28
+python -m wing_parser.cli doctor --live 192.168.128.28 --profile small
+```
+
+`--live` changes only where the `RawScene` comes from. The query layer,
+the classifier, the advisory rules and the show context are the same code
+on the same data, so a live desk and a saved file produce the same
+findings.
+
+### How it reads
+
+Two pipelined phases, both re-run on every snapshot:
+
+1. **shape** — a breadth-first `,s ?` walk of the address tree
+2. **values** — one GET per leaf, in batches of 200
+
+The shape is never cached, because the tree is dynamic: a `dyn` block set
+to `GATE` exposes different parameters than one set to `COMP`. A whole
+console is about 25 000 leaves and reads in a few seconds.
+
+### Writing
+
+`set`, `toggle` and `push` send nothing without `--confirm`. With it, the
+console's name, model and serial are echoed first, and every write is
+verified by reading the value back — necessary because an out-of-range
+write is silently clamped and still reports success. `WING_WRITE_ALLOW_SERIAL`
+pins writes to one console when set.
+
+`push` separates **landed**, **mismatched** and **absent**. Absent means
+the leaf does not exist on that console — a rack with no StageConnect
+device has no `/io/in/SC/*` — which is hardware, not failure.
+
+### What is not here
+
+Realtime subscription, metering, and the native binary interface on port
+2222. See `docs/superpowers/specs/2026-08-21-wing-net-design.md`, which is
+the design authority and records what was measured against a real console
+rather than taken from documentation.
+
 ## Offline guarantee
+
+`wing net` and `--live` talk to a console by design; everything else runs
+with no network at all, and **no test in the suite opens a socket to one**
+— the live paths are tested against a loopback fake.
 
 Parsing and rule evaluation are strictly deterministic — the file
 format decoder, the descriptors, the query layer, and the rule engine
@@ -587,7 +648,7 @@ guarantee a model will always pick the right tool.
 
 ## Claude Skills
 
-`skills/` ships five [Claude Skill](https://docs.claude.com/en/docs/claude-code/skills)
+`skills/` ships six [Claude Skill](https://docs.claude.com/en/docs/claude-code/skills)
 directories, one per CLI command family, each a `SKILL.md` with
 frontmatter (`name`, `description`) and instructions for running that
 command and reading its output:
@@ -598,10 +659,13 @@ skills/wing-channel/SKILL.md
 skills/wing-diff/SKILL.md
 skills/wing-routing/SKILL.md
 skills/wing-doctor/SKILL.md
+skills/wing-net/SKILL.md
 ```
 
 `wing-doctor`'s also documents `wing feedback`, since recording a
-verdict is the natural next step after a doctor finding.
+verdict is the natural next step after a doctor finding. `wing-net`
+covers both the `wing net` group and the `--live` flag, since both are
+ways of pointing the same analysis at a console instead of a file.
 
 To use them with Claude Code, copy or symlink the directories you want
 into a skills location Claude Code searches (for example a project's

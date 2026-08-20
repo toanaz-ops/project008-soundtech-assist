@@ -30,7 +30,31 @@ a console-read scene flows through `WingScene` untouched. **Nothing in `core/`,
 `query/`, `advisory/` or `showcontext/` changed to support live data** — that
 was the design bet and it held.
 
-## 2. Measured results
+## 2. The command surface
+
+```powershell
+python -m wing_parser.cli net identity 192.168.128.28
+python -m wing_parser.cli net snapshot 192.168.128.28 -o today.snap
+python -m wing_parser.cli net get 192.168.128.28 /ch/1/fdr
+python -m wing_parser.cli net set 192.168.128.28 /ch/1/fdr -6.0 --confirm
+python -m wing_parser.cli net toggle 192.168.128.28 /ch/1/mute --confirm
+python -m wing_parser.cli net push 192.168.128.28 show.snap --confirm
+
+python -m wing_parser.cli doctor --live 192.168.128.28
+python -m wing_parser.cli analyze --live 192.168.128.28
+python -m wing_parser.cli routing --live 192.168.128.28
+python -m wing_parser.cli channel --live 192.168.128.28 11
+```
+
+`--live` and a file argument are mutually exclusive; argparse enforces it.
+`set`, `toggle` and `push` send nothing without `--confirm`.
+
+**Use PowerShell, not Git Bash.** An OSC address begins with `/`, and MSYS
+rewrites that into a Windows path — `/ch/1/fdr` silently becomes
+`C:/Program Files/Git/ch/1/fdr` and the command reports no reply. This was hit
+during verification, not theorised.
+
+## 3. Measured results
 
 | | |
 |---|---|
@@ -39,12 +63,14 @@ was the design bet and it held.
 | push a whole scene | 21 344 leaves in **1.1 s** fire-and-forget |
 | push the console's own values back | `landed=21232, mismatched=0, absent=0`; **2 leaves** moved by one quantisation step |
 | **advisory on the live desk vs the file pushed to it** | **22 findings and 22 findings** |
-| offline suite | 961 passed, 1 skipped (FastMCP, by design) |
+| `doctor --live` end to end | 22 findings in **11.9 s** |
+| `net snapshot -o` then `WingScene.load` | 822 KB file, reloads to 22 findings and the same 2 anomalies as the source |
+| offline suite | **991 passed, 1 skipped** (FastMCP, by design); no test opens a socket to a console |
 
 `example-Vu.snap` still yields exactly **22** findings and `factory-scene.snap`
 still yields **none** — the standing constraint held throughout.
 
-## 3. The five findings that shaped the work
+## 4. The five findings that shaped the work
 
 Each cost a measurement and would have been wrong if reasoned about.
 
@@ -85,7 +111,7 @@ Proved by writing `/aux/1/dyn/mdl` and re-reading the schema: `GATE` exposes
 exposes `cmode cpeak depth fast …`. Two whole-console walks minutes apart
 differed by exactly those six leaves and nothing else out of 25 060.
 
-## 4. A latent parser bug this exposed
+## 5. A latent parser bug this exposed
 
 `query/build_blocks.build_dyn` read the dynamics ratio with `float(...)`. A
 compressor stores a number, but **a gate stores the string `"1:3"`**, and a WING
@@ -98,7 +124,7 @@ console raised on **7 of 8 aux strips**.
 `Gate` which models no ratio at all for the same reason. No advisory rule reads
 `Dyn.ratio`, so no finding moved.
 
-## 5. Open questions for ToanAZ
+## 6. Open questions for ToanAZ
 
 1. **Should a gate's `1:3` be a number at all, and under which convention?**
    Left as `None` rather than guessed. Nothing reads it today.
@@ -117,7 +143,7 @@ console raised on **7 of 8 aux strips**.
    `INCOMPLETE DATA`, `STACK EMPTY`) are treated as errors without having been
    seen. Any unrecognised payload is an error, so this is safe, not guessed.
 
-## 6. State of the lab console
+## 7. State of the lab console
 
 **The desk currently holds a pushed copy of `example-Vu.snap`**, written over
 OSC as the round-trip test. Individual leaves exercised during probing —
@@ -130,7 +156,7 @@ a 0-based index rather than the value. Restoring from it would quietly set
 `col`, `icon` and the IO patch indices one step low across the desk. The
 factory file is a real console-authored scene and has no such problem.
 
-## 7. What is deliberately not here
+## 8. What is deliberately not here
 
 Realtime subscription (`/*S~`), metering (native UDP channel 3 — the doorway to
 sub-project E), the native binary/TCP interface on 2222, and MCP live support.
