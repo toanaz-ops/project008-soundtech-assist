@@ -7,7 +7,17 @@ import sys
 
 from wing_parser import __version__
 from wing_parser.advisory.feedback import VERDICTS
-from wing_parser.cli import commands
+from wing_parser.cli import commands, net_commands
+
+
+def _add_file_or_live(parser: argparse.ArgumentParser) -> None:
+    """`file` and `--live IP` supply the same thing -- a scene to read --
+    from two different places, so exactly one must be given. A
+    mutually-exclusive group makes argparse reject both together (or
+    neither) up front, rather than each command checking by hand."""
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("file", nargs="?", help="a .snap file")
+    group.add_argument("--live", metavar="IP", help="read this console live instead of a file")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -22,16 +32,16 @@ def build_parser() -> argparse.ArgumentParser:
         ("routing", "routing map, orphans and unclassified channels"),
     ):
         node = sub.add_parser(name, help=help_text)
-        node.add_argument("file")
+        _add_file_or_live(node)
         node.set_defaults(handler=getattr(commands, name))
 
     node = sub.add_parser("channel", help="full detail for one channel")
-    node.add_argument("file")
+    _add_file_or_live(node)
     node.add_argument("number", type=int)
     node.set_defaults(handler=commands.channel)
 
     node = sub.add_parser("doctor", help="advisory findings only")
-    node.add_argument("file")
+    _add_file_or_live(node)
     node.add_argument("--json", action="store_true", help="machine-readable output")
     node.add_argument(
         "--profile",
@@ -75,6 +85,54 @@ def build_parser() -> argparse.ArgumentParser:
     lint.add_argument("--fix", action="store_true",
                       help="write the repairs back into the file")
     lint.set_defaults(handler=commands.showcontext_lint)
+
+    node = sub.add_parser("net", help="talk to a live console over OSC")
+    net_sub = node.add_subparsers(dest="net_command", required=True)
+
+    identity = net_sub.add_parser("identity", help="print name, model, serial, firmware")
+    identity.add_argument("ip")
+    identity.set_defaults(handler=net_commands.net_identity)
+
+    snapshot = net_sub.add_parser("snapshot", help="read the whole console")
+    snapshot.add_argument("ip")
+    snapshot.add_argument(
+        "-o", "--output", default=None,
+        help="write a .snap file here instead of printing a summary",
+    )
+    snapshot.set_defaults(handler=net_commands.net_snapshot)
+
+    get = net_sub.add_parser("get", help="read one leaf")
+    get.add_argument("ip")
+    get.add_argument("address")
+    get.set_defaults(handler=net_commands.net_get)
+
+    set_ = net_sub.add_parser("set", help="write one leaf (dry-run unless --confirm)")
+    set_.add_argument("ip")
+    set_.add_argument("address")
+    set_.add_argument("value")
+    set_.add_argument(
+        "--confirm", action="store_true",
+        help="actually send the write; without it, nothing is sent",
+    )
+    set_.set_defaults(handler=net_commands.net_set)
+
+    toggle = net_sub.add_parser("toggle", help="flip a 0/1 leaf (dry-run unless --confirm)")
+    toggle.add_argument("ip")
+    toggle.add_argument("address")
+    toggle.add_argument(
+        "--confirm", action="store_true",
+        help="actually send the write; without it, nothing is sent",
+    )
+    toggle.set_defaults(handler=net_commands.net_toggle)
+
+    push = net_sub.add_parser("push", help="push a scene file (dry-run unless --confirm)")
+    push.add_argument("ip")
+    push.add_argument("file")
+    push.add_argument(
+        "--confirm", action="store_true",
+        help="actually send the writes; without it, nothing is sent",
+    )
+    push.set_defaults(handler=net_commands.net_push)
 
     return parser
 
