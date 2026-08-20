@@ -15,8 +15,6 @@ import struct
 from dataclasses import dataclass
 from typing import Any, Sequence
 
-_LEAF_TRIPLET_TAGS = ("sff", "sfi", "s")
-
 
 @dataclass(frozen=True)
 class OscMessage:
@@ -109,16 +107,29 @@ def decode(data: bytes) -> OscMessage:
 def leaf_value(message: OscMessage) -> tuple[Any, str]:
     """Interpret a per-leaf GET reply's ,sff / ,sfi / ,s triplet.
 
-    Every form the console sends carries the NATIVE value as the LAST
-    argument, and a display string as the first -- for `,s` those are the
-    same string (design doc S2.3). The normalised 0..1 float that ,sff and
-    ,sfi carry in the middle has no known consumer and nothing to verify it
-    against, so it is left out rather than added on spec.
+    Which argument reconstructs the .snap value is NOT the same for every
+    tag. A live push of user-files/example-Vu.snap onto the console followed
+    by a per-leaf read-back of 21000+ leaves (design doc S2.3) found the
+    file's value matches args[-1] (the native value) for every ,sff and ,s
+    leaf, but matches args[0] (the display STRING) for every ,sfi leaf --
+    the ,sfi native int is frequently a 0-based index rather than the value
+    itself (e.g. /io/in/CRD/1/col: file holds 1, display '1', native 0; a
+    confirmed write of ,i 5 to /ch/40/col reads back display '5', native 4).
+    No fixture or measurement has ever shown the opposite for ,sff or ,s.
+
+    Every ,sfi display string observed so far is an integer literal, so it
+    is parsed to int here; if a non-numeric ,sfi display ever turns up this
+    will raise ValueError rather than silently return the wrong type.
     """
-    if message.typetag not in _LEAF_TRIPLET_TAGS:
-        raise ValueError(
-            f"{message.address!r}: not a per-leaf reply triplet (typetag {message.typetag!r})"
-        )
-    display = message.args[0]
-    native = message.args[-1]
-    return native, display
+    if message.typetag == "sff":
+        display, _normalised, native = message.args
+        return native, display
+    if message.typetag == "sfi":
+        display, _normalised, native = message.args
+        return int(display), display
+    if message.typetag == "s":
+        (display,) = message.args
+        return display, display
+    raise ValueError(
+        f"{message.address!r}: not a per-leaf reply triplet (typetag {message.typetag!r})"
+    )

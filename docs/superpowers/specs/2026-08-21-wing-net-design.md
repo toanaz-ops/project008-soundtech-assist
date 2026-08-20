@@ -15,7 +15,7 @@ running console: read the whole desk into the existing `WingScene`, write a
 `.snap` file, and set parameters back.
 
 **Goal stated by ToanAZ: reach the console's full functionality**, not a
-convenience subset. Coverage is measured, not asserted (§2.10).
+convenience subset. Coverage is measured, not asserted (§2.11).
 
 ## 2. Verified protocol facts
 
@@ -63,20 +63,37 @@ Reading a leaf returns a **triplet**: ascii display text, a normalised
 - `,sfi` gives `['1', 1.0, 1]` — integer parameter
 - `,s` gives `['LCL']` — string or enumerated parameter
 
-**The third element is bit-exact against the `.snap` file:**
+**Which element to take depends on the tag, and getting it wrong is silent.**
+Settled by experiment: `user-files/example-Vu.snap` was pushed onto the console
+over OSC, then every leaf read back, asking per leaf whether the FILE's value
+matches the reply's display string or its native value. 21 344 leaves:
 
-| leaf | `.snap` file | node dump `,s *` | per-leaf read |
+| tag | display matches | native matches | count |
 |---|---|---|---|
-| `ch.1.flt.hcf` | `10018.26074` | `10k02` | `10018.2607421875` (exact) |
-| `ch.1.eq.lq` | `0.997970223` | `1.00` | `0.9979702234268188` (exact) |
-| `ch.1.flt.lcs` | `"24"` (string) | `24` | `'24'` (string kept) |
+| `,sfi` | yes | yes | 7882 |
+| `,s` | yes | yes | 4974 |
+| `,sff` | yes | yes | 3588 |
+| `,sff` | **no** | yes | **2770** |
+| `,sfi` | yes | **no** | **1066** |
 
-**This contradicts the official document**, which claims a `,s *` node dump
-"will strictly correspond to what would be saved in a snap file". It corresponds
-in *which keys exist*, not in *precision*. Therefore:
+No leaf goes the other way for either tag. So the rule is:
 
-> **Node dumps discover shape. Per-leaf reads carry values. Never take a value
-> from a node dump.**
+> **`,sff` → take the native float. `,sfi` → take the DISPLAY string. `,s` →
+> take the string.**
+
+Both halves matter and they point in opposite directions:
+
+- For `,sff` the display is **rounded**: `ch.1.eq.lq` is `0.997970223` in the
+  file, display `'1.00'`, native `0.9979702234268188`. Taking display would lose
+  precision on 2770 leaves.
+- For `,sfi` the native int is often a **0-based index, not the value**.
+  `/io/in/CRD/1/col` holds `1` in the file, display `'1'`, native `0`. Confirmed
+  by writing too: `,i 5` to `/ch/40/col` (schema `int [1 .. 18]`) reads back
+  display `'5'`, native `4`. Taking native would corrupt 1066 leaves — the
+  `col`, `icon` and IO patch-index families — while looking entirely plausible.
+
+The recorded fixture `get/ch/1/in/conn/in` is a captured instance of the
+disagreement: display `'1'`, native `0`.
 
 ### 2.4 Two hazards absent from the document
 
@@ -176,7 +193,53 @@ never refuses a level.
 > Because the console clamps rather than rejects, `OK` is not proof the value
 > landed. **Every write must be verified by reading the leaf back.**
 
-### 2.7 String quoting
+**Write every value as a display-domain STRING, never as `,i`.** This is the
+write-side twin of §2.3 and it was measured the same way: push all 21 344 leaves
+of `example-Vu.snap`, read back, count mismatches.
+
+| write encoding | leaves wrong |
+|---|---|
+| type chosen from the JSON value (`,i` for int, `,f` for float, `,s` for str) | **1919** |
+| every value as `,s` in the display domain | **5** |
+
+Two separate traps produce those 1919, and both come from an int meaning an
+*index* rather than a *value*:
+
+- `ch.N.dyn.ratio` has schema `list [1.1, 1.2, 1.3, 1.5, 1.7, 2.0, 2.5, 3.0, …]`.
+  The file holds `3`. Sending `,i 3` selects **index 3**, which is `1.5`.
+  Sending `,s "3"` selects the value `3.0`.
+- `.snap` writes an integral float as a bare int (§5), so `"lvl": 0` arrives in
+  Python as `int`, and a writer that dispatches on the Python type sends `,i` to
+  a **fader** leaf. 370 send levels landed at `-oo` this way.
+
+The string form has neither problem, because the display domain is the same
+domain the file stores. §2.6's own examples already show WING accepts a string
+for a float, an int and an enum alike.
+
+The 5 that still fail are **scientific notation**: `fx.N.thr_3` holds
+`1.490116119e-07` (which is 2⁻²³, a float32 artefact), and WING's string parser
+does not understand the exponent. Format floats in plain decimal.
+
+**Push performance:** 21 344 leaves written in **1.1 s** fire-and-forget, since
+§2.6 establishes WING never echoes a write. Verification is the read-back, which
+is needed anyway.
+
+### 2.7 Ordering falls out for free
+
+§2.10 shows a leaf can fail to exist until its node's model key is set, so a
+single write pass cannot land everything. Measured: with the correct encoding a
+single pass already lands everything reachable, and the residual set is
+**identical on every repeat**, so a convergence loop terminates immediately
+rather than grinding. Retaining the loop is still right — it is what makes the
+ordering problem self-solving without a hardcoded list of which keys are magic,
+which would rot as firmware changes.
+
+129 leaves in the file are **absent from this console** and cannot be written:
+128 are `/io/in/SC/*` (StageConnect, no device attached) and 1 is
+`/cfg/mon/N/lvl`. That is hardware, not a defect, and a push must report such
+leaves rather than retrying them forever.
+
+### 2.8 String quoting
 
 Per-leaf reads return strings verbatim. The four hostile names `VOX, LEAD`,
 `A=B`, `IT'S OK` and `X,Y=Z` all round-tripped byte-for-byte through a `,s` set
@@ -217,7 +280,7 @@ re-encode of those two replies is impossible**, so a round-trip test must assert
 the *decoded value*, not the bytes. The subsystem never re-encodes a reply
 anyway — it encodes requests and decodes replies.
 
-### 2.8 A latent parser bug this work exposed
+### 2.9 A latent parser bug this work exposed
 
 `query/build_blocks.build_dyn` read the dynamics ratio with `float(...)`. A
 compressor stores a number, but **a gate stores the string `"1:3"`**, and a
@@ -236,7 +299,7 @@ the same reason. **No advisory rule reads `Dyn.ratio`**, so no finding changes;
 > Open question for ToanAZ: should a gate's `1:3` be modelled as a number at
 > all, and if so with which convention? Left as `None` rather than guessed.
 
-### 2.9 The JSON tree is dynamic — a cached inventory would be wrong
+### 2.10 The JSON tree is dynamic — a cached inventory would be wrong
 
 A node's parameter set changes with the value of its model key. Proved by
 controlled experiment on `/aux/1/dyn`, writing `mdl` and re-reading the schema:
@@ -261,7 +324,7 @@ This has two consequences that shape the whole subsystem:
 2. **Writes must be ordered.** Setting `dyn.ratio` before `dyn.mdl=COMP` targets
    a leaf that does not exist yet and earns `NODE NOT FOUND`. See §6, item 5.
 
-### 2.10 Coverage against the reference files
+### 2.11 Coverage against the reference files
 
 Measured: the two reference `.snap` files hold **28 635** distinct scalar leaves
 between them; the empty lab console exposes **25 060**. The 3 613 in the files
@@ -271,11 +334,11 @@ but not on the console are **not** protocol gaps — every one is explained:
 |---|---|---|
 | 3 190 | `/$ctl/layer/WEDIT/…` | WING-Edit's own layer layout; exists only once WING-Edit has connected |
 | 128 | `/io/in/SC/…` | StageConnect inputs; no SC device attached to the lab rack |
-| 48 | `/aux/N/dyn/{cmode,cpeak,depth,fast,ingain,peak}` | §2.9 — the file's aux dynamics are in a different model |
-| rest | `/$ctl/user/…` | user-button assignments, dynamic per §2.9 |
+| 48 | `/aux/N/dyn/{cmode,cpeak,depth,fast,ingain,peak}` | §2.10 — the file's aux dynamics are in a different model |
+| rest | `/$ctl/user/…` | user-button assignments, dynamic per §2.10 |
 
 Conversely 36 leaves are reachable but in neither file — `/aux/N/dyn/{acc,range,att,ratio,hld,rel}`,
-again §2.9. **The subsystem must therefore be judged on whether it can reach
+again §2.10. **The subsystem must therefore be judged on whether it can reach
 whatever the console currently exposes, not against a fixed list.**
 
 ## 3. Node-text grammar (`,s *` replies)
@@ -302,7 +365,7 @@ Two phases, both pipelined, both safe for the reasons measured above:
 ```
 phase 1  SHAPE    breadth-first ',s ?' walk, each level pipelined      0.95 s
                   safe to pipeline: a schema reply can never overflow (§2.4)
-                  fresh every run: the tree is dynamic (§2.9)
+                  fresh every run: the tree is dynamic (§2.10)
                           |
                           v  25 060 leaf addresses + declared types
 phase 2  VALUES   per-leaf GET, batch 200, retry pass for the ~0.1%    ~9 s
@@ -316,7 +379,7 @@ phase 2  VALUES   per-leaf GET, batch 200, retry pass for the ~0.1%    ~9 s
 can overflow and poison a batch, and their values are lossy (§2.3). `nodetext.py`
 therefore exists only to read a dump as a fast human-facing cross-check, and
 nothing in the snapshot path may depend on it. There is no cached shape file:
-`wing_shape.yaml` is **deleted from the design** — §2.9 shows it would be wrong
+`wing_shape.yaml` is **deleted from the design** — §2.10 shows it would be wrong
 and §2.5 shows it would save less than a second.
 
 **Nothing in `core/`, `query/`, `advisory/` or `showcontext/` changes**, because
@@ -391,7 +454,7 @@ oracle matters only for producing a file that reads back as WING's own.
 4. **Read-back verify after every write** — mandatory, because §2.6 shows the
    console clamps silently and still answers `OK`.
 
-5. **Writes are ordered, and the order is discovered, not hardcoded.** §2.9
+5. **Writes are ordered, and the order is discovered, not hardcoded.** §2.10
    shows a leaf can fail to exist until its node's model key is set. Rather than
    maintain a list of which keys are magic — which would rot as firmware changes
    — `write.py` converges:
@@ -437,10 +500,10 @@ no human at the console:
 Any difference is either a fidelity bug or a rack-vs-full-console difference
 that must be **explained in writing**, never waved away.
 
-**Coverage is measured, not claimed** — see §2.10, which already does this and
+**Coverage is measured, not claimed** — see §2.11, which already does this and
 explains every one of the 3 613 differences. The standing test is the round-trip
 above: whatever the console exposes must survive push, read-back and diff. A
-fixed expected-leaf list would be wrong for the reason §2.10 gives.
+fixed expected-leaf list would be wrong for the reason §2.11 gives.
 
 ## 8. Out of scope
 
