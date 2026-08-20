@@ -5,9 +5,15 @@ triplet -> value rule, already implemented by `codec.leaf_value`), S2.5
 (the whole-console read budget), S4 (phase 2: VALUES, on top of phase 1's
 `net/schema.py` SHAPE).
 
-Nothing here recurses or dumps a node -- `net/nodetext.py`'s lossy `,s *`
-path is not on this path at all (S4). Every value comes from a per-leaf
-GET, exactly the request `net/client.py` already exists to pipeline.
+**Every value here comes from a per-leaf GET**, exactly the request
+`net/client.py` exists to pipeline. That is the part that matters: a
+node dump's values are lossy display text (S2.3), so none may ever reach
+a scene.
+
+`net/schema.py` does fall back to a `,s *` dump for a node whose `,s ?`
+reply overflows -- a loaded effect slot, in practice -- but it takes only
+the key NAMES from it. Those names then come back here and are read
+individually like every other leaf, so the lossy values are never used.
 """
 
 from __future__ import annotations
