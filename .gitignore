@@ -27,6 +27,8 @@ junit.xml
 Thumbs.db
 .DS_Store
 
-# transient pytest output dumps
-*verbose*.txt
-pytest_out.log
+# transient pytest output dumps, at the repo root only
+/*verbose*.txt
+/pytest_out.log
+/baseline.txt
+/*.junit.xml
