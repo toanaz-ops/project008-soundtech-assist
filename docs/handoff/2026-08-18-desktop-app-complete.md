@@ -149,23 +149,30 @@ it: writing `ae_data.ch.1.send.8.mode = "PRE"` to a file and sending the
 equivalent OSC message are the same `Patch` leaving through two different doors.
 Sub-project C needs a new sink, not a new edit layer.
 
-Two things to know before starting C:
+**Read `docs/handoff/2026-08-18-wing-remote-probe.md` first.** It splits C into
+the two questions that were being treated as one, answers the first, and closes
+two dead ends so nobody walks into them again. In short:
 
-- **This repository does not document the WING OSC protocol.**
-  `docs/knowledge-base/01-live-audio-ai/Behringer-WING-Integration.md` mentions
-  exactly one address, `/ch/5/in/set/srcauto`, at lines 57 and 183, both times
-  about assigning a User Button. No address table, no OSC code anywhere.
+- **The transport is known and cited.** The WING manual, page 50, documents OSC
+  remote control on **IP port 2223** (with a second remote channel on 2222), a
+  console **REMOTE LOCK** that blocks both, a ceiling of **16 simultaneous
+  remote devices**, and that the console must be wired by Ethernet.
+- **The address vocabulary is not, anywhere here.** One page of the manual's
+  167 mentions OSC at all, and only to say the port can be locked.
+  `WING-Edit.exe` yields nothing to an ASCII or UTF-16 string scan — its payload
+  is packed. So this half has to come from observing a live console, or from an
+  external protocol reference treated as hypothesis until probed.
 - **The `ce_data.osc` probe is done, and it is a small answer.** Both sample
-  files hold exactly `{"ronly": false}` — nothing else. So the block is a
-  console *setting* for the OSC interface, not an address table, and the one
-  thing it does tell us is worth carrying: **the WING has an OSC read-only
-  toggle**, off in both files. A write path must read that flag and say so when
-  it is on, rather than sending messages a console is configured to ignore. Do
-  not re-open this looking for addresses; there are none here.
+  files hold exactly `{"ronly": false}`. Worth carrying: the scene file has its
+  own OSC read-only flag, *and* the console has REMOTE LOCK. Whether they are
+  the same switch is unknown — a one-minute experiment at the console settles
+  it. Until then a write path must account for both.
 
-**So the address vocabulary has to come from outside this repo** — the WING OSC
-documentation, or observation of a live console. That is the first real task of
-sub-project C, and it is the reason the roadmap sizes it "large".
+**An earlier version of this section claimed the whole protocol had to come from
+outside the repo.** That was wrong about the transport half, and the mistake was
+citing the knowledge-base summary instead of opening the manual sitting in
+`user-files/`. The correction is the probe document; the lesson is in the last
+section below.
 
 Also open, unchanged by this cycle: the four questions in
 `2026-08-18-next-session-prompt.md` §5 — the limiter `dyn.mdl` token, G10's
@@ -201,3 +208,15 @@ interpreter in use has no virtualenv.
   is not an address table, and knowing so retires a line that had been carried
   forward twice as "someone should look". It also produced one fact a write path
   will need: the console can be set to refuse OSC writes.
+- **A summary is not a source, and this cycle proved it the expensive way.**
+  This document first stated that the WING OSC protocol was undocumented here,
+  citing `Behringer-WING-Integration.md` — a knowledge-base *summary*. The
+  actual manual was sitting in `user-files/` unopened, and page 50 names the
+  port. The project's own standing rule already says a citation is not
+  verification and to open the file the claim actually names; the failure was
+  opening a file *about* the subject instead of the primary document. Ask "what
+  is the most primary source I have?" before writing "there is no source".
+- **A worktree is not the checkout.** The manual and `WING-Edit.exe` are
+  gitignored, so they do not exist inside a git worktree. The first probe failed
+  with `FileNotFoundError` and read exactly like "the file is not here". Any
+  probe touching an ignored artefact must run from the main checkout.
