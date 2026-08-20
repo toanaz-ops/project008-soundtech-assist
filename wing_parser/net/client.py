@@ -162,21 +162,14 @@ class WingClient:
         typetag: str | None = None,
         args: Sequence[Any] = (),
     ) -> BatchResult:
-        # Round 0 runs on whatever socket is current; every round after
-        # that rotates first (sec 2.4(b)) -- a short batch is the signal
-        # that something poisoned this socket's reply stream.
-        #
-        # Each retry round also HALVES the chunk size, down to 1. That is
-        # what isolates a poisoned request rather than merely surviving
-        # it. An oversized reply kills every reply after it on the same
-        # socket, so a chunk containing one poison node loses all its
-        # innocent neighbours too, and resending the same chunk reproduces
-        # the same casualty list forever -- measured: a schema walk stuck
-        # at 27 unresolved nodes across 2 and 5 retry rounds alike, of
-        # which only ONE (`/fx/1`, a loaded effect slot whose parameter
-        # list exceeds the ~2 kB ceiling) was genuinely unanswerable.
-        # Halving reaches chunk size 1, where a silent address can only be
-        # its own fault, and the other 26 resolve.
+        # Each retry round halves the chunk size, down to 1, which is what
+        # ISOLATES a poisoned request rather than merely surviving it. An
+        # oversized reply kills every reply after it on the socket, so a
+        # chunk holding one poison node loses its innocent neighbours too
+        # and resending that chunk reproduces the same casualty list
+        # forever. Measured: a schema walk stuck at 27 unresolved nodes at
+        # 2 and 5 rounds alike, of which only ONE was truly unanswerable.
+        # At chunk size 1 a silent address can only be its own fault.
         pending = list(dict.fromkeys(addresses))  # de-dup, keep first-seen order
         replies: dict[str, OscMessage] = {}
         chunk_size = max(1, batch_size)
