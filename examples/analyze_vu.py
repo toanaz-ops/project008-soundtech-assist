@@ -9,7 +9,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 def main() -> None:
     scene = WingScene.load(REPO / "user-files" / "example-Vu.snap")
-    print(f"{scene.path.name}: {scene.version.label}")
+    print(f"{scene.source}: {scene.version.label}")
 
     for channel in scene.channels():
         if not channel.name.strip():

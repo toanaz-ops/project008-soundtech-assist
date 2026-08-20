@@ -25,7 +25,10 @@ from wing_parser.showcontext import view as show_view
 class WingScene:
     def __init__(self, raw: RawScene, show: ShowContext | None = None) -> None:
         self._raw = raw
-        self.path: Path = raw.path
+        # None when the scene came off a console rather than out of a file.
+        # `source` is what anything user-facing should print; see RawScene.
+        self.path: Path | None = raw.path
+        self.source: str = raw.source
         self.version = raw.version
 
         anomalies: list[Anomaly] = list(validate(raw))
@@ -98,7 +101,7 @@ class WingScene:
 
     def channel(self, number: int) -> Channel:
         if number not in self._channels:
-            raise KeyError(f"no channel {number} in {self.path.name}")
+            raise KeyError(f"no channel {number} in {self.source}")
         return self._channels[number]
 
     def channels(self) -> tuple[Channel, ...]:
@@ -115,7 +118,7 @@ class WingScene:
     def _family(self, kind: str, number: int) -> Bus:
         section = self._bus_family[kind]
         if number not in section:
-            raise KeyError(f"no {kind} {number} in {self.path.name}")
+            raise KeyError(f"no {kind} {number} in {self.source}")
         return section[number]
 
     def bus(self, number: int) -> Bus:
@@ -181,4 +184,4 @@ class WingScene:
         return compare(self, other)
 
     def __repr__(self) -> str:
-        return f"<WingScene {self.path.name} {self.version.type_id}>"
+        return f"<WingScene {self.source} {self.version.type_id}>"
