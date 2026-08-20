@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0
+rootdir: Z:\My Drive\CLAUDE WORKS\DEV CAVE 2026\SOUNDTECH PLAYGROUND\.claude\worktrees\behringer-wing-ethernet-mixer-5de617
+configfile: pyproject.toml
+plugins: anyio-4.14.2, cov-7.1.0
+collected 269 items
+
+tests\test_net_codec.py ................................................ [ 17%]
+........................................................................ [ 44%]
+........................................................................ [ 71%]
+.....................................................ss................. [ 98%]
+.....                                                                    [100%]
+
+======================= 267 passed, 2 skipped in 1.21s ========================

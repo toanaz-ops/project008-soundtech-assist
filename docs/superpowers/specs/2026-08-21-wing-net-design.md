@@ -15,7 +15,7 @@ running console: read the whole desk into the existing `WingScene`, write a
 `.snap` file, and set parameters back.
 
 **Goal stated by ToanAZ: reach the console's full functionality**, not a
-convenience subset. Coverage is measured, not asserted (§7).
+convenience subset. Coverage is measured, not asserted (§2.10).
 
 ## 2. Verified protocol facts
 
@@ -85,14 +85,36 @@ Measured: `/aux/1 ,s *` = 1772 B ok · `/bus/1 ,s *` = 1276 B ok ·
 `/ch/1 ,s *` (about 2100 B) returns **no reply at all**, and that is the very
 example the official document prints.
 
-**(b) A request that produces no reply wedges the client socket.** Measured:
-send `/ch/1 ,s *`, get no reply, then send `/ch/2/fdr` **on the same socket** —
-it also times out. A fresh socket works at once. Two causes share this
-signature: an oversized node dump, and a **GET on an address that does not
-exist** (`/ch/40/zzz` and `/ch/99/fdr` both reproduce it).
+**(b) An oversized node dump poisons every reply that follows it on the same
+socket.** This is sharper and nastier than a simple timeout. Measured with a
+batch of 20 known-good `/ch/N/fdr` reads:
 
-> The client MUST treat a timeout as "rotate the source port", not merely
-> "retry". Retrying on the same socket cannot succeed.
+| batch | replies received |
+|---|---|
+| 20 good requests only | **20 / 20** |
+| oversized dump **first**, then 20 good | **0 / 20** |
+| 10 good, oversized dump, 10 good | **10 / 20** — everything after it is lost |
+| 10 good, **nonexistent address**, 10 good | **20 / 20** |
+
+Two conclusions, and the second corrects an earlier draft of this document:
+
+1. An oversized dump kills the console's reply stream to that source port. It is
+   not recoverable in place — but **rotating the source port and resending
+   recovers completely**, measured 20 / 20 on the retry.
+2. **A GET on an address that does not exist is harmless.** It simply produces
+   no reply for that one request; the socket keeps working and every other
+   reply in the batch still arrives. An earlier draft claimed otherwise; that
+   claim came from a probe loop that rotated its socket after every timeout and
+   so never actually tested it.
+
+> Therefore: **never put a request that might be oversized into a pipelined
+> batch.** Missing addresses are safe to pipeline; oversized dumps are not.
+
+**Schema queries can never be oversized**, which is what makes the architecture
+in §4 work. A `,s ?` reply lists only one node's immediate children and never
+recurses. Largest observed across the whole tree: **1312 B** (`/ch/1`), against
+`/bus/1` 908, `/aux/1` 868, `/$ctl/user` 932, `/ch` 972. Node *dumps* by
+contrast reach 1832 B (`/io/in/LCL`) before the ceiling bites.
 
 ### 2.5 Throughput
 
@@ -100,12 +122,16 @@ Pipelining — fire a batch, then collect — is fast and nearly lossless:
 
 - **10 760 leaf reads in 3.81 s = 2822 reads/s, 8 lost (0.07 %)** at batch 200
 - batch 500 is worse: 4.86 s, 27 lost. **Use batch 200.**
-- 269 leaves per channel; whole console is about 24 430 parameters, roughly **9 s**
+- 269 leaves per channel; whole console is **25 060 leaves**, roughly **9 s**
 - A retry pass for the ~0.1 % that drop is mandatory, not optional
 
-An adaptive walk that discovers the 2 KB ceiling at runtime cost 1220 requests
-of which 59 timed out at 1.5 s each — 88 s of the 100 s total. Hence the shape
-descriptor in §4 is computed once and cached, never re-probed per run.
+The schema walk is the same story. Done one request at a time it takes **55 s**
+(5332 requests). Done as a **breadth-first walk with each level pipelined**, the
+identical result takes **0.95 s** with zero unresolved nodes — a 58× difference,
+and the reason §4 walks the schema fresh on every snapshot instead of caching it.
+
+Whole-console snapshot is therefore about **10 s**: 0.95 s of shape plus ~9 s of
+values.
 
 ### 2.6 Writing
 
@@ -159,6 +185,87 @@ followed by a `,s` get.
 Node dumps quote a value containing `,` or `=` in **single quotes**:
 `...,16.name='A,B=C',col=1,...`. The node-text parser must honour that.
 
+**WING over-pads a string whose length is exactly `4k-1`.** OSC 1.0 pads a
+string with 1-4 NULs to a multiple of 4, so an 11-character string occupies 12
+bytes. Measured on the wire:
+
+| payload | length | OSC 1.0 says | WING sends |
+|---|---|---|---|
+| `OK` | 2 | 4 | 4 |
+| `NODE NOT FOUND` | 14 | 16 | 16 |
+| `VALUE ERROR` | 11 | 12 | **16** |
+| `NODE IS NOT PAR` | 15 | 16 | **20** |
+
+Only the two whose length is `4k-1` differ, and both gain exactly 4 bytes. The
+official document shows `VALUE ERROR` over-padded the same way but shows
+`NODE IS NOT PAR` at 16, which this firmware contradicts.
+
+Consequence: **decoding must ignore trailing padding, and a byte-exact
+re-encode of a console reply is not always possible.** That costs nothing in
+practice -- this subsystem encodes requests and decodes replies, never the
+reverse -- but a round-trip test must assert the *decoded value*, not the bytes.
+
+### 2.8 A latent parser bug this work exposed
+
+`query/build_blocks.build_dyn` read the dynamics ratio with `float(...)`. A
+compressor stores a number, but **a gate stores the string `"1:3"`**, and a
+WING defaults its aux dynamics to `GATE`. Neither reference `.snap` contains a
+gate on a strip -- both carry only `CMB` and `COMP` -- so the whole test suite
+passed while the parser could not open a scene saved from an untouched desk.
+Reading the live console raised `ValueError: could not convert string to float:
+'1:3'` on **7 of 8 aux strips**.
+
+Fixed here rather than worked around in `net/`, because it is a file-path bug
+that live data merely revealed. `Dyn.ratio` is now `float | None`, `None` for
+the `a:b` form -- matching the sibling `Gate`, which models no ratio at all for
+the same reason. **No advisory rule reads `Dyn.ratio`**, so no finding changes;
+`example-Vu.snap` still yields exactly 22 and `factory-scene.snap` still none.
+
+> Open question for ToanAZ: should a gate's `1:3` be modelled as a number at
+> all, and if so with which convention? Left as `None` rather than guessed.
+
+### 2.9 The JSON tree is dynamic — a cached inventory would be wrong
+
+A node's parameter set changes with the value of its model key. Proved by
+controlled experiment on `/aux/1/dyn`, writing `mdl` and re-reading the schema:
+
+| `dyn/mdl` | parameters the node exposes |
+|---|---|
+| `GATE` | `on mix gain thr mdl` + **`acc range att hld ratio rel`** |
+| `COMP` | `on mix gain thr mdl` + **`auto det env knee ratio att hld rel`** |
+| `CMB` | `on mix gain thr mdl` + **`cmode cpeak depth fast ingain peak`** |
+
+`example-Vu.snap` holds `aux.1.dyn.mdl = COMP` and carries exactly the COMP key
+set. Two schema walks taken minutes apart across the *whole console* differed by
+exactly six leaves — `acc, range` present in one and `auto, det, env, knee` in
+the other — and by nothing else, because `/aux/1/dyn/mdl` was `GATE` during the
+first walk and `COMP` during the second. Nothing else in 25 060 leaves moved.
+
+This has two consequences that shape the whole subsystem:
+
+1. **Shape must be discovered per snapshot, never cached.** A static leaf
+   inventory would silently omit parameters that exist on a loaded desk. At
+   0.95 s the walk is cheap enough that there is no reason to cache it.
+2. **Writes must be ordered.** Setting `dyn.ratio` before `dyn.mdl=COMP` targets
+   a leaf that does not exist yet and earns `NODE NOT FOUND`. See §6, item 5.
+
+### 2.10 Coverage against the reference files
+
+Measured: the two reference `.snap` files hold **28 635** distinct scalar leaves
+between them; the empty lab console exposes **25 060**. The 3 613 in the files
+but not on the console are **not** protocol gaps — every one is explained:
+
+| count | path shape | why |
+|---|---|---|
+| 3 190 | `/$ctl/layer/WEDIT/…` | WING-Edit's own layer layout; exists only once WING-Edit has connected |
+| 128 | `/io/in/SC/…` | StageConnect inputs; no SC device attached to the lab rack |
+| 48 | `/aux/N/dyn/{cmode,cpeak,depth,fast,ingain,peak}` | §2.9 — the file's aux dynamics are in a different model |
+| rest | `/$ctl/user/…` | user-button assignments, dynamic per §2.9 |
+
+Conversely 36 leaves are reachable but in neither file — `/aux/N/dyn/{acc,range,att,ratio,hld,rel}`,
+again §2.9. **The subsystem must therefore be judged on whether it can reach
+whatever the console currently exposes, not against a fixed list.**
+
 ## 3. Node-text grammar (`,s *` replies)
 
 Used for **shape discovery only**. Assignments are comma-separated; `.` walks
@@ -178,8 +285,27 @@ Values may be single-quoted; `-oo` means -144.
 
 ## 4. Architecture
 
-Read: walk the schema once, then pipelined per-leaf reads, then a nested dict,
-then a `RawScene`, then the existing `WingScene`, unchanged.
+Two phases, both pipelined, both safe for the reasons measured above:
+
+```
+phase 1  SHAPE    breadth-first ',s ?' walk, each level pipelined      0.95 s
+                  safe to pipeline: a schema reply can never overflow (§2.4)
+                  fresh every run: the tree is dynamic (§2.9)
+                          |
+                          v  25 060 leaf addresses + declared types
+phase 2  VALUES   per-leaf GET, batch 200, retry pass for the ~0.1%    ~9 s
+                  safe to pipeline: a missing address does not poison (§2.4)
+                          |
+                          v
+                  nested ae / ce dicts -> RawScene -> WingScene, unchanged
+```
+
+**Node dumps are not on this path at all.** They are the one request shape that
+can overflow and poison a batch, and their values are lossy (§2.3). `nodetext.py`
+therefore exists only to read a dump as a fast human-facing cross-check, and
+nothing in the snapshot path may depend on it. There is no cached shape file:
+`wing_shape.yaml` is **deleted from the design** — §2.9 shows it would be wrong
+and §2.5 shows it would save less than a second.
 
 **Nothing in `core/`, `query/`, `advisory/` or `showcontext/` changes**, because
 `WingScene.__init__` already takes a `RawScene` rather than a path
@@ -194,14 +320,13 @@ WING-Edit will re-open needs exact JSON types (§5).
 | file | responsibility |
 |---|---|
 | `net/codec.py` | OSC encode/decode: 4-byte padding, tags `s/f/i/b`, triplet replies |
-| `net/client.py` | UDP socket; single request; pipelined batch (200); retry pass; timeout means rotate source port |
+| `net/client.py` | UDP socket; single request; pipelined batch (200); retry pass; rotate source port after a poisoned batch (§2.4) |
 | `net/identity.py` | `WING?` on 2222, giving name, model, serial, firmware |
-| `net/schema.py` | recursive `,s ?` walk to a leaf inventory with declared types; skips `$` |
-| `net/nodetext.py` | parse `,s *` node text per §3 — shape only, never values |
+| `net/schema.py` | **breadth-first** `,s ?` walk, each level pipelined, to a leaf inventory with declared types; skips `$` except `/$ctl` |
+| `net/nodetext.py` | parse `,s *` node text per §3 — cross-check only, never on the snapshot path (§4) |
 | `net/snapshot.py` | leaf reads to nested `ae`/`ce` dicts to a `RawScene` |
 | `net/jsontypes.py` | restore exact JSON types for file export |
 | `net/write.py` | set, toggle, node write, dry-run, read-back verify |
-| `net/data/wing_shape.yaml` | cached leaf inventory, so §2.5's 88 s of probing happens once |
 | `net/data/wing_jsontypes.yaml` | generated JSON-type oracle (§5) |
 | `cli/net_commands.py` | the `wing net` command group |
 
@@ -229,6 +354,21 @@ code. Correctness is proven by the round-trip in §7, not by inspection.
    matching, the write is refused. Off by default.
 4. **Read-back verify after every write** — mandatory, because §2.6 shows the
    console clamps silently and still answers `OK`.
+
+5. **Writes are ordered, and the order is discovered, not hardcoded.** §2.9
+   shows a leaf can fail to exist until its node's model key is set. Rather than
+   maintain a list of which keys are magic — which would rot as firmware changes
+   — `write.py` converges:
+
+   ```
+   repeat:
+       write every pending leaf the current schema says exists
+       re-walk the schema for the nodes just touched
+       until a pass writes nothing new
+   ```
+
+   A leaf still unwritten when the loop stops is **reported as unreachable**,
+   never silently dropped.
 
 `core/normalizer.from_db` already exists as the inverse conversion and is
 reused for level writes.
@@ -261,9 +401,10 @@ no human at the console:
 Any difference is either a fidelity bug or a rack-vs-full-console difference
 that must be **explained in writing**, never waved away.
 
-**Coverage is measured, not claimed.** A test compares the leaf inventory in
-`wing_shape.yaml` against every key path present in the two reference `.snap`
-files, and fails if the subsystem cannot reach one of them.
+**Coverage is measured, not claimed** — see §2.10, which already does this and
+explains every one of the 3 613 differences. The standing test is the round-trip
+above: whatever the console exposes must survive push, read-back and diff. A
+fixed expected-leaf list would be wrong for the reason §2.10 gives.
 
 ## 8. Out of scope
 

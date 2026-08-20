@@ -84,7 +84,11 @@ class Dyn:
     on: bool
     model: str
     threshold_dB: float
-    ratio: float
+    # None when the console stores the ratio in its "1:3" form, which every
+    # gate-family model does. Sibling `Gate` omits a ratio field entirely for
+    # the same reason: the a:b token is not a number and inventing one would
+    # put a fabricated value in front of a mix decision.
+    ratio: float | None
     attack_ms: float
     release_ms: float
 
