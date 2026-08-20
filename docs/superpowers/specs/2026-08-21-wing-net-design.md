@@ -185,25 +185,37 @@ followed by a `,s` get.
 Node dumps quote a value containing `,` or `=` in **single quotes**:
 `...,16.name='A,B=C',col=1,...`. The node-text parser must honour that.
 
-**WING over-pads a string whose length is exactly `4k-1`.** OSC 1.0 pads a
-string with 1-4 NULs to a multiple of 4, so an 11-character string occupies 12
-bytes. Measured on the wire:
+**The `/*` error-reply path over-pads; the node-listing path does not.** OSC 1.0
+pads a string with 1-4 NULs to a multiple of 4, so an 11-character string
+occupies 12 bytes. Measured on the wire across 117 recorded replies:
 
-| payload | length | OSC 1.0 says | WING sends |
-|---|---|---|---|
-| `OK` | 2 | 4 | 4 |
-| `NODE NOT FOUND` | 14 | 16 | 16 |
-| `VALUE ERROR` | 11 | 12 | **16** |
-| `NODE IS NOT PAR` | 15 | 16 | **20** |
+| reply family | payload | length | length mod 4 | OSC 1.0 says | WING sends |
+|---|---|---|---|---|---|
+| `/*` error | `OK` | 2 | 2 | 4 | 4 |
+| `/*` error | `NODE NOT FOUND` | 14 | 2 | 16 | 16 |
+| `/*` error | `VALUE ERROR` | 11 | 3 | 12 | **16** |
+| `/*` error | `NODE IS NOT PAR` | 15 | 3 | 16 | **20** |
+| node listing | `cfg` | 3 | 3 | 4 | 4 |
+| node listing | `$syscfg` | 7 | 3 | 8 | 8 |
 
-Only the two whose length is `4k-1` differ, and both gain exactly 4 bytes. The
-official document shows `VALUE ERROR` over-padded the same way but shows
-`NODE IS NOT PAR` at 16, which this firmware contradicts.
+So it is **not** a general "length ≡ 3 (mod 4)" rule, which an earlier draft of
+this document claimed: `cfg` and `$syscfg` have that length and pad correctly.
+The two families are evidently built by different routines, and only the error
+one adds the extra word. The official document shows `VALUE ERROR` over-padded
+the same way, but shows `NODE IS NOT PAR` at 16, which this firmware
+contradicts.
 
-Consequence: **decoding must ignore trailing padding, and a byte-exact
-re-encode of a console reply is not always possible.** That costs nothing in
-practice -- this subsystem encodes requests and decodes replies, never the
-reverse -- but a round-trip test must assert the *decoded value*, not the bytes.
+**This costs nothing and breaks nothing.** The over-padding only ever lands on
+the single, final argument of an error reply, so the stray NULs sit past the
+last field and are ignored. Verified directly: of 117 recorded replies, 56 carry
+a `4k-1` string in a **non-final** position — the whole root listing is such
+strings — and every one decodes correctly. Only 2 replies fail a strict
+length-accounting check, and they are exactly the two error payloads above.
+
+Consequence for the code: decoding is already correct, but a **byte-exact
+re-encode of those two replies is impossible**, so a round-trip test must assert
+the *decoded value*, not the bytes. The subsystem never re-encodes a reply
+anyway — it encodes requests and decodes replies.
 
 ### 2.8 A latent parser bug this work exposed
 
