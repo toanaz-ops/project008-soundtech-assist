@@ -26,3 +26,7 @@ junit.xml
 # OS
 Thumbs.db
 .DS_Store
+
+# transient pytest output dumps
+*verbose*.txt
+pytest_out.log
