@@ -8,8 +8,11 @@ for the string form (scientific notation, `_format_float_plain`). `OK` is
 not proof either: the console clamps out-of-range values and still
 answers `OK`, so every write here is read back and a clamp reported.
 
-`WingClient` is GET-shaped (WING never echoes a write, sec 2.1); sends use
-a raw socket via `codec.encode`, only read-back GETs use `WingClient`. Sec
+A parameter write expects no reply (sec 2.6), so those sends go straight
+out on a bare socket -- WingClient's reply-matching and socket rotation
+have nothing to do. Everything that does expect a reply, including the
+node-write acknowledgement and every read-back, goes through WingClient
+so it keeps that recovery. Sec
 6: dry-run (default) touches no socket; `confirm=True` echoes identity,
 refuses on a `WING_WRITE_ALLOW_SERIAL` mismatch, reads every write back.
 """
@@ -24,12 +27,11 @@ from typing import Any, Mapping
 
 from wing_parser.core.normalizer import SENTINEL_MINUS_INF, from_db
 from wing_parser.net.client import DEFAULT_TIMEOUT, OSC_PORT, WingClient
-from wing_parser.net.codec import OscMessage, decode, encode, leaf_value
+from wing_parser.net.codec import encode, leaf_value
 from wing_parser.net.identity import IDENTITY_PORT, query_identity
 
 _SERIAL_ENV_VAR = "WING_WRITE_ALLOW_SERIAL"
 _OK = "OK"
-_RECV_BUFSIZE = 4096
 
 class SerialMismatchError(RuntimeError):
     """Refused: WING_WRITE_ALLOW_SERIAL is set and does not match (sec 6)."""
@@ -97,19 +99,15 @@ def _authorize(host: str, identity_port: int, timeout: float) -> None:
             f"{_SERIAL_ENV_VAR}={allowed!r} does not match"
         )
 
-def _raw_send(host: str, port: int, address: str, typetag: str, args: tuple, *,
-               timeout: float, expect_reply: bool) -> OscMessage | None:
-    # WingClient has no send-with-typetag surface (module docstring).
+def _fire_and_forget(host: str, port: int, address: str, typetag: str, args: tuple) -> None:
+    """A parameter write expects no reply at all (sec 2.6: WING never echoes
+    one), so this deliberately does not use WingClient. WingClient's whole
+    job is matching replies to requests and rotating away from a poisoned
+    reply stream, and neither applies when nothing comes back. Anything
+    that DOES expect a reply goes through WingClient instead, so it keeps
+    that recovery."""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.settimeout(timeout)
         sock.sendto(encode(address, typetag, args), (host, port))
-        if not expect_reply:
-            return None
-        try:
-            data, _addr = sock.recvfrom(_RECV_BUFSIZE)
-        except socket.timeout:
-            return None
-        return decode(data)
 
 def _set_leaf(host: str, address: str, tag: str, args: tuple, sent: str, expected: Any, *,
                osc_port: int, identity_port: int, timeout: float, confirm: bool) -> SetResult:
@@ -117,7 +115,7 @@ def _set_leaf(host: str, address: str, tag: str, args: tuple, sent: str, expecte
     if not confirm:
         return SetResult(address, expected, sent, True, None, None)
     _authorize(host, identity_port, timeout)
-    _raw_send(host, osc_port, address, tag, args, timeout=timeout, expect_reply=False)
+    _fire_and_forget(host, osc_port, address, tag, args)
     with WingClient(host, osc_port, timeout=timeout) as client:
         reply = client.request(address)
     readback = leaf_value(reply)[0] if reply is not None else None
@@ -152,7 +150,11 @@ def node_write(host: str, node: str, params: Mapping[str, Any], *, osc_port: int
     if not confirm:
         return NodeWriteResult(node, payload, True, None, None, {})
     _authorize(host, identity_port, timeout)
-    reply = _raw_send(host, osc_port, node, "s", (payload,), timeout=timeout, expect_reply=True)
+    # Through WingClient, not a bare socket: this one DOES expect a reply,
+    # so it should get the same retry-on-rotated-socket handling as every
+    # other read on this connection.
+    with WingClient(host, osc_port, timeout=timeout) as client:
+        reply = client.request(node, "s", (payload,))
     text = reply.args[0] if reply is not None and reply.args else None
     if text != _OK:
         return NodeWriteResult(node, payload, False, False, text or "no reply", {})
