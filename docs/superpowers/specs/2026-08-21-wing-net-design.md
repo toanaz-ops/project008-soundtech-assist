@@ -127,11 +127,34 @@ Two conclusions, and the second corrects an earlier draft of this document:
 > Therefore: **never put a request that might be oversized into a pipelined
 > batch.** Missing addresses are safe to pipeline; oversized dumps are not.
 
-**Schema queries can never be oversized**, which is what makes the architecture
-in §4 work. A `,s ?` reply lists only one node's immediate children and never
-recurses. Largest observed across the whole tree: **1312 B** (`/ch/1`), against
-`/bus/1` 908, `/aux/1` 868, `/$ctl/user` 932, `/ch` 972. Node *dumps* by
-contrast reach 1832 B (`/io/in/LCL`) before the ceiling bites.
+**A schema query CAN be oversized — an earlier draft of this document said it
+could not, and the console disproved it.** On an empty desk the claim held:
+largest `,s ?` reply across the whole tree was 1312 B (`/ch/1`), against
+`/bus/1` 908, `/aux/1` 868, `/$ctl/user` 932, `/ch` 972. But §2.10's dynamic
+tree means a **loaded** node exposes far more parameters than an empty one, and
+after a real scene was pushed onto the desk `/fx/1` — holding a VSS3 reverb —
+stopped answering `,s ?` entirely. `/fx/16` came back at 1877 characters and
+`/$ctl/cfg` at 1832, both a hair under the ceiling.
+
+The rule that survives is narrower: **any reply can overflow, so the client
+must isolate and recover rather than assume a request is safe.** Two mechanisms,
+both measured:
+
+1. **Rotate the source port after every short CHUNK, not merely between retry
+   rounds**, and **halve the chunk size each round** so a poisoned request is
+   isolated. Rotating per round with bisection still left a walk stuck at 27
+   unresolved nodes even at chunk size 1, because each isolated request after
+   the first still landed on the already-poisoned socket. Rotating per chunk
+   took the same walk to **3** unresolved.
+2. **Fall back to `,s *` when `,s ?` never answers.** A dump is much shorter
+   than a schema for the same node, because it carries values rather than value
+   ranges: `/fx/1`'s schema is unanswerable while its dump is 338 characters
+   listing all 34 parameters. Only the key NAMES are taken — the values are
+   lossy display text (§2.3) and every value still comes from a per-leaf read.
+   This is the one place `nodetext.py` is load-bearing rather than a
+   convenience, and it takes the walk from 3 unresolved to **0**.
+
+Result on the loaded console: **25 170 leaves, zero unresolved, 3.2 s.**
 
 ### 2.5 Throughput
 
@@ -238,6 +261,30 @@ which would rot as firmware changes.
 128 are `/io/in/SC/*` (StageConnect, no device attached) and 1 is
 `/cfg/mon/N/lvl`. That is hardware, not a defect, and a push must report such
 leaves rather than retrying them forever.
+
+**Measured end to end, on the loaded console:**
+
+| check | result |
+|---|---|
+| snapshot twice, no writes between | 21 232 leaves, **0 drift** — the read is exactly reproducible |
+| push the console's own values back to itself | `landed=21232, mismatched=0, absent=0` in 3.2 s |
+| leaves that moved after writing their own values back | **2 of 21 232**, each by one quantisation step |
+| advisory findings, live console vs the file it was pushed from | **22 and 22** |
+
+Comparing the live read against the original file shows 1340 differences, and
+none of them is a read error:
+
+- **1183 are bit-identical as float32** — the file records `9.100000381` where
+  the console reports `9.100000381469727`. Same float, different print
+  precision, because WING-Edit serialises to 10 significant digits.
+- **157 are one-step quantisation on write.** `example-Vu.snap` was authored by
+  WING-Edit 3.3.3 on a full `wing` (its own `creator_model`), and it is being
+  pushed to a `wing-rack` on FW 3.1. A value that sat exactly on a step of the
+  authoring console lands on the neighbouring step here. Median relative error
+  across all 1340: **0.0000 %**; maximum **0.0005 %**.
+
+This is the rack-vs-full-console difference §7 requires to be explained rather
+than waved away.
 
 ### 2.8 String quoting
 
