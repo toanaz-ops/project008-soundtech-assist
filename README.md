@@ -96,6 +96,18 @@ with its before and after value, and a magnitude for numeric fields.
 `--limit N` caps how many print (default 50); the count of total
 differences is always the true total.
 
+`--live-before <ip>` and `--live-after <ip>` each read a live console
+for that side instead of a file. `diff` still takes exactly one file
+per side that a `--live-*` flag did not supply — so
+`diff --live-before 192.168.128.28 last-night.snap` compares the
+console directly against `last-night.snap`, and
+`diff --live-before A --live-after B` compares two consoles and takes
+no file arguments at all:
+
+```powershell
+python -m wing_parser.cli diff --live-before 192.168.128.28 last-night.snap
+```
+
 ### `feedback` — record a verdict on a finding
 
 ```bash
@@ -472,6 +484,28 @@ pins writes to one console when set.
 the leaf does not exist on that console — a rack with no StageConnect
 device has no `/io/in/SC/*` — which is hardware, not failure.
 
+### Watching for changes
+
+```powershell
+python -m wing_parser.cli net watch 192.168.128.28
+python -m wing_parser.cli net watch 192.168.128.28 --json --until 120
+```
+
+`net watch` reports changes on a running console by **polling**, never
+subscribing. A console holds only one OSC subscription at a time and it
+expires after 10 seconds, so subscribing would take that slot from
+WING-Edit, Companion, or whatever else is already connected — polling is
+a plain request/reply exchange, the same shape as `net get`, and claims
+nothing another client can lose. It watches the *effective* `$fdr`,
+`$mute` and `$solo` on channels/buses/mains/matrices, and `$solo` on
+DCAs — for `$fdr`/`$mute`, effective means DCA contribution and
+mute-override are already folded in, so pulling a DCA down surfaces on
+every channel it governs. See `skills/wing-watch/SKILL.md` for the
+gotchas: it samples rather than streams, so a change that appears and
+reverts inside one round is missed, and there are no meters at all over
+OSC (measured in `docs/superpowers/specs/2026-08-21-live-watch-design.md`
+§2.3).
+
 ### What is not here
 
 Realtime subscription, metering, and the native binary interface on port
@@ -639,6 +673,14 @@ running server:
 | `wing_routing` | `routing` | Orphans, ALT-sourced, unpatched and unclassified channels |
 | `wing_doctor` | `doctor` | Advisory findings, with the deciding rule layer |
 
+`wing_analyze`, `wing_channel`, `wing_routing` and `wing_doctor` each
+take an optional `live` parameter — a console's IP, read instead of
+`path`, the same as the CLI's `--live`. `wing_doctor` also takes
+`profile` and `show`, matching `--profile` and `--show`. `wing_diff`
+takes only `before`/`after` file paths and has no `live` parameter of
+its own; comparing a live console needs the CLI's
+`diff --live-before`/`--live-after`, or a `net snapshot` first.
+
 Each tool's docstring is what the client reads to decide when to call
 it; the table above is a summary, not a substitute for actually trying a
 client against it. This project has not verified any particular model's
@@ -648,7 +690,7 @@ guarantee a model will always pick the right tool.
 
 ## Claude Skills
 
-`skills/` ships six [Claude Skill](https://docs.claude.com/en/docs/claude-code/skills)
+`skills/` ships seven [Claude Skill](https://docs.claude.com/en/docs/claude-code/skills)
 directories, one per CLI command family, each a `SKILL.md` with
 frontmatter (`name`, `description`) and instructions for running that
 command and reading its output:
@@ -660,12 +702,15 @@ skills/wing-diff/SKILL.md
 skills/wing-routing/SKILL.md
 skills/wing-doctor/SKILL.md
 skills/wing-net/SKILL.md
+skills/wing-watch/SKILL.md
 ```
 
 `wing-doctor`'s also documents `wing feedback`, since recording a
 verdict is the natural next step after a doctor finding. `wing-net`
 covers both the `wing net` group and the `--live` flag, since both are
 ways of pointing the same analysis at a console instead of a file.
+`wing-watch` covers `net watch` on its own, since watching a running
+console for changes is a different task from a single read or write.
 
 To use them with Claude Code, copy or symlink the directories you want
 into a skills location Claude Code searches (for example a project's

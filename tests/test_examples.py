@@ -45,4 +45,5 @@ def test_the_shipped_skills_are_exactly_the_documented_set():
         "wing-doctor",
         "wing-net",
         "wing-routing",
+        "wing-watch",
     }
