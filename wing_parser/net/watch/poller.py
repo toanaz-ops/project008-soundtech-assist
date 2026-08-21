@@ -23,9 +23,12 @@ DEFAULT_INTERVAL = 0.25
 def read_labels(client: WingClient, strips: Iterable[str]) -> dict[str, str]:
     """One batch for every strip's name, read once at startup.
 
-    Names are read from the ordinary `name` leaf, not `$name`: both exist
-    (measured 2026-08-21), and `name` is the one the .snap carries, so a
-    label here matches what every other command prints.
+    Names are read from the ordinary `name` leaf, not `$name`. Every strip
+    family answers `name`; `$name` is NOT universal -- /dca/N has no
+    `$name` at all, exposing only `$solo` and `$sololed`. `name` is also
+    the key the .snap carries, so a label here matches what every other
+    command prints for the same strip. Measured:
+    docs/probes/probe10_name_leaves.py.
     """
     wanted = [f"{strip}/name" for strip in strips]
     if not wanted:
