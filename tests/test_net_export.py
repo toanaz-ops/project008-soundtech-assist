@@ -157,3 +157,36 @@ def test_identity_fills_creator_model_and_name_when_given():
     # Not invented: WingIdentity carries no editing-software name/version,
     # so those two fields still name this tool rather than guessing one.
     assert doc["creator"] == "wing-parser"
+
+
+def test_the_declared_type_id_matches_the_envelope_actually_emitted():
+    """`snapshot.11` is a claim about this exporter's output format, not a
+    guess about the console. A console never writes a .snap at all --
+    WING-Edit does, and the type id tracks ITS version: 3.0 writes
+    snapshot.9, 3.2.1 snapshot.10, 3.3.3 snapshot.11, with genuinely
+    different envelopes. So the id has to be checked against what we emit,
+    or it silently becomes a lie the moment the envelope changes.
+    """
+    import json
+
+    from wing_parser.core.loader import RawScene
+    from wing_parser.core.versions import load_registry, resolve
+    from wing_parser.net.export import to_snap_json
+    from wing_parser.net.snapshot import SNAPSHOT_TYPE_ID
+
+    registry = load_registry()
+    raw = RawScene(
+        version=resolve(SNAPSHOT_TYPE_ID, registry),
+        ae={"cards": {"wlive": {}, "wmadi": {}}},
+        ce={},
+        meta={},
+        source="wing://test",
+    )
+    doc = json.loads(to_snap_json(raw))
+
+    declared = registry[SNAPSHOT_TYPE_ID]
+    emitted = {k for k in doc if k not in ("ae_data", "ce_data")} - {"type"}
+    assert emitted == set(declared.meta_keys)
+    assert declared.has_globals is False
+    assert not [k for k in doc if k.endswith("_globals")]
+    assert set(doc["ae_data"]["cards"]) == set(declared.cards)

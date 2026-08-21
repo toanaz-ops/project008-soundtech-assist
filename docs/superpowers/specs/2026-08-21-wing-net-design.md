@@ -506,6 +506,30 @@ None of this affects analysis. `wing diff` compares built records, not raw
 JSON, and the build layer coerces with `bool()`/`float()`/`int()` — so the
 oracle matters only for producing a file that reads back as WING's own.
 
+### 5.1 Which `type` id the exporter declares
+
+An earlier draft called this an unmeasured assumption. It was a **mis-framed
+question**: a console never authors a `.snap` at all. **WING-Edit does, and the
+`type` id tracks WING-Edit's version, not the desk's firmware.** Measured across
+seven files:
+
+| WING-Edit | `type` | envelope |
+|---|---|---|
+| 3.0 | `snapshot.9` | `creator`, `creator_vers`, `creator_model`, `creator_name`, **plus a top-level `wedit_layer`** |
+| 3.2.1 | `snapshot.10` | `creator_fw`, `creator_sn`, `creator_model`, `creator_version`, `creator_name`, `created`, **plus `ae_globals`/`ce_globals`** |
+| 3.3.3 | `snapshot.11` | `creator`, `creator_vers`, `creator_model`, `creator_name` |
+
+3.0 kept WING-Edit's own layer layout beside `ae_data`; 3.3 moved the same
+information inside `ce_data` as `layer.WEDIT`. That is why a scene authored by
+3.3 pushes ~3200 absent leaves onto a desk WING-Edit has never laid out.
+
+So the real question is **which schema this exporter emits**, and that has a
+checked answer rather than a guess: `net/export.py` writes the four `creator*`
+keys with no globals, over a scene carrying the `wlive`+`wmadi` cards — which is
+`snapshot.11` exactly. `tests/test_net_export.py` asserts the declared id against
+the emitted envelope, so the id cannot quietly become a lie if the envelope
+changes.
+
 ## 6. Write safety
 
 1. **Dry-run is the default.** Nothing leaves the socket without `--confirm`.

@@ -137,14 +137,15 @@ console raised on **7 of 8 aux strips**.
 
 1. **Should a gate's `1:3` be a number at all, and under which convention?**
    Left as `None` rather than guessed. Nothing reads it today.
-2. **Which `type` id does a live rack write?** Unmeasured — no console-authored
-   `.snap` exists. `example-Vu.snap` carries `snapshot.11`, `factory-scene.snap`
-   carries `snapshot.10`, so the two references do not agree. `snapshot.11` is
-   assumed and the assumption is marked in `snapshot.py`. **To settle it: with
-   WING-Edit connected to this console, save a scene and read its `type`.**
-   WING-Edit could not be driven from here — it is a portable exe at
-   `Z:\My Drive\SOFTWARE\Wing-Edit_PC_3.2.1\` and is not Start-menu registered,
-   so the automation layer cannot see it.
+2. ~~**Which `type` id does a live rack write?**~~ **Answered, and the question
+   was wrong.** A console never writes a `.snap`; WING-Edit does, and the id
+   tracks WING-Edit's version — 3.0 writes `snapshot.9`, 3.2.1 `snapshot.10`,
+   3.3.3 `snapshot.11`, with genuinely different envelopes. So the exporter must
+   declare the schema **it** emits, which is `snapshot.11`, now asserted against
+   the emitted envelope rather than assumed. Settled by five scenes of ToanAZ's
+   found in the main worktree, `snapshot.9` files from WING Edit 3.0 — which are
+   also now a recognised schema in the registry instead of parsing under the 3.3
+   layout with an `unknown_version` anomaly.
 3. **18 boolean shapes are a WING inconsistency, not a modelling gap.** The send
    `plink` family is `1` in one reference file and `true` in the other. Byte-exact
    type reproduction is impossible in principle for those.

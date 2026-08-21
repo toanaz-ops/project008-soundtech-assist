@@ -33,21 +33,20 @@ from wing_parser.net.client import (
 from wing_parser.net.codec import leaf_value
 from wing_parser.net.schema import walk_schema
 
-# S2.11/S4: no console-authored .snap exists to confirm which `type` id a
-# live rack would write -- that field is stamped by WING-Edit when IT
-# saves a file, and this subsystem has never observed a save that
-# originated from the console itself. example-Vu.snap is the file that
-# was actually pushed to and read back from the lab console throughout
-# this design's own measurements (S2.3, S2.6, S7's round-trip plan), and
-# it carries "snapshot.11" -- the registry's newest known schema.
-# factory-scene.snap, the other reference file, carries "snapshot.10"
-# instead, so the two references do not even agree with each other; there
-# is genuinely no measured answer here.
+# A console never authors a .snap at all -- WING-Edit does, and the `type`
+# id tracks WING-Edit's own version, not the desk's firmware. Measured
+# across seven files: WING Edit 3.0 writes snapshot.9, 3.2.1 writes
+# snapshot.10, 3.3.3 writes snapshot.11, and the three envelopes genuinely
+# differ (3.0 keeps WING-Edit's layer layout beside ae_data as
+# `wedit_layer`; 3.2 adds ae_globals/ce_globals and renames every creator
+# field).
 #
-# ASSUMPTION, not a measurement: use "snapshot.11". To settle it for real,
-# save a scene from WING-Edit while it is connected to this exact console
-# and firmware, then read the `type` field WING-Edit itself writes.
-ASSUMED_TYPE_ID = "snapshot.11"
+# So the question is not "what would the rack write" but "which schema does
+# THIS exporter emit", and that has a checked answer: net/export.py writes
+# creator/creator_vers/creator_model/creator_name with no globals, and the
+# scene carries the wlive+wmadi cards -- which is snapshot.11 exactly, as
+# `tests/test_net_export.py` pins.
+SNAPSHOT_TYPE_ID = "snapshot.11"
 
 _CE_ROOT_SEGMENT = "$ctl"
 
@@ -95,7 +94,7 @@ def take_snapshot(
         _place(ae, ce, address, value)
 
     raw = RawScene(
-        version=resolve(ASSUMED_TYPE_ID, load_registry()),
+        version=resolve(SNAPSHOT_TYPE_ID, load_registry()),
         ae=ae,
         ce=ce,
         # Nothing downstream reads RawScene.meta -- WingScene.__init__

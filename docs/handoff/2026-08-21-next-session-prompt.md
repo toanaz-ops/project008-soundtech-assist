@@ -1,7 +1,7 @@
 # WING scene parser — next session
 
 **Date:** 2026-08-21 · **Branch:** `claude_desk/behringer-wing-ethernet-mixer-5de617`
-**State:** 994 tests passing, 1 skipped (FastMCP, by design), nothing uncommitted
+**State:** 997 tests passing, 1 skipped (FastMCP, by design), nothing uncommitted
 
 Paste this whole file as the opening message of the next session. It supersedes
 `2026-08-18-next-session-prompt.md`.
@@ -95,10 +95,10 @@ now unblocked for the first time, and E's transport half is understood.
    decline it deliberately.
 5. **Should a gate's `1:3` ratio be modelled as a number?** New this cycle.
    `Dyn.ratio` is `float | None` and `None` for the `a:b` form. Nothing reads it.
-6. **Which `type` id does a live rack write?** Unmeasured. `snapshot.11` is
-   assumed and marked as an assumption in `snapshot.py`. **To settle it: with
-   WING-Edit connected, save a scene and read its `type`.** WING-Edit cannot be
-   driven by the automation here — portable exe, not Start-menu registered.
+6. ~~Which `type` id does a live rack write?~~ **Closed.** The id tracks
+   WING-Edit's version, not the console: 3.0 → `snapshot.9`, 3.2.1 →
+   `snapshot.10`, 3.3.3 → `snapshot.11`. The exporter declares the schema it
+   emits and a test asserts that against the envelope.
 
 ## 6. Standing rules from ToanAZ — not negotiable
 
