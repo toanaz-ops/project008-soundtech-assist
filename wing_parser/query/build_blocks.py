@@ -16,6 +16,25 @@ from wing_parser.core.normalizer import to_db
 MATRIX_PREFIX = "MX"
 
 
+def _ratio(value: Any) -> float | None:
+    """A dynamics ratio is a number for compressor-family models and the
+    string "1:3" for gate-family ones.
+
+    Neither sample file exercises the string form -- both carry only CMB and
+    COMP -- so `float()` alone read correctly for as long as those two files
+    were the only input. A live console defaults its buses to GATE, and a
+    scene saved from one therefore contains a ratio `float()` cannot parse.
+    Returning None rather than a guess keeps the sibling convention set by
+    `Gate`, which models no ratio at all.
+    """
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def build_dyn(raw: dict[str, Any] | None) -> Dyn:
     """Public: build_bus.py builds the same block from bus entries."""
     raw = raw or {}
@@ -23,7 +42,7 @@ def build_dyn(raw: dict[str, Any] | None) -> Dyn:
         on=bool(raw.get("on", False)),
         model=raw.get("mdl", "NONE"),
         threshold_dB=float(raw.get("thr", 0.0)),
-        ratio=float(raw.get("ratio", 1.0)),
+        ratio=_ratio(raw.get("ratio", 1.0)),
         attack_ms=float(raw.get("att", 0.0)),
         release_ms=float(raw.get("rel", 0.0)),
     )

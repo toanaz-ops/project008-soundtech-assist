@@ -14,7 +14,27 @@ from wing_parser.showcontext import load_show_context
 from wing_parser.showcontext.rewrite import apply_repairs
 
 
-def _load(path: str, show: str | None = None) -> WingScene | None:
+def _load(path: str | None, show: str | None = None, live: str | None = None) -> WingScene | None:
+    """`live` is an IP rather than None when `--live` was passed
+    (argparse enforces `file`/`--live` as mutually exclusive, so exactly
+    one of `path`/`live` is meaningful on any call). The live branch
+    supplies a different `RawScene` -- via `net.snapshot.take_snapshot` --
+    and nothing else about scene-building changes (design doc S4.1).
+
+    Kept as its own branch rather than threaded through `WingScene.load`
+    because a live read can fail over the network (`OSError`, or
+    `TimeoutError`/`IdentityError` from `net/identity.py`, both `OSError`
+    or `ValueError` subclasses) in ways a file read never does, and the
+    two failure vocabularies should not blur together.
+    """
+    if live is not None:
+        try:
+            from wing_parser.net.snapshot import take_snapshot
+            context = load_show_context(show) if show is not None else None
+            return WingScene(take_snapshot(live).raw, context)
+        except (OSError, ValueError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+        return None
     try:
         return WingScene.load(path, show=show)
     except OSError:
@@ -43,7 +63,7 @@ def _run_advisory(scene: WingScene, profile: str | None = None) -> list | None:
 
 
 def analyze(args) -> int:
-    scene = _load(args.file)
+    scene = _load(args.file, live=getattr(args, "live", None))
     if scene is None:
         return 1
     print(render.scene_overview(scene))
@@ -52,7 +72,7 @@ def analyze(args) -> int:
 
 
 def channel(args) -> int:
-    scene = _load(args.file)
+    scene = _load(args.file, live=getattr(args, "live", None))
     if scene is None:
         return 1
     try:
@@ -66,7 +86,7 @@ def channel(args) -> int:
 
 
 def doctor(args) -> int:
-    scene = _load(args.file, getattr(args, "show", None))
+    scene = _load(args.file, getattr(args, "show", None), getattr(args, "live", None))
     if scene is None:
         return 1
     if scene.show is not None:
@@ -91,7 +111,7 @@ def doctor(args) -> int:
 
 
 def routing(args) -> int:
-    scene = _load(args.file)
+    scene = _load(args.file, live=getattr(args, "live", None))
     if scene is None:
         return 1
     print(render.routing(scene.routing.summary(), scene.unclassified()))

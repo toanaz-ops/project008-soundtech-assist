@@ -34,5 +34,15 @@ def test_every_skill_has_front_matter_and_a_command():
         assert "python -m wing_parser.cli" in body, skill_dir.name
 
 
-def test_five_skills_ship():
-    assert len(list((REPO / "skills").iterdir())) == 5
+def test_the_shipped_skills_are_exactly_the_documented_set():
+    """Named rather than counted, so adding a skill without documenting it
+    fails with the missing name instead of an arithmetic mismatch. The
+    README's `## Claude Skills` section lists the same set."""
+    assert {d.name for d in (REPO / "skills").iterdir()} == {
+        "wing-analyze",
+        "wing-channel",
+        "wing-diff",
+        "wing-doctor",
+        "wing-net",
+        "wing-routing",
+    }

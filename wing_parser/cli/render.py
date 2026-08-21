@@ -21,7 +21,7 @@ def _natural(target: str) -> tuple[object, ...]:
 
 def scene_overview(scene) -> str:
     lines = [
-        f"{scene.path.name}  [{scene.version.type_id} / {scene.version.label}]",
+        f"{scene.source}  [{scene.version.type_id} / {scene.version.label}]",
         f"  {len(scene.channels())} channels, {len(scene.buses())} buses, "
         f"{len(scene.mains())} mains, {len(scene.matrices())} matrices",
     ]

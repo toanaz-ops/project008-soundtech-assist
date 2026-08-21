@@ -5,6 +5,24 @@
 newest: snapshot.11
 
 versions:
+  snapshot.9:
+    label: "Wing-Edit 3.0.x"
+    # Derived from five scenes ToanAZ saved with WING Edit 3.0, including one
+    # taken from the WING-GIAQUY rack. All five agree exactly on this shape.
+    #
+    # `wedit_layer` is the distinguishing feature: 3.0 wrote WING-Edit's own
+    # layer layout as a TOP-LEVEL object beside ae_data/ce_data, where 3.3
+    # moved the same information inside ce_data as `layer.WEDIT`. It lands in
+    # RawScene.meta, which nothing reads, so it costs nothing to carry.
+    meta_keys:
+      - creator
+      - creator_vers
+      - creator_model
+      - creator_name
+      - wedit_layer
+    has_globals: false
+    cards: [wlive]
+
   snapshot.10:
     label: "Wing-Edit 3.2.x"
     meta_keys:

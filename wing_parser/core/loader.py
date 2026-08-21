@@ -12,11 +12,26 @@ from wing_parser.core.versions import SceneVersion, load_registry, resolve
 
 @dataclass(frozen=True)
 class RawScene:
+    """A decoded scene and where it came from.
+
+    `path` is None for a scene read from a console rather than a file, so
+    everything that only wants something to print uses `source` instead --
+    a filename for a file, `wing://<ip>` for a live desk. Deriving `source`
+    from `path` when it is not given keeps every existing caller working
+    and keeps the two from drifting apart.
+    """
+
     version: SceneVersion
     ae: dict[str, Any]
     ce: dict[str, Any]
     meta: dict[str, Any]
-    path: Path
+    path: Path | None = None
+    source: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.source:
+            derived = self.path.name if self.path is not None else "<unknown>"
+            object.__setattr__(self, "source", derived)
 
 
 def parse_raw(doc: Any, file_path: Path) -> RawScene:
