@@ -1798,6 +1798,290 @@ git commit -m "Document the watch surface and record the live experiments"
 
 ---
 
+### Task 9: A console that never answered must not read as a clean desk
+
+**Files:**
+- Modify: `wing_parser/cli/commands.py` — `_load`'s live branch
+- Test: `tests/test_cli_live_unreachable.py` (create)
+
+**Interfaces:**
+- Consumes: `wing_parser.net.snapshot.take_snapshot(host, port=..., batch_size=..., retry_rounds=..., idle_timeout=...) -> SnapshotResult`, which has `.raw: RawScene`, `.unresolved_nodes: tuple[str, ...]` and `.unresolved_leaves: tuple[str, ...]`.
+- Produces: no new public name. `_load(path, show, live)` keeps its signature and gains a failure it previously did not report.
+
+**This task was added mid-plan.** ToanAZ approved it on 2026-08-22 after I found the defect while verifying Task 6. It is not in the original spec.
+
+**The defect, measured.** `wing doctor --live <an-address-with-no-console>` prints `No findings.` and exits 0. `wing analyze --live` on the same address prints `0 channels, 0 buses, 0 mains, 0 matrices`. To a live-sound engineer, "No findings" reads as *your desk is clean*; it actually means *I never reached your desk*. Reproduce with `docs/probes/probe11_unreachable_console.py`.
+
+**Where it is NOT.** `net/snapshot.py` is correct and must not be changed. `take_snapshot`'s own docstring states the contract it honours:
+
+> Unresolved nodes and leaves are reported, never dropped -- a caller that wants a complete scene must be able to tell "empty" apart from "incomplete".
+
+It does exactly that. The caller throws the report away:
+
+```python
+return WingScene(take_snapshot(live).raw, context)   # only .raw
+```
+
+`WingClient.get_many` never raises on total non-response, and it should not: OSC is UDP, so an unreachable host produces no connection-level error — every leaf simply times out and lands in `unresolved`. So `_load`'s `except (OSError, ValueError)` never fires. Two independent traces reached this same conclusion.
+
+**Measured shape against a dead address** (`10.0.0.1`):
+
+| | value |
+|---|---|
+| `unresolved_nodes` | all 13 roots: `/cfg /io /ch /aux /bus /main /mtx /dca /mgrp /fx /cards /play /$ctl` |
+| `unresolved_leaves` | 0 — there were no leaves to attempt |
+| `raw.ae`, `raw.ce` | both `{}` |
+
+**The rule to implement.** Two outcomes, not one, because "reached nothing" and "reached most of it" are different facts and only one of them is fatal:
+
+- **Nothing came back at all** (`raw.ae` and `raw.ce` both empty) — this is not a scene. Print an error naming the host, return `None`. The caller already treats `None` as failure and exits 1.
+- **Something came back, but not all of it** — build the scene and use it, but print a warning to stderr naming how much is missing. This mirrors the rule the design doc §3.2 sets for the watch-list: report what could not be resolved, do not abort, and never present a partial result as if it were complete.
+
+- [ ] **Step 1: Write the failing tests**
+
+`tests/test_cli_live_unreachable.py`:
+
+```python
+"""A console that never answered must not read as a clean desk.
+
+`wing doctor --live <dead ip>` printed `No findings.` and exited 0 before
+this: take_snapshot reports what did not resolve, and _load discarded the
+report, so an empty scene reached the advisory engine and it truthfully
+found nothing wrong with nothing.
+
+No test here touches a real socket -- take_snapshot is replaced.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from wing_parser.cli import commands
+from wing_parser.core.loader import RawScene
+from wing_parser.core.versions import load_registry, resolve
+from wing_parser.net.snapshot import SnapshotResult
+
+DEAD_ROOTS = (
+    "/cfg", "/io", "/ch", "/aux", "/bus", "/main", "/mtx",
+    "/dca", "/mgrp", "/fx", "/cards", "/play", "/$ctl",
+)
+
+
+def _raw(ae: dict, ce: dict) -> RawScene:
+    return RawScene(
+        version=resolve("snapshot.11", load_registry()),
+        ae=ae,
+        ce=ce,
+        meta={},
+        path=None,
+        source="wing://10.0.0.1",
+    )
+
+
+def _stub(monkeypatch, result: SnapshotResult) -> None:
+    """Replace take_snapshot where _load imports it FROM.
+
+    _load does `from wing_parser.net.snapshot import take_snapshot` inside
+    the function body, so the name is looked up on the module at call
+    time -- patching the module attribute is what takes effect.
+    """
+    monkeypatch.setattr(
+        "wing_parser.net.snapshot.take_snapshot", lambda *a, **k: result
+    )
+
+
+def test_a_console_that_answered_nothing_is_an_error_not_an_empty_scene(
+    monkeypatch, capsys
+):
+    _stub(
+        monkeypatch,
+        SnapshotResult(
+            raw=_raw({}, {}), unresolved_nodes=DEAD_ROOTS, unresolved_leaves=()
+        ),
+    )
+
+    assert commands._load(None, live="10.0.0.1") is None
+
+    captured = capsys.readouterr()
+    assert "10.0.0.1" in captured.err
+    assert captured.out == ""
+
+
+def test_doctor_on_an_unreachable_console_does_not_say_no_findings(
+    monkeypatch, capsys
+):
+    """The whole point. `No findings.` on a desk nobody reached is the
+    most dangerous sentence this tool can print."""
+    from types import SimpleNamespace
+
+    _stub(
+        monkeypatch,
+        SnapshotResult(
+            raw=_raw({}, {}), unresolved_nodes=DEAD_ROOTS, unresolved_leaves=()
+        ),
+    )
+
+    args = SimpleNamespace(
+        file=None, live="10.0.0.1", json=False, profile=None, show=None
+    )
+    assert commands.doctor(args) == 1
+
+    captured = capsys.readouterr()
+    assert "No findings" not in captured.out
+    assert "10.0.0.1" in captured.err
+
+
+def test_a_partial_read_still_builds_a_scene_but_says_what_is_missing(
+    monkeypatch, capsys, factory_path
+):
+    """Reaching most of a console is not the same failure as reaching
+    none of it, and only one of them is fatal."""
+    import json
+
+    real = json.loads(Path(factory_path).read_text(encoding="utf-8"))
+
+    _stub(
+        monkeypatch,
+        SnapshotResult(
+            raw=_raw(real["ae_data"], real["ce_data"]),
+            unresolved_nodes=("/fx/1",),
+            unresolved_leaves=("/ch/1/fdr", "/ch/2/fdr"),
+        ),
+    )
+
+    scene = commands._load(None, live="10.0.0.1")
+    assert scene is not None
+
+    complaint = capsys.readouterr().err
+    assert "/fx/1" in complaint or "1 node" in complaint
+    assert "2" in complaint          # the two unresolved leaves are counted
+
+
+def test_a_complete_read_says_nothing_at_all(monkeypatch, capsys, factory_path):
+    """A clean live read must stay silent -- a warning printed every time
+    trains the reader to ignore it."""
+    import json
+
+    real = json.loads(Path(factory_path).read_text(encoding="utf-8"))
+
+    _stub(
+        monkeypatch,
+        SnapshotResult(
+            raw=_raw(real["ae_data"], real["ce_data"]),
+            unresolved_nodes=(),
+            unresolved_leaves=(),
+        ),
+    )
+
+    scene = commands._load(None, live="10.0.0.1")
+    assert scene is not None
+    assert capsys.readouterr().err == ""
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+```bash
+python -m pytest tests/test_cli_live_unreachable.py -v
+```
+
+Expected: the first two fail — `_load` returns a scene rather than `None`, and `doctor` returns 0 printing `No findings.`
+
+Record the exact failure output in your report. These two failures ARE the bug; seeing them is the point of the step.
+
+- [ ] **Step 3: Fix `_load`**
+
+Replace the live branch of `_load` in `wing_parser/cli/commands.py`:
+
+```python
+    if live is not None:
+        try:
+            from wing_parser.net.snapshot import take_snapshot
+            context = load_show_context(show) if show is not None else None
+            snapshot = take_snapshot(live)
+        except (OSError, ValueError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return None
+
+        # OSC is UDP, so an unreachable host raises nothing at all --
+        # every leaf just times out and lands in `unresolved`, and the
+        # except above never fires. take_snapshot reports that faithfully
+        # (its docstring: a caller "must be able to tell 'empty' apart
+        # from 'incomplete'"); reading only `.raw` threw the report away,
+        # and an empty scene reached the advisory engine, which then
+        # truthfully found nothing wrong with nothing. `doctor --live`
+        # printed "No findings." for a desk it never reached.
+        if not snapshot.raw.ae and not snapshot.raw.ce:
+            print(
+                f"error: no console answered at {live}: read 0 of the "
+                f"{len(snapshot.unresolved_nodes)} top-level nodes. "
+                f"Check the address and that the desk is on the network.",
+                file=sys.stderr,
+            )
+            return None
+
+        if snapshot.unresolved_nodes or snapshot.unresolved_leaves:
+            # Partial is usable but must never look complete. Silence on
+            # a clean read is deliberate: a warning printed every time
+            # teaches the reader to skip it.
+            print(
+                f"warning: incomplete read from {live}: "
+                f"{len(snapshot.unresolved_nodes)} node(s) and "
+                f"{len(snapshot.unresolved_leaves)} leaf/leaves did not answer"
+                + (
+                    f"; nodes: {', '.join(snapshot.unresolved_nodes)}"
+                    if snapshot.unresolved_nodes
+                    else ""
+                ),
+                file=sys.stderr,
+            )
+
+        return WingScene(snapshot.raw, context)
+```
+
+Note the `return None` moved *inside* the `except` block. In the original it sat after the block, which worked only because the `try` always either returned or raised.
+
+- [ ] **Step 4: Run the tests to verify they pass**
+
+```bash
+python -m pytest tests/test_cli_live_unreachable.py -v
+```
+
+Expected: 4 passed.
+
+- [ ] **Step 5: Prove the guard is what makes the difference**
+
+Temporarily comment out the `if not snapshot.raw.ae and not snapshot.raw.ce:` block, re-run, and confirm the first two tests go red again. Restore it. Record what you saw.
+
+- [ ] **Step 6: Confirm against the real defect**
+
+```bash
+python docs/probes/probe11_unreachable_console.py 10.0.0.1
+```
+
+Expected: part B now reports `returned None?  True`, and the probe prints its "Nothing to fix here" verdict.
+
+This takes ~30 seconds — every root times out. Do not shorten it by pointing at a real console.
+
+- [ ] **Step 7: Full suite and the finding contract**
+
+```bash
+python -m pytest tests/
+python -m wing_parser.cli doctor user-files/example-Vu.snap
+```
+
+Expected: exit 0, and `22 findings:`.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add wing_parser/cli/commands.py tests/test_cli_live_unreachable.py
+git commit -m "Stop reporting a clean desk for a console nobody reached"
+```
+
+---
+
 ## After every task
 
 Per `docs/handoff/2026-08-21-next-session-prompt.md` §7: one fresh implementer
