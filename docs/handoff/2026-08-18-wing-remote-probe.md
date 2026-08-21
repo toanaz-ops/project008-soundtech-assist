@@ -1,8 +1,12 @@
-# WING remote control — what is and is not derivable here
+# WING remote control — probed against a live console
 
-**Date:** 2026-08-18 · Written so nobody spends a second session on the two
-dead ends below. Same purpose and shape as
-`2026-08-17-limiter-token-probe.md`.
+**Date:** 2026-08-18 · **Console:** WING RACK at `192.168.128.28`, firmware
+`3.1-0-g9f314617:release`, made available by ToanAZ · **Result: the OSC address
+vocabulary is now derived, verified and checked in.**
+
+This supersedes the earlier version of this document, which concluded the
+address vocabulary could not be obtained here. It could: the console describes
+itself.
 
 ## Why this was probed
 
@@ -13,102 +17,189 @@ things, and they were being treated as one:
 2. **An address vocabulary.** What to send: the OSC address for a channel's
    fader, a send's mode, a mute.
 
-`2026-08-18-desktop-app-complete.md` originally said the whole lot "has to come
-from outside this repo". **That was wrong about the first half**, and the error
-came from citing a knowledge-base summary instead of opening the manual sitting
-in `user-files/`. Corrected here.
+Both are now answered.
 
-## What is now known — the transport, from the manual
+## 1. The transport
 
-`user-files/User-Manual_WING-series_2025-10-20.pdf`, 167 pages. Page 50, the
-`SETUP → REMOTE` section:
+From the WING manual, `user-files/User-Manual_WING-series_2025-10-20.pdf` p50
+(`SETUP → REMOTE`), and confirmed by ToanAZ as correct:
 
-| Fact | Where |
+| Fact | Source |
 |---|---|
-| OSC remote control runs on **IP port 2223** | p50, the REMOTE LOCK sentence |
-| A second remote-control channel runs on **IP port 2222** | same sentence |
-| **REMOTE LOCK** is a console setting that blocks remote control on **both** ports | same sentence |
-| **Up to 16 devices** may remote-control one WING at once | p50, NETWORK paragraph |
-| The console must be wired to the switch or router by Ethernet; clients may be wireless | p50 |
-| Network mode is **DHCP or Static IP**, chosen on the console | p50 |
-| The vendor's own remote clients are WING Edit (desktop), WING Copilot (mobile), WING Q (mobile, bus/matrix only) | p50 |
+| OSC remote control on **UDP port 2223** | manual p50; **verified** — this probe talks to it |
+| A second remote-control channel on **port 2222** | manual p50 |
+| WING Edit, WING Copilot and Mixing Station use the **2222** channel, not OSC | ToanAZ; **verified** — `Get-NetTCPConnection` shows WING-Edit 3.2.1 established to `192.168.128.28:2222` |
+| **REMOTE LOCK** (`SETUP → REMOTE`) locks either port, independently | manual p50; ToanAZ |
+| Locking **TCP 2222** leaves those apps connected but **read-only** | ToanAZ |
+| Up to **16 devices** may remote-control one WING | manual p50 |
+| Console must be wired by Ethernet; clients may be wireless | manual p50 |
 
-**A search trap worth knowing:** the manual spells the second port's protocol
-**"TPC"**, not "TCP". Searching the PDF for "TCP" returns nothing at all. It is
-almost certainly a typo for TCP, but that is an inference, not something the
-document states — do not write "TCP" into code comments as though the manual
-said it.
+**REMOTE LOCK is not a safety net for OSC probing, and it is worth being clear
+about why.** Locking 2222 protects the TCP path that WING Edit uses; it does
+nothing to 2223. Locking 2223 blocks OSC outright, including the probe. So there
+is no setting that makes the OSC port read-only. Safety here came from the shape
+of the packets instead — see §4.
 
-**Consequence for the app.** Two separate things can refuse a write, and a write
-path must account for both:
+**A search trap:** the manual spells the second port's protocol **"TPC"**, not
+"TCP". Searching the PDF for "TCP" returns nothing.
 
-- **REMOTE LOCK**, a console setting, from the manual above.
-- **`ce_data.osc.ronly`**, a flag inside the scene file, probed 2026-08-18:
-  both sample files hold exactly `{"ronly": false}`.
+## 2. The protocol is self-describing
 
-Whether these are the same switch seen from two sides is **not established**.
-Nobody has toggled REMOTE LOCK and re-saved a scene to see whether `ronly`
-moves. That is a one-minute experiment for ToanAZ at the console and it settles
-the question; until then, treat them as two independent conditions.
+**This is the finding that changes sub-project C.** Sending an OSC message with
+an empty argument list to a node returns that node's children as a list of
+strings; sending one to a leaf returns its value.
 
-## What is still missing — the address vocabulary
+```
+--> /                    <-- /     ,sssssssssssssssss  ['$stat','cfg','$syscfg','io','ch','aux',
+                                    'bus','main','mtx','dca','mgrp','fx','cards','play','rec',
+                                    '$ctl','$globals']
+--> /ch                  <-- /ch   ,ssss…  ['1','2', … ,'40']
+--> /ch/1/send           <-- ,ssss…  ['1'…'16','MX1'…'MX8']
+--> /ch/1/send/8         <-- ,ssssss  ['on','lvl','pon','mode','plink','pan']
+--> /ch/1/send/8/mode    <-- ,s  ['PRE']
+```
 
-**It is not in the manual.** Of 167 pages, exactly **one** mentions "OSC" at
-all, and only to say the port can be locked. There is no address table, no
-address example, and no reference to a separate protocol document. Searching
-for `/ch/` across every page returns nothing.
+So the vocabulary does not have to be documented or transcribed. It can be
+**walked**, and `probes/osc_walk.py` does exactly that: 1826 queries, 94 seconds,
+900 leaves, written to `docs/handoff/2026-08-18-wing-osc-schema.json`.
 
-**It is not extractable from `WING-Edit.exe` by string scan.** The binary is a
-93 MB PE image whose payload is packed or compressed: a full ASCII scan finds
-962 slash-delimited strings in the whole file and **not one** begins with
-`/ch`, `/bus`, `/aux`, `/main`, `/mtx`, `/dca` or `/fx`. A UTF-16LE scan finds
-three, all date-format fragments. Unpacking the image was not attempted and is
-not recommended as the next move — it is a large effort with an uncertain
-result, when two cheaper routes exist.
+`/?` is an identify query, answered on address `/*` with one comma-separated
+string. Field layout, values from this console with the identifying two
+redacted:
 
-## The two cheaper routes, in order
+```
+WING , 192.168.128.28 , <console name> , wing-rack , <serial> , 3.1-0-g9f314617:release
+family    ip             name             model      serial     firmware
+```
 
-1. **Observe a live console.** WING Edit speaks this protocol to the console on
-   port 2223. Running it against ToanAZ's WING on a network where the traffic
-   can be captured yields the real addresses, in the real dialect, for exactly
-   the parameters we care about — and it verifies them at the same time, which
-   a document could not. This is the highest-value single hour available to
-   sub-project C.
-2. **An external protocol reference.** The WING OSC address tree is documented
-   outside this repository. Anything obtained that way is a **hypothesis until
-   probed against his console**, and should be recorded as such — the same
-   standard the rest of this project holds itself to.
+## 3. The address tree and the scene-file key tree are the same tree
 
-Note in favour of route 1: the scene file's own key structure is already known
-in full, and it is strongly suggestive. `ae_data.ch.1.send.8.mode` reads like
-`/ch/1/send/8/mode`. **That is a resemblance, not a finding.** It is exactly the
-kind of plausible mapping that would be assumed, shipped, and discovered to be
-wrong on the one address that differs — and the failure would be a wrong
-parameter written to a live console during a show. Do not build on it without
-observation.
+Previously written down as *"a resemblance, not a finding"* and explicitly not to
+be built on. It is now a finding, measured across the whole tree rather than
+inferred from one example. Comparing the walked schema against
+`user-files/example-Vu.snap`:
 
-## Reproduction (PowerShell)
+| Node | children in OSC | keys in file | only in OSC | only in file |
+|---|---|---|---|---|
+| root vs `ae_data` | 13 | 13 | — | — |
+| `/ch` | 40 | 40 | — | — |
+| `/ch/1` | 37 | 28 | — | — |
+| `/bus` · `/aux` · `/main` · `/mtx` | 16 · 8 · 4 · 8 | same | — | — |
+| `/dca` · `/mgrp` · `/fx` | 16 · 8 · 16 | same | — | — |
+| `/io` · `/cfg` | 4 · 8 | same | — | — |
 
-From the repository root. `pymupdf` is installed; it is not a project
-dependency, so a fresh environment needs `pip install pymupdf` first.
+`$`-prefixed names excluded from the comparison: they are live values —
+`$fdr`, `$mute`, `$solo` — which a saved scene does not carry.
+
+**Every key the file has, the console has, at the same position.** The OSC tree
+is a superset: it also exposes runtime state and some settings a scene does not
+store.
+
+Two differences, both explained, neither a protocol mismatch:
+
+- **`/fx/1`** shows 6 children against the file's 34. FX parameters depend on the
+  effect model loaded in that slot, and this console currently has a different
+  one loaded than `example-Vu.snap` saved. **Consequence: no repair descriptor
+  may assume a fixed key set under `/fx`.** None does today.
+- **`/rec`** lacks the file's `path`.
+
+Concretely, every path in `wing_parser/edit/data/repairs.yaml` was checked
+end-to-end against the live console:
+
+| Repair descriptor path | OSC address | Console replied |
+|---|---|---|
+| `ae_data.ch.1.send.8.mode` (G8, R4) | `/ch/1/send/8/mode` | `,s ['PRE']` |
+| `ae_data.ch.16.in.set.inv` (PB1) | `/ch/16/in/set/inv` | `,sfi ['0', 0.0, 0]` |
+| `ae_data.ch.1.mute` (PC8) | `/ch/1/mute` | `,sfi ['0', 0.0, 0]` |
+| `ae_data.ch.1.flt.lc` (S1) | `/ch/1/flt/lc` | `,sfi ['0', 0.0, 0]` |
+| `ae_data.ch.1.main.1.pre` (R5) | `/ch/1/main/1/pre` | `,sfi ['0', 0.0, 0]` |
+
+Every one queried directly against the console, not read off the walked
+schema. `send.on` and `main.on` (R1, R2, R3, R3M, R6) sit beside `mode` and
+`pre` in the same nodes, both of which answered.
+
+`/ch/1/send` returning `1…16, MX1…MX8` also confirms at the protocol level the
+matrix-send distinction found earlier from the file alone: `MX5` and `5` are
+different destinations on the console too, not an artefact of the file format.
+
+## 4. How this was kept safe, and what remains unproven
+
+`probes/osc_probe.py` builds packets with `message(address)`. **There is no
+parameter for arguments and no code path that encodes one** — every packet it
+can emit carries the type-tag `","` with an empty type list. A console cannot be
+given a new value without a value being sent, so nothing in this probe is able
+to change a parameter. That is a property of the code, not a promise.
+
+The residual risk is an address that is itself an action needing no argument —
+a snapshot recall, say. Handled by choosing addresses rather than by code:
+nouns only, and the very first packet went to
+`/wing_parser_probe_does_not_exist`, which cannot be anything. It drew no reply,
+which also established that the console does not answer indiscriminately, so
+every later reply identified a real address.
+
+**Nothing about writing has been tested, and nothing should be without ToanAZ
+present and a console that is not in a show.** The open question is visible in
+the reply shapes:
+
+| Reply shape | Count | Meaning | Example |
+|---|---|---|---|
+| `,sfi` | 379 | text, normalised float, integer | `/cfg/dcamgrp` → `['1', 1.0, 1]` |
+| `,sff` | 309 | text, normalised float, real value in units | `…/$lvl` → `['-4.6', 0.6353, -4.5882]` |
+| `,s` | 212 | text only | `/cfg/mainlink` → `['OFF']` |
+
+A read returns **three representations of one value**. Which one a *write* must
+carry — the text token, the normalised 0–1 float, or the real value — is not
+derivable from a read and must be established deliberately. Getting it wrong on
+`,sff` is the difference between −4.6 dB and 0.64 dB.
+
+## 5. Reproduction (PowerShell)
+
+From the repository root, with the console reachable:
 
 ```powershell
-python -c "import fitz; d=fitz.open('user-files/User-Manual_WING-series_2025-10-20.pdf'); print(d.page_count); print([i+1 for i,p in enumerate(d) if 'OSC' in p.get_text()])"
+python probes\osc_probe.py "/?" "/" "/ch/1/send/8/mode"
 ```
 
 ```powershell
-python -c "import fitz; d=fitz.open('user-files/User-Manual_WING-series_2025-10-20.pdf'); print([l for l in d[49].get_text().splitlines() if 'OSC' in l])"
+python probes\osc_walk.py
 ```
 
-Note that `user-files/User-Manual_WING-series_*.pdf` and
-`user-files/WING-Edit.exe` are both gitignored, so **neither exists in a git
-worktree** — run these from the main checkout. Getting a `FileNotFoundError`
-from a worktree is expected and is not evidence the file is missing.
+The walk writes `wing-osc-schema.json` into the working directory and takes
+about 95 seconds on a LAN.
 
-## Do not repeat
+**Do not run these through Git Bash.** MSYS rewrites any argument that looks
+like a POSIX path, so `"/"` arrives as `C:/Program Files/Git/` and `/ch/1/fdr`
+becomes a Windows path. The first run of this probe hit exactly that and would
+have concluded the console ignores OSC. Under `bash`, prefix with
+`MSYS_NO_PATHCONV=1`.
 
-- Searching the manual for an OSC address table. There is none; one page of 167
-  mentions OSC and it is about locking the port.
-- Scanning `WING-Edit.exe` for address strings, ASCII or UTF-16. Both done,
-  both empty.
-- Searching the PDF for "TCP". The manual writes "TPC".
+## 6. Superseded
+
+The following were concluded in the earlier version of this document and are now
+wrong. They are kept so the correction is legible:
+
+- *"The address vocabulary is not here and has to come from an external protocol
+  reference or from observing a live console."* Half right: observation was the
+  answer, but it did not need packet capture. The console answers direct
+  questions.
+- *"`WING-Edit.exe` yields nothing to a string scan, and unpacking it is the
+  expensive next step."* True but irrelevant. The binary never had to be opened.
+
+Still true and still worth not repeating: the manual contains no address table
+(one page of 167 mentions OSC, only to say the port can be locked), and no
+packet-capture tooling is installed on this machine — `tshark`, `dumpcap` and
+`npcap` are all absent, though `pktmon` ships with Windows.
+
+## 7. What sub-project C now needs
+
+Not discovery. Design. The vocabulary is in
+`docs/handoff/2026-08-18-wing-osc-schema.json`, the transport is known, and
+`wing_parser/edit/journal.py` already produces the patches a write path would
+send. Open questions for that cycle, in order:
+
+1. **Which representation a write carries** (§4). Answer with ToanAZ present.
+2. **Whether the console pushes changes unsolicited**, or must be polled. Not
+   probed — a subscription mechanism, if one exists, was not looked for.
+3. **How `ce_data.osc.ronly` relates to REMOTE LOCK.** Both sample files hold
+   `{"ronly": false}`. Whether toggling REMOTE LOCK moves that flag is a
+   one-minute experiment at the console and is still unanswered.
