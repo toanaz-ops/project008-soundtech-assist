@@ -351,3 +351,108 @@ def test_feedback_with_the_profile_cannot_find_a_finding_the_profile_suppressed(
     _write_small_profile(tmp_path)
     assert main(["feedback", "G8:ch.8.send.8", "--verdict", "correct",
                  "--scene", str(vu_path), "--profile", "small"]) == 1
+
+
+def test_diff_parses_a_live_before_with_one_file():
+    """The two-positional shape rejects this; the file list does not."""
+    from wing_parser.cli.__main__ import build_parser
+
+    args = build_parser().parse_args(
+        ["diff", "--live-before", "10.0.0.1", "saved.snap"]
+    )
+    assert args.live_before == "10.0.0.1"
+    assert args.files == ["saved.snap"]
+
+
+def test_diff_sides_puts_the_lone_file_opposite_the_live_side():
+    from types import SimpleNamespace
+
+    from wing_parser.cli.commands import _diff_sides
+
+    before, after = _diff_sides(
+        SimpleNamespace(files=["saved.snap"], live_before="10.0.0.1", live_after=None)
+    )
+    assert before == (None, "10.0.0.1")
+    assert after == ("saved.snap", None)
+
+    before, after = _diff_sides(
+        SimpleNamespace(files=["saved.snap"], live_before=None, live_after="10.0.0.1")
+    )
+    assert before == ("saved.snap", None)
+    assert after == (None, "10.0.0.1")
+
+
+def test_diff_sides_maps_two_files_in_order():
+    from types import SimpleNamespace
+
+    from wing_parser.cli.commands import _diff_sides
+
+    before, after = _diff_sides(
+        SimpleNamespace(files=["a.snap", "b.snap"], live_before=None, live_after=None)
+    )
+    assert before == ("a.snap", None)
+    assert after == ("b.snap", None)
+
+
+def test_diff_sides_accepts_two_live_consoles_and_no_files():
+    from types import SimpleNamespace
+
+    from wing_parser.cli.commands import _diff_sides
+
+    before, after = _diff_sides(
+        SimpleNamespace(files=[], live_before="10.0.0.1", live_after="10.0.0.2")
+    )
+    assert before == (None, "10.0.0.1")
+    assert after == (None, "10.0.0.2")
+
+
+@pytest.mark.parametrize(
+    "files,live_before,live_after",
+    [
+        (["only.snap"], None, None),          # one file, neither side live
+        ([], None, None),                     # nothing at all
+        (["a", "b", "c"], None, None),        # three files
+        (["a", "b"], "10.0.0.1", None),       # two files and a live side
+        ([], "10.0.0.1", None),               # live side but nothing opposite
+    ],
+)
+def test_diff_sides_refuses_an_arity_that_cannot_name_two_sides(
+    files, live_before, live_after
+):
+    from types import SimpleNamespace
+
+    from wing_parser.cli.commands import _diff_sides
+
+    with pytest.raises(ValueError):
+        _diff_sides(
+            SimpleNamespace(
+                files=files, live_before=live_before, live_after=live_after
+            )
+        )
+
+
+def test_diff_of_two_files_still_works(vu_path, factory_path, capsys):
+    from types import SimpleNamespace
+
+    from wing_parser.cli import commands
+
+    args = SimpleNamespace(
+        files=[str(factory_path), str(vu_path)],
+        limit=5,
+        live_before=None,
+        live_after=None,
+    )
+    assert commands.diff(args) == 0
+    assert capsys.readouterr().out.strip()
+
+
+def test_diff_reports_a_bad_arity_instead_of_raising(capsys):
+    from types import SimpleNamespace
+
+    from wing_parser.cli import commands
+
+    args = SimpleNamespace(
+        files=["only.snap"], limit=5, live_before=None, live_after=None
+    )
+    assert commands.diff(args) == 1
+    assert "two sides" in capsys.readouterr().err

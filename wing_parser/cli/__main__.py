@@ -56,8 +56,25 @@ def build_parser() -> argparse.ArgumentParser:
     node.set_defaults(handler=commands.doctor)
 
     node = sub.add_parser("diff", help="compare two scenes")
-    node.add_argument("before")
-    node.add_argument("after")
+    # One file LIST, not two positionals. Two positionals -- each in a
+    # mutually-exclusive group with its own --live-* flag -- is the
+    # obvious shape and argparse rejects it: positionals fill left to
+    # right, so `diff --live-before IP saved.snap` puts saved.snap into
+    # `before`, the side the flag already supplied, and the group
+    # conflict fires. Measured 2026-08-21. Arity is checked in
+    # commands._diff_sides instead, which can also say what was wrong.
+    node.add_argument(
+        "files",
+        nargs="*",
+        metavar="FILE",
+        help="one or two .snap files; one per side not supplied by --live-*",
+    )
+    node.add_argument(
+        "--live-before", metavar="IP", help="read this console as the BEFORE side"
+    )
+    node.add_argument(
+        "--live-after", metavar="IP", help="read this console as the AFTER side"
+    )
     node.add_argument("--limit", type=int, default=50)
     node.set_defaults(handler=commands.diff)
 

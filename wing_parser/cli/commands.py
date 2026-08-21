@@ -119,8 +119,40 @@ def routing(args) -> int:
     return 0
 
 
+def _diff_sides(args) -> tuple[tuple[str | None, str | None], ...]:
+    """Work out which side is a file and which is a console.
+
+    Returns ((before_path, before_live), (after_path, after_live)).
+
+    A lone file belongs to whichever side `--live-*` did not claim --
+    that is what lets `diff --live-before IP saved.snap` mean what it
+    reads like, given argparse cannot express it positionally.
+    """
+    files = list(args.files)
+    live_before = args.live_before
+    live_after = args.live_after
+    wanted = (live_before is None) + (live_after is None)
+
+    if len(files) != wanted:
+        raise ValueError(
+            f"diff needs two sides: {wanted} file(s) and got {len(files)}. "
+            f"Supply one .snap per side not given by --live-before/--live-after."
+        )
+
+    before_path = None if live_before is not None else files.pop(0)
+    after_path = None if live_after is not None else files.pop(0)
+    return (before_path, live_before), (after_path, live_after)
+
+
 def diff(args) -> int:
-    before, after = _load(args.before), _load(args.after)
+    try:
+        (before_path, before_live), (after_path, after_live) = _diff_sides(args)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    before = _load(before_path, live=before_live)
+    after = _load(after_path, live=after_live)
     if before is None or after is None:
         return 1
     print(render.changes(before.diff(after), limit=args.limit))
