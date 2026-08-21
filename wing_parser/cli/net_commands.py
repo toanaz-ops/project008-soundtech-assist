@@ -210,7 +210,7 @@ def net_watch(args) -> int:
     that shipped twice in earlier cycles.
     """
     try:
-        with WingClient(args.host) as client:
+        with WingClient(args.host, OSC_PORT) as client:
             watch_list = build_watch_list(args.host, client=client)
 
             if args.json:
