@@ -1,0 +1,15 @@
+# What a watch session polls, per strip family.
+#
+# These are EFFECTIVE values (design doc S2.2): $fdr and $mute already
+# fold in DCA contribution and mute-override, so pulling a DCA down
+# surfaces on every channel it governs without this package modelling
+# DCA membership at all.
+#
+# Widening coverage is a data edit, not a code change. Adding $name
+# catches renames; adding an /io family would catch preamp moves.
+families:
+  ch:   ["$fdr", "$mute", "$solo"]
+  bus:  ["$fdr", "$mute", "$solo"]
+  main: ["$fdr", "$mute", "$solo"]
+  mtx:  ["$fdr", "$mute", "$solo"]
+  dca:  ["$solo"]
