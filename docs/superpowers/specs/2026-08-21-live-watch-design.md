@@ -180,9 +180,28 @@ proper experiment rather than re-deriving the question.
 — decisively — returns `unresolved_nodes` **separately** from `leaves` rather
 than folding an unanswered node into "absent".
 
-The watch-list builder consumes that, and inherits the property that matters:
-**it can say what it failed to resolve.** Per §2.7 a builder that cannot say so
-fails silently and invisibly.
+**The derivation is indirect, and must be.** `schema._expand` drops every `$`
+child by design (`if name.startswith("$"): continue`, because `$` keys are
+absent from `.snap`) — so the very keys this sub-project watches are the ones
+the walk will never list. The builder therefore reads the walk for the **strip
+set**, not for the watch addresses:
+
+1. `walk_schema(host)` → `leaves`, every ordinary leaf on the desk
+2. any address matching `^/(ch|bus|main|mtx|dca)/(\d+)/` proves that strip
+   exists
+3. the `$` keys from §3.3's YAML are appended to each strip that exists
+
+Measured 2026-08-21 (`docs/probes/probe9_stripset.py`): the walk took **1.00 s**,
+returned **25 062 leaves and 0 unresolved nodes**, and implied exactly
+40 channels, 16 buses, 4 mains, 8 matrices and 16 DCAs — contiguous from 1,
+matching the truth probes 7 and 8 established. The resulting watch-list is
+**220 leaves**. One second is the startup cost of a watch session, paid once.
+
+`schema.py` is **not** modified to include `$` keys: it feeds the `.snap`
+exporter, where a `$` key would be wrong.
+
+The builder inherits the property that matters: **it can say what it failed to
+resolve.** Per §2.7 a builder that cannot say so fails silently and invisibly.
 
 **A watch session whose list is incomplete must say so at startup.** Concretely:
 it prints the unresolved addresses to stderr and continues watching the rest —

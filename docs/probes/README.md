@@ -21,6 +21,7 @@ python docs\probes\probe5_pollrate.py 192.168.128.28
 | `probe6_watch.py` | a working change-watcher; the C2b prototype | loop held 819 rounds / 90 s. Saw 0 events because nothing moved — spec §2.6(2). Also produced the `/main 0` anomaly |
 | `probe7_main.py` | was `/main` really absent? | no: 10/10 answered, and 10/10 after a deliberate timeout. `/main` has 4 slots |
 | `probe8_flaky.py` | is break-on-first-silence discovery reproducible? | 30/30 correct — so the probe 6 failure is **rare and silent**, which is the whole argument for spec §3.2 |
+| `probe9_stripset.py` | can `walk_schema` imply the strip set, given it skips `$` keys? | yes — 1.00 s, 25062 leaves, 0 unresolved, exactly 40/16/4/8/16 contiguous. Spec §3.2 |
 
 ## Two cautions for whoever runs these next
 
