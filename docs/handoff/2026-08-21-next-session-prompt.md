@@ -36,7 +36,7 @@ Read before touching `net/`:
 - `docs/superpowers/specs/2026-08-21-wing-net-design.md` — the design authority.
   Every protocol claim was measured against a real console; where the official
   document disagrees, the spec says so and says which is which.
-- `docs/handoff/2026-08-21-wing-net-complete.md` — outcome, the five findings
+- `docs/handoff/2026-08-21-wing-net-complete.md` — outcome, the six findings
   that each cost an experiment, and the open questions.
 
 Current behaviour:
@@ -118,10 +118,14 @@ he works, ask. **Modular code, ~200-line files, split by responsibility layer.**
   looking entirely reasonable. Only a push-then-read-back experiment exposed it.
 - **Reference files can hide a bug indefinitely.** `build_dyn` could not parse a
   gate's `"1:3"` ratio, and neither sample file contains a gate on a strip, so
-  991 tests passed over it. A default console broke it on 7 of 8 aux strips.
+  the whole suite passed over it. A default console broke it on 7 of 8 aux strips.
 - **The fix that works is rarely the first plausible one.** Poisoned-socket
   recovery took three attempts — rotate per round, then bisect the chunk, then
   rotate per chunk — and only the third worked. Each was measured, not argued.
+- **A fix can create the next bug.** Raising the retry rounds to make bisection
+  reach chunk size 1 was right for a poisoned batch and pathological for an
+  absent one: a cross-console push went from 4 s to over two minutes. The guard
+  that resolves both is "stop when a round recovers nothing".
 
 ## 8. Environment
 
