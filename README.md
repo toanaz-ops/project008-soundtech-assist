@@ -73,6 +73,39 @@ save** — it always writes a new file and never touches the one you
 opened. Saving does not clear the journal, so you can save more than one
 variant from the same edits.
 
+### Building a standalone `.exe`
+
+```powershell
+pip install pyinstaller
+pyinstaller packaging\wing-ui.spec --noconfirm
+```
+
+The result is a single `dist\wing-ui.exe` (about 66 MB) with no Python
+installation required on the machine that runs it.
+
+**Copy it off the Google Drive path before running it.** Launched from
+`Z:\My Drive\...`, the executable did not start within two minutes —
+`Start-Process` itself blocked. Copied to local disk it starts in a few
+seconds. A one-file bundle has to unpack about 66 MB before its first
+line of code runs, and doing that across a synced network path is the
+difference. This is a property of where the file sits, not of the build.
+
+**Where your judgements live, and why it differs when frozen.** A
+PyInstaller bundle unpacks itself into a temporary directory and
+**deletes that directory when the app closes**. Everything in
+`knowledge/toanaz/` — `feedback.jsonl`, `principles.yaml`, `shows/` — is
+either written by you or edited by you, so resolving it inside the
+bundle would throw away every verdict you recorded, silently, on close.
+
+So a frozen build keeps that set in `%USERPROFILE%\.config\wing-skill`
+instead, seeded once from the copy shipped inside the executable and
+never overwritten afterwards. **Help → "Where my judgements are
+stored…"** names the exact path on any run. Setting `WING_KNOWLEDGE_DIR`
+still overrides everything, frozen or not.
+
+Run from a repository checkout, nothing changes: the in-repo
+`knowledge/toanaz/` is used exactly as before.
+
 ## CLI commands
 
 Every command is invoked as `python -m wing_parser.cli <command> ...`
