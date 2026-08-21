@@ -23,6 +23,7 @@ python docs\probes\probe5_pollrate.py 192.168.128.28
 | `probe8_flaky.py` | is break-on-first-silence discovery reproducible? | 30/30 correct — so the probe 6 failure is **rare and silent**, which is the whole argument for spec §3.2 |
 | `probe9_stripset.py` | can `walk_schema` imply the strip set, given it skips `$` keys? | yes — 1.00 s, 25062 leaves, 0 unresolved, exactly 40/16/4/8/16 contiguous. Spec §3.2 |
 | `probe10_name_leaves.py` | does every family answer a bare `name`, and `$name` too? | `name` yes everywhere; **`$name` is NOT universal — /dca/N has none**. Fixes a false claim in `poller.read_labels` |
+| `probe11_unreachable_console.py` | what does `--live` report when no console is there? | **BUG**: an empty scene, not an error. `doctor --live <dead ip>` prints `No findings.` and exits 0. Pre-existing, from the C/D cycle |
 
 ## Two cautions for whoever runs these next
 
