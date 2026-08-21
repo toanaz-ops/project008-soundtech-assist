@@ -248,7 +248,7 @@ new consumer of a tested transport, not a change to it.
 ### 3.5 CLI
 
 ```
-wing net watch <ip> [--json] [--interval SECONDS] [--for SECONDS]
+wing net watch <ip> [--json] [--interval SECONDS] [--until SECONDS]
 ```
 
 - default `--interval 0.25` — well above the 22 ms floor, leaving the desk and
@@ -256,7 +256,12 @@ wing net watch <ip> [--json] [--interval SECONDS] [--for SECONDS]
 - startup prints the resolved list size **and any unresolved node**, per §3.2
 - each change prints elapsed time, the address, the strip's name, before, after
 - `--json` emits one object per line, so a session can be piped and replayed
-- `--for` bounds a run; without it, runs until interrupted
+- `--until` bounds a run; without it, runs until interrupted. Named
+  `--until` and not `--for`: argparse accepts `--for`, but its dest is
+  then `for`, and `args.for` is a **SyntaxError** — reachable only via
+  `getattr(args, "for")`, which no other handler in this CLI does.
+  Measured, not assumed; the first draft of this spec said `--for` and a
+  Task 4 implementer caught the collision.
 
 Deliberately **not** a full-screen TUI. A line-per-event log is greppable,
 pipeable and diffable; a TUI is a separate decision, not a default.
