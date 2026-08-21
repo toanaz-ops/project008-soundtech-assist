@@ -1,7 +1,7 @@
 # Sub-project C2 — live watch — outcome and residuals
 
 **Date:** 2026-08-22 · **Branch** `claude_desk/project-capabilities-next-steps-8ec61c`,
-from `2f3d7a7` · **1047 tests passing, 1 skipped** (FastMCP, by design)
+from `2f3d7a7` · **1055 tests passing, 1 skipped** (FastMCP, by design)
 
 ## What shipped
 
@@ -84,28 +84,56 @@ Both close in one sitting: start the watcher, move one fader from WING-Edit.
 python -m wing_parser.cli net watch 192.168.128.28 --until 120
 ```
 
-## 4. Residuals — deferred, none load-bearing
+## 4. Residuals — what is genuinely left
 
-1. `wing_parser/cli/commands.py` is 247 lines, past the ~200 norm. The live
-   branch is a clean `_load_live` extraction candidate.
-2. `net/watch/list.py:4` cites "S2.2: read-only keys are absent from .snap".
-   That claim lives in the **wing-net** design doc's §2.2; live-watch's own §2.2
-   is about effective values — which the *next line* cites correctly. Two senses
-   of "S2.2" in consecutive lines. The same slip was already fixed once in
-   `probe10_name_leaves.py`.
-3. `poller.sample()` swallows `ValueError` from `codec.leaf_value`, so a
+The final whole-branch review triaged these. Everything it ruled must-fix was
+fixed in the fix wave (§4.1); what remains is below it.
+
+**Still open, deferred deliberately:**
+
+1. **File lengths.** `wing_parser/cli/commands.py` is **257** lines and
+   `wing_parser/cli/net_commands.py` is **258**, both past the ~200 norm.
+   `commands.py`'s live branch is a clean `_load_live` extraction candidate.
+   The reviewer's judgement — which I follow — is that an extraction belongs in
+   its own commit rather than stacked onto a behaviour fix in the same function.
+2. `poller.sample()` swallows `ValueError` from `codec.leaf_value`, so a
    malformed reply is indistinguishable from an absent one, with no diagnostic.
-   No evidence any watched leaf does this today.
-4. `events._shown()`'s docstring says it falls back "to the address"; it returns
-   `change.strip`, and `Change` has a separate field named `address`.
-5. No test covers `--json` combined with a network failure or `KeyboardInterrupt`.
-   Safe by inspection today — both prints are unconditionally stderr — but an
+   Triaged as able to stand: no watched leaf can currently produce it.
+3. No test covers `--json` combined with a network failure or `KeyboardInterrupt`.
+   Safe by inspection today — both prints are structurally stderr — but an
    unguarded future edit would not be caught.
-6. In `--json` mode an interrupted run emits nothing marking a clean stop,
-   unlike text mode.
-7. `tools.channel`'s docstring never mentions `live`, so a Claude session
-   reading only that docstring cannot discover the parameter. MCP docstrings
-   *are* the interface.
+4. In `--json` mode an interrupted run emits nothing marking a clean stop,
+   unlike text mode. A format decision with no consumer today.
+
+### 4.1 Fixed in the fix wave — do not go looking for these
+
+The final review found nine, and the per-task reviews had deferred three more.
+All twelve are closed; they are listed so a reader of an earlier draft of this
+document does not chase them.
+
+- **The third cross-file defect this project has shipped in three cycles.**
+  MCP's `_scene` captured `_load`'s stderr and consulted it **only** when the
+  load returned `None`. It was written when `_load` had two outcomes. Four
+  commits later, §2's fix gave `_load` a third — a partial read *warns and still
+  returns a scene* — and that warning was captured and thrown away. So an MCP
+  session saw a partial console read as complete: the same harm §2 set out to
+  fix, inverted. Neither task's diff held both halves.
+- A measurement nobody made, in two user-facing strings: `--interval`'s help and
+  the `wing-watch` skill both claimed "a 208-leaf round measured 22 ms". §2.4's
+  22 ms row is the **120-leaf** list; the only 208-leaf run paces itself at
+  0.1 s and cannot show a sub-0.1 s round.
+- MCP `doctor(show=...)` dropped the show-anomaly report the CLI prints.
+- `skills/wing-diff/SKILL.md` still described a files-only command.
+- `tools.channel`'s docstring omitted `live` — and an MCP docstring *is* the
+  interface.
+- Three places asserted that subscribing would take the slot **from WING-Edit**.
+  What is measured is that one subscription exists console-wide; that WING-Edit
+  holds it is §2.6(3), still unverified.
+- `net/watch/list.py` cited "S2.2" twice in consecutive lines meaning two
+  different documents.
+- `events._shown()`'s docstring said "address" where it returns `strip`.
+- Two smaller ones: `net watch` ignored the module's `OSC_PORT` convention, and
+  `diff` read a live second side even after the first side had already failed.
 
 ## 5. Open questions — carried forward unchanged
 
@@ -144,6 +172,11 @@ New this cycle:
   passing test. The only reliable check is to ask "if this broke, would it go
   red?" and then *break it*. Each was proved by reverting the production line
   and capturing the failure.
+- **The whole-branch review earned its cost for the third cycle running,**
+  and in the same shape every time: a defect spanning two files that no
+  single task's diff contained. This time MCP threw away a warning that a
+  later task had only just started emitting. A per-task review cannot see
+  it, by construction -- both halves were correct when written.
 - **The most valuable find came from a typo.** `10.0.0.1` was typed to smoke-test
   `diff --live`, and the impossible output — 76 differences against a console
   that does not exist — exposed a shipped defect that had survived a full
