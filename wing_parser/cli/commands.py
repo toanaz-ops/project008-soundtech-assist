@@ -31,10 +31,45 @@ def _load(path: str | None, show: str | None = None, live: str | None = None) ->
         try:
             from wing_parser.net.snapshot import take_snapshot
             context = load_show_context(show) if show is not None else None
-            return WingScene(take_snapshot(live).raw, context)
+            snapshot = take_snapshot(live)
         except (OSError, ValueError) as exc:
             print(f"error: {exc}", file=sys.stderr)
-        return None
+            return None
+
+        # OSC is UDP, so an unreachable host raises nothing at all --
+        # every leaf just times out and lands in `unresolved`, and the
+        # except above never fires. take_snapshot reports that faithfully
+        # (its docstring: a caller "must be able to tell 'empty' apart
+        # from 'incomplete'"); reading only `.raw` threw the report away,
+        # and an empty scene reached the advisory engine, which then
+        # truthfully found nothing wrong with nothing. `doctor --live`
+        # printed "No findings." for a desk it never reached.
+        if not snapshot.raw.ae and not snapshot.raw.ce:
+            print(
+                f"error: no console answered at {live}: read 0 of the "
+                f"{len(snapshot.unresolved_nodes)} top-level nodes. "
+                f"Check the address and that the desk is on the network.",
+                file=sys.stderr,
+            )
+            return None
+
+        if snapshot.unresolved_nodes or snapshot.unresolved_leaves:
+            # Partial is usable but must never look complete. Silence on
+            # a clean read is deliberate: a warning printed every time
+            # teaches the reader to skip it.
+            print(
+                f"warning: incomplete read from {live}: "
+                f"{len(snapshot.unresolved_nodes)} node(s) and "
+                f"{len(snapshot.unresolved_leaves)} leaf/leaves did not answer"
+                + (
+                    f"; nodes: {', '.join(snapshot.unresolved_nodes)}"
+                    if snapshot.unresolved_nodes
+                    else ""
+                ),
+                file=sys.stderr,
+            )
+
+        return WingScene(snapshot.raw, context)
     try:
         return WingScene.load(path, show=show)
     except OSError:
