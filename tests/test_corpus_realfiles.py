@@ -40,6 +40,14 @@ def test_each_real_scene_yields_its_pinned_finding_count(name, count):
 @pytest.mark.parametrize("name", sorted(EXPECTED))
 def test_each_real_scene_parses_as_a_recognised_schema(name):
     """WING Edit 3.0 writes snapshot.9. If a file ever stops being
-    recognised, that is a versions.yaml regression, not a bad file."""
+    recognised, that is a versions.yaml regression, not a bad file.
+
+    `known` is the half that catches a regression. `resolve()` keeps the
+    id it was given and only flips `known` to False for an unrecognised
+    one (core/versions.py: `replace(fallback, type_id=type_id,
+    known=False)`), so asserting the id alone would stay true even with
+    snapshot.9 deleted from the registry.
+    """
     scene = WingScene.load(USER_FILES / f"{name}.snap")
     assert scene.version.type_id == "snapshot.9"
+    assert scene.version.known is True
