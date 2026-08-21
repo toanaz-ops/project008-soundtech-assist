@@ -96,7 +96,7 @@ def test_a_directory_returns_a_message_not_an_exception(tmp_path):
 def test_every_tool_keeps_the_signature_fastmcp_introspects():
     """FastMCP builds each tool's input schema from the signature, so a
     *args/**kwargs wrapper would register five tools with no parameters."""
-    assert list(inspect.signature(tools.channel).parameters) == ["path", "number"]
+    assert list(inspect.signature(tools.channel).parameters) == ["path", "number", "live"]
     assert list(inspect.signature(tools.diff).parameters) == ["before", "after"]
     for name, function in tools.TOOLS.items():
         parameters = inspect.signature(function).parameters
@@ -142,7 +142,9 @@ def test_doctor_with_an_unknown_profile_returns_a_message(vu_path, tmp_path, mon
 
 
 def test_the_doctor_tool_still_exposes_its_parameters():
-    assert list(inspect.signature(tools.doctor).parameters) == ["path", "profile"]
+    assert list(inspect.signature(tools.doctor).parameters) == [
+        "path", "profile", "show", "live"
+    ]
 
 
 def test_main_names_the_fix_when_the_mcp_extra_is_missing(capsys):
@@ -163,3 +165,32 @@ def test_main_names_the_fix_when_the_mcp_extra_is_missing(capsys):
         main()
     assert excinfo.value.code == 1
     assert "wing-parser[mcp]" in capsys.readouterr().err
+
+
+def test_doctor_accepts_a_show_context_and_reports_its_findings(vu_path):
+    """Spec S6.1: without this, a Claude session on MCP cannot see
+    Q1-Q7 at all."""
+    from wing_parser.mcp import tools
+
+    plain = tools.doctor(str(vu_path))
+    with_show = tools.doctor(
+        str(vu_path), show="tests/data/example-Vu-show.yaml"
+    )
+    assert "Q1" not in plain
+    assert "Q1" in with_show
+
+
+def test_every_tool_that_reads_a_scene_now_offers_live():
+    import inspect
+
+    from wing_parser.mcp import tools
+
+    for name in ("analyze", "routing", "channel", "doctor"):
+        signature = inspect.signature(getattr(tools, name))
+        assert "live" in signature.parameters, f"{name} has no live parameter"
+
+
+def test_doctor_still_reports_the_pinned_count_for_the_real_file(vu_path):
+    from wing_parser.mcp import tools
+
+    assert tools.doctor(str(vu_path)).startswith("22 findings")

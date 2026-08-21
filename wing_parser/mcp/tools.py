@@ -11,11 +11,14 @@ tool to call, so they say when to use each one, not just what it does.
 
 from __future__ import annotations
 
+import contextlib
 import functools
+import io
 from typing import Callable
 
 from wing_parser import WingScene
 from wing_parser.cli import render
+from wing_parser.cli.commands import _load
 
 
 def _guard(function):
@@ -37,23 +40,47 @@ def _guard(function):
     return wrapper
 
 
-@_guard
-def analyze(path: str) -> str:
-    """Overview of a WING .snap scene file.
+def _scene(path: str | None, show: str | None = None, live: str | None = None):
+    """One loader for every tool, so MCP cannot drift from the CLI on
+    what a scene is or where it may come from.
 
-    Use this first when asked anything general about a scene: how many
-    channels are in use, what they are named, what the file's firmware
-    version is, and whether the parser found anomalies. Returns a
-    channel list with levels and inferred source types.
+    `_load` reports a failure by printing to stderr and returning
+    `None` -- fine for the CLI, where stderr reaches the terminal, but
+    an MCP session only ever sees this function's return value, so that
+    message would otherwise be lost. Capture it (still never touching
+    stdout, the MCP protocol channel) so a bad path or an unreachable
+    console still names itself instead of falling back to one generic
+    sentence for every failure.
     """
-    scene = WingScene.load(path)
+    captured = io.StringIO()
+    with contextlib.redirect_stderr(captured):
+        scene = _load(path, show, live)
+    if scene is None:
+        message = captured.getvalue().strip()
+        if message.startswith("error: "):
+            message = message[len("error: "):]
+        raise ValueError(
+            message or "could not read a scene: pass either a .snap path or live=<ip>"
+        )
+    return scene
+
+
+@_guard
+def analyze(path: str | None = None, live: str | None = None) -> str:
+    """Overview of a scene: channels, buses, names, levels, inferred
+    source types, firmware version and parser anomalies.
+
+    Pass `live` with a console's IP to read a running desk instead of a
+    file.
+    """
+    scene = _scene(path, live=live)
     out = render.scene_overview(scene)
     scene.classifier.flush()
     return out
 
 
 @_guard
-def channel(path: str, number: int) -> str:
+def channel(path: str | None = None, number: int = 1, live: str | None = None) -> str:
     """Full detail for one input channel, 1 to 40.
 
     Use when a question is about a specific channel: its EQ curve, gate
@@ -61,7 +88,7 @@ def channel(path: str, number: int) -> str:
     polarity, tap point, DCA and mute-group membership, or which buses
     it feeds.
     """
-    scene = WingScene.load(path)
+    scene = _scene(path, live=live)
     out = render.channel_detail(scene.channel(number))
     scene.classifier.flush()
     return out
@@ -89,33 +116,40 @@ def diff(before: str, after: str) -> str:
 
 
 @_guard
-def routing(path: str) -> str:
-    """Routing summary for a scene.
+def routing(path: str | None = None, live: str | None = None) -> str:
+    """Routing map: orphans, ALT-sourced channels and anything the
+    classifier could not identify.
 
-    Use when asked how signal flows: which live channels feed nothing,
-    which use an ALT input, which are unpatched or unnamed. Also lists
-    channels and buses whose source type could not be inferred from
-    their names.
+    Pass `live` with a console's IP to read a running desk instead of a
+    file.
     """
-    scene = WingScene.load(path)
+    scene = _scene(path, live=live)
     out = render.routing(scene.routing.summary(), scene.unclassified())
     scene.classifier.flush()
     return out
 
 
 @_guard
-def doctor(path: str, profile: str | None = None) -> str:
+def doctor(
+    path: str | None = None,
+    profile: str | None = None,
+    show: str | None = None,
+    live: str | None = None,
+) -> str:
     """Run the advisory rules and report likely misconfigurations.
 
     Use when asked to check, review, or find problems in a scene. Each
     finding names the rule, the target, and which rule layer decided it
     (base for generic industry practice, toanaz for personal principles,
     show for one-off overrides). Rules switched off by a higher layer are
-    listed too. Pass `profile` to apply one show profile from the
-    knowledge directory, which can switch base rules off for a show whose
-    author is deviating from them on purpose.
+    listed too.
+
+    Pass `profile` to apply one show profile from the knowledge
+    directory. Pass `show` with a show-context YAML to also report where
+    the cue sheet and the console disagree (rules Q1-Q7). Pass `live`
+    with a console's IP to read a running desk instead of a file.
     """
-    scene = WingScene.load(path)
+    scene = _scene(path, show=show, live=live)
     found = scene.advisory.run(profile)
     text = render.findings(found, scene.advisory.suppressed(profile))
     scene.classifier.flush()
