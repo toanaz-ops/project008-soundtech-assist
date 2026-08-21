@@ -195,8 +195,10 @@ def diff(args) -> int:
         return 1
 
     before = _load(before_path, live=before_live)
+    if before is None:
+        return 1
     after = _load(after_path, live=after_live)
-    if before is None or after is None:
+    if after is None:
         return 1
     print(render.changes(before.diff(after), limit=args.limit))
     before.classifier.flush()

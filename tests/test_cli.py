@@ -456,3 +456,34 @@ def test_diff_reports_a_bad_arity_instead_of_raising(capsys):
     )
     assert commands.diff(args) == 1
     assert "two sides" in capsys.readouterr().err
+
+
+def test_diff_does_not_read_the_second_side_once_the_first_has_failed(
+    tmp_path, capsys, monkeypatch
+):
+    """F9: a failing first side must not still trigger a full console
+    read on the second. Before the fix, `diff` called `_load` for both
+    sides unconditionally and only checked afterward -- a typo'd file
+    plus a live `--live-after` would open a socket and read an entire
+    desk before discarding the result. Prove the second `_load` never
+    runs by making its live branch raise if reached."""
+    from types import SimpleNamespace
+
+    from wing_parser.cli import commands
+
+    def _must_not_be_called(*args, **kwargs):
+        raise AssertionError("second side was read after the first side failed")
+
+    monkeypatch.setattr(
+        "wing_parser.net.snapshot.take_snapshot", _must_not_be_called
+    )
+
+    args = SimpleNamespace(
+        files=[str(tmp_path / "no-such-file.snap")],
+        limit=5,
+        live_before=None,
+        live_after="10.0.0.1",
+    )
+    assert commands.diff(args) == 1
+    captured = capsys.readouterr()
+    assert "no-such-file.snap" in captured.err
