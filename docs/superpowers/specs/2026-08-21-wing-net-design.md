@@ -173,6 +173,20 @@ and the reason §4 walks the schema fresh on every snapshot instead of caching i
 Whole-console snapshot is therefore about **10 s**: 0.95 s of shape plus ~9 s of
 values.
 
+**The retry ladder must stop when it stops helping.** Halving the chunk size
+isolates a poisoned request, but an address that will never answer is not a
+poison to isolate. Pushing a scene authored on another console leaves thousands
+of leaves genuinely absent — 3235 of 28056, mostly a WEDIT layer this desk has
+never had — and bisecting that set to chunk size 1 pays an idle timeout per
+address. Measured: a whole-scene push ran **past two minutes** where the writes
+themselves take 1.1 s.
+
+The guard is one line of policy: **if a retry round recovers nothing, stop.**
+While a poisoned batch is being isolated, every round recovers something, so
+the ladder runs to completion; once only unanswerable addresses remain, it
+exits at once. The same guard also took the schema walk from 3.2 s to **1.0 s**,
+because its last rounds had been bisecting over nothing.
+
 ### 2.6 Writing
 
 Verified on the lab desk. All three set forms work on FW 3.1:

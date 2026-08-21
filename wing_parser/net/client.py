@@ -180,7 +180,18 @@ class WingClient:
             if round_index > 0:
                 self._rotate()
                 chunk_size = max(1, chunk_size // 2)
+            before = len(pending)
             pending = self._run_one_pass(pending, chunk_size, replies, typetag, args)
+            # A round that recovers NOTHING means the rest is genuinely
+            # unanswerable, not poisoned: halving further can only isolate
+            # a poison node, and there is no poison node to find. Without
+            # this, a push carrying leaves the console does not have --
+            # 128 StageConnect inputs on a rack with no device attached --
+            # drives the ladder to chunk size 1 and pays an idle timeout
+            # per address. Measured before this guard: a whole-scene push
+            # ran past two minutes where the writes themselves take 1.1s.
+            if len(pending) == before:
+                break
 
         return BatchResult(replies=replies, unresolved=tuple(pending))
 

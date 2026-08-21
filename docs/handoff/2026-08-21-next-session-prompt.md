@@ -1,7 +1,7 @@
 # WING scene parser — next session
 
 **Date:** 2026-08-21 · **Branch:** `claude_desk/behringer-wing-ethernet-mixer-5de617`
-**State:** 991 tests passing, 1 skipped (FastMCP, by design), nothing uncommitted
+**State:** 994 tests passing, 1 skipped (FastMCP, by design), nothing uncommitted
 
 Paste this whole file as the opening message of the next session. It supersedes
 `2026-08-18-next-session-prompt.md`.
@@ -133,9 +133,11 @@ repo lives on a Google Drive path and git can be slow** — wait rather than
 interrupting. Excluded from git: `user-files/WING-Edit.exe`, the WING manual
 PDFs.
 
-**The lab console `WING-GIAQUY` at `192.168.128.28` currently holds a pushed
-copy of `example-Vu.snap`.** To return it to a clean desk, push
-`user-files/factory-scene.snap`.
+**The lab console `WING-GIAQUY` at `192.168.128.28` was left on
+`factory-scene.snap`** — `doctor --live` reports no findings, matching the file.
+A cross-console push leaves ~3200 leaves absent (a WEDIT layer this rack has
+never had) and ~110 mismatched by one quantisation step; both are expected and
+explained in the spec, not failures.
 
 ## 9. First move
 

@@ -65,12 +65,13 @@ during verification, not theorised.
 | **advisory on the live desk vs the file pushed to it** | **22 findings and 22 findings** |
 | `doctor --live` end to end | 22 findings in **11.9 s** |
 | `net snapshot -o` then `WingScene.load` | 822 KB file, reloads to 22 findings and the same 2 anomalies as the source |
-| offline suite | **991 passed, 1 skipped** (FastMCP, by design); no test opens a socket to a console |
+| whole-scene push, cross-console | 29 s: 1.1 s of writes, the rest verifying all 28056 leaves |
+| offline suite | **994 passed, 1 skipped** (FastMCP, by design); no test opens a socket to a console |
 
 `example-Vu.snap` still yields exactly **22** findings and `factory-scene.snap`
 still yields **none** — the standing constraint held throughout.
 
-## 4. The five findings that shaped the work
+## 4. The six findings that shaped the work
 
 Each cost a measurement and would have been wrong if reasoned about.
 
@@ -105,7 +106,15 @@ because each isolated request after the first still landed on the poisoned
 socket. Rotating after any short *chunk* took it to 3. A GET on a missing
 address, by contrast, is harmless and safe to pipeline.
 
-**5. The JSON tree is dynamic, so nothing about its shape may be cached.**
+**5. A retry ladder must stop when it stops helping.** Halving the chunk size
+isolates a poisoned request, but an address that will never answer is not a
+poison to isolate. A cross-console push leaves thousands of leaves genuinely
+absent, and bisecting that set to chunk size 1 pays an idle timeout each: the
+push ran past **two minutes** where its writes take 1.1 s. The fix is one line —
+if a round recovers nothing, stop — and it also took the schema walk from 3.2 s
+to 1.0 s.
+
+**6. The JSON tree is dynamic, so nothing about its shape may be cached.**
 Proved by writing `/aux/1/dyn/mdl` and re-reading the schema: `GATE` exposes
 `acc range att hld ratio rel`, `COMP` exposes `auto det env knee …`, `CMB`
 exposes `cmode cpeak depth fast …`. Two whole-console walks minutes apart
@@ -145,8 +154,10 @@ console raised on **7 of 8 aux strips**.
 
 ## 7. State of the lab console
 
-**The desk currently holds a pushed copy of `example-Vu.snap`**, written over
-OSC as the round-trip test. Individual leaves exercised during probing —
+**The desk was restored to `factory-scene.snap` at the end of the session**, by
+`wing net push`. `doctor --live` reports no findings, matching what the file
+gives. Before that it held a pushed copy of `example-Vu.snap`, written over OSC
+as the round-trip test. Individual leaves exercised during probing —
 `/ch/40/{fdr,mute,name}`, `/dca/16`, `/mgrp/8/name` — were restored at the time.
 
 To return it to a clean desk, **push `user-files/factory-scene.snap`**. Do not
