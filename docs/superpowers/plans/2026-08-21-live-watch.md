@@ -22,7 +22,7 @@ Copy these into every task dispatch. They come from the spec and from
 - **Offline:** `mcp` and `anthropic` stay uninstalled; the FastMCP test keeps skipping.
 - **Never fabricate a value the file or the console does not state.**
 - **PyYAML reads, ruamel writes.**
-- **`pytest.approx` for floats.**
+- **`pytest.approx` for COMPUTED floats.** A value that round-trips unchanged (a literal handed to a stub and read straight back) is compared exactly; `approx` there hides nothing and reads as noise.
 - **Do NOT modify `net/client.py`, `net/codec.py` or `net/schema.py`** (spec §8). Polling is a new consumer of a tested transport.
 - **The unprofiled real file must still yield exactly 22 findings.** `python -m wing_parser.cli doctor user-files/example-Vu.snap` — verify before every commit.
 - **Baseline to preserve:** 996 passed, 1 skipped. Every task adds tests; none may remove or weaken one.
