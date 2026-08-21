@@ -40,29 +40,47 @@ def _guard(function):
     return wrapper
 
 
-def _scene(path: str | None, show: str | None = None, live: str | None = None):
+def _scene(path: str | None, show: str | None = None, live: str | None = None) -> tuple[WingScene, str]:
     """One loader for every tool, so MCP cannot drift from the CLI on
     what a scene is or where it may come from.
 
-    `_load` reports a failure by printing to stderr and returning
-    `None` -- fine for the CLI, where stderr reaches the terminal, but
-    an MCP session only ever sees this function's return value, so that
-    message would otherwise be lost. Capture it (still never touching
-    stdout, the MCP protocol channel) so a bad path or an unreachable
-    console still names itself instead of falling back to one generic
-    sentence for every failure.
+    `_load` reports trouble by printing to stderr -- fine for the CLI,
+    where stderr reaches the terminal, but an MCP session only ever sees
+    a tool's return *value*, so anything left on stderr would otherwise
+    be lost. Capture it (still never touching stdout, the MCP protocol
+    channel) and hand it back as the second element of the returned pair
+    rather than printing or discarding it here: `_scene` has no view of
+    how a given tool wants to present a notice, so the choice belongs to
+    the caller, not to this shared loader. A failed load (`scene is
+    None`) still raises, same as before; a *partial* one (a live read
+    that returned a scene but left `captured` non-empty -- `_load`'s
+    "incomplete read from <ip>" warning) returns normally, with that text
+    as `notice` so it cannot silently read as a complete desk. `notice`
+    is `""` on a clean read.
     """
     captured = io.StringIO()
     with contextlib.redirect_stderr(captured):
         scene = _load(path, show, live)
+    message = captured.getvalue().strip()
     if scene is None:
-        message = captured.getvalue().strip()
         if message.startswith("error: "):
             message = message[len("error: "):]
         raise ValueError(
             message or "could not read a scene: pass either a .snap path or live=<ip>"
         )
-    return scene
+    return scene, message
+
+
+def _with_notice(text: str, notice: str) -> str:
+    """Prepend a partial-read warning `_scene` captured from stderr, so
+    it reaches the only thing an MCP session ever sees: the tool's
+    return value. `notice` already carries `_load`'s own `warning: `
+    prefix, so this only joins it to `text` -- it does not add another
+    one. Silence on a clean read is deliberate -- `notice` is `""` then,
+    so `text` passes through unchanged."""
+    if not notice:
+        return text
+    return f"{notice}\n\n{text}"
 
 
 @_guard
@@ -73,10 +91,10 @@ def analyze(path: str | None = None, live: str | None = None) -> str:
     Pass `live` with a console's IP to read a running desk instead of a
     file.
     """
-    scene = _scene(path, live=live)
+    scene, notice = _scene(path, live=live)
     out = render.scene_overview(scene)
     scene.classifier.flush()
-    return out
+    return _with_notice(out, notice)
 
 
 @_guard
@@ -87,11 +105,14 @@ def channel(path: str | None = None, number: int = 1, live: str | None = None) -
     and dynamics settings, high-pass filter, preamp gain, phantom power,
     polarity, tap point, DCA and mute-group membership, or which buses
     it feeds.
+
+    Pass `live` with a console's IP to read a running desk instead of a
+    file.
     """
-    scene = _scene(path, live=live)
+    scene, notice = _scene(path, live=live)
     out = render.channel_detail(scene.channel(number))
     scene.classifier.flush()
-    return out
+    return _with_notice(out, notice)
 
 
 @_guard
@@ -123,10 +144,10 @@ def routing(path: str | None = None, live: str | None = None) -> str:
     Pass `live` with a console's IP to read a running desk instead of a
     file.
     """
-    scene = _scene(path, live=live)
+    scene, notice = _scene(path, live=live)
     out = render.routing(scene.routing.summary(), scene.unclassified())
     scene.classifier.flush()
-    return out
+    return _with_notice(out, notice)
 
 
 @_guard
@@ -149,11 +170,20 @@ def doctor(
     the cue sheet and the console disagree (rules Q1-Q7). Pass `live`
     with a console's IP to read a running desk instead of a file.
     """
-    scene = _scene(path, show=show, live=live)
+    scene, notice = _scene(path, show=show, live=live)
     found = scene.advisory.run(profile)
-    text = render.findings(found, scene.advisory.suppressed(profile))
+    text = render.findings(
+        found,
+        scene.advisory.suppressed(profile),
+        off_event=scene.advisory.off_event(profile),
+        declared_event=scene.advisory.declared_event(profile),
+    )
+    if scene.show is not None:
+        anomalies = render.show_anomalies(scene.show.anomalies)
+        if anomalies:
+            text = f"{anomalies}\n\n{text}"
     scene.classifier.flush()
-    return text
+    return _with_notice(text, notice)
 
 
 TOOLS: dict[str, Callable[..., str]] = {

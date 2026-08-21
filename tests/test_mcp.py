@@ -4,7 +4,10 @@ import json
 import pytest
 import yaml
 
+from wing_parser.core.loader import RawScene
+from wing_parser.core.versions import load_registry, resolve
 from wing_parser.mcp import tools
+from wing_parser.net.snapshot import SnapshotResult
 
 
 @pytest.fixture(autouse=True)
@@ -194,3 +197,111 @@ def test_doctor_still_reports_the_pinned_count_for_the_real_file(vu_path):
     from wing_parser.mcp import tools
 
     assert tools.doctor(str(vu_path)).startswith("22 findings")
+
+
+def test_doctor_show_reports_show_anomalies_too(vu_path, tmp_path):
+    """F3: the CLI prints render.show_anomalies(scene.show.anomalies)
+    ahead of the findings (commands.py doctor); the MCP tool did not.
+    Spec S6.1 says the MCP surface mirrors the CLI, which is the
+    authority -- model this on test_cli_showcontext.py's
+    test_show_anomalies_are_printed, which uses the same typo'd
+    `instrument.kyes` to trigger one."""
+    path = tmp_path / "typo.yaml"
+    path.write_text(
+        yaml.safe_dump({"show": "t", "segments": [
+            {"id": "S1", "expects": ["instrument.kyes"]}
+        ]}),
+        encoding="utf-8",
+    )
+    out = tools.doctor(str(vu_path), show=str(path))
+    assert "instrument.kyes" in out and "instrument.keys" in out
+
+
+# --- F1: a partial live read must not read as a complete one on MCP ---
+#
+# Modeled on tests/test_cli_live_unreachable.py, which already covers the
+# CLI side of the same `_load` behaviour. `_scene` (wing_parser/mcp/tools.py)
+# used to consult its captured stderr only when `_load` returned None --
+# a partial-but-usable read (a scene plus a stderr warning) fell through
+# that check and reached an MCP session with no trace at all.
+
+DEAD_ROOTS = (
+    "/cfg", "/io", "/ch", "/aux", "/bus", "/main", "/mtx",
+    "/dca", "/mgrp", "/fx", "/cards", "/play", "/$ctl",
+)
+
+
+def _raw(ae: dict, ce: dict) -> RawScene:
+    return RawScene(
+        version=resolve("snapshot.11", load_registry()),
+        ae=ae,
+        ce=ce,
+        meta={},
+        path=None,
+        source="wing://10.0.0.1",
+    )
+
+
+def _stub_partial(monkeypatch, factory_path) -> None:
+    import json as _json
+
+    real = _json.loads(factory_path.read_text(encoding="utf-8"))
+    monkeypatch.setattr(
+        "wing_parser.net.snapshot.take_snapshot",
+        lambda *a, **k: SnapshotResult(
+            raw=_raw(real["ae_data"], real["ce_data"]),
+            unresolved_nodes=("/fx/1",),
+            unresolved_leaves=("/ch/1/fdr", "/ch/2/fdr"),
+        ),
+    )
+
+
+def _stub_complete(monkeypatch, factory_path) -> None:
+    import json as _json
+
+    real = _json.loads(factory_path.read_text(encoding="utf-8"))
+    monkeypatch.setattr(
+        "wing_parser.net.snapshot.take_snapshot",
+        lambda *a, **k: SnapshotResult(
+            raw=_raw(real["ae_data"], real["ce_data"]),
+            unresolved_nodes=(),
+            unresolved_leaves=(),
+        ),
+    )
+
+
+def test_analyze_carries_the_partial_read_warning(monkeypatch, factory_path):
+    _stub_partial(monkeypatch, factory_path)
+    out = tools.analyze(live="10.0.0.1")
+    assert "warning" in out.lower() and "10.0.0.1" in out
+
+
+def test_channel_carries_the_partial_read_warning(monkeypatch, factory_path):
+    _stub_partial(monkeypatch, factory_path)
+    out = tools.channel(number=1, live="10.0.0.1")
+    assert "warning" in out.lower() and "10.0.0.1" in out
+
+
+def test_routing_carries_the_partial_read_warning(monkeypatch, factory_path):
+    _stub_partial(monkeypatch, factory_path)
+    out = tools.routing(live="10.0.0.1")
+    assert "warning" in out.lower() and "10.0.0.1" in out
+
+
+def test_doctor_carries_the_partial_read_warning(monkeypatch, factory_path):
+    _stub_partial(monkeypatch, factory_path)
+    out = tools.doctor(live="10.0.0.1")
+    assert "warning" in out.lower() and "10.0.0.1" in out
+
+
+def test_analyze_on_a_complete_live_read_has_no_warning_prefix(monkeypatch, factory_path):
+    """Silence on a clean read is deliberate -- assert it holds on MCP too."""
+    _stub_complete(monkeypatch, factory_path)
+    out = tools.analyze(live="10.0.0.1")
+    assert "warning" not in out.lower()
+
+
+def test_doctor_on_a_complete_live_read_has_no_warning_prefix(monkeypatch, factory_path):
+    _stub_complete(monkeypatch, factory_path)
+    out = tools.doctor(live="10.0.0.1")
+    assert "warning" not in out.lower()
