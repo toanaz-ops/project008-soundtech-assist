@@ -1,7 +1,7 @@
 # Sub-project H — desktop application — outcome
 
 **Date:** 2026-08-18 · **Branch** `claude_desk/soundtech-playground-handoff-6ab828`
-· **677 tests passing, 1 skipped** (FastMCP, by design) · `doctor` on the
+· **688 tests passing, 1 skipped** (FastMCP, by design) · `doctor` on the
 unprofiled real file still reports exactly **22 findings**
 
 ## What happened to the session's original plan
@@ -48,7 +48,7 @@ Each of these decided part of the design, and each is reproducible.
 | Re-derivation cost | `WingScene.load` 37 ms + `advisory.run` 104 ms; three whole-pipeline repeats at 90/103/99 ms. Cheap enough to re-run the entire engine after every single edit. |
 | Target vs raw path | `doctor --json` targets (`ch.1.send.8`) are *nearly* the raw path (`ae_data.ch.1.send.8`). Nearly, not exactly — which is why repairs are declared per rule, not derived. |
 
-## Three defects the work itself caught
+## Four defects the work itself caught
 
 **PB1's repair cannot be `set inv: true`.** `query/channel.py:63` defines
 effective polarity as channel inversion **XOR** source inversion. PB1 fires when
@@ -80,6 +80,11 @@ file and written to **bus 5 instead of matrix 5** the first time an IEM send was
 left post-fader — a silent wrong edit on the one signal path he most needs
 protected. `test_a_matrix_send_target_repairs_the_matrix_send` now induces that
 case and asserts bus 5 is untouched.
+
+**The fourth is the worst, and it only exists in a packaged build**: a frozen
+app would have written every recorded verdict into a directory the process
+deletes on exit. Written up under **Packaging** below, because the packaging
+work is what surfaced it.
 
 ## Which rules have a repair, and why the rest do not
 
@@ -179,10 +184,48 @@ Also open, unchanged by this cycle: the four questions in
 verdict, the `expects:` vocabulary split, and the missing MCP `show` parameter —
 plus G2 (spec §11.1) and the twelve triaged G1 residuals.
 
-**Not done here, deliberately:** a frozen `.exe`. The app runs from the repo,
-which is the thing to package once it is known to work. Note for whoever does
-it: `pip` reports *"Defaulting to user installation"* on this machine, so the
-interpreter in use has no virtualenv.
+## Packaging — done, and it exposed the worst bug of the cycle
+
+`pyinstaller packaging\wing-ui.spec` builds a 66 MB `dist\wing-ui.exe` needing
+no Python on the target machine. It was deferred at first as mechanical work.
+It was not.
+
+**A frozen build would have destroyed the feedback log.**
+`config.knowledge_dir()` derives from `__file__`, and inside a PyInstaller
+bundle that is the temporary extraction directory the process deletes on exit.
+Everything that directory holds — `feedback.jsonl`, `principles.yaml`, `shows/`
+— is written or edited by the operator. So the packaged app would have accepted
+every verdict, written it, reported success, and thrown the file away on close.
+No error, no warning, and the one loop this application exists to make usable.
+
+The fix: when frozen, `knowledge_dir()` returns
+`%USERPROFILE%\.config\wing-skill` and **deliberately does not consult
+`SEARCH_ORDER`**, whose first entry is the bundle's own copy and would win.
+`config.seed_user_dir()` copies the shipped set across once, never overwriting
+anything already present, and is called from the entry point rather than from
+the resolver — resolving a path should not write to disk.
+
+Two things about how this was confirmed are worth carrying:
+
+- **The tests were proven to bite.** Removing the frozen branch turns two red,
+  including an end-to-end case that records a verdict, deletes a simulated
+  bundle, and reads the log back.
+- **The real binary was run, not reasoned about.** On its first launch it
+  created `%USERPROFILE%\.config\wing-skill` containing `principles.yaml`,
+  `classifier.yaml`, `feedback.jsonl` and `shows\small.yaml`. That copy is
+  itself the proof the frozen branch fired: `seed_user_dir` only copies when the
+  destination does not exist, so had `knowledge_dir()` still resolved to the
+  bundle's own copy, nothing would have been written at all.
+
+**Run the `.exe` from local disk, not from the Google Drive path.** Launched
+from `Z:\My Drive\...` it did not start within two minutes and `Start-Process`
+itself blocked; copied to local disk it starts in seconds. A one-file bundle
+unpacks 66 MB before its first line of code runs. This is a property of where
+the file sits, not of the build — and it is the same Drive-path slowness the
+environment notes already warn about for `git` and `ripgrep`.
+
+Also noted: `pip` reports *"Defaulting to user installation"* on this machine,
+so the interpreter in use has no virtualenv.
 
 ## What this cycle taught
 
@@ -220,3 +263,13 @@ interpreter in use has no virtualenv.
   gitignored, so they do not exist inside a git worktree. The first probe failed
   with `FileNotFoundError` and read exactly like "the file is not here". Any
   probe touching an ignored artefact must run from the main checkout.
+- **"Mechanical" work is where the environment-shaped bugs live.** Packaging was
+  deferred as the boring part and turned out to hold the most damaging defect of
+  the cycle, because freezing changes what `__file__` means and every path in
+  this project is derived from it. The general form: a step that changes the
+  *shape of the runtime* rather than the code deserves the same suspicion as a
+  feature, not less.
+- **Run the artefact.** The frozen fix had passing tests before the binary was
+  ever built. Running it produced a second, independent proof — the seeded
+  directory could only exist if the frozen branch fired — and also the Google
+  Drive launch failure, which no test would ever have found.
