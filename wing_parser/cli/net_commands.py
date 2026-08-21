@@ -18,6 +18,7 @@ design's command surface never asked for.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,9 @@ from wing_parser.net.client import OSC_PORT, WingClient
 from wing_parser.net.codec import leaf_value
 from wing_parser.net.identity import IDENTITY_PORT, query_identity
 from wing_parser.net.snapshot import take_snapshot
+from wing_parser.net.watch.events import change_as_dict, format_change
+from wing_parser.net.watch.list import build_watch_list
+from wing_parser.net.watch.poller import watch
 
 # Errors a `net/` call can raise that must reach the user as `error: ...`,
 # never a traceback: OSError covers every socket failure (timeout,
@@ -191,3 +195,64 @@ def net_push(args) -> int:
         return 1
     print(render_net.net_push_result(result, len(leaves)))
     return 0 if result.dry_run or not result.mismatched else 1
+
+
+def net_watch(args) -> int:
+    """Report what changes on a running console, by polling.
+
+    Subscribes to nothing (design doc S3.1), so it runs alongside
+    WING-Edit, Companion or anything else without displacing them.
+
+    In --json mode stdout carries JSON and nothing else: the first line
+    is a header naming the watch-list, then one object per change. The
+    unresolved report goes to stderr in text mode and into that header in
+    --json mode -- never as a bare line on stdout, which is the defect
+    that shipped twice in earlier cycles.
+    """
+    try:
+        with WingClient(args.host) as client:
+            watch_list = build_watch_list(args.host, client=client)
+
+            if args.json:
+                header = {
+                    "watching": len(watch_list.addresses),
+                    "strips": watch_list.strips,
+                    "unresolved": list(watch_list.unresolved),
+                }
+                print(json.dumps(header), flush=True)
+            else:
+                inventory = ", ".join(
+                    f"{count} {family}" for family, count in watch_list.strips.items()
+                )
+                print(f"watching {len(watch_list.addresses)} leaves ({inventory})")
+                if watch_list.unresolved:
+                    # S3.2: an incomplete list must say so. A bare total
+                    # while four mains are missing is the exact failure
+                    # this line exists to prevent.
+                    print(
+                        f"warning: {len(watch_list.unresolved)} node(s) did not "
+                        f"resolve and are NOT being watched: "
+                        f"{', '.join(watch_list.unresolved)}",
+                        file=sys.stderr,
+                    )
+                print("watching -- Ctrl+C to stop")
+
+            for change in watch(
+                client,
+                watch_list,
+                interval=args.interval,
+                duration=args.until,
+            ):
+                if args.json:
+                    print(json.dumps(change_as_dict(change)), flush=True)
+                else:
+                    print(format_change(change), flush=True)
+    except KeyboardInterrupt:
+        # Stopping a watch is how it ends, not a failure.
+        if not args.json:
+            print("\nstopped", file=sys.stderr)
+        return 0
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    return 0

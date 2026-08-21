@@ -134,6 +134,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     push.set_defaults(handler=net_commands.net_push)
 
+    watch = net_sub.add_parser("watch", help="report changes on a running console")
+    watch.add_argument("host", metavar="IP")
+    watch.add_argument("--json", action="store_true", help="machine-readable output")
+    watch.add_argument(
+        "--interval",
+        type=float,
+        default=0.25,
+        help="seconds between rounds (default 0.25; a 208-leaf round measured 0.022s)",
+    )
+    watch.add_argument(
+        "--until",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help="stop after this long; without it, runs until interrupted",
+    )
+    watch.set_defaults(handler=net_commands.net_watch)
+
     return parser
 
 
