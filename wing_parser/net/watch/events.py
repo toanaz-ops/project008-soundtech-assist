@@ -29,7 +29,7 @@ def split_address(address: str) -> tuple[str, str]:
 
 def _shown(change: Change) -> str:
     """A blank name is ordinary -- factory-scene.snap names no channel at
-    all -- so fall back to the address rather than leaving a gap."""
+    all -- so fall back to the strip rather than leaving a gap."""
     return change.label if change.label else change.strip
 
 

@@ -494,9 +494,11 @@ python -m wing_parser.cli net watch 192.168.128.28 --json --until 120
 `net watch` reports changes on a running console by **polling**, never
 subscribing. A console holds only one OSC subscription at a time and it
 expires after 10 seconds, so subscribing would take that slot from
-WING-Edit, Companion, or whatever else is already connected — polling is
-a plain request/reply exchange, the same shape as `net get`, and claims
-nothing another client can lose. It watches the *effective* `$fdr`,
+whatever holds it — WING-Edit, Companion, or whatever else is already
+connected (whether WING-Edit itself uses the OSC subscription at all is
+unmeasured — design doc §2.6(3)). Polling is a plain request/reply
+exchange, the same shape as `net get`, and consumes no shared resource,
+so it cannot displace another client. It watches the *effective* `$fdr`,
 `$mute` and `$solo` on channels/buses/mains/matrices, and `$solo` on
 DCAs — for `$fdr`/`$mute`, effective means DCA contribution and
 mute-override are already folded in, so pulling a DCA down surfaces on

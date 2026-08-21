@@ -56,7 +56,9 @@ The fix distinguishes three cases where there was one:
 | something came back, not all | build the scene, warn on stderr saying how much is missing |
 | everything came back | **say nothing** — a warning on every clean read teaches the reader to skip it |
 
-Reproduce the original defect with `docs/probes/probe11_unreachable_console.py`.
+`docs/probes/probe11_unreachable_console.py` reported the original defect
+and now demonstrates the fix: post-fix it takes the `scene is None`
+branch and prints "Nothing to fix here."
 
 **It was found by typing a wrong IP while verifying an unrelated task**, not by
 reading code. Two independent traces then agreed on the cause.

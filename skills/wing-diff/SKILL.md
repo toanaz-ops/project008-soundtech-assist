@@ -1,15 +1,30 @@
 ---
 name: wing-diff
-description: Use when asked what changed between two WING .snap scene files.
+description: Use when asked what changed between two WING scenes -- saved .snap files, a running console, or one of each.
 ---
 
 # Comparing two WING scenes
 
 Run:
 
-```bash
+```powershell
 python -m wing_parser.cli diff <before-file> <after-file>
 ```
+
+`diff` takes a file **list**, not two fixed positionals: it needs exactly
+two sides, and each side comes from either a file in that list or a
+`--live-*` flag. Add `--live-before <ip>` and/or `--live-after <ip>` to
+read a running console for that side instead of a file:
+
+```powershell
+python -m wing_parser.cli diff --live-before 192.168.128.28 last-night.snap
+python -m wing_parser.cli diff --live-before 192.168.128.28 --live-after 192.168.128.30
+```
+
+The first form compares the console directly against a saved file and
+takes exactly one file argument (for the side `--live-before` did not
+supply); the second compares two consoles and takes no file arguments at
+all.
 
 Add `--limit <n>` to change how many differences print (default 50); the
 diff itself always computes the full set, it just truncates the display.
@@ -35,8 +50,7 @@ same show scene shows what actually moved between soundchecks.
 
 ## What this does not check
 
-The diff reads both scene files only. It reports that a value changed,
-not whether the change was correct or whether it affected what anyone
-heard. Anything needing measurement — gain staging in dBFS, LUFS, RT60,
-real-world latency, gain-reduction meters — is out of scope and is
-deliberately not reported.
+It reports that a value changed, not whether the change was correct or
+whether it affected what anyone heard. Anything needing measurement —
+gain staging in dBFS, LUFS, RT60, real-world latency, gain-reduction
+meters — is out of scope and is deliberately not reported.

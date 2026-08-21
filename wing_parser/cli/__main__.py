@@ -158,7 +158,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--interval",
         type=float,
         default=0.25,
-        help="seconds between rounds (default 0.25; a 208-leaf round measured 0.022s)",
+        help="seconds between rounds (default 0.25; a 120-leaf round measured 0.022s)",
     )
     watch.add_argument(
         "--until",

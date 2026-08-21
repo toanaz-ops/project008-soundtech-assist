@@ -1,10 +1,11 @@
 """Build the concrete address list a watch session polls.
 
 The derivation is indirect on purpose. `schema._expand` drops every "$"
-child (S2.2: read-only keys are absent from .snap), and the "$" keys are
-exactly what a watch session wants -- S2.2 again: $fdr and $mute are the
-EFFECTIVE values, already folding in DCA and mute-override. So the walk
-supplies the strip SET, and the keys come from watchlist.yaml.
+child (2026-08-21-wing-net-design.md S2.2: read-only keys are absent from
+.snap), and the "$" keys are exactly what a watch session wants -- this
+spec's own S2.2: $fdr and $mute are the EFFECTIVE values, already folding
+in DCA and mute-override. So the walk supplies the strip SET, and the
+keys come from watchlist.yaml.
 
 The alternative -- probe /ch/1, /ch/2, ... and stop at the first silence
 -- is what S2.7 measured and rejected: it lost a whole family once and

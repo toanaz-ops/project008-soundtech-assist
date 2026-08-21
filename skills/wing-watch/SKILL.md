@@ -14,7 +14,7 @@ python -m wing_parser.cli net watch 192.168.128.28 --json --until 120
 
 `wing net watch <ip>` reports changes on a running console by polling —
 it never subscribes to anything. Add `--interval <seconds>` to change the
-polling rate (default `0.25`; a 208-leaf round measured 22 ms, so a quiet
+polling rate (default `0.25`; a 120-leaf round measured 22 ms, so a quiet
 desk leaves the network mostly idle between rounds). Add
 `--until <seconds>` to stop automatically; without it, the session runs
 until Ctrl+C.
@@ -22,11 +22,12 @@ until Ctrl+C.
 ## Why it polls instead of subscribing
 
 A WING console holds only one OSC subscription at a time, and it expires
-after 10 seconds. Subscribing would take that slot from WING-Edit,
-Companion, or whatever else is already connected. Polling is a plain
-request/reply exchange — the same shape as `net get` — so it claims
-nothing another client can lose. That is what lets this run alongside
-WING-Edit or Companion without displacing them.
+after 10 seconds. Subscribing would take that slot from whatever holds
+it — WING-Edit, Companion, or whatever else is already connected (whether
+WING-Edit itself uses the OSC subscription at all is unmeasured — design
+§2.6(3)). Polling is a plain request/reply exchange — the same shape as
+`net get` — so it consumes no shared resource and cannot displace another
+client, whatever that client turns out to be.
 
 ## Reading the output
 
