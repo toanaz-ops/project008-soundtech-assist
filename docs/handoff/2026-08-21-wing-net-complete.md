@@ -1,6 +1,6 @@
 # Sub-project C + D — WING over Ethernet — complete
 
-**Date:** 2026-08-21 · **Branch:** `claude_desk/behringer-wing-ethernet-mixer-5de617`
+**Date:** 2026-08-21 · **Merged to `main`** by fast-forward, 20 commits
 **Console used:** `WING-GIAQUY`, a **`wing-rack`** on **FW 3.1-0-g9f314617**, at
 `192.168.128.28`, serial `01009Y90604AAE`
 

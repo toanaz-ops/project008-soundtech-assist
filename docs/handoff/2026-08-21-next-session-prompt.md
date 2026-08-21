@@ -1,6 +1,6 @@
 # WING scene parser — next session
 
-**Date:** 2026-08-21 · **Branch:** `claude_desk/behringer-wing-ethernet-mixer-5de617`
+**Date:** 2026-08-21 · **Branch:** `main` (C+D merged, fast-forward)
 **State:** 997 tests passing, 1 skipped (FastMCP, by design), nothing uncommitted
 
 Paste this whole file as the opening message of the next session. It supersedes
@@ -48,6 +48,13 @@ Current behaviour:
 | `doctor … --show tests/data/example-Vu-show.yaml` | 22 + Q1, Q2, Q4, Q5, Q6 |
 | `doctor user-files/factory-scene.snap` | none |
 | `doctor --live <ip>` | the same findings the desk's own scene file gives |
+
+**Five more of ToanAZ's real scenes sit untracked in `user-files/`** —
+`CAI LUONG`, `GIAQUY_WING`, `LIVE`, `OCHESTRA`, `Snapshot1`. All are
+`snapshot.9` from WING Edit 3.0, now a recognised schema. They parse cleanly and
+between them yield 0, 13, 13, 1 and 17 findings. **They are deliberately not
+committed** — they are his show data, and adding them is his call, not the
+tool's. They are the obvious next test corpus if he wants one.
 
 ## 3. How to use it (PowerShell)
 
