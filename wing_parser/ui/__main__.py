@@ -11,6 +11,8 @@ from __future__ import annotations
 import argparse
 import sys
 
+from wing_parser import config
+
 MISSING_PYSIDE = (
     'error: the desktop app needs PySide6, which is an optional extra.\n'
     '       Install it with:  pip install -e ".[ui]"'
@@ -28,6 +30,18 @@ def main(argv: list[str] | None = None) -> int:
         help="apply one show profile from knowledge/toanaz/shows/<name>.yaml",
     )
     args = parser.parse_args(argv)
+
+    # Before anything reads or writes it. In a packaged build the
+    # knowledge directory resolves to a real per-user path that starts
+    # out empty, and this copies the shipped principles and show
+    # profiles into it once. A no-op for a normal run from the repo,
+    # and a no-op on every run after the first.
+    #
+    # Deliberately silent: a frozen build is windowed, so anything
+    # printed here goes nowhere on Windows. The window's Help menu
+    # names the directory instead, which is useful on every run rather
+    # than only the first.
+    config.seed_user_dir()
 
     try:
         from PySide6.QtWidgets import QApplication

@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from wing_parser import config
 from wing_parser.ui.changes_panel import ChangesPanel
 from wing_parser.ui.detail_panel import DetailPanel
 from wing_parser.ui.findings_view import FindingsView
@@ -44,6 +45,24 @@ class MainWindow(QMainWindow):
         self._save_action = file_menu.addAction("Save &As...", self.save_as)
         edit_menu = self.menuBar().addMenu("&Edit")
         self._undo_action = edit_menu.addAction("&Undo", self.undo)
+        help_menu = self.menuBar().addMenu("&Help")
+        help_menu.addAction("Where my judgements are stored...", self.show_knowledge_dir)
+
+    def show_knowledge_dir(self) -> None:
+        """Name the directory holding the verdict log and the principles.
+
+        Worth a menu item because in a packaged build it is not where
+        anyone would guess: the app runs from one place and keeps his
+        work in another, since a frozen bundle is deleted on exit.
+        """
+        directory = config.knowledge_dir()
+        QMessageBox.information(
+            self,
+            "Knowledge directory",
+            f"Verdicts, principles and show profiles live in:\n\n{directory}\n\n"
+            f"feedback.jsonl holds every verdict recorded here.\n"
+            f"principles.yaml and shows/ are yours to edit.",
+        )
 
     def _build_body(self) -> None:
         self.findings_view = FindingsView()
