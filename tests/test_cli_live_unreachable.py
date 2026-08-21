@@ -65,6 +65,40 @@ def test_a_console_that_answered_nothing_is_an_error_not_an_empty_scene(
     assert captured.out == ""
 
 
+def test_a_console_that_answers_the_walk_but_no_leaf_is_still_an_error(
+    monkeypatch, capsys
+):
+    """The empty-read guard is leaf-driven (`not raw.ae and not raw.ce`),
+    but the node walk and the leaf reads are independent stages --
+    walk_schema runs first, client.get_many runs after it -- so a console
+    can answer every structural `,s ?` query and still time out on every
+    individual leaf GET. That leaves unresolved_nodes == () alongside a
+    non-empty unresolved_leaves: reporting only the node count in that
+    shape would print the self-contradictory "read 0 of the 0 top-level
+    nodes" and throw away the leaf count, which is the only real evidence
+    of what happened here."""
+    _stub(
+        monkeypatch,
+        SnapshotResult(
+            raw=_raw({}, {}),
+            unresolved_nodes=(),
+            unresolved_leaves=tuple(f"/ch/{n}/fdr" for n in range(1, 41)),
+        ),
+    )
+
+    assert commands._load(None, live="10.0.0.1") is None
+
+    captured = capsys.readouterr()
+    assert "10.0.0.1" in captured.err
+    assert captured.out == ""
+    # The old wording said only "read 0 of the 0 top-level nodes" here --
+    # self-contradictory, and silent about the 40 leaves that are the
+    # actual evidence. The node count may still legitimately appear (it
+    # really is 0), but it must not stand alone as the whole story.
+    assert "read 0 of the 0" not in captured.err
+    assert "40" in captured.err
+
+
 def test_doctor_on_an_unreachable_console_does_not_say_no_findings(
     monkeypatch, capsys
 ):

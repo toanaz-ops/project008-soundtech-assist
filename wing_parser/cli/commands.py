@@ -45,10 +45,18 @@ def _load(path: str | None, show: str | None = None, live: str | None = None) ->
         # truthfully found nothing wrong with nothing. `doctor --live`
         # printed "No findings." for a desk it never reached.
         if not snapshot.raw.ae and not snapshot.raw.ce:
+            # The guard is leaf-driven, but a console can fail at either
+            # stage independently: walk_schema runs first, and the leaf
+            # reads run after it, so `unresolved_nodes` can be empty while
+            # every leaf timed out. Reporting only nodes would print "read
+            # 0 of the 0 top-level nodes" and discard the one count that
+            # actually says what happened.
             print(
-                f"error: no console answered at {live}: read 0 of the "
-                f"{len(snapshot.unresolved_nodes)} top-level nodes. "
-                f"Check the address and that the desk is on the network.",
+                f"error: no console answered at {live}: read nothing at all "
+                f"({len(snapshot.unresolved_nodes)} top-level node(s) and "
+                f"{len(snapshot.unresolved_leaves)} leaf/leaves did not "
+                f"answer). Check the address and that the desk is on the "
+                f"network.",
                 file=sys.stderr,
             )
             return None
