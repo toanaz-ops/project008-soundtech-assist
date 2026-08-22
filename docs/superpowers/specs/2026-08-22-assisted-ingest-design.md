@@ -277,26 +277,42 @@ resolved below it is treated as unresolved and goes to step 4, because a weak
 guess entering `expects:` would make Q4 stop catching the thing it exists for —
 the same argument Q4's own `rationale:` makes about channel classification.
 
-## 7. `--scene`: proposing channel numbers, as comments only
+## 7. `--scene`: proposing a cue skeleton, as comments only
 
-Since the sheet has no channel numbers (§2, item 1), `channels:` is written
-empty.
+`channels:` is **not** a segment field. Reading
+`wing_parser/showcontext/models.py`, `Segment` (`:24-29`) carries
+`id / title / time / expects / cues`, and `channels` belongs to `Cue`
+(`:14-20`). An importer that produces no cues therefore has nowhere to put a
+channel number at all — not even an empty one.
 
-With `--scene tonight.snap`, after `expects:` is built, each expected kind is
-joined against channels the classifier resolved to that kind at or above the
-confident band, and the match is written as a **comment**:
+So the proposal `--scene` writes is a whole **commented-out cue**, which is the
+concrete form of the "skeleton to add cues into" that §3 promises:
 
 ```yaml
   - id: S3
     title: "Tiết mục 3 — Guitar solo"
     expects: [instrument.guitar]
-    # --scene: ch 13 "GTR" matches instrument.guitar
-    # uncomment to use:  channels: [13]
+    # --scene: ch 13 "GTR" is instrument.guitar
+    # uncomment to make this a cue:
+    # cues:
+    #   - id: "S3 cue 1"
+    #     action: open
+    #     channels: [13]
 ```
 
-Nothing is written into `channels:`. This is a join between two things already
-computed — it adds **no new name-guessing layer**, which matters because this
-project has exactly one such layer on purpose.
+Uncommenting it does more than fill in a number: it turns the segment into
+something Q1, Q2, Q6 and Q7 can read, which is how ToanAZ moves an imported file
+from two live rules to seven.
+
+The join itself reuses `wing_parser/showcontext/view.py:138 _channels_of`, which
+already selects channels whose classification matches the kind at or above the
+confident band (`HIGH`, 0.8) — the same threshold Q4 and Q5 use. Promote it to a
+public `channels_of` rather than importing a private name, and update its two
+existing call sites (`view.py:183`, `:187`).
+
+Nothing is ever written outside a comment. This is a join between two things
+already computed — it adds **no new name-guessing layer**, which matters because
+this project has exactly one such layer on purpose.
 
 ## 8. Modules
 
