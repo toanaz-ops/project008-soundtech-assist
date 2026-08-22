@@ -103,6 +103,22 @@ def build_parser() -> argparse.ArgumentParser:
                       help="write the repairs back into the file")
     lint.set_defaults(handler=commands.showcontext_lint)
 
+    importer = inner.add_parser(
+        "import", help="build a show-context file from a producer's spreadsheet"
+    )
+    importer.add_argument("sheet", help="the .xlsx file")
+    importer.add_argument(
+        "--map", dest="mapping", required=True,
+        help="the mapping file for this producer's template",
+    )
+    importer.add_argument("-o", "--output", default=None,
+                          help="write here instead of printing")
+    importer.add_argument("--scene", default=None,
+                          help="propose cues from this scene, as comments")
+    importer.add_argument("--force", action="store_true",
+                          help="overwrite an existing output file")
+    importer.set_defaults(handler=commands.showcontext_import)
+
     node = sub.add_parser("net", help="talk to a live console over OSC")
     net_sub = node.add_subparsers(dest="net_command", required=True)
 

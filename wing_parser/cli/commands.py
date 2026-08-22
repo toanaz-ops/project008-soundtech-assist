@@ -255,3 +255,47 @@ def showcontext_lint(args) -> int:
     else:
         print(render.lint_hint())
     return 0
+
+
+def showcontext_import(args) -> int:
+    from wing_parser.classifier import cache
+    from wing_parser.showcontext.ingest import build, emit, mapping, propose, sheet
+
+    destination = Path(args.output) if args.output else None
+    if destination is not None and destination.exists() and not args.force:
+        print(
+            f"error: {destination} already exists. Pass --force to replace it.",
+            file=sys.stderr,
+        )
+        return 1
+
+    try:
+        raw = mapping.load_mapping(args.mapping)
+        read = sheet.read_sheet(args.sheet, raw.sheet, raw.header_row)
+        resolved = mapping.resolve_columns(raw, read.headers)
+    except (OSError, ValueError, sheet.MissingExtra) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    result = build.build(
+        read.rows,
+        resolved,
+        lambda term: cache.lookup(term, "cuesheet"),
+        blank_rows=read.blank_rows,
+    )
+
+    proposals = None
+    if args.scene is not None:
+        scene = _load(args.scene)
+        if scene is None:
+            return 1
+        proposals = propose.for_segments(result, scene)
+
+    text = emit.render(Path(args.sheet).stem, result, proposals)
+
+    if destination is None:
+        print(text)
+    else:
+        destination.write_text(text, encoding="utf-8")
+        print(render.import_summary(destination, result), file=sys.stderr)
+    return 0

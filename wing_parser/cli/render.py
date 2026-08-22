@@ -109,6 +109,14 @@ def lint_clean(file: str, segment_count: int) -> str:
     return f"{file}: {segment_count} segments, nothing to repair"
 
 
+def import_summary(destination, result) -> str:
+    return (
+        f"wrote {destination}: {len(result.segments)} segment(s) from "
+        f"{result.data_rows} data row(s), {result.comment_rows} row(s) kept as "
+        f"comments. Only Q4 and Q5 fire until you uncomment a cue."
+    )
+
+
 def findings(items: Iterable[Any], suppressed: dict[str, str] | None = None,
              off_event: dict[str, str] | None = None,
              declared_event: str | None = None) -> str:

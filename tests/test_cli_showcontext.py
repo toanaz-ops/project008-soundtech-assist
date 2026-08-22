@@ -1,9 +1,12 @@
 # tests/test_cli_showcontext.py
 import json
+from pathlib import Path
 
 import yaml
 
 from wing_parser.cli.__main__ import main
+
+DATA = Path(__file__).resolve().parent / "data"
 
 
 def _show(tmp_path):
@@ -57,3 +60,75 @@ def test_doctor_show_json_keeps_stdout_pure_json(vu_path, tmp_path, capsys, monk
     findings = json.loads(captured.out)
     assert isinstance(findings, list)
     assert "instrument.kyes" in captured.err and "instrument.keys" in captured.err
+
+
+def test_import_writes_a_file_that_the_loader_reads(tmp_path, capsys):
+    from wing_parser.cli.__main__ import main
+    from wing_parser.showcontext import load_show_context
+
+    out = tmp_path / "tonight.yaml"
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"),
+        "-o", str(out),
+    ])
+    assert code == 0
+    context = load_show_context(out)
+    assert context.anomalies == ()
+    assert len(context.segments) == 4
+
+
+def test_import_without_output_prints_to_stdout(capsys):
+    from wing_parser.cli.__main__ import main
+
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"),
+    ])
+    assert code == 0
+    assert "segments:" in capsys.readouterr().out
+
+
+def test_import_refuses_to_overwrite_without_force(tmp_path):
+    from wing_parser.cli.__main__ import main
+
+    out = tmp_path / "tonight.yaml"
+    out.write_text("do not lose me\n", encoding="utf-8")
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"),
+        "-o", str(out),
+    ])
+    assert code == 1
+    assert out.read_text(encoding="utf-8") == "do not lose me\n"
+
+
+def test_force_overwrites(tmp_path):
+    from wing_parser.cli.__main__ import main
+
+    out = tmp_path / "tonight.yaml"
+    out.write_text("replace me\n", encoding="utf-8")
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"),
+        "-o", str(out), "--force",
+    ])
+    assert code == 0
+    assert "segments:" in out.read_text(encoding="utf-8")
+
+
+def test_a_bad_mapping_reports_the_problem_and_exits_one(tmp_path, capsys):
+    from wing_parser.cli.__main__ import main
+
+    bad = tmp_path / "map.yaml"
+    bad.write_text("header_row: 4\ncolumns:\n  time: B\n", encoding="utf-8")
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"), "--map", str(bad),
+    ])
+    assert code == 1
+    assert "title" in capsys.readouterr().err
