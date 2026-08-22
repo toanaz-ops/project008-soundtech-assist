@@ -24,6 +24,7 @@ python docs\probes\probe5_pollrate.py 192.168.128.28
 | `probe9_stripset.py` | can `walk_schema` imply the strip set, given it skips `$` keys? | yes — 1.00 s, 25062 leaves, 0 unresolved, exactly 40/16/4/8/16 contiguous. Spec §3.2 |
 | `probe10_name_leaves.py` | does every family answer a bare `name`, and `$name` too? | `name` yes everywhere; **`$name` is NOT universal — /dca/N has none**. Fixes a false claim in `poller.read_labels` |
 | `probe11_unreachable_console.py` | what does `--live` report when no console is there? | **FIXED** (was a bug, pre-existing from the C/D cycle): `doctor --live <dead ip>` used to print `No findings.` and exit 0 on an empty scene instead of an error. Now `_load` returns `None` and `doctor` exits 1; the probe prints "Nothing to fix here" |
+| `probe12_make_ingest_fixture.py` | is `tests/data/ingest-fixture.xlsx` reproducible? | yes — writes the fixture from scratch via `openpyxl`; the ingest fixture is reproducible, and a measurement nobody can re-run is not evidence |
 
 ## Two cautions for whoever runs these next
 
