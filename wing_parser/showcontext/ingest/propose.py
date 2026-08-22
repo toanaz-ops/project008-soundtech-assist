@@ -7,9 +7,17 @@ name-guessing layer, and this project has exactly one of those on
 purpose.
 
 The proposal is a whole cue rather than a channel list because `channels`
-is a Cue field, not a Segment field. Uncommenting it does more than fill
-in a number: it brings Q1, Q2 and Q6 to life for that segment, and Q3
-once a DCA is named (Q7 ships disabled and no cue can revive it).
+is a Cue field, not a Segment field. Applying it does more than fill in
+a number: it brings Q1, Q2 and Q6 to life for that segment, and Q3 once
+a DCA is named (Q7 ships disabled and no cue can revive it).
+
+Stripping every `#` and leaving `cues: []` in place does not work: the
+loader reads a segment's cues with `entry.get("cues")`
+(`wing_parser/showcontext/loader.py:123`) and ignores any other key, so
+an empty `cues: []` left standing beside the new lines is what it
+finds -- silently, since an unrecognised key is not an error. The
+rendered comment says outright which lines to delete and that the rest
+replaces `cues: []`, not sits beside it.
 """
 
 from __future__ import annotations
@@ -39,7 +47,8 @@ def for_segments(result, scene) -> dict[str, tuple[str, ...]]:
 
         listed = ", ".join(str(number) for number in sorted(set(numbers)))
         proposals[built.segment.id] = tuple(found) + (
-            "uncomment to make this a cue:",
+            "delete this and the line(s) above; replace \"cues: []\" below with:",
+            "cues:",
             f"  - id: \"{built.segment.id} cue 1\"",
             "    action: open",
             f"    channels: [{listed}]",

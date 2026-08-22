@@ -438,10 +438,15 @@ health for Q1, Q2, Q3 or Q6.
 
 Pass `--scene` and every segment whose expected kinds match a channel
 already in that scene gets a commented-out cue proposal naming those
-channels. Uncommenting one brings Q1, Q2 and Q6 to life for that
-segment, and Q3 once a DCA is named — Q7 stays off regardless, since
-it ships `enabled: false` (see above) and no cue, proposed or
-otherwise, can revive a disabled rule.
+channels. Just stripping the `#` from it does nothing useful — `cues:
+[]` is still sitting there right below, and the loader reads that
+empty list and silently ignores everything else, since an unrecognised
+key is not an error. The proposal's own comment says exactly which
+lines to delete and that the rest **replaces** `cues: []`, not sits
+beside it; follow it literally, and Q1, Q2 and Q6 come to life for that
+segment, and Q3 once a DCA is named — Q7 stays off regardless, since it
+ships `enabled: false` (see above) and no cue, proposed or otherwise,
+can revive a disabled rule.
 
 Anything the importer cannot read — a row with no title, a performer
 it does not recognise — is kept in the file as a comment rather than

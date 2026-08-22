@@ -12,7 +12,6 @@ from pathlib import Path
 import yaml
 
 from wing_parser.cli.__main__ import main
-from wing_parser.showcontext import load_show_context
 
 DATA = Path(__file__).resolve().parent / "data"
 
