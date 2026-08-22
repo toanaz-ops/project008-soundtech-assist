@@ -75,6 +75,9 @@ def render(show: str, result, proposals: dict[str, tuple[str, ...]] | None = Non
 
     segments = CommentedSeq()
     for index, built in enumerate(result.segments):
+        # Looked up by segment id, which build.build keeps unique
+        # (build.py:_unique). A repeated id here would attach one
+        # segment's channel numbers to another's proposal.
         segments.append(_segment(built, proposals.get(built.segment.id, ())))
         if built.comments:
             segments.yaml_set_comment_before_after_key(

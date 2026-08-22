@@ -13,12 +13,27 @@ def scene(vu_path):
     return WingScene.load(vu_path)
 
 
-def _result(expects):
+def _results(pairs):
+    """A BuildResult from (id, expects) pairs, so a multi-segment test is free.
+
+    Every test in this file used to build one segment with id S1, and that
+    shape is exactly why a duplicate-id collision -- one segment's channels
+    proposed above another's -- passed eight gates unseen.
+    """
     return BuildResult(
-        segments=(BuiltSegment(segment=Segment(id="S1", title="t", expects=expects),
-                               comments=()),),
-        loose_comments=(), data_rows=1, comment_rows=0, blank_rows=0,
+        segments=tuple(
+            BuiltSegment(
+                segment=Segment(id=segment_id, title="t", expects=expects),
+                comments=(),
+            )
+            for segment_id, expects in pairs
+        ),
+        loose_comments=(), data_rows=len(pairs), comment_rows=0, blank_rows=0,
     )
+
+
+def _result(expects):
+    return _results([("S1", expects)])
 
 
 def _a_confident_kind(scene):
@@ -50,6 +65,38 @@ def test_the_proposal_carries_every_matching_channel(scene):
     body = "\n".join(propose.for_segments(_result((kind,)), scene)["S1"])
     for number in numbers:
         assert str(number) in body
+
+
+def _two_confident_kinds(scene):
+    kinds = sorted(
+        {c.source_type.kind for c in scene.channels()
+         if c.source_type.confidence >= 0.8},
+        key=lambda k: (-len(channels_of(scene, k)), k),
+    )
+    if len(kinds) < 2:
+        pytest.fail("the sample scene must classify two kinds confidently")
+    return kinds[0], kinds[1]
+
+
+def test_each_segment_gets_its_own_channels_and_not_another_segments(scene):
+    """Two segments, because one segment cannot show a mixed-up key.
+
+    A proposal naming a channel a segment does not expect is a statement
+    the source never made, printed in the one place it is meant to be
+    read literally.
+    """
+    first, second = _two_confident_kinds(scene)
+    proposals = propose.for_segments(
+        _results([("S1", (first,)), ("S2", (second,))]), scene
+    )
+
+    assert set(proposals) == {"S1", "S2"}
+    one, two = "\n".join(proposals["S1"]), "\n".join(proposals["S2"])
+    assert first in one and second not in one
+    assert second in two and first not in two
+
+    for number in {c.data.number for c in channels_of(scene, second)}:
+        assert f"ch {number} " not in one
 
 
 def test_an_unmatched_kind_proposes_nothing(scene):

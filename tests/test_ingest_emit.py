@@ -98,6 +98,30 @@ def test_a_multiline_loose_comment_cannot_break_out_of_the_comment_block():
     assert set(doc.keys()) == {"show", "segments"}
 
 
+def test_a_sheet_that_repeats_an_id_still_writes_a_loadable_file(tmp_path):
+    """build + emit + loader in one test, because no single one saw this.
+
+    loader.py:104 refuses a case-insensitive duplicate segment id, so a
+    two-row sheet repeating S1 used to import with exit 0 and then fail
+    every later `doctor --show` run against the file it wrote.
+    """
+    from wing_parser.showcontext import load_show_context
+    from wing_parser.showcontext.ingest import build as builder
+    from wing_parser.showcontext.ingest.mapping import SheetMapping
+    from wing_parser.showcontext.ingest.sheet import RawRow
+
+    mapping = SheetMapping(source="t", fields={"id": "A", "title": "C"})
+    rows = [RawRow(number=number, cells={"A": "S1", "C": title})
+            for number, title in ((5, "Một"), (6, "Hai"))]
+    result = builder.build(rows, mapping, lambda term: None)
+
+    path = tmp_path / "out.yaml"
+    path.write_text(emit.render("t", result), encoding="utf-8")
+    context = load_show_context(path)
+    assert [segment.id for segment in context.segments] == ["S1", "S1-2"]
+    assert "S1-2" in path.read_text(encoding="utf-8")
+
+
 def test_the_document_loads_through_the_show_context_loader(tmp_path):
     """The real contract: what this writes, load_show_context must read."""
     from wing_parser.showcontext import load_show_context

@@ -39,6 +39,49 @@ def test_an_absent_id_is_generated_in_file_order():
     assert [b.segment.id for b in result.segments] == ["S1", "S2"]
 
 
+def test_a_repeated_id_is_disambiguated_and_the_change_is_recorded():
+    """Two consumers key off segment id, and loader.py:104 refuses a repeat.
+
+    propose.for_segments returns a dict keyed by id and emit.render looks
+    each proposal up by the same key, so a collision would print one
+    segment's channels above another's.
+    """
+    rows = [row(5, A="S1", C="Một"), row(6, A="S1", C="Hai")]
+    result = builder.build(rows, MAPPING, lookup)
+    assert [b.segment.id for b in result.segments] == ["S1", "S1-2"]
+    assert any("S1-2" in note and "row 6" in note
+               for note in result.segments[1].comments)
+    assert result.segments[0].comments == ()
+
+
+def test_a_third_repeat_keeps_counting():
+    rows = [row(5, A="S1", C="Một"), row(6, A="S1", C="Hai"),
+            row(7, A="S1", C="Ba")]
+    result = builder.build(rows, MAPPING, lookup)
+    assert [b.segment.id for b in result.segments] == ["S1", "S1-2", "S1-3"]
+
+
+def test_ids_collide_case_insensitively_the_way_the_loader_compares_them():
+    """loader.py:104 folds with .lower(); disagreeing here writes a file
+    this project's own loader then refuses."""
+    rows = [row(5, A="S1", C="Một"), row(6, A="s1", C="Hai")]
+    result = builder.build(rows, MAPPING, lookup)
+    assert [b.segment.id for b in result.segments] == ["S1", "s1-2"]
+
+
+def test_a_generated_id_steps_over_one_the_sheet_already_spent():
+    """A sheet reading S1, <blank> must not produce S1 twice."""
+    rows = [row(5, A="S1", C="Một"), row(6, C="Hai")]
+    result = builder.build(rows, MAPPING, lookup)
+    assert [b.segment.id for b in result.segments] == ["S1", "S2"]
+
+
+def test_an_explicit_id_yields_to_a_generated_one_already_taken():
+    rows = [row(5, C="Một"), row(6, A="S1", C="Hai")]
+    result = builder.build(rows, MAPPING, lookup)
+    assert [b.segment.id for b in result.segments] == ["S1", "S1-2"]
+
+
 def test_the_vocabulary_is_consulted_before_the_pattern_matcher():
     result = builder.build([row(5, C="x", D="ca sĩ nữ")], MAPPING, lookup)
     assert result.segments[0].segment.expects == ("speech.vocal",)

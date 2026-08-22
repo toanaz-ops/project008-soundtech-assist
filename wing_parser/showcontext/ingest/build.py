@@ -40,6 +40,21 @@ class BuildResult:
     data_rows: int
     comment_rows: int
     blank_rows: int
+    unreadable_performers: int = 0
+
+    @property
+    def expectations(self) -> int:
+        """How many `expects:` entries the segments carry in total.
+
+        Counted from the segments rather than stored beside them, so it
+        cannot drift from what was actually built. It is reported because
+        `performers:` is optional (design spec section 4): a mapping that
+        omits it gives every segment an empty `expects:`, and without
+        this number that file is indistinguishable -- at the summary, the
+        trailer and a `doctor --show` run alike -- from having imported
+        no show context at all.
+        """
+        return sum(len(built.segment.expects) for built in self.segments)
 
 
 def resolve_fragment(fragment: str, lookup) -> str | None:
@@ -84,10 +99,39 @@ def _expectations(text: str, lookup, row_number: int) -> tuple[tuple[str, ...],
     return tuple(kinds), tuple(comments)
 
 
+def _fold(segment_id: str) -> str:
+    """The loader's own collision rule, borrowed so the two cannot disagree.
+
+    `wing_parser/showcontext/loader.py:104` refuses a file whose segment
+    ids collide after `.lower()`. Folding any other way here would let
+    this module emit a file the project's own loader then rejects.
+    """
+    return segment_id.lower()
+
+
+def _unique(wanted: str, used: set[str]) -> str:
+    """`S1` again becomes `S1-2`, then `S1-3`. Never silently."""
+    suffix = 2
+    while _fold(f"{wanted}-{suffix}") in used:
+        suffix += 1
+    return f"{wanted}-{suffix}"
+
+
 def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
+    """Segment ids are unique here, and every consumer downstream needs that.
+
+    `propose.for_segments` returns a dict keyed by segment id and
+    `emit.render` looks each segment's proposal up by the same key, so a
+    repeated id would hand one segment's channel numbers to another --
+    printing `# --scene: ch 25 'Bass' is instrument.bass` above a segment
+    expecting a guitar. That is a statement the sheet does not make, in
+    the one place it is meant to be read literally.
+    """
     built: list[BuiltSegment] = []
     loose: list[str] = []
+    unreadable = 0
     generated = 0
+    used: set[str] = set()
 
     for row in rows:
         title = _cell(row, mapping, "title").strip()
@@ -114,6 +158,7 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
             continue
 
         kinds, comments = _expectations(performers, lookup, row.number)
+        unreadable += len(comments)
         notes = list(comments)
         if written_time:
             notes.insert(0, f"row {row.number}: time {written_time!r}")
@@ -121,8 +166,20 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
             notes.append(f"row {row.number}: note {note!r}")
 
         if not written_id:
+            # A generated id steps over one the sheet already spent: a
+            # sheet reading S1, <blank> must not produce S1 twice.
             generated += 1
+            while _fold(f"S{generated}") in used:
+                generated += 1
             written_id = f"S{generated}"
+        elif _fold(written_id) in used:
+            taken = written_id
+            written_id = _unique(taken, used)
+            notes.append(
+                f"row {row.number}: id {taken!r} was already used above, so "
+                f"this segment was written as {written_id!r}"
+            )
+        used.add(_fold(written_id))
 
         built.append(
             BuiltSegment(
@@ -137,4 +194,5 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
         data_rows=len(rows),
         comment_rows=len(loose),
         blank_rows=blank_rows,
+        unreadable_performers=unreadable,
     )

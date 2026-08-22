@@ -18,6 +18,13 @@ an empty `cues: []` left standing beside the new lines is what it
 finds -- silently, since an unrecognised key is not an error. The
 rendered comment says outright which lines to delete and that the rest
 replaces `cues: []`, not sits beside it.
+
+The returned dict is keyed by segment id, which is safe only because
+`build.build` makes those ids unique (`build.py:_unique`, folded the way
+`showcontext/loader.py:104` folds them). Without that invariant a
+repeated id would be last-write-wins here and `emit.render` would print
+the survivor's channels above every segment sharing the id -- a claim
+the sheet never made.
 """
 
 from __future__ import annotations
