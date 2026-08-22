@@ -135,12 +135,15 @@ class SegmentView:
         return f"segment.{self._segment.id}"
 
 
-def _channels_of(scene, kind: str) -> tuple:
+def channels_of(scene, kind: str) -> tuple:
     """Only confidently-classified channels count.
 
     Same threshold Bus.receives_ambient uses: a weak guess must not satisfy
     an expectation, or the rule silently stops firing on the thing it
     exists to catch.
+
+    Public because the ingest layer joins an imported `expects:` against
+    the same channels, and the two must not drift apart.
     """
     return tuple(
         channel for channel in scene.channels()
@@ -180,11 +183,11 @@ class ExpectationView:
 
     @property
     def is_unmet(self) -> bool:
-        return not _channels_of(self._scene, self.kind)
+        return not channels_of(self._scene, self.kind)
 
     @property
     def is_dark(self) -> bool:
-        channels = _channels_of(self._scene, self.kind)
+        channels = channels_of(self._scene, self.kind)
         return bool(channels) and not any(c.in_use for c in channels)
 
 

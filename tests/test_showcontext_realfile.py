@@ -46,7 +46,7 @@ EXPECTED_Q = [
     #   - Q5 "expects.instrument.keys": S2 also expects `instrument.keys`.
     #     Channels 29 ("Key 1") and 30 ("Key 2") both classify
     #     `instrument.keys` at confidence 0.9 (>= the HIGH=0.8 threshold
-    #     `_channels_of` uses), so the kind *is* met and Q4 does not also
+    #     `channels_of` uses), so the kind *is* met and Q4 does not also
     #     fire for it. But both channels read `fader == -inf` in `wing
     #     analyze`, so `Channel.in_use` is False for both --
     #     `expectation.is_dark` is true and Q5 fires once for the kind.

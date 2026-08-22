@@ -28,8 +28,9 @@ tool reads a segment time, and a sheet's wall-clock time is not the
 show-relative form `time:` accepts.
 
 Only Q4 and Q5 fire on a file with no cues. Uncomment a proposed cue to
-bring Q1, Q2, Q3 and Q6 to life for that segment. Q7 ships disabled
-(base_rules/showcontext.yaml) and stays off regardless of cues.
+bring Q1, Q2 and Q6 to life for that segment, and Q3 once a DCA is
+named. Q7 ships disabled (base_rules/showcontext.yaml) and stays off
+regardless of cues.
 """
 
 
