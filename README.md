@@ -411,6 +411,53 @@ he chose (2026-08-17) to wait for a real number rather than accept a
 placeholder. Its rationale in `showcontext.yaml` records exactly what
 switching it on requires.
 
+### Building a show context from a producer's spreadsheet
+
+Hand-typing the YAML above does not scale to a fifteen-segment running
+order. `showcontext import` reads a producer's Excel sheet and writes
+the show context for you:
+
+```powershell
+python -m wing_parser.cli showcontext import ros.xlsx --map knowledge\toanaz\sheets\abc.yaml -o tonight.yaml
+python -m wing_parser.cli showcontext import ros.xlsx --map knowledge\toanaz\sheets\abc.yaml --scene tonight.snap -o tonight.yaml
+```
+
+Write one mapping file per producer, naming the sheet, the header row,
+and which column means what. Columns are given either by letter
+(`columns:`) or by the text in the header cell (`headers:`) — never
+both for the same field.
+
+**An imported file has no cues**, because a running order does not
+carry them, and most of Q1-Q7 only iterate cues. Only **Q4** ("show
+expects a source with no channel for it") and **Q5** ("...whose
+channels are all parked") ever fire on a freshly imported file — the
+other five stay silent until cues exist. A file that produces two
+rules' worth of findings is not one that produced all seven; do not
+read a quiet `doctor` run against an imported file as a clean bill of
+health for Q1, Q2, Q3 or Q6.
+
+Pass `--scene` and every segment whose expected kinds match a channel
+already in that scene gets a commented-out cue proposal naming those
+channels. Uncommenting one brings Q1, Q2 and Q6 to life for that
+segment, and Q3 once a DCA is named — Q7 stays off regardless, since
+it ships `enabled: false` (see above) and no cue, proposed or
+otherwise, can revive a disabled rule.
+
+Anything the importer cannot read — a row with no title, a performer
+it does not recognise — is kept in the file as a comment rather than
+silently dropped, and the last line reconciles the counts: how many
+data rows came in, how many became segments, how many were kept as
+comments, how many blank rows were skipped. Nothing is dropped and
+nothing is guessed.
+
+Vietnamese cue-sheet terms live in the `cuesheet:` section of
+`knowledge/toanaz/classifier.yaml`. The importer checks it before
+falling back to the pattern matcher; unlike channel and bus
+classification elsewhere in this tool, there is no LLM step here — the
+importer never calls a model. The section ships empty — add a term
+once and every later import knows it; whatever is not yet in it
+becomes a comment, not a guess.
+
 ### Knowledge directory and search order
 
 `knowledge/toanaz/` holds `principles.yaml`, `classifier.yaml` (manual
