@@ -1,0 +1,13 @@
+# Mapping for tests/data/ingest-fixture.xlsx, regenerate that file with:
+#   python docs/probes/probe12_make_ingest_fixture.py
+# Uses both blocks on purpose, so the contract test exercises each.
+source: "Công ty ABC — ROS template 2026"
+sheet: "KỊCH BẢN"
+header_row: 4
+columns:
+  id: A
+  time: B
+  title: C
+headers:
+  performers: "Nghệ sĩ / Thành phần"
+  note: "Ghi chú"
