@@ -110,10 +110,19 @@ def lint_clean(file: str, segment_count: int) -> str:
 
 
 def import_summary(destination, result) -> str:
+    """Expectations, not just rows.
+
+    A mapping with no `performers:` gives every segment `expects: []`,
+    which is valid and produces row counts identical to a correct
+    import's -- so without this number the summary cannot tell the two
+    apart, and neither can `doctor --show` afterwards.
+    """
     return (
-        f"wrote {destination}: {len(result.segments)} segment(s) from "
-        f"{result.data_rows} data row(s), {result.comment_rows} row(s) kept as "
-        f"comments. Only Q4 and Q5 fire until you uncomment a cue."
+        f"wrote {destination}: {len(result.segments)} segment(s) carrying "
+        f"{result.expectations} expectation(s) from {result.data_rows} data "
+        f"row(s), {result.comment_rows} row(s) and "
+        f"{result.unreadable_performers} performer fragment(s) kept as "
+        f"comments. Only Q4 and Q5 fire until this file has real cues."
     )
 
 

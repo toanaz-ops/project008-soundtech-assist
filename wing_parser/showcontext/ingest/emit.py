@@ -27,10 +27,12 @@ Times and notes from the sheet are comments, not fields: nothing in this
 tool reads a segment time, and a sheet's wall-clock time is not the
 show-relative form `time:` accepts.
 
-Only Q4 and Q5 fire on a file with no cues. Uncomment a proposed cue to
-bring Q1, Q2 and Q6 to life for that segment, and Q3 once a DCA is
-named. Q7 ships disabled (base_rules/showcontext.yaml) and stays off
-regardless of cues.
+Only Q4 and Q5 fire on a file with no cues. Stripping the `#` from a
+proposed cue does not make one: `cues: []` is still sitting below it and
+the loader reads that. Each proposal says which lines to delete and what
+the rest replaces -- follow it literally, and Q1, Q2 and Q6 come to life
+for that segment, and Q3 once a DCA is named. Q7 ships disabled
+(base_rules/showcontext.yaml) and stays off regardless of cues.
 """
 
 
@@ -98,10 +100,18 @@ def render(show: str, result, proposals: dict[str, tuple[str, ...]] | None = Non
         trailer.append("# rows kept as comments, not imported:")
         for entry in result.loose_comments:
             trailer.extend(_hashed(entry))
+    # The count of expectations is here because rows alone cannot show a
+    # `performers:` mapping that was never written: every segment then
+    # carries `expects: []`, which is valid, and the row counts are byte
+    # for byte what a correct import prints. That is G1 section 8's named
+    # failure -- looks fully imported, is not -- moved from rows down to
+    # fields. Design spec section 9.
     trailer.append(
         f"# imported {result.data_rows} data row(s) -> "
-        f"{len(result.segments)} segment(s), "
-        f"{result.comment_rows} row(s) kept as comments, "
-        f"{result.blank_rows} blank row(s) skipped"
+        f"{len(result.segments)} segment(s) carrying "
+        f"{result.expectations} expectation(s), "
+        f"{result.comment_rows} row(s) and "
+        f"{result.unreadable_performers} performer fragment(s) kept as "
+        f"comments, {result.blank_rows} blank row(s) skipped"
     )
     return text + "\n".join(trailer) + "\n"
