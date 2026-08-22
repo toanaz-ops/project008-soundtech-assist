@@ -1,0 +1,87 @@
+import yaml
+
+from wing_parser.showcontext.ingest import emit
+from wing_parser.showcontext.ingest.build import BuildResult, BuiltSegment
+from wing_parser.showcontext.models import Segment
+
+
+def _result(**overrides):
+    base = dict(
+        segments=(
+            BuiltSegment(
+                segment=Segment(id="S1", title="Đón khách",
+                                expects=("instrument.keys",)),
+                comments=("row 5: time '19:00'",),
+            ),
+        ),
+        loose_comments=("row 9: no title, kept as a comment -- note='x'",),
+        data_rows=2,
+        comment_rows=1,
+        blank_rows=1,
+    )
+    base.update(overrides)
+    return BuildResult(**base)
+
+
+def test_the_output_is_valid_yaml_and_round_trips():
+    text = emit.render("Test show", _result())
+    doc = yaml.safe_load(text)
+    assert doc["show"] == "Test show"
+    assert doc["segments"][0]["id"] == "S1"
+    assert doc["segments"][0]["expects"] == ["instrument.keys"]
+
+
+def test_every_segment_carries_an_empty_cues_list():
+    """It is true, the loader reads it, and it anchors the --scene comment."""
+    doc = yaml.safe_load(emit.render("t", _result()))
+    assert doc["segments"][0]["cues"] == []
+
+
+def test_a_row_comment_survives_into_the_text():
+    text = emit.render("t", _result())
+    assert "row 5: time '19:00'" in text
+
+
+def test_a_loose_comment_survives_into_the_text():
+    """The whole point: an unreadable row must not vanish."""
+    text = emit.render("t", _result())
+    assert "row 9: no title" in text
+
+
+def test_the_reconciliation_line_states_the_counts():
+    text = emit.render("t", _result())
+    assert "2 data row" in text
+    assert "1 segment" in text
+    assert "1 row" in text and "comment" in text
+
+
+def test_a_title_with_yaml_punctuation_survives():
+    """A colon, a hash and a quote in one Vietnamese title."""
+    nasty = 'Tiết mục: "Nắng" #1'
+    result = _result(segments=(
+        BuiltSegment(segment=Segment(id="S1", title=nasty), comments=()),
+    ))
+    doc = yaml.safe_load(emit.render("t", result))
+    assert doc["segments"][0]["title"] == nasty
+
+
+def test_a_scene_proposal_appears_above_the_cues_key():
+    result = _result()
+    text = emit.render("t", result, proposals={"S1": ("ch 13 \"GTR\" is keys",)})
+    lines = [line.strip() for line in text.splitlines()]
+    proposal_at = next(i for i, line in enumerate(lines) if "ch 13" in line)
+    cues_at = next(i for i, line in enumerate(lines) if line.startswith("cues:"))
+    assert proposal_at < cues_at
+
+
+def test_the_document_loads_through_the_show_context_loader(tmp_path):
+    """The real contract: what this writes, load_show_context must read."""
+    from wing_parser.showcontext import load_show_context
+
+    path = tmp_path / "out.yaml"
+    path.write_text(emit.render("Test show", _result()), encoding="utf-8")
+    context = load_show_context(path)
+    assert context.show == "Test show"
+    assert len(context.segments) == 1
+    assert context.segments[0].expects == ("instrument.keys",)
+    assert context.anomalies == ()
