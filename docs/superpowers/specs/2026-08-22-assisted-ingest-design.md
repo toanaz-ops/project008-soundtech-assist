@@ -176,6 +176,19 @@ is what the application is showing him. `header_row` is 1-based for the same
 reason. Robustness against an inserted column is exactly why `headers:` exists
 alongside; the two coexist so he can use whichever the sheet makes safe.
 
+A letter may name a column **whose header cell is blank**. That is not an
+oversight to tolerate but the case letters exist for: an unlabelled notes or STT
+column is common on a real running order, and it is precisely what `headers:`
+cannot express. The escape hatch has to be open in the one situation it is the
+only way in.
+
+The bound is the sheet, not the header row: a letter is accepted anywhere up to
+the **last column holding anything at all** (`sheet.py` reports that extent
+alongside the headers) and refused past it, naming that last column and listing
+the columns that do have a heading. Refusing every letter absent from the header
+row instead — which is what "column X has no header" once meant — closed the
+hatch exactly where it was needed.
+
 ## 5. What one row becomes
 
 One data row → one `Segment`.
@@ -183,11 +196,29 @@ One data row → one `Segment`.
 | mapped field | becomes |
 |---|---|
 | `title` | `title:`, verbatim |
-| `id` | `id:`, verbatim; absent → generated `S1`, `S2`, … in file order |
+| `id` | `id:`, verbatim unless it repeats one already used (below); absent → generated `S1`, `S2`, … in file order, stepping over any the sheet already spent |
 | `performers` | split on `,`, `/`, `;` and newline → each fragment resolved through the `cuesheet` vocabulary (§6) → deduplicated into `expects:` |
 | `note` | a **YAML comment** on that segment |
 | `time` | a **YAML comment** on that segment, verbatim |
 | a `performers` fragment that resolves to nothing | a **YAML comment**, verbatim |
+
+**Segment ids are unique, and `build.py` is where that is enforced.** Nothing
+about a producer's spreadsheet prevents two rows carrying the same number, and
+two things downstream cannot survive it. `showcontext/loader.py:104` refuses a
+file whose ids collide after `.lower()`, so the importer would otherwise write,
+with exit 0, a file this project's own loader then rejects. Worse,
+`propose.for_segments` returns a dict **keyed by segment id** and `emit.render`
+looks each proposal up by that key: a collision is last-write-wins, and one
+segment's channel numbers are printed above another's `cues:` — a `# --scene:`
+line saying a bass channel belongs to a segment expecting a guitar. That is a
+claim the sheet never made, in the one place the file asks to be read literally,
+and it fails silently.
+
+A repeat is therefore disambiguated rather than passed through: the later
+occurrence becomes `S1-2`, then `S1-3`, folded the same way the loader folds
+(`.lower()`), and **the change is recorded as a comment on that segment** —
+nothing is altered without saying so. A generated id steps over any the sheet
+already spent, so `S1, <blank>` cannot produce `S1` twice either.
 
 ### 5.1 Why `note:` and `time:` are comments and not fields
 
@@ -295,8 +326,9 @@ concrete form of the "skeleton to add cues into" that §3 promises:
   - id: S3
     title: "Tiết mục 3 — Guitar solo"
     expects: [instrument.guitar]
-    # --scene: ch 13 "GTR" is instrument.guitar
-    # uncomment to make this a cue:
+    # --scene: ch 13 'GTR' is instrument.guitar
+    # delete this and the line(s) above; replace "cues: []" below with:
+    # cues:
     #   - id: "S3 cue 1"
     #     action: open
     #     channels: [13]
@@ -311,10 +343,18 @@ and without `cues` a segment has none after `expects`. The alternative was
 hand-rolled YAML scalar quoting, which has silent edge cases (U+2028, an
 all-whitespace scalar) and would be new code where existing code will do.
 
-Uncommenting it does more than fill in a number: it turns the segment into
+Applying it does more than fill in a number: it turns the segment into
 something Q1, Q2 and Q6 can read -- and Q3 too, once he names a DCA -- which is
 how ToanAZ moves an imported file
 from two live rules to seven.
+
+**Stripping the `#` is not applying it.** `cues: []` is still standing below the
+uncommented lines, the loader reads a segment's cues with `entry.get("cues")`
+and ignores every other key, and an unrecognised key is not an error — so a
+naively uncommented proposal parses cleanly and changes nothing. That is why the
+proposal's own text names the lines to delete and says the rest **replaces**
+`cues: []`. Nothing in the generated file, the CLI summary or the README may say
+"uncomment" of it.
 
 The join itself reuses `wing_parser/showcontext/view.py:138 _channels_of`, which
 already selects channels whose classification matches the kind at or above the
@@ -395,8 +435,12 @@ handled. Putting it in `dev` too is deliberate: the load-bearing fixture test
 (§10) must never skip on a developer machine, because a skipped test hides a
 regression exactly as well as a missing one.
 
-`sheet.py` catches the `ImportError` and raises a message naming the extra, the
-way `wing_parser/classifier/llm.py:available` treats a missing `anthropic`.
+`sheet.py` catches the `ImportError` and raises a message naming the extra. Note
+that this is the **opposite** of what `wing_parser/classifier/llm.py:available`
+does with a missing `anthropic` — it swallows the `ImportError` and returns
+`False` (`:60-69`), because the model is an optional fallback and the tool is
+designed to work without it. A spreadsheet reader is not optional to a
+spreadsheet reader, so its absence is a stop, not a quieter path.
 
 `pypdf` is not used by G2a and stays undeclared.
 
@@ -413,20 +457,36 @@ Nothing disappears.**
 | `header_row` out of range or empty | raise, giving the row count |
 | a declared header not found in the header row | raise, listing the header cells found, verbatim |
 | a header text found in two columns | raise, naming both column letters |
+| a `columns:` letter past the sheet's last populated column | raise, naming that last column and listing the columns that do have a heading (§4.3) |
+| a `columns:` letter inside the sheet whose header cell is blank | **accepted** — this is what letters are for (§4.3) |
+| two rows carrying the same `id` | the later one is written `S1-2`, and the change is a comment on that segment (§5) |
 | blank row inside the table | skipped, and counted |
 | row whose `title` cell is empty | verbatim comment, **not** a segment |
-| performers fragment that resolves to nothing | verbatim comment on that segment |
+| performers fragment that resolves to nothing | verbatim comment on that segment, and counted |
 | unreadable `time` cell | verbatim comment (it is always a comment) |
+| malformed or unparseable `classifier.yaml` | raise, naming the file — it is documented as hand-editable, so a typo in it is an expected outcome and must reach the CLI as `error: …`, never a traceback |
 
-The output file always ends with a reconciliation line:
+The output file always ends with a reconciliation line, and the `-o` summary on
+stderr states the same counts:
 
 ```yaml
-# imported 34 data rows -> 31 segments, 3 rows kept as comments
+# imported 34 data row(s) -> 31 segment(s) carrying 22 expectation(s), 3 row(s) and 2 performer fragment(s) kept as comments, 1 blank row(s) skipped
 ```
 
 This exists because the failure mode G1 §8 named — *a cue sheet that looks fully
 imported and is missing three rows* — is not prevented by never dropping a row.
 It is prevented by making the count checkable at a glance.
+
+**It must count expectations, not only rows.** `performers:` is optional (§4),
+and a mapping that omits it gives every segment `expects: []` — which is valid,
+and which produces row counts, a summary line and a trailer **byte for byte
+identical** to a correct import's. It is invisible further downstream too: such
+a file adds nothing to a `doctor --show` run, so the finding count matches a run
+with no `--show` at all. Without a number for what the segments actually expect,
+the same failure G1 §8 named is simply displaced from rows down to fields, and
+every surface the user looks at says the import succeeded. The count of
+performer fragments kept as comments is stated for the same reason: it is the
+other way `expects:` ends up emptier than the sheet.
 
 ## 10. Testing
 

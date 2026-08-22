@@ -425,7 +425,11 @@ python -m wing_parser.cli showcontext import ros.xlsx --map knowledge\toanaz\she
 Write one mapping file per producer, naming the sheet, the header row,
 and which column means what. Columns are given either by letter
 (`columns:`) or by the text in the header cell (`headers:`) — never
-both for the same field.
+both for the same field. A letter may name a column whose header cell
+is **blank**: an unlabelled notes or STT column is common on a real
+running order, and it is exactly what `headers:` cannot express. Only a
+letter past the last column holding anything is refused, and the error
+names that column.
 
 **An imported file has no cues**, because a running order does not
 carry them, and most of Q1-Q7 only iterate cues. Only **Q4** ("show
@@ -451,9 +455,22 @@ can revive a disabled rule.
 Anything the importer cannot read — a row with no title, a performer
 it does not recognise — is kept in the file as a comment rather than
 silently dropped, and the last line reconciles the counts: how many
-data rows came in, how many became segments, how many were kept as
-comments, how many blank rows were skipped. Nothing is dropped and
-nothing is guessed.
+data rows came in, how many became segments, **how many expectations
+those segments carry**, how many rows and how many performer fragments
+were kept as comments, and how many blank rows were skipped. Nothing is
+dropped and nothing is guessed.
+
+Read the expectation count. A mapping with no `performers:` is legal
+and gives every segment an empty `expects:` — the row counts then look
+exactly like a correct import's, and `doctor --show` on that file finds
+precisely what it finds with no `--show` at all. `0 expectation(s)` is
+the one place that shows up.
+
+Two rows carrying the same id are not passed through either: the second
+becomes `S1-2`, and the file says so in a comment on that segment. A
+repeated id would otherwise be refused by the loader on the very next
+`doctor --show`, and — with `--scene` — would print one segment's
+channels above another's.
 
 Vietnamese cue-sheet terms live in the `cuesheet:` section of
 `knowledge/toanaz/classifier.yaml`. The importer checks it before

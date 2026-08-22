@@ -83,6 +83,27 @@ def test_an_explicit_id_yields_to_a_generated_one_already_taken():
 
 
 def test_the_vocabulary_is_consulted_before_the_pattern_matcher():
+    """The term must be one the matcher also answers, or order proves nothing.
+
+    'ca sĩ nữ' is unknown to patterns.yaml, so a test using it passed
+    whether the vocabulary was consulted first or last -- while carrying
+    the name of the ordering the whole cuesheet domain exists to give.
+    'guitar' is instrument.guitar at 0.85 in patterns.yaml, so only the
+    vocabulary winning can produce speech.vocal here.
+    """
+    def contradicting(term):
+        assert term == "guitar"
+        return Classification(kind="speech.vocal", confidence=0.95,
+                              origin="manual")
+
+    matched = builder.build([row(5, C="x", D="guitar")], MAPPING, lookup)
+    assert matched.segments[0].segment.expects == ("instrument.guitar",)
+
+    result = builder.build([row(5, C="x", D="guitar")], MAPPING, contradicting)
+    assert result.segments[0].segment.expects == ("speech.vocal",)
+
+
+def test_a_vietnamese_term_only_the_vocabulary_knows_still_resolves():
     result = builder.build([row(5, C="x", D="ca sĩ nữ")], MAPPING, lookup)
     assert result.segments[0].segment.expects == ("speech.vocal",)
 
