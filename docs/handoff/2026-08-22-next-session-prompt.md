@@ -84,18 +84,19 @@ it into a Windows path.
 
 ## 4. The remaining roadmap
 
-Done: A, B, G1, C, D, C2, **G2a**. Remaining — each gets its own brainstorm →
+**Read [`docs/ROADMAP.md`](../ROADMAP.md) — it is the single source of truth for
+what is built and what is left, and it is updated at the end of every cycle.**
+Do not re-derive the roadmap here; a table copied by hand each cycle drifts from
+the code it describes, which is why that file exists.
+
+The short version: done are Phase 1, A, B, G1, C, D, C2 and **G2a**. Remaining
+are **G2b**, **E** (blocked on a metering transport that does not exist yet) and
+**F** (depends on everything; do not start it). Each gets its own brainstorm →
 spec → plan → implementation cycle; **invoke `superpowers:brainstorming` before
-designing any of them**:
+designing any of them.**
 
-| | Sub-project | Depends on | Size | Needs the console? |
-|---|---|---|---|---|
-| G2b | The assisted half: a model proposes a column mapping, and guesses cue-sheet terms the vocabulary lacks | G2a | medium | no |
-| E | Audio analysis (LUFS, RT60, SPL) | — | large | eventually |
-| F | Decision tier / auto-mix | A, C, D, G | largest — expect to decompose again | eventually |
-
-**G2b is the natural next step, and it is where the multi-provider question
-finally has a real consumer.** G2a deliberately contains no model call. G2b has
+**G2b is the recommendation, and it is where the multi-provider question finally
+has a real consumer.** G2a deliberately contains no model call. G2b has
 two — proposing a mapping from a header sample, and guessing a Vietnamese term
 the `cuesheet:` vocabulary lacks — and ToanAZ decided on 2026-08-22: **not this
 cycle, but leave the room**, which G2a did by taking its vocabulary lookup as an

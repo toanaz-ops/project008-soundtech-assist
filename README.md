@@ -1,20 +1,29 @@
 # wing-parser
 
-Read and analyse Behringer WING `.snap` scene files: parse the format,
-classify what each channel and bus actually is, and run an advisory
-layer that flags likely misconfigurations. It runs fully offline.
+Read and analyse Behringer WING scenes: parse the format, classify what
+each channel and bus actually is, and run an advisory layer that flags
+likely misconfigurations. It reads a saved `.snap` file or a console on
+the network, and needs no network for anything else.
 
-## Phase 1 scope
+## Scope
 
-Phase 1 covers reading a saved `.snap` file and reasoning about it. It
-does **not** connect to a live console over OSC, write changes back to
-a console, or analyse audio (LUFS, RT60, SPL, real-world latency,
-gain-reduction metering). Everything the tool reports is derived from
-the scene file's own JSON — channel names, fader positions, routing,
-processing chains, EQ and dynamics settings — never from a measurement
-you would need a live signal to take. A clean report from `doctor`
-means nothing in the file looked wrong; it does not mean the mix
-sounds right.
+Everything the tool reports is derived from **what the scene states** —
+channel names, fader positions, routing, processing chains, EQ and
+dynamics settings — read either from a `.snap` file or from a live desk
+over OSC. It is never derived from a measurement you would need a live
+audio signal to take.
+
+So it does **not** analyse audio: no LUFS, RT60, SPL, real-world
+latency or gain-reduction metering. Metering does not live in the OSC
+tree at all — it is on the console's native UDP channel, a second
+transport this tool does not yet speak. See
+[docs/ROADMAP.md](docs/ROADMAP.md).
+
+A clean report from `doctor` means nothing in the scene looked wrong.
+It does not mean the mix sounds right.
+
+**What is built and what is planned:** [docs/ROADMAP.md](docs/ROADMAP.md)
+is the single source of truth.
 
 ## Install
 
