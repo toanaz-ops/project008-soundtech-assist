@@ -55,9 +55,18 @@ def _section(doc, name: str, where: str) -> dict[str, str]:
 
 
 def load_mapping(path: str | Path) -> RawMapping:
-    """Shape only. Column resolution needs the header row and happens later."""
+    """Shape only. Column resolution needs the header row and happens later.
+
+    A YAML syntax error becomes the same ValueError shape every other
+    load-time problem here raises, instead of a bare `yaml.YAMLError` the
+    CLI is not set up to catch -- the same convention `advisory/loader.py`
+    and `showcontext/loader.py` already use for a hand-edited file.
+    """
     where_from = Path(path)
-    doc = yaml.safe_load(where_from.read_text(encoding="utf-8"))
+    try:
+        doc = yaml.safe_load(where_from.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise ValueError(f"{where_from}: invalid YAML: {exc}") from exc
     where = str(where_from)
 
     if not isinstance(doc, dict):

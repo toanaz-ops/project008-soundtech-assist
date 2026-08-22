@@ -7,6 +7,7 @@ change to the three modules downstream.
 
 from __future__ import annotations
 
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -73,7 +74,18 @@ def read_sheet(path: str | Path, sheet: str | int | None, header_row: int) -> Sh
     if header_row < 1:
         raise ValueError(f"header_row must be 1 or more, not {header_row}.")
 
-    book = load_workbook(Path(path), data_only=True, read_only=True)
+    # A file that is not a real .xlsx -- wrong extension, a renamed .docx,
+    # plain text saved with an .xlsx name -- surfaces as zipfile.BadZipFile
+    # (not a zip at all) or a KeyError (a zip, but missing the parts every
+    # xlsx has), both from deep inside openpyxl/zipfile. Neither is a
+    # ValueError the CLI already catches, so both are named here and
+    # turned into the same shape: an error naming the file and what was
+    # expected, the same convention `mapping.load_mapping` follows for a
+    # broken YAML file.
+    try:
+        book = load_workbook(Path(path), data_only=True, read_only=True)
+    except (zipfile.BadZipFile, KeyError) as exc:
+        raise ValueError(f"{path}: not a readable .xlsx file ({exc}).") from exc
     try:
         worksheet = _worksheet(book, sheet)
         grid = [

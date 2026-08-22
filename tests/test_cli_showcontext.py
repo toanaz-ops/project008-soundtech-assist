@@ -132,3 +132,33 @@ def test_a_bad_mapping_reports_the_problem_and_exits_one(tmp_path, capsys):
     ])
     assert code == 1
     assert "title" in capsys.readouterr().err
+
+
+def test_a_syntactically_broken_mapping_reports_the_problem_and_exits_one(tmp_path, capsys):
+    from wing_parser.cli.__main__ import main
+
+    bad = tmp_path / "broken.yaml"
+    bad.write_text("header_row: [unbalanced\n", encoding="utf-8")
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"), "--map", str(bad),
+    ])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "Traceback" not in err
+    assert str(bad) in err
+
+
+def test_a_non_workbook_sheet_reports_the_problem_and_exits_one(tmp_path, capsys):
+    from wing_parser.cli.__main__ import main
+
+    fake = tmp_path / "not-a-workbook.xlsx"
+    fake.write_text("this is not a real spreadsheet\n", encoding="utf-8")
+    code = main([
+        "showcontext", "import",
+        str(fake), "--map", str(DATA / "ingest-fixture-map.yaml"),
+    ])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "Traceback" not in err
+    assert str(fake) in err
