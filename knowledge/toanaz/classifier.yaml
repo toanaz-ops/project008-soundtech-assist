@@ -10,3 +10,9 @@
 # origin: manual | llm | pattern | cache
 channels: {}
 buses: {}
+# cuesheet: terms as they appear on a printed running order, in any
+# language, mapped to the same kinds the channels domain uses. A cue
+# sheet and a console strip are different naming domains -- nobody
+# labels a strip "ca si nu", and no director writes "HS4" -- so a term
+# lives here and not in channels.
+cuesheet: {}

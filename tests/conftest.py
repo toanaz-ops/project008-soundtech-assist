@@ -46,16 +46,16 @@ def _isolated_knowledge_dir(tmp_path_factory):
     into `knowledge/toanaz/shows/`; doing that on a real checkout used to
     turn tests red, because tests that never pass an explicit
     `directory=` were silently reading whatever a user had actually put
-    there. `knowledge/toanaz/classifier.yaml` ships with `channels: {}`
-    and `buses: {}`, and the shipped `principles.yaml` holds `principles:
-    []` -- no standing principle has been needed yet -- so an empty tmp
-    directory (nothing on disk at all) resolves identically to the
-    shipped default: both `layers._principles` calls yield `[]`. This
-    costs no coverage. A test that deliberately needs the real in-repo directory
-    opts in explicitly with `monkeypatch.delenv(config.ENV_VAR, ...)` or
-    by constructing its own `directory=` fixture, the way
-    `test_classifier_cache.py` and `test_advisory_resolver.py` already
-    do.
+    there. `knowledge/toanaz/classifier.yaml` ships with `channels: {}`,
+    `buses: {}`, and `cuesheet: {}`, and the shipped `principles.yaml`
+    holds `principles: []` -- no standing principle has been needed yet
+    -- so an empty tmp directory (nothing on disk at all) resolves
+    identically to the shipped default: both `layers._principles` calls
+    yield `[]`. This costs no coverage. A test that deliberately needs
+    the real in-repo directory opts in explicitly with
+    `monkeypatch.delenv(config.ENV_VAR, ...)` or by constructing its own
+    `directory=` fixture, the way `test_classifier_cache.py` and
+    `test_advisory_resolver.py` already do.
 
     A plain `monkeypatch` fixture is function-scoped and cannot be
     requested from a session-scoped fixture, so the environment variable

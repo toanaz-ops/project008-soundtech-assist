@@ -19,7 +19,7 @@ from wing_parser.classifier.matcher import Classification
 from wing_parser.classifier.normalize import clean
 
 FILENAME = "classifier.yaml"
-DOMAINS = ("channels", "buses")
+DOMAINS = ("channels", "buses", "cuesheet")
 
 _SEED = """\
 # Cached and manually declared classifications.
@@ -34,6 +34,12 @@ _SEED = """\
 # origin: manual | llm | pattern | cache
 channels: {}
 buses: {}
+# cuesheet: terms as they appear on a printed running order, in any
+# language, mapped to the same kinds the channels domain uses. A cue
+# sheet and a console strip are different naming domains -- nobody
+# labels a strip "ca si nu", and no director writes "HS4" -- so a term
+# lives here and not in channels.
+cuesheet: {}
 """
 
 
@@ -57,9 +63,9 @@ def _read(directory: Path | None) -> Any:
         doc = _yaml().load(_SEED)
     if not hasattr(doc, "get"):
         raise ValueError(
-            f"{path}: the top level must be a mapping with a channels: and a "
-            f"buses: section, but this file's top level is "
-            f"{type(doc).__name__}."
+            f"{path}: the top level must be a mapping with "
+            + ", ".join(f"{domain}:" for domain in DOMAINS)
+            + f" sections, but this file's top level is {type(doc).__name__}."
         )
     for domain in DOMAINS:
         if doc.get(domain) is None:

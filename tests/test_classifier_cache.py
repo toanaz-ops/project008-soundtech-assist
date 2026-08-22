@@ -176,3 +176,46 @@ def test_a_failed_write_leaves_the_previous_file_intact(tmp_path, monkeypatch):
     assert cache.lookup("Bass", "channels", directory=directory) is not None
     leftovers = [p.name for p in directory.iterdir() if p.name != "classifier.yaml"]
     assert leftovers == [], f"temp files not cleaned up: {leftovers}"
+
+
+def test_cuesheet_domain_round_trips(tmp_path):
+    """A Vietnamese cue-sheet term is stored and read back like any other."""
+    from wing_parser.classifier import cache
+    from wing_parser.classifier.matcher import Classification
+
+    cache.remember(
+        "Ca sĩ nữ",
+        "cuesheet",
+        Classification(kind="speech.vocal", confidence=0.9, origin="manual"),
+        directory=tmp_path,
+    )
+    found = cache.lookup("ca sĩ nữ", "cuesheet", directory=tmp_path)
+    assert found is not None
+    assert found.kind == "speech.vocal"
+    assert found.origin == "manual"
+
+
+def test_a_file_without_a_cuesheet_section_still_loads(tmp_path):
+    """Files written before this domain existed must keep working."""
+    from wing_parser.classifier import cache
+
+    (tmp_path / "classifier.yaml").write_text(
+        "channels: {}\nbuses: {}\n", encoding="utf-8"
+    )
+    loaded = cache.load(directory=tmp_path)
+    assert loaded["cuesheet"] == {}
+
+
+def test_the_top_level_error_names_every_domain(tmp_path):
+    """The message must not go stale when a domain is added.
+
+    It was hard-coded to 'a channels: and a buses: section'. No test runs an
+    error message, so a fourth domain would silently make it false again.
+    """
+    from wing_parser.classifier import cache
+
+    (tmp_path / "classifier.yaml").write_text("- not a mapping\n", encoding="utf-8")
+    with pytest.raises(ValueError) as caught:
+        cache.load(directory=tmp_path)
+    for domain in cache.DOMAINS:
+        assert f"{domain}:" in str(caught.value)
