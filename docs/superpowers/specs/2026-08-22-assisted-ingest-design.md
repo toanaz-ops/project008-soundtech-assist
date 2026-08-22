@@ -81,7 +81,7 @@ That has a measured consequence for the advisory layer. Reading
 | **Q4 "Show expects a source with no channel for it"** | **72** | **`expects`** | **yes** |
 | **Q5 "Show expects a source whose channels are all parked"** | **102** | **`expects`** | **yes** |
 | Q6 "Cue repeats a channel state an earlier cue already set" | 130 | cues | no |
-| Q7 "Two cues sit closer together than the operation needs" | 163 | cues | no |
+| Q7 "Two cues sit closer together than the operation needs" | 163 | cues, but **ships `enabled: false`** (:166) | no, and never |
 
 Two of seven. State this plainly in the README and in the command's own output,
 because a file that produces two rules' worth of findings must not read as a
@@ -96,7 +96,10 @@ Both already **aggregate per expected kind, not per segment** — Q4's and Q5's
 therefore cannot produce thirty identical warnings. That trap was closed in G1
 and G2a inherits the closure; no new work is needed for it.
 
-For Q1/Q2/Q3/Q6/Q7 the imported file is a **skeleton to add cues into**. G2a
+For Q1, Q2, Q3 and Q6 the imported file is a **skeleton to add cues into**. Q7
+is excluded from that list on purpose: it carries `enabled: false`
+(`showcontext.yaml:166`) and `evaluator.evaluate` returns `[]` unconditionally
+for a disabled rule (`evaluator.py:158-160`), so no cue revives it. G2a
 never invents a cue.
 
 ## 4. The mapping file
@@ -309,7 +312,8 @@ hand-rolled YAML scalar quoting, which has silent edge cases (U+2028, an
 all-whitespace scalar) and would be new code where existing code will do.
 
 Uncommenting it does more than fill in a number: it turns the segment into
-something Q1, Q2, Q6 and Q7 can read, which is how ToanAZ moves an imported file
+something Q1, Q2 and Q6 can read -- and Q3 too, once he names a DCA -- which is
+how ToanAZ moves an imported file
 from two live rules to seven.
 
 The join itself reuses `wing_parser/showcontext/view.py:138 _channels_of`, which

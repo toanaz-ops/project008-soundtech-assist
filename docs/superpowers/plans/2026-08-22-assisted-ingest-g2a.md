@@ -1484,7 +1484,7 @@ tool reads a segment time, and a sheet's wall-clock time is not the
 show-relative form `time:` accepts.
 
 Only Q4 and Q5 fire on a file with no cues. Uncomment a proposed cue to
-bring Q1, Q2, Q6 and Q7 to life for that segment.
+bring Q1, Q2 and Q6 to life (and Q3 once a DCA is named; Q7 ships disabled) for that segment.
 """
 
 
@@ -1726,7 +1726,7 @@ purpose.
 
 The proposal is a whole cue rather than a channel list because `channels`
 is a Cue field, not a Segment field. Uncommenting it does more than fill
-in a number: it brings Q1, Q2, Q6 and Q7 to life for that segment.
+in a number: it brings Q1, Q2 and Q6 to life (and Q3 once a DCA is named; Q7 ships disabled) for that segment.
 """
 
 from __future__ import annotations
@@ -1792,7 +1792,7 @@ Propose a cue skeleton from the scene, as comments only
 channels is a Cue field, not a Segment field, so an importer that emits
 no cues has nowhere to put a channel number at all. The proposal is
 therefore a whole commented-out cue, which is the better shape anyway:
-uncommenting it brings Q1, Q2, Q6 and Q7 to life for that segment.
+uncommenting it brings Q1, Q2 and Q6 to life (and Q3 once a DCA is named; Q7 ships disabled) for that segment.
 
 The join reuses view._channels_of, promoted to a public channels_of so
 the ingest layer and Q4/Q5 cannot drift apart on what counts as a
@@ -2203,7 +2203,7 @@ the text in the header cell (`headers:`) — never both for the same field.
 Only **Q4** ("show expects a source with no channel for it") and **Q5** ("...
 whose channels are all parked") fire on it. With `--scene`, each segment gets a
 commented-out cue naming the channels that match its expected kinds;
-uncommenting one brings Q1, Q2, Q6 and Q7 to life for that segment.
+uncommenting one brings Q1, Q2 and Q6 to life (and Q3 once a DCA is named; Q7 ships disabled) for that segment.
 
 Anything the importer cannot read — a row with no title, a performer it does not
 recognise — is kept in the file as a comment, and the last line reconciles the
