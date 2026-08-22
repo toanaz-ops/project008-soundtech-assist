@@ -466,8 +466,19 @@ Nothing disappears.**
 | unreadable `time` cell | verbatim comment (it is always a comment) |
 | malformed or unparseable `classifier.yaml` | raise, naming the file — it is documented as hand-editable, so a typo in it is an expected outcome and must reach the CLI as `error: …`, never a traceback |
 
-The output file always ends with a reconciliation line, and the `-o` summary on
-stderr states the same counts:
+The output file always ends with a reconciliation line. The `-o` summary on
+stderr repeats it **except for the blank-row count**, which only the file
+carries — a blank row is a fact about the spreadsheet's layout rather than
+about the import, and the summary is the one-line answer to "did that work?".
+The two must not drift further apart than that; if a count is added, add it to
+both or state here why not.
+
+(This paragraph was itself wrong on first writing — it claimed the two state
+the same counts — and the whole-branch re-review caught it. That is the tenth
+instance on this branch of a true-sounding claim about code that nobody had
+re-read, and it arrived inside the amendment written to remove such claims.
+The lesson is not "be careful": it is that a sentence asserting two things
+match is a sentence that must be checked by opening both.)
 
 ```yaml
 # imported 34 data row(s) -> 31 segment(s) carrying 22 expectation(s), 3 row(s) and 2 performer fragment(s) kept as comments, 1 blank row(s) skipped
