@@ -162,3 +162,132 @@ def test_a_non_workbook_sheet_reports_the_problem_and_exits_one(tmp_path, capsys
     err = capsys.readouterr().err
     assert "Traceback" not in err
     assert str(fake) in err
+
+
+def _knowledge(tmp_path, monkeypatch, body):
+    """Point the importer at a hand-edited classifier.yaml of our own.
+
+    conftest.py's session-scoped _isolated_knowledge_dir already redirects
+    the suite; monkeypatch.setenv overrides it for this test only.
+    """
+    from wing_parser import config
+
+    directory = tmp_path / "knowledge"
+    directory.mkdir()
+    (directory / "classifier.yaml").write_text(body, encoding="utf-8")
+    monkeypatch.setenv(config.ENV_VAR, str(directory))
+    return directory
+
+
+def test_a_hand_edited_classifier_file_is_an_error_not_a_traceback(
+    tmp_path, capsys, monkeypatch
+):
+    """The README tells him to hand-edit this exact file.
+
+    build.build is what reads it, lazily, through the injected lookup, so
+    it has to sit inside the CLI's own try -- outside it, a malformed
+    cuesheet: section reached the user as a stack trace.
+    """
+    _knowledge(tmp_path, monkeypatch,
+               "channels: {}\nbuses: {}\ncuesheet:\n  - ca sĩ nữ\n")
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"),
+    ])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "Traceback" not in err
+    assert "classifier.yaml" in err
+    assert "cuesheet" in err
+
+
+def test_a_syntax_error_in_the_classifier_file_is_an_error_too(
+    tmp_path, capsys, monkeypatch
+):
+    """A typo is the likeliest hand-edit failure, and ruamel's YAMLError
+    is not a ValueError, so nothing caught it."""
+    _knowledge(tmp_path, monkeypatch,
+               "channels: {}\nbuses: {}\ncuesheet: [unbalanced\n")
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"),
+    ])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "Traceback" not in err
+    assert "classifier.yaml" in err
+
+
+def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
+    tmp_path, monkeypatch
+):
+    """classifier/resolve.py:31-40 measured this exact hazard: cache.lookup
+    re-reads and re-parses the whole file through a ruamel round-trip on
+    every call -- 3.4 s for 50 per-name lookups against 65 ms for one load
+    -- and the cuesheet domain grows one entry per term ever seen."""
+    from wing_parser.classifier import cache
+
+    loads: list[object] = []
+    real_load = cache.load
+
+    def counted(directory=None):
+        loads.append(directory)
+        return real_load(directory)
+
+    monkeypatch.setattr(cache, "load", counted)
+    monkeypatch.setattr(cache, "lookup", _refuse_a_per_name_read)
+
+    out = tmp_path / "tonight.yaml"
+    assert main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(out),
+    ]) == 0
+    assert len(loads) == 1
+
+
+def _refuse_a_per_name_read(*args, **kwargs):
+    raise AssertionError("cache.lookup() re-reads the file on every call")
+
+
+def test_a_column_with_a_blank_header_can_be_mapped_by_its_letter(
+    tmp_path, capsys
+):
+    """An unlabelled notes column is common, and headers: cannot name it."""
+    from openpyxl import Workbook
+
+    book = Workbook()
+    page = book.active
+    page.append(["STT", "Tên tiết mục", None])
+    page.append(["1", "Đón khách", "chú thích"])
+    sheet = tmp_path / "blank-header.xlsx"
+    book.save(sheet)
+
+    mapping = tmp_path / "map.yaml"
+    mapping.write_text(
+        "header_row: 1\ncolumns:\n  title: B\n  note: C\n", encoding="utf-8"
+    )
+    assert main(["showcontext", "import", str(sheet), "--map", str(mapping)]) == 0
+    assert "chú thích" in capsys.readouterr().out
+
+
+def test_a_letter_past_the_end_of_the_sheet_is_still_refused(tmp_path, capsys):
+    from openpyxl import Workbook
+
+    book = Workbook()
+    page = book.active
+    page.append(["STT", "Tên tiết mục"])
+    page.append(["1", "Đón khách"])
+    sheet = tmp_path / "narrow.xlsx"
+    book.save(sheet)
+
+    mapping = tmp_path / "map.yaml"
+    mapping.write_text(
+        "header_row: 1\ncolumns:\n  title: B\n  note: Z\n", encoding="utf-8"
+    )
+    assert main(["showcontext", "import", str(sheet), "--map", str(mapping)]) == 1
+    err = capsys.readouterr().err
+    assert "Traceback" not in err
+    assert "Z" in err

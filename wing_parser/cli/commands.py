@@ -259,6 +259,7 @@ def showcontext_lint(args) -> int:
 
 def showcontext_import(args) -> int:
     from wing_parser.classifier import cache
+    from wing_parser.classifier.normalize import clean
     from wing_parser.showcontext.ingest import build, emit, mapping, propose, sheet
 
     destination = Path(args.output) if args.output else None
@@ -272,17 +273,28 @@ def showcontext_import(args) -> int:
     try:
         raw = mapping.load_mapping(args.mapping)
         read = sheet.read_sheet(args.sheet, raw.sheet, raw.header_row)
-        resolved = mapping.resolve_columns(raw, read.headers)
+        resolved = mapping.resolve_columns(raw, read.headers, read.last_column)
+        # One read of classifier.yaml, not one per performer fragment.
+        # cache.lookup() re-reads and re-parses the whole file through a
+        # ruamel round-trip on every call; classifier/resolve.py:31-40
+        # records the measurement -- 50 per-name lookups 3.4 s against
+        # 65 ms for one load plus 50 in-memory lookups, 17 s at a
+        # thousand entries -- and the cuesheet domain is designed to grow
+        # one entry per term ever seen.
+        vocabulary = cache.load().get("cuesheet", {})
+        # build.build belongs inside this try: it is what reads the
+        # vocabulary, and the README tells ToanAZ to hand-edit
+        # classifier.yaml, so a malformed one must be an error line and
+        # not a traceback.
+        result = build.build(
+            read.rows,
+            resolved,
+            lambda term: vocabulary.get(clean(term)),
+            blank_rows=read.blank_rows,
+        )
     except (OSError, ValueError, sheet.MissingExtra) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
-
-    result = build.build(
-        read.rows,
-        resolved,
-        lambda term: cache.lookup(term, "cuesheet"),
-        blank_rows=read.blank_rows,
-    )
 
     proposals = None
     if args.scene is not None:

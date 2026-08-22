@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from ruamel.yaml import YAML
+from ruamel.yaml.error import YAMLError
 
 from wing_parser import config
 from wing_parser.classifier.matcher import Classification
@@ -58,7 +59,15 @@ def _read(directory: Path | None) -> Any:
     """The live document, comments and all. Mutate and hand back to _write."""
     path = _path(directory)
     text = path.read_text(encoding="utf-8") if path.exists() else _SEED
-    doc = _yaml().load(text)
+    # This file is documented as hand-editable, so a typo in it is an
+    # expected outcome, not a bug. A bare ruamel YAMLError is not a
+    # ValueError and no caller catches it; naming the file in a ValueError
+    # is the convention showcontext/loader.py and ingest/mapping.py
+    # already follow for a hand-edited file.
+    try:
+        doc = _yaml().load(text)
+    except YAMLError as exc:
+        raise ValueError(f"{path}: invalid YAML: {exc}") from exc
     if doc is None:
         doc = _yaml().load(_SEED)
     if not hasattr(doc, "get"):
