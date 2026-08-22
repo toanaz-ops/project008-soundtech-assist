@@ -35,7 +35,8 @@ live console ┘        (showcontext/ attaches a cue sheet alongside)
 ```
 
 Fully offline; `mcp` and `anthropic` are optional extras and stay uninstalled.
-**39 base rules across 9 files. 12 probe scripts.**
+**39 base rules across 9 files. 7 Claude skills in `skills/`. 12 probe
+scripts.**
 
 ## 2. Where things stand
 

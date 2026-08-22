@@ -46,6 +46,13 @@ These are not preferences. They have each been paid for at least once.
 | **Modular** | ~200-line files, split by responsibility layer. |
 | **Evidence, not assertion** | A measurement nobody can re-run is not evidence. `docs/probes/` holds twelve read-only scripts, each mapped to the claim it supports. |
 
+Shipped alongside the library: **7 Claude skills** in `skills/` — `wing-analyze`,
+`wing-channel`, `wing-diff`, `wing-doctor`, `wing-net`, `wing-routing`,
+`wing-watch`. `tests/test_examples.py` pins that set **by name**, so adding one
+without documenting it fails with the missing name rather than a count
+mismatch. Any sub-project that adds a command should ask whether it also wants a
+skill; **G2a did not add one for `showcontext import`**, which is worth revisiting.
+
 ## 3. Done
 
 Listed in the order they landed. Each row's spec is the design authority for that
