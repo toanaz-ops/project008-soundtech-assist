@@ -326,14 +326,24 @@ this project has exactly one such layer on purpose.
 
 ```
 wing_parser/showcontext/ingest/
-  mapping.py   parse and validate the mapping file          ~90 lines
-  sheet.py     spreadsheet -> RawRow list                   ~110 lines
+  sheet.py     spreadsheet -> RawRow list                   ~120 lines
+  mapping.py   parse and validate the mapping file          ~160 lines
   build.py     RawRow + vocabulary -> Segment + comments    ~140 lines
-  emit.py      Segment -> YAML with comments (ruamel)       ~120 lines
+  propose.py   Segment + scene -> commented-out cue (§7)     ~50 lines
+  emit.py      Segment -> YAML with comments (ruamel)       ~110 lines
 ```
 
-Data flows one way: `sheet.py` → `mapping.py` → `build.py` → `emit.py`. No module
-calls back up.
+Line counts are targets against the ~200-line ceiling, not budgets. `mapping.py`
+is the largest because refusing an ambiguity means *explaining* it, and every one
+of its error messages prints the real alternatives (§9).
+
+Data flows one way: `sheet.py` → `mapping.py` → `build.py` → `propose.py` →
+`emit.py`. No module calls back up.
+
+`propose.py` is separate from `build.py` rather than folded into it precisely
+because it needs the scene. `build.py`'s whole guarantee is that it performs no
+I/O and takes no scene, which is what lets every interpretation decision be
+tested without a filesystem; giving it a scene would dissolve that.
 
 `mapping.py` needs the header row's cells to resolve the `headers:` block, so it
 **receives** that row as an argument rather than opening the file itself. This
