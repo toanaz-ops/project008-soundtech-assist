@@ -99,6 +99,11 @@ def test_a_row_without_a_title_becomes_a_loose_comment_not_a_segment():
     assert any("5" in note for note in result.loose_comments)
 
 
+def test_an_untitled_rows_id_cell_is_not_dropped():
+    result = builder.build([row(7, A="7", C="", D="trống")], MAPPING, lookup)
+    assert any("7" in note and "id" in note for note in result.loose_comments)
+
+
 def test_the_counts_reconcile():
     rows = [row(5, C="Một"), row(6, C=""), row(7, C="Ba")]
     result = builder.build(rows, MAPPING, lookup, blank_rows=2)

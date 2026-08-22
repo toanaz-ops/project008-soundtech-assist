@@ -1,9 +1,13 @@
-"""Rows and a vocabulary become Segment records. No I/O happens here.
+"""Rows and a vocabulary become Segment records. This module opens no file
+of its own -- it takes no path, no scene, and no knowledge directory. The
+pattern matcher it calls into (`wing_parser.classifier.matcher.classify`)
+does read `patterns.yaml` from disk on first use, cached for the rest of
+the process; that read is the matcher's business, not this module's.
 
 The vocabulary lookup arrives as a callable rather than an import, which
 is what keeps every interpretation decision in this file testable without
-a filesystem -- and what keeps the module honest about performing no
-reads of its own.
+a filesystem -- and what keeps this module's own tests free of fixtures
+on disk.
 
 Nothing is ever guessed. A fragment that does not resolve confidently
 becomes a verbatim comment, because a weak guess entering `expects:`
@@ -90,11 +94,13 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
         performers = _cell(row, mapping, "performers")
         note = _cell(row, mapping, "note").strip()
         written_time = _cell(row, mapping, "time").strip()
+        written_id = _cell(row, mapping, "id").strip()
 
         if not title:
             parts = [
                 f"{name}={value!r}"
                 for name, value in (
+                    ("id", written_id),
                     ("performers", performers.strip()),
                     ("note", note),
                     ("time", written_time),
@@ -114,7 +120,6 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
         if note:
             notes.append(f"row {row.number}: note {note!r}")
 
-        written_id = _cell(row, mapping, "id").strip()
         if not written_id:
             generated += 1
             written_id = f"S{generated}"
