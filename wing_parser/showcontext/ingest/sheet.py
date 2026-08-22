@@ -18,7 +18,16 @@ EXTRA_HINT = (
 
 
 class MissingExtra(RuntimeError):
-    """openpyxl is absent. Mirrors how classifier/llm.py treats anthropic."""
+    """openpyxl is absent, so there is nothing to read the sheet with.
+
+    This raises, and names the extra to install. It is the opposite of
+    how `classifier/llm.py` treats a missing `anthropic`: `available()`
+    there swallows the ImportError and returns False
+    (`classifier/llm.py:60-69`), because the model is an optional
+    fallback and the tool is designed to work without it. A spreadsheet
+    reader is not optional to a spreadsheet reader, so an absent one is
+    a stop, not a quieter path.
+    """
 
 
 @dataclass(frozen=True)
@@ -29,9 +38,21 @@ class RawRow:
 
 @dataclass(frozen=True)
 class SheetRead:
+    """`last_column` is the letter of the last column holding anything.
+
+    `headers` drops a column whose header cell is blank, and an
+    unlabelled notes or STT column is common on a real running order --
+    exactly the case `headers:` cannot express and letters exist for
+    (design spec section 4.3). Reporting the sheet's extent separately is
+    what lets `mapping.resolve_columns` accept such a letter while still
+    refusing one past the end of the sheet. Empty only for a sheet with
+    nothing in it at all.
+    """
+
     headers: dict[str, str]
     rows: tuple[RawRow, ...]
     blank_rows: int
+    last_column: str = ""
 
 
 def _text(value) -> str:
@@ -88,13 +109,25 @@ def read_sheet(path: str | Path, sheet: str | int | None, header_row: int) -> Sh
         raise ValueError(f"{path}: not a readable .xlsx file ({exc}).") from exc
     try:
         worksheet = _worksheet(book, sheet)
-        grid = [
-            {get_column_letter(index): _text(cell)
-             for index, cell in enumerate(row, start=1)}
-            for row in worksheet.iter_rows(values_only=True)
-        ]
+        # Materialised inside the try: a read-only workbook cannot be
+        # iterated once it is closed.
+        raw = [tuple(row) for row in worksheet.iter_rows(values_only=True)]
     finally:
         book.close()
+
+    grid = [
+        {get_column_letter(index): _text(cell)
+         for index, cell in enumerate(row, start=1)}
+        for row in raw
+    ]
+    widest = max(
+        (index
+         for row in raw
+         for index, cell in enumerate(row, start=1)
+         if _text(cell)),
+        default=0,
+    )
+    last_column = get_column_letter(widest) if widest else ""
 
     if header_row > len(grid):
         raise ValueError(
@@ -114,4 +147,9 @@ def read_sheet(path: str | Path, sheet: str | int | None, header_row: int) -> Sh
         else:
             blank += 1
 
-    return SheetRead(headers=headers, rows=tuple(rows), blank_rows=blank)
+    return SheetRead(
+        headers=headers,
+        rows=tuple(rows),
+        blank_rows=blank,
+        last_column=last_column,
+    )

@@ -102,6 +102,44 @@ def test_a_column_letter_that_is_not_in_the_sheet_is_refused(tmp_path):
     assert "Z" in str(caught.value)
 
 
+def test_a_letter_inside_the_sheet_needs_no_header_cell(tmp_path):
+    """Letters are the escape hatch for what headers cannot express, and a
+    blank header cell is exactly that case."""
+    path = _write(
+        tmp_path, "sheet: 1\nheader_row: 4\ncolumns:\n  title: C\n  note: F\n"
+    )
+    raw = mapping_module.load_mapping(path)
+    resolved = mapping_module.resolve_columns(raw, HEADERS, "G")
+    assert resolved.fields["note"] == "F"
+
+
+def test_a_letter_past_the_last_populated_column_is_refused_naming_it(tmp_path):
+    path = _write(
+        tmp_path, "sheet: 1\nheader_row: 4\ncolumns:\n  title: C\n  note: H\n"
+    )
+    raw = mapping_module.load_mapping(path)
+    with pytest.raises(ValueError) as caught:
+        mapping_module.resolve_columns(raw, HEADERS, "G")
+    message = str(caught.value)
+    assert "H" in message and "G" in message
+    assert "A, B, C, D, E" in message
+
+
+def test_a_letter_is_compared_by_position_not_as_text(tmp_path):
+    """'AA' sorts before 'B' as text, but it is column 27, not column 2."""
+    path = _write(
+        tmp_path, "sheet: 1\nheader_row: 4\ncolumns:\n  title: C\n  note: AA\n"
+    )
+    with pytest.raises(ValueError):
+        mapping_module.resolve_columns(
+            mapping_module.load_mapping(path), HEADERS, "B"
+        )
+    resolved = mapping_module.resolve_columns(
+        mapping_module.load_mapping(path), HEADERS, "AB"
+    )
+    assert resolved.fields["note"] == "AA"
+
+
 def test_a_sheet_named_with_digits_stays_a_name(tmp_path):
     """YAML types carry the whole distinction: 3 is an index, "3" is a name."""
     path = _write(tmp_path, "sheet: \"3\"\nheader_row: 4\ncolumns:\n  title: C\n")

@@ -124,8 +124,36 @@ def _by_header(name: str, wanted: str, headers: dict[str, str], where: str) -> s
     )
 
 
-def resolve_columns(raw: RawMapping, headers: dict[str, str]) -> SheetMapping:
+def _index(letters: str) -> int:
+    """A -> 1, Z -> 26, AA -> 27; nothing -> 0.
+
+    sheet.py reports the sheet's last populated column as a letter, and
+    letters do not compare as text: 'AA' sorts before 'B'. Spelled out
+    here rather than imported so sheet.py stays the only module that
+    knows openpyxl exists.
+    """
+    value = 0
+    for char in letters:
+        value = value * 26 + (ord(char) - ord("A") + 1)
+    return value
+
+
+def resolve_columns(raw: RawMapping, headers: dict[str, str],
+                    last_column: str = "") -> SheetMapping:
+    """`last_column` is how far a letter may reach past the headers.
+
+    A column whose header cell is blank is absent from `headers` -- an
+    unlabelled notes or STT column is common on a real running order, and
+    is precisely the case `headers:` cannot express. Letters exist as the
+    escape hatch for what headers cannot say (design spec section 4.3),
+    so one is accepted anywhere inside the sheet's extent and refused
+    only past it. A caller that passes no extent gets the furthest header
+    instead -- that is all such a caller has said the sheet contains, and
+    an error naming it is at least true.
+    """
     where = str(raw.path) if raw.path else "<mapping>"
+    reach_to = last_column or (max(headers, key=_index) if headers else "")
+    reach = _index(reach_to)
 
     both = sorted(set(raw.columns) & set(raw.headers))
     if both:
@@ -149,11 +177,13 @@ def resolve_columns(raw: RawMapping, headers: dict[str, str]) -> SheetMapping:
                 f"{where}: columns: {name}: {letter!r} is not a column letter. "
                 "Use the letter Excel shows above the column, such as C."
             )
-        if upper not in headers:
+        if upper not in headers and _index(upper) > reach:
             raise ValueError(
-                f"{where}: columns: {name}: column {upper} has no header on the "
-                f"header row. Columns with a heading are: "
-                + ", ".join(sorted(headers))
+                f"{where}: columns: {name}: column {upper} is past {reach_to}, "
+                "the last column this sheet is known to reach. A column whose "
+                "header cell is blank can still be named by its letter, but "
+                "not one that is not there at all. Columns with a heading "
+                "are: " + ", ".join(sorted(headers))
             )
         fields[name] = upper
 
