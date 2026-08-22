@@ -294,11 +294,19 @@ concrete form of the "skeleton to add cues into" that §3 promises:
     expects: [instrument.guitar]
     # --scene: ch 13 "GTR" is instrument.guitar
     # uncomment to make this a cue:
-    # cues:
     #   - id: "S3 cue 1"
     #     action: open
     #     channels: [13]
+    cues: []
 ```
+
+Every segment carries a real `cues: []`. It is true — the segment has no cues —
+the loader reads it as empty (`entry.get("cues") or []`), and it gives the
+proposal a key to anchor to. `ruamel`'s
+`yaml_set_comment_before_after_key` needs a real key to attach a comment before,
+and without `cues` a segment has none after `expects`. The alternative was
+hand-rolled YAML scalar quoting, which has silent edge cases (U+2028, an
+all-whitespace scalar) and would be new code where existing code will do.
 
 Uncommenting it does more than fill in a number: it turns the segment into
 something Q1, Q2, Q6 and Q7 can read, which is how ToanAZ moves an imported file
