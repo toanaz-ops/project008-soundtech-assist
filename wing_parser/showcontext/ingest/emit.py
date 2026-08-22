@@ -33,6 +33,19 @@ bring Q1, Q2, Q3 and Q6 to life for that segment. Q7 ships disabled
 """
 
 
+def _hashed(entry: str) -> list[str]:
+    """Every physical line of `entry` gets its own leading `#`.
+
+    The trailer is plain text, not a ruamel comment node -- nothing
+    re-prefixes it for us the way `yaml_set_comment_before_after_key`
+    re-prefixes every physical line of a row comment. This module makes
+    no assumption that a caller has already escaped a real newline out
+    of `entry`; a lone `f"# {entry}"` would let a second physical line
+    fall out of the `#` block and be parsed as live YAML.
+    """
+    return [f"# {piece}" for piece in entry.split("\n")]
+
+
 def _flow(values) -> CommentedSeq:
     seq = CommentedSeq(values)
     seq.fa.set_flow_style()
@@ -79,7 +92,8 @@ def render(show: str, result, proposals: dict[str, tuple[str, ...]] | None = Non
     trailer = [""]
     if result.loose_comments:
         trailer.append("# rows kept as comments, not imported:")
-        trailer.extend(f"# {line}" for line in result.loose_comments)
+        for entry in result.loose_comments:
+            trailer.extend(_hashed(entry))
     trailer.append(
         f"# imported {result.data_rows} data row(s) -> "
         f"{len(result.segments)} segment(s), "

@@ -74,6 +74,30 @@ def test_a_scene_proposal_appears_above_the_cues_key():
     assert proposal_at < cues_at
 
 
+def test_a_multiline_loose_comment_cannot_break_out_of_the_comment_block():
+    """The trailer hand-assembles '#' prefixes (unlike the row-comment path,
+    which goes through ruamel and re-prefixes every physical line). A loose
+    comment carrying a real newline must not let its second line escape the
+    comment block and become live YAML content -- emit.py must not rely on
+    its caller having already escaped that newline away."""
+    injected = "row 9: no title, note='x\ny_injected: PWNED'"
+    result = _result(loose_comments=(injected,))
+    text = emit.render("t", result)
+
+    marker = "# rows kept as comments, not imported:"
+    assert marker in text
+    trailer = text[text.index(marker):]
+    for line in trailer.splitlines():
+        stripped = line.strip()
+        if stripped:
+            assert stripped.startswith("#"), (
+                f"trailer line escaped the comment block: {line!r}"
+            )
+
+    doc = yaml.safe_load(text)
+    assert set(doc.keys()) == {"show", "segments"}
+
+
 def test_the_document_loads_through_the_show_context_loader(tmp_path):
     """The real contract: what this writes, load_show_context must read."""
     from wing_parser.showcontext import load_show_context
