@@ -18,7 +18,7 @@ import sys
 import time
 from collections import Counter
 
-sys.path.insert(0, r"Z:\My Drive\CLAUDE WORKS\DEV CAVE 2026\SOUNDTECH PLAYGROUND\.claude\worktrees\project-capabilities-next-steps-8ec61c")
+sys.path.insert(0, r"Z:\My Drive\CLAUDE WORKS\DEV CAVE 2026\SOUNDTECH PLAYGROUND")
 
 from wing_parser.net.codec import decode, encode  # noqa: E402
 

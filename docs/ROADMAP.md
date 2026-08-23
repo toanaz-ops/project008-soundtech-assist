@@ -1,6 +1,6 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-23, after sub-project H merged back from its orphan branch · **`main` @ `d298b78`** ·
+**Last updated:** 2026-08-23, live-watch acceptance closed on the real console · **`main` @ `59197b8`** ·
 1225 tests passing, 1 skipped (FastMCP, by design)
 
 This file is the **single source of truth** for what this project has built and
@@ -187,30 +187,26 @@ supply. **Do not guess them.**
 7. **`expects:` accepts pattern-derived kinds only.** A kind declared by hand in
    `knowledge/toanaz/classifier.yaml` would be refused. Latent.
 
-## 6. Waiting on hardware
+## 6. Waiting on hardware — NOTHING
 
-**The console went out on a show on 2026-08-22.** Two acceptance tests from the
-live-watch design §4.4 are still open, and §2.6 of that spec records why silence
-is not evidence for either. Both close in one sitting:
+**Closed 2026-08-23**, one sitting with the console back from its show
+(WING-GIAQUY, fw 3.1). Full details:
+`docs/handoff/2026-08-23-live-watch-acceptance-complete.md`.
 
-1. **Does polling detect a change?** `wing net watch` ran 240 s against the lab
-   rack and built its watch list correctly — 220 leaves, no warnings, exit 0 —
-   but recorded **zero change events**, because nobody moved a control during the
-   window. The **loop** is proven against a real console. **Detection is not.**
-2. **Does it coexist with WING-Edit?** Never run. This is the direct test of the
-   hard requirement in §2 above, so it outranks its own size.
+1. **Detection: proven.** 120 s of watch against the real desk, ~150 change
+   events, every fader drag and solo press driven from WING-Edit reported
+   within ~250 ms.
+2. **Coexistence with WING-Edit: proven.** WING-Edit stayed connected and was
+   the source of every change while the poller ran all 220 leaves.
+3. **Subscribe verbs: negative, closed as underivable.** All ten candidate
+   verbs silent while controls were actively moving, with a passing control
+   GET proving the harness. Polling is the only mechanism.
 
-```powershell
-python -m wing_parser.cli net watch 192.168.128.28 --until 120
-```
-
-…then move one fader **from WING-Edit** while it runs. Record the actual output
-either way. A negative result is written up, not retried into silence — the
-limiter-token probe is the precedent.
-
-A third, smaller one: `probe2_subscribe_wide.py` sent ten subscribe forms and all
-were silent, but the desk was idle and a *working* subscription would have been
-silent too. Redo it with a control being moved before concluding anything.
+One operational lesson survived the session: `walk_schema` can transiently
+lose whole top-level families under burst probing (first run watched only 16
+leaves with seven families unresolved; seconds later everything resolved).
+It reports unresolved visibly rather than hiding them — so if a watch opens
+with unresolved families, **rerun before believing the list is small**.
 
 ## 7. How a cycle runs
 
