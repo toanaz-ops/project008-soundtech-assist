@@ -28,12 +28,92 @@ is the single source of truth.
 ## Install
 
 ```bash
-pip install -e ".[dev,llm,mcp]"
+pip install -e ".[dev,llm,mcp,ui]"
 ```
 
 `dev` pulls in `pytest` and `pytest-cov` for running the test suite.
-`llm` and `mcp` are both optional and independent of each other and of
-the core tool — see [Offline guarantee](#offline-guarantee) below.
+`llm`, `mcp` and `ui` are all optional and independent of each other and
+of the core tool — see [Offline guarantee](#offline-guarantee) below.
+`ui` pulls in PySide6 for the [desktop app](#desktop-app).
+
+## Desktop app
+
+```powershell
+wing-ui user-files\example-Vu.snap
+```
+
+or `python -m wing_parser.ui user-files\example-Vu.snap`. Both accept
+`--profile <name>`, the same profiles `doctor` takes. Without PySide6
+installed the command prints one line naming the extra and exits 1; the
+CLI and the engine are unaffected by its absence.
+
+The window is the advisory report. Findings fill the left pane, errors
+first, filterable by severity and by layer. Selecting one shows, on the
+right, the rule's title, the message, the rule's **rationale and source
+verbatim**, and its evidence — the rationale is on screen because it is
+the argument you are being asked to accept or reject.
+
+**Verdicts.** Three buttons under the detail — Correct, False positive,
+Irrelevant — write straight to the same `feedback.jsonl` that
+`wing feedback` writes, with an optional note. The running tally for the
+selected rule is shown above them, because a rule rejected seven times
+is the evidence that a standing principle should be written. Nothing is
+learned automatically; a human still writes the principle.
+
+**Repairs.** Where the rule's own predicate determines a single value,
+the detail panel offers one button that applies it. Where it does not —
+any rule stating a frequency window, a count, or a choice between two
+defensible fixes — there is **no button**, and the panel says so. That
+absence is deliberate: a button that guesses is worse than no button.
+**11 of the 39 base rules** carry one today, including five of the seven
+`error`-severity rules — the routing errors (click or talkback into a
+FOH main, timecode into any mix destination, a remote caller feeding
+its own mix-minus), both record-feed rules, the missing speech
+high-pass, an unmuted Q&A mic, a post-fader monitor send, and snare
+polarity. They are declared in
+[`wing_parser/edit/data/repairs.yaml`](wing_parser/edit/data/repairs.yaml),
+each with a rationale, and each with a test proving it removes its own
+finding **and no other**.
+
+**Editing is never destructive.** Edits are held as a journal, not
+applied to the loaded document. The Changes dock lists them with their
+before and after values, Undo drops the last, and **Save As is the only
+save** — it always writes a new file and never touches the one you
+opened. Saving does not clear the journal, so you can save more than one
+variant from the same edits.
+
+### Building a standalone `.exe`
+
+```powershell
+pip install pyinstaller
+pyinstaller packaging\wing-ui.spec --noconfirm
+```
+
+The result is a single `dist\wing-ui.exe` (about 66 MB) with no Python
+installation required on the machine that runs it.
+
+**Copy it off the Google Drive path before running it.** Launched from
+`Z:\My Drive\...`, the executable did not start within two minutes —
+`Start-Process` itself blocked. Copied to local disk it starts in a few
+seconds. A one-file bundle has to unpack about 66 MB before its first
+line of code runs, and doing that across a synced network path is the
+difference. This is a property of where the file sits, not of the build.
+
+**Where your judgements live, and why it differs when frozen.** A
+PyInstaller bundle unpacks itself into a temporary directory and
+**deletes that directory when the app closes**. Everything in
+`knowledge/toanaz/` — `feedback.jsonl`, `principles.yaml`, `shows/` — is
+either written by you or edited by you, so resolving it inside the
+bundle would throw away every verdict you recorded, silently, on close.
+
+So a frozen build keeps that set in `%USERPROFILE%\.config\wing-skill`
+instead, seeded once from the copy shipped inside the executable and
+never overwritten afterwards. **Help → "Where my judgements are
+stored…"** names the exact path on any run. Setting `WING_KNOWLEDGE_DIR`
+still overrides everything, frozen or not.
+
+Run from a repository checkout, nothing changes: the in-repo
+`knowledge/toanaz/` is used exactly as before.
 
 ## CLI commands
 
@@ -621,6 +701,11 @@ In every one of those cases the name in question degrades to a
 this tool is written for venues where the network is unreliable or
 absent. Names the pattern matcher already resolves (most of them, in
 practice) are completely unaffected either way.
+
+The desktop app and the edit layer add nothing to this. Neither opens a
+socket of any kind, and `wing_parser/edit/` does not import Qt either —
+both facts are pinned by tests, the second by importing the package in a
+clean subprocess and asserting no PySide6 module was loaded.
 
 ## Extending the rules without touching Python
 

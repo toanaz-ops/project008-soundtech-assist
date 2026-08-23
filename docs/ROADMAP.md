@@ -1,7 +1,7 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-22, after G2a landed · **`main` @ `de5930e`** ·
-1134 tests passing, 1 skipped (FastMCP, by design)
+**Last updated:** 2026-08-23, live-watch acceptance closed on the real console · **`main` @ `59197b8`** ·
+1225 tests passing, 1 skipped (FastMCP, by design)
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -31,6 +31,8 @@ decided and why.
 live console ┘        (showcontext/ attaches a cue sheet alongside)
    net/                (net/watch/ polls a live desk for changes)
                        (showcontext/ingest/ builds a cue sheet from a spreadsheet)
+   edit/ + ui/         (desktop app: journal, repairs, PySide findings UI;
+                        packaging/wing-ui builds a standalone .exe)
 ```
 
 ## 2. Standing constraints that shape every decision below
@@ -44,7 +46,7 @@ These are not preferences. They have each been paid for at least once.
 | **Never fabricate** | No value the file or the console does not state. Anything unreadable becomes a visible comment; nothing is dropped silently. |
 | **Coexist with the desk** | Anything touching a live console must run alongside WING-Edit and Companion without displacing them. ToanAZ's words: *"cần song song không đá nhau."* |
 | **Modular** | ~200-line files, split by responsibility layer. |
-| **Evidence, not assertion** | A measurement nobody can re-run is not evidence. `docs/probes/` holds twelve read-only scripts, each mapped to the claim it supports. |
+| **Evidence, not assertion** | A measurement nobody can re-run is not evidence. `docs/probes/` holds twelve read-only scripts, each mapped to the claim it supports; sub-project H added two more OSC probes in `probes/`. |
 
 Shipped alongside the library: **7 Claude skills** in `skills/` — `wing-analyze`,
 `wing-channel`, `wing-diff`, `wing-doctor`, `wing-net`, `wing-routing`,
@@ -64,6 +66,7 @@ subsystem; each handoff records what it measured and what it left open.
 | A | **Advisory loop closure** | The rule engine reads YAML; a finding can be fed back on and remembered. 6 tasks. | 406 |
 | B | **Rule-set growth** | Base rules **3 → 32**, across 9 files. 14 tasks. | 527 |
 | G1 | **Show context** | A cue sheet loads beside a scene; rules Q1–Q7. Base rules **32 → 39**. | 588 |
+| H | **Desktop app** | An edit layer (pointer, journal, writer, repairs) plus a PySide UI over the advisory findings; packaged as a standalone `.exe`. Landed on an orphan branch on 2026-08-18 and merged into `main` on 2026-08-23 — it never appeared in this table until then. | 1225 (combined with everything above) |
 | C · D | **WING over Ethernet** | OSC read and write; `wing net identity / snapshot`, `doctor --live`, `diff --live-before`. 20 commits. | not recorded in that handoff |
 | C2 | **Live watch** | `wing net watch` polls a live desk for changes. | 1055 |
 | G2a | **Assisted ingest (deterministic half)** | `wing showcontext import` — an Excel running order becomes a show-context file, entirely offline. | **1134** |
@@ -76,6 +79,7 @@ subsystem; each handoff records what it measured and what it left open.
 | A | `2026-08-16-advisory-loop-closure-design.md` | `2026-08-16-advisory-loop-closure.md` | `2026-08-16-advisory-loop-closure-complete.md` |
 | B | `2026-08-16-rule-set-growth-design.md` | `2026-08-16-rule-set-growth.md` | `2026-08-17-rule-set-growth-complete.md` |
 | G1 | `2026-08-17-input-pipelines-design.md` | `2026-08-17-input-pipelines-g1.md` and `2026-08-17-g1-noise-profile.md` | `2026-08-17-input-pipelines-g1-complete.md` |
+| H | `2026-08-18-desktop-app-design.md` | `2026-08-18-desktop-app.md` | `2026-08-18-desktop-app-complete.md` |
 | C · D | `2026-08-21-wing-net-design.md` | — | `2026-08-21-wing-net-complete.md` |
 | C2 | `2026-08-21-live-watch-design.md` | `2026-08-21-live-watch.md` | `2026-08-22-live-watch-complete.md` |
 | G2a | `2026-08-22-assisted-ingest-design.md` | `2026-08-22-assisted-ingest-g2a.md` | `2026-08-22-assisted-ingest-g2a-complete.md` |
@@ -106,6 +110,9 @@ Each gets its own **brainstorm → spec → plan → implementation** cycle. Inv
 `superpowers:brainstorming` before designing any of them.
 
 ### G2b — the recommended next piece
+
+The sequenced execution order for everything below lives in
+`docs/superpowers/plans/2026-08-23-next-steps.md`.
 
 G2a deliberately contains **no model call**. It reads a spreadsheet through a
 mapping file ToanAZ writes by hand, and resolves Vietnamese performer terms
@@ -180,30 +187,26 @@ supply. **Do not guess them.**
 7. **`expects:` accepts pattern-derived kinds only.** A kind declared by hand in
    `knowledge/toanaz/classifier.yaml` would be refused. Latent.
 
-## 6. Waiting on hardware
+## 6. Waiting on hardware — NOTHING
 
-**The console went out on a show on 2026-08-22.** Two acceptance tests from the
-live-watch design §4.4 are still open, and §2.6 of that spec records why silence
-is not evidence for either. Both close in one sitting:
+**Closed 2026-08-23**, one sitting with the console back from its show
+(WING-GIAQUY, fw 3.1). Full details:
+`docs/handoff/2026-08-23-live-watch-acceptance-complete.md`.
 
-1. **Does polling detect a change?** `wing net watch` ran 240 s against the lab
-   rack and built its watch list correctly — 220 leaves, no warnings, exit 0 —
-   but recorded **zero change events**, because nobody moved a control during the
-   window. The **loop** is proven against a real console. **Detection is not.**
-2. **Does it coexist with WING-Edit?** Never run. This is the direct test of the
-   hard requirement in §2 above, so it outranks its own size.
+1. **Detection: proven.** 120 s of watch against the real desk, ~150 change
+   events, every fader drag and solo press driven from WING-Edit reported
+   within ~250 ms.
+2. **Coexistence with WING-Edit: proven.** WING-Edit stayed connected and was
+   the source of every change while the poller ran all 220 leaves.
+3. **Subscribe verbs: negative, closed as underivable.** All ten candidate
+   verbs silent while controls were actively moving, with a passing control
+   GET proving the harness. Polling is the only mechanism.
 
-```powershell
-python -m wing_parser.cli net watch 192.168.128.28 --until 120
-```
-
-…then move one fader **from WING-Edit** while it runs. Record the actual output
-either way. A negative result is written up, not retried into silence — the
-limiter-token probe is the precedent.
-
-A third, smaller one: `probe2_subscribe_wide.py` sent ten subscribe forms and all
-were silent, but the desk was idle and a *working* subscription would have been
-silent too. Redo it with a control being moved before concluding anything.
+One operational lesson survived the session: `walk_schema` can transiently
+lose whole top-level families under burst probing (first run watched only 16
+leaves with seven families unresolved; seconds later everything resolved).
+It reports unresolved visibly rather than hiding them — so if a watch opens
+with unresolved families, **rerun before believing the list is small**.
 
 ## 7. How a cycle runs
 
