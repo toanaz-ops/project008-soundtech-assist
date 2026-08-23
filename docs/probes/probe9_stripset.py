@@ -21,8 +21,10 @@ import re
 import sys
 import time
 from collections import defaultdict
+from pathlib import Path
 
-sys.path.insert(0, r"Z:\My Drive\CLAUDE WORKS\DEV CAVE 2026\SOUNDTECH PLAYGROUND\.claude\worktrees\project-capabilities-next-steps-8ec61c")
+# The repo root, resolved from this file, so the probe runs from any cwd.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from wing_parser.net.schema import walk_schema  # noqa: E402
 

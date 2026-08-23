@@ -21,8 +21,10 @@ from __future__ import annotations
 
 import sys
 import time
+from pathlib import Path
 
-sys.path.insert(0, r"Z:\My Drive\CLAUDE WORKS\DEV CAVE 2026\SOUNDTECH PLAYGROUND\.claude\worktrees\project-capabilities-next-steps-8ec61c")
+# The repo root, resolved from this file, so the probe runs from any cwd.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from wing_parser.net.client import WingClient  # noqa: E402
 
