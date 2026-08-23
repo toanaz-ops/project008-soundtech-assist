@@ -34,10 +34,11 @@ class RawScene:
             object.__setattr__(self, "source", derived)
 
 
-def load_raw(path: str | Path) -> RawScene:
-    file_path = Path(path)
-    doc = json.loads(file_path.read_text(encoding="utf-8"))
-
+def parse_raw(doc: Any, file_path: Path) -> RawScene:
+    """Split an already-parsed document. Separated from reading a file so
+    a caller holding an edited copy in memory -- the desktop app, after
+    every repair -- can rebuild a scene without writing a temporary file.
+    Same shape as showcontext's parse/load pair."""
     if not isinstance(doc, dict):
         raise ValueError(
             f"{file_path}: expected a JSON object at the top level, "
@@ -61,3 +62,8 @@ def load_raw(path: str | Path) -> RawScene:
         meta=meta,
         path=file_path,
     )
+
+
+def load_raw(path: str | Path) -> RawScene:
+    file_path = Path(path)
+    return parse_raw(json.loads(file_path.read_text(encoding="utf-8")), file_path)
