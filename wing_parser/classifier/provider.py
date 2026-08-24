@@ -68,3 +68,96 @@ def complete_json(
             return reply
         user = f"{user}\n\nYour previous reply was rejected: {'; '.join(problems)}. Reply again."
     raise ProviderError(f"reply never matched the schema: {'; '.join(problems)}")
+
+
+# --- appended: config loading and the adapter factory ---
+import os
+from dataclasses import dataclass, replace
+from pathlib import Path
+
+import yaml
+
+
+@dataclass(frozen=True)
+class ProviderConfig:
+    name: str = "anthropic"
+    model: str = ""
+    api_key_env: str = ""
+    base_url: str = ""
+
+
+DEFAULT_CONFIG = ProviderConfig()
+
+_NAME_DEFAULTS = {
+    "anthropic": ProviderConfig(
+        name="anthropic", model="claude-opus-5", api_key_env="ANTHROPIC_API_KEY"
+    ),
+    "openai-compat": ProviderConfig(
+        name="openai-compat", model="deepseek-chat", api_key_env="DEEPSEEK_API_KEY"
+    ),
+}
+
+ENV_VAR = "WING_PROVIDER_CONFIG"
+
+_KNOWN_KEYS = {"provider", "model", "api_key_env", "base_url", "name"} | set(
+    _NAME_DEFAULTS
+)
+
+
+def load_config(explicit: str | Path | None = None) -> ProviderConfig:
+    """explicit beats $WING_PROVIDER_CONFIG beats ./provider.yaml beats default."""
+    candidates = []
+    if explicit is not None:
+        candidates.append(Path(explicit))
+    if os.environ.get(ENV_VAR):
+        candidates.append(Path(os.environ[ENV_VAR]))
+    candidates.append(Path("provider.yaml"))
+    for path in candidates:
+        if not path.exists():
+            continue
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        if not isinstance(doc, dict):
+            raise ValueError(f"{path}: top level must be a mapping.")
+        unknown = set(doc) - _KNOWN_KEYS
+        if unknown:
+            raise ValueError(
+                f"{path}: unknown keys {sorted(unknown)}; known keys are "
+                + ", ".join(sorted(_KNOWN_KEYS - {"name", "provider"}))
+            )
+        name = str(doc.get("name", doc.get("provider", DEFAULT_CONFIG.name)))
+        if name not in _NAME_DEFAULTS:
+            raise ValueError(
+                f"{path}: provider {name!r} is not one of: "
+                + ", ".join(sorted(_NAME_DEFAULTS))
+            )
+        return ProviderConfig(
+            name=name,
+            model=str(doc.get("model", "")),
+            api_key_env=str(doc.get("api_key_env", "")),
+            base_url=str(doc.get("base_url", "")),
+        )
+    return DEFAULT_CONFIG
+
+
+def resolve(config: ProviderConfig) -> ProviderConfig:
+    base = _NAME_DEFAULTS[config.name]
+    return replace(
+        config,
+        model=config.model or base.model,
+        api_key_env=config.api_key_env or base.api_key_env,
+    )
+
+
+def make_provider(config: ProviderConfig):
+    resolved = resolve(config)
+    if resolved.name == "anthropic":
+        from wing_parser.classifier.provider_anthropic import AnthropicProvider
+
+        return AnthropicProvider(model=resolved.model, api_key_env=resolved.api_key_env)
+    from wing_parser.classifier.provider_openai import OpenAICompatProvider
+
+    return OpenAICompatProvider(
+        model=resolved.model,
+        api_key_env=resolved.api_key_env,
+        base_url=resolved.base_url,
+    )
