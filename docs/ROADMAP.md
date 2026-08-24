@@ -1,6 +1,6 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-23, live-watch acceptance closed on the real console · **`main` @ `59197b8`** ·
+**Last updated:** 2026-08-24, dependency diagram redrawn · **`main` @ `5f4e2a6`** ·
 1225 tests passing, 1 skipped (FastMCP, by design)
 
 This file is the **single source of truth** for what this project has built and
@@ -89,22 +89,40 @@ handoffs in `docs/handoff/`.
 
 ## 4. Not done
 
-```
-        ┌─────────────────────────────────────────┐
-  A ────┤                                         │
-  B ────┤                                         ├──→  F  (decision tier / auto-mix)
-  C,D ──┤                                         │      largest; decompose again
-  G1 ───┴──→ G2a ──→ G2b                          │
-                                                  │
-        E  (audio analysis) ──────────────────────┘
-           needs a second transport first
+How the finished pieces feed what is left:
+
+```mermaid
+flowchart TD
+    subgraph shipped["DONE"]
+        direction TB
+        P1["Phase 1 · .snap decoder, descriptors,<br/>query, classifier, CLI"]
+        A["A · advisory loop closure"] --> B["B · rule set 3 → 39"]
+        H["H · desktop app (.exe)"]
+        P1 --> A
+        G1["G1 · show context (cue sheet + Q1–Q7)"] --> G2a["G2a · assisted ingest,<br/>deterministic half (xlsx → show context, offline)"]
+        B --> G1
+        CD["C·D · WING over Ethernet (OSC read/write)"] --> C2["C2 · live watch (net watch)"]
+    end
+
+    G2a ==>|"NEXT"| G2b["G2b · assisted ingest, model half:<br/>propose column mapping + guess vocabulary terms<br/>(multi-provider question becomes real here)"]
+    CD -.->|"needs its own UDP metering transport first"| E["E · audio analysis<br/>(LUFS, RT60, SPL) — BLOCKED on that transport"]
+
+    A --> F
+    B --> F
+    CD --> F
+    G2b --> F["F · decision tier / auto-mix<br/>largest — decompose again when reached"]
+    E --> F
+
+    style G2b fill:#fff3bf,stroke:#e8b500
+    style E fill:#ffe3e3,stroke:#e03131
+    style F fill:#e7f5ff,stroke:#1971c2
 ```
 
 | | Sub-project | Depends on | Size | Console? |
 |---|---|---|---|---|
 | **G2b** | The assisted half of ingest: a model proposes a column mapping from a header sample, and guesses cue-sheet terms the vocabulary lacks | G2a | medium | no |
 | **E** | Audio analysis — LUFS, RT60, SPL | a metering transport | large | eventually |
-| **F** | Decision tier / auto-mix | A, B, C, D, G | largest | eventually |
+| **F** | Decision tier / auto-mix | A, B, C, D, E, G | largest | eventually |
 
 Each gets its own **brainstorm → spec → plan → implementation** cycle. Invoke
 `superpowers:brainstorming` before designing any of them.
@@ -164,9 +182,11 @@ These are judgement calls about his own work, or facts only a live console can
 supply. **Do not guess them.**
 
 1. **A real cue sheet has never been read.** G2a was built entirely against a
-   fixture invented from his description. One real `.xlsx` dropped into
-   `tests/data/` is the highest-value hour available, and may change the mapping
-   fields. *(New 2026-08-22.)*
+   fixture invented from his description. *(Update 2026-08-24: ToanAZ dropped
+   five real files into `tests/data/` — two running-order `.xlsx` (vivo,
+   BIDV), plus `.docx`/`.pdf` scripts the importer cannot read yet. They are
+   untracked and unread; reading the `.xlsx` headers is the highest-value hour
+   available, and may change G2b's mapping fields.)*
 2. **The `cuesheet:` vocabulary ships empty.** Only loanwords `patterns.yaml`
    already catches (`guitar`, `bass`, `piano`) resolve; everything else becomes
    a comment — correct, but a seed of the twenty terms he meets most would make
