@@ -26,7 +26,9 @@ class FakeCompletions:
 
     def create(self, **kwargs):
         self.last_kwargs = kwargs
-        content = json.dumps(self.payload)
+        content = (
+            self.payload if isinstance(self.payload, str) else json.dumps(self.payload)
+        )
         message = types.SimpleNamespace(content=content)
         choice = types.SimpleNamespace(message=message)
         return types.SimpleNamespace(choices=[choice])
@@ -36,12 +38,14 @@ class FakeCompletions:
 def fake_sdk(monkeypatch):
     """Install a stand-in `openai` module before the adapter imports it."""
     completions = FakeCompletions({"kind": "speech.mc"})
+    completions.clients = []
     mod = types.ModuleType("openai")
 
     class FakeOpenAI:
         def __init__(self, api_key=None, base_url=None):
             self.api_key = api_key
             self.base_url = base_url
+            completions.clients.append(self)
             self.chat = types.SimpleNamespace(completions=completions)
 
     mod.OpenAI = FakeOpenAI
@@ -68,27 +72,20 @@ def test_request_shape(fake_sdk, monkeypatch):
 
 def test_invalid_json_content_raises_provider_error(fake_sdk, monkeypatch):
     monkeypatch.setenv("DEEPSEEK_KEY", "k-test")
-
-    def create(**kwargs):
-        return types.SimpleNamespace(
-            choices=[
-                types.SimpleNamespace(
-                    message=types.SimpleNamespace(content="not json at all")
-                )
-            ]
-        )
-
-    fake_sdk.create = create
+    fake_sdk.payload = "not json at all"
     provider = OpenAICompatProvider(
         model="m", api_key_env="DEEPSEEK_KEY", base_url=""
     )
     with pytest.raises(ProviderError):
         provider.complete_json("s", "u", SCHEMA)
+    assert fake_sdk.last_kwargs["model"] == "m"
+    assert fake_sdk.clients[-1].base_url is None
 
 
 def test_missing_sdk_raises_named_extra(monkeypatch):
     monkeypatch.setitem(sys.modules, "openai", None)  # import guard trips
-    monkeypatch.delenv("NOPE_KEY", raising=False)
+    monkeypatch.setenv("NOPE_KEY", "k")
     provider = OpenAICompatProvider(model="m", api_key_env="NOPE_KEY")
-    with pytest.raises((MissingExtra, ProviderError)):
+    with pytest.raises(MissingExtra) as excinfo:
         provider.complete_json("s", "u", SCHEMA)
+    assert "llm-openai" in str(excinfo.value)
