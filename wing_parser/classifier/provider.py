@@ -104,38 +104,46 @@ _KNOWN_KEYS = {"provider", "model", "api_key_env", "base_url", "name"} | set(
 )
 
 
-def load_config(explicit: str | Path | None = None) -> ProviderConfig:
-    """explicit beats $WING_PROVIDER_CONFIG beats ./provider.yaml beats default."""
-    candidates = []
-    if explicit is not None:
-        candidates.append(Path(explicit))
-    if os.environ.get(ENV_VAR):
-        candidates.append(Path(os.environ[ENV_VAR]))
-    candidates.append(Path("provider.yaml"))
-    for path in candidates:
-        if not path.exists():
-            continue
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-        if not isinstance(doc, dict):
-            raise ValueError(f"{path}: top level must be a mapping.")
-        unknown = set(doc) - _KNOWN_KEYS
-        if unknown:
-            raise ValueError(
-                f"{path}: unknown keys {sorted(unknown)}; known keys are "
-                + ", ".join(sorted(_KNOWN_KEYS - {"name", "provider"}))
-            )
-        name = str(doc.get("name", doc.get("provider", DEFAULT_CONFIG.name)))
-        if name not in _NAME_DEFAULTS:
-            raise ValueError(
-                f"{path}: provider {name!r} is not one of: "
-                + ", ".join(sorted(_NAME_DEFAULTS))
-            )
-        return ProviderConfig(
-            name=name,
-            model=str(doc.get("model", "")),
-            api_key_env=str(doc.get("api_key_env", "")),
-            base_url=str(doc.get("base_url", "")),
+def _load_named_file(path: Path) -> ProviderConfig:
+    if not path.exists():
+        raise ValueError(f"{path}: named provider config does not exist.")
+    doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if not isinstance(doc, dict):
+        raise ValueError(f"{path}: top level must be a mapping.")
+    unknown = set(doc) - _KNOWN_KEYS
+    if unknown:
+        raise ValueError(
+            f"{path}: unknown keys {sorted(unknown)}; known keys are "
+            + ", ".join(sorted(_KNOWN_KEYS - {"name", "provider"}))
         )
+    name = str(doc.get("name", doc.get("provider", DEFAULT_CONFIG.name)))
+    if name not in _NAME_DEFAULTS:
+        raise ValueError(
+            f"{path}: provider {name!r} is not one of: "
+            + ", ".join(sorted(_NAME_DEFAULTS))
+        )
+    return ProviderConfig(
+        name=name,
+        model=str(doc.get("model", "")),
+        api_key_env=str(doc.get("api_key_env", "")),
+        base_url=str(doc.get("base_url", "")),
+    )
+
+
+def load_config(explicit: str | Path | None = None) -> ProviderConfig:
+    """explicit beats $WING_PROVIDER_CONFIG beats ./provider.yaml beats default.
+
+    A file named by the argument or $WING_PROVIDER_CONFIG must exist: a
+    missing one raises ValueError naming the path. Only when nothing is
+    named do we fall through ./provider.yaml to the defaults.
+    """
+    if explicit is not None:
+        return _load_named_file(Path(explicit))
+    if os.environ.get(ENV_VAR):
+        return _load_named_file(Path(os.environ[ENV_VAR]))
+    fallback = Path("provider.yaml")
+    if fallback.exists():
+        return _load_named_file(fallback)
     return DEFAULT_CONFIG
 
 

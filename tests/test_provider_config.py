@@ -29,7 +29,7 @@ def test_defaults_are_anthropic_unchanged():
     assert cfg.api_key_env == "ANTHROPIC_API_KEY"
 
 
-def test_yaml_file_wins(tmp_path, monkeypatch):
+def test_yaml_file_wins(tmp_path):
     target = tmp_path / "provider.yaml"
     target.write_text(
         "provider: openai-compat\nmodel: deepseek-v4-flash\n"
@@ -63,6 +63,38 @@ def test_unknown_provider_refused(tmp_path):
         assert "palm" in str(exc)
     else:
         raise AssertionError("unknown provider accepted")
+
+
+def test_unknown_key_refused(tmp_path):
+    target = tmp_path / "p.yaml"
+    target.write_text("provider: anthropic\ntimeout: 30\n", encoding="utf-8")
+    try:
+        load_config(target)
+    except ValueError as exc:
+        assert "timeout" in str(exc)
+    else:
+        raise AssertionError("unknown config key accepted")
+
+
+def test_missing_explicit_path_raises(tmp_path, monkeypatch):
+    monkeypatch.delenv("WING_PROVIDER_CONFIG", raising=False)
+    missing = str(tmp_path / "nope.yaml")
+    try:
+        load_config(missing)
+    except ValueError as exc:
+        assert "nope.yaml" in str(exc)
+    else:
+        raise AssertionError("missing named file silently fell through")
+
+
+def test_env_var_points_at_missing_file_raises(tmp_path, monkeypatch):
+    monkeypatch.setenv("WING_PROVIDER_CONFIG", str(tmp_path / "gone.yaml"))
+    try:
+        load_config(None)
+    except ValueError as exc:
+        assert "gone.yaml" in str(exc)
+    else:
+        raise AssertionError("missing env-named file silently fell through")
 
 
 def test_make_provider_dispatch(tmp_path, monkeypatch):
