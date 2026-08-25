@@ -311,6 +311,10 @@ def showcontext_import(args) -> int:
             resolved,
             lambda term: vocabulary.get(clean(term)),
             blank_rows=read.blank_rows,
+            # Same pipeline, same behavior: the wizard passes headers so
+            # an unmapped technical column folds into a visible comment;
+            # omitting it here would drop those cells silently.
+            headers=read.headers,
         )
     except (OSError, ValueError, sheet.MissingExtra) as exc:
         print(f"error: {exc}", file=sys.stderr)
