@@ -45,6 +45,24 @@ TEXTS: dict[str, str] = {
     "diff.col.magnitude": "Magnitude",
     "diff.no_session": "Open a scene first — it is the left side of the diff.",
     "diff.error": "Cannot read that file: {error}",
+    "import.pick": "Pick a rundown (.xlsx)...",
+    "import.sample_pane": "What is in this workbook",
+    "import.sheet": "Sheet",
+    "import.header_row": "Header row",
+    "import.verified": "Model proposal verified",
+    "import.unverified": "Model proposal unverified",
+    "import.manual_hint": (
+        "No model assist — name the sheet, header row and columns by hand."
+    ),
+    "import.back": "Back",
+    "import.next": "Next",
+    "import.load_guesses": "Load guesses",
+    "import.record": "Record",
+    "import.skip": "Skip",
+    "import.preview": "Preview",
+    "import.save_as": "Save As...",
+    "import.error": "{error}",
+    "import.needs_kind": "Type a kind before recording — never write a blank.",
 }
 
 
