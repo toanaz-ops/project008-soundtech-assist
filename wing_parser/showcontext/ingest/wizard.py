@@ -92,6 +92,12 @@ def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
         # Resolved before anything is saved: a mapping that cannot be
         # consumed must never reach disk looking finished.
         resolved = mapping.resolve_columns(raw, read.headers, read.last_column)
+    # StopIteration rides along: a real stdin at EOF raises EOFError, but
+    # an exhausted answer iterator (how tests script the wizard) raises
+    # StopIteration through input_fn -- both mean "nobody is answering".
+    except (EOFError, StopIteration):
+        print_fn("input closed -- mapping not saved")
+        return 1
     except (OSError, ValueError, sheet.MissingExtra) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -108,11 +114,15 @@ def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
     print_fn(f"mapping saved: {map_path}")
     if one_shot:
         return 0
-    return _finish(
-        xlsx, read, resolved,
-        output=output, force=force, scene=scene, print_fn=print_fn,
-        input_fn=input_fn,
-    )
+    try:
+        return _finish(
+            xlsx, read, resolved,
+            output=output, force=force, scene=scene, print_fn=print_fn,
+            input_fn=input_fn,
+        )
+    except (EOFError, StopIteration):
+        print_fn("input closed -- import stopped")
+        return 1
 
 
 def _dump_yaml(doc: dict) -> str:

@@ -154,6 +154,29 @@ def test_one_shot_writes_only_the_map(tmp_path, capsys, monkeypatch):
     assert ".map.yaml" in capsys.readouterr().out
 
 
+def test_closed_input_is_one_line_and_a_clean_nonzero_exit(tmp_path, capsys, monkeypatch):
+    """An exhausted stdin (Ctrl+Z on Windows) must not traceback through
+    _ask -- the module promises never a traceback. An empty iterator is
+    the scripted shape of that: every question hits a dead input_fn."""
+    _fake_provider(monkeypatch, VivoProvider())
+    monkeypatch.chdir(tmp_path)
+    answers = iter([])
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda *a, **k: next(answers),
+        print_fn=lambda *a, **k: print(*a),
+        output=str(tmp_path / "out.yaml"),
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "Traceback" not in captured.out and "Traceback" not in captured.err
+    assert "input closed" in captured.out
+    assert not list(tmp_path.glob("*.map.yaml"))  # nothing was saved
+
+
 def test_provider_failure_prints_one_line_and_walks_manual_questions(
     tmp_path, capsys, monkeypatch
 ):
