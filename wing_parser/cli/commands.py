@@ -258,6 +258,20 @@ def showcontext_lint(args) -> int:
 
 
 def showcontext_import(args) -> int:
+    if getattr(args, "no_assist", False) and args.mapping is None:
+        print("error: --no-assist requires --map.", file=sys.stderr)
+        return 2
+    if args.mapping is None:
+        from wing_parser.showcontext.ingest.wizard import run_wizard
+
+        return run_wizard(
+            args.sheet,
+            output=args.output,
+            force=args.force,
+            scene=args.scene,
+            one_shot=bool(getattr(args, "one_shot", False)),
+        )
+
     from wing_parser.classifier import cache
     from wing_parser.classifier.normalize import clean
     from wing_parser.showcontext.ingest import build, emit, mapping, propose, sheet
