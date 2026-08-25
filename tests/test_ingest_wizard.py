@@ -57,6 +57,62 @@ def test_all_enter_accepts_proposal_and_imports(tmp_path, capsys, monkeypatch):
 
     context = load_show_context(out)
     assert len(context.segments) > 0
+    # The point of the proposal: performers resolved offline, not every
+    # segment left as an unreadable comment.
+    assert any(segment.expects for segment in context.segments)
+
+
+def test_a_missing_workbook_is_one_error_line_not_a_traceback(
+    tmp_path, capsys, monkeypatch
+):
+    _fake_provider(monkeypatch, VivoProvider())
+    monkeypatch.chdir(tmp_path)
+    missing = str(tmp_path / "nope.xlsx")
+    asked = []
+    code = run_wizard(
+        missing,
+        input_fn=lambda *a, **k: (asked.append(a), "")[1],
+        print_fn=lambda *a, **k: print(*a),
+        output=None,
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    assert code == 1
+    out = capsys.readouterr().out
+    assert "Traceback" not in out
+    assert "nope.xlsx" in out
+    assert not asked  # refused before a single question was asked
+
+
+def test_a_corrupt_workbook_degrades_to_the_manual_fallback_line(
+    tmp_path, capsys, monkeypatch
+):
+    """An existing but non-xlsx file dies inside sampling, before the
+    provider is ever called -- still one line, never a traceback."""
+    _fake_provider(monkeypatch, VivoProvider())
+    monkeypatch.chdir(tmp_path)
+    fake = tmp_path / "broken.xlsx"
+    fake.write_text("this is not a real spreadsheet\n", encoding="utf-8")
+    answers = iter(["Rundown", "4", "B", "C", "F", "", "", "", "", ""])
+    code = run_wizard(
+        str(fake),
+        input_fn=lambda *a, **k: next(answers),
+        print_fn=lambda *a, **k: print(*a),
+        output=str(tmp_path / "out.yaml"),
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    assert code == 1
+    captured = capsys.readouterr()
+    assert "Traceback" not in captured.out and "Traceback" not in captured.err
+    lines = [
+        line
+        for line in captured.out.splitlines()
+        if "no model assist" in line
+    ]
+    assert len(lines) == 1
 
 
 def test_one_shot_writes_only_the_map(tmp_path, capsys, monkeypatch):
@@ -131,6 +187,19 @@ def test_cli_one_shot_flag_reaches_the_wizard(tmp_path, capsys, monkeypatch):
     assert code == 0
     assert seen["xlsx"] == VIVO
     assert seen["one_shot"] is True
+
+
+def test_map_with_one_shot_is_refused(tmp_path, capsys):
+    mapping = tmp_path / "map.yaml"
+    mapping.write_text("header_row: 1\ncolumns:\n  title: A\n", encoding="utf-8")
+    code = main([
+        "showcontext", "import", VIVO,
+        "--map", str(mapping), "--one-shot",
+    ])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "Traceback" not in err
+    assert "--one-shot" in err
 
 
 def test_no_assist_without_a_mapping_is_refused(tmp_path, capsys, monkeypatch):

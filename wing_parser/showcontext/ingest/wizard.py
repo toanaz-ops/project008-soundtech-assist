@@ -25,11 +25,15 @@ def _ask(prompt: str, default: str, input_fn) -> str:
 def _propose_or_none(xlsx, print_fn):
     """One assist attempt; any provider-shaped failure is one line.
 
-    ValueError joins ProviderError here because load_config raises it for
+    ValueError joins ProviderError because load_config raises it for
     a named config file that is missing or malformed -- the same
     hand-edited-file situation the rest of this CLI turns into an error
-    line, and exactly what the one-line contract promises.
+    line, and exactly what the one-line contract promises. OSError and
+    zipfile.BadZipFile cover sampling a workbook that vanished or is not
+    an xlsx at all, which happens before the provider is ever called.
     """
+    import zipfile
+
     from wing_parser.classifier.provider import (
         ProviderError,
         load_config,
@@ -40,13 +44,18 @@ def _propose_or_none(xlsx, print_fn):
     try:
         provider = make_provider(load_config(None))
         return propose_mapping(xlsx, provider)
-    except (ProviderError, ValueError) as exc:
+    except (ProviderError, ValueError, OSError, zipfile.BadZipFile) as exc:
         print_fn(f"(no model assist: {exc} -- continuing manually)")
         return None
 
 
 def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
                force=False, scene=None, one_shot=False):
+    source = Path(xlsx)
+    if not source.exists():
+        print_fn(f"error: {source} does not exist.")
+        return 1
+
     destination = Path(output) if output else None
     if destination is not None and destination.exists() and not force:
         print_fn(

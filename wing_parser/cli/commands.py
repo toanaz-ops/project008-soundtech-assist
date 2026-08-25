@@ -261,6 +261,12 @@ def showcontext_import(args) -> int:
     if getattr(args, "no_assist", False) and args.mapping is None:
         print("error: --no-assist requires --map.", file=sys.stderr)
         return 2
+    if args.mapping is not None and getattr(args, "one_shot", False):
+        print(
+            "error: --one-shot belongs to the wizard; drop --map to use it.",
+            file=sys.stderr,
+        )
+        return 2
     if args.mapping is None:
         from wing_parser.showcontext.ingest.wizard import run_wizard
 
