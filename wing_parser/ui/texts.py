@@ -10,6 +10,19 @@ TEXTS: dict[str, str] = {
     "page.import": "Import",
     "empty.open_hint": "Open a scene file to begin.",
     "empty.open_button": "Open a scene...",
+    "overview.counts": "Scene counts",
+    "overview.channels": "Channels",
+    "overview.buses": "Buses",
+    "overview.mains": "Mains",
+    "overview.matrices": "Matrices",
+    "overview.live": "Live channels",
+    "overview.named": "Named channels",
+    "overview.anomalies": "Anomalies",
+    "overview.table": "Channels",
+    "overview.col.number": "Number",
+    "overview.col.name": "Name",
+    "overview.col.fader": "Fader",
+    "overview.col.kind": "Kind",
 }
 
 
