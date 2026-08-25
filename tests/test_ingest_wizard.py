@@ -27,6 +27,24 @@ class DeadProvider:
         raise ProviderError("key missing")
 
 
+class BothProvider:
+    """Mapping proposals AND term guesses from one offline fake.
+
+    The term-guess system prompt names kinds; the mapping-proposal one
+    asks for sheet/columns/headers -- the schema tells them apart.
+    """
+
+    def complete_json(self, system, user, schema):
+        if "sheet" in schema.get("properties", {}):
+            return {
+                "sheet": "Rundown",
+                "header_row": 1,
+                "columns": '{"id": "A", "time": "", "title": "B"}',
+                "headers": '{"performers": "On stage"}',
+            }
+        return {"kind": "speech.playback", "confidence": 0.8}
+
+
 def _fake_provider(monkeypatch, provider):
     """The wizard builds its own provider offline; swap the factory."""
     monkeypatch.setattr(
@@ -168,6 +186,46 @@ def test_provider_failure_prints_one_line_and_walks_manual_questions(
     assert len(lines) == 1
     assert out.exists()
     assert "segments:" in out.read_text(encoding="utf-8")
+
+
+def test_unresolved_performers_are_offered_a_guess_after_the_render(
+    tmp_path, capsys, monkeypatch
+):
+    """J2 wiring: after the show-context renders, each term the vocabulary
+    could not read is offered a model-proposed kind. The answer here is
+    'n', so this test must never touch any classifier.yaml."""
+    from openpyxl import Workbook
+
+    _fake_provider(monkeypatch, BothProvider())
+    monkeypatch.chdir(tmp_path)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Rundown"
+    ws.append(["No", "Nội dung", "On stage"])
+    ws.append([1, "Đón khách", "tốp múa"])
+    xlsx = tmp_path / "run.xlsx"
+    wb.save(xlsx)
+
+    asked = []
+
+    def answers(prompt):
+        asked.append(prompt)
+        return "n" if prompt.startswith("Record") else ""
+
+    out = tmp_path / "out.yaml"
+    code = run_wizard(
+        str(xlsx),
+        input_fn=answers,
+        print_fn=lambda *a, **k: None,
+        output=str(out),
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    assert code == 0
+    record = [p for p in asked if p.startswith("Record")]
+    assert len(record) == 1
+    assert "'tốp múa'" in record[0] and "speech.playback" in record[0]
 
 
 def test_cli_one_shot_flag_reaches_the_wizard(tmp_path, capsys, monkeypatch):

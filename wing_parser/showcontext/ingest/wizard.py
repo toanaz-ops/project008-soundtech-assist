@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from wing_parser.classifier.normalize import clean
-from wing_parser.showcontext.ingest import build, emit, mapping, propose, sheet
+from wing_parser.showcontext.ingest import build, emit, guess, mapping, propose, sheet
 
 
 def _ask(prompt: str, default: str, input_fn) -> str:
@@ -111,6 +111,7 @@ def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
     return _finish(
         xlsx, read, resolved,
         output=output, force=force, scene=scene, print_fn=print_fn,
+        input_fn=input_fn,
     )
 
 
@@ -123,7 +124,28 @@ def _dump_yaml(doc: dict) -> str:
     return stream.getvalue()
 
 
-def _finish(xlsx, read, resolved, *, output, force, scene, print_fn):
+def _context_for(terms, rows) -> dict[str, list[str]]:
+    """Up to two rendered rows per term, as context for the guess."""
+    context: dict[str, list[str]] = {}
+    for term in terms:
+        hits: list[str] = []
+        for row in rows:
+            cells = "; ".join(
+                f"{letter}: {value}"
+                for letter, value in sorted(row.cells.items())
+                if value.strip()
+            )
+            line = f"row {row.number}: {cells}"
+            if term.casefold() in line.casefold():
+                hits.append(line)
+                if len(hits) == 2:
+                    break
+        context[term] = hits
+    return context
+
+
+def _finish(xlsx, read, resolved, *, output, force, scene, print_fn,
+            input_fn=input):
     # Mirrors commands.showcontext_import from vocabulary onward; kept here
     # so the wizard owns one flow instead of shelling back through argparse.
     from wing_parser.classifier import cache
@@ -158,4 +180,14 @@ def _finish(xlsx, read, resolved, *, output, force, scene, print_fn):
         print_fn(text)
     else:
         destination.write_text(text, encoding="utf-8")
+
+    terms = guess.unresolved_terms(result)
+    if terms:
+        from wing_parser.classifier.provider import load_config, make_provider
+
+        guess.offer_terms(
+            terms, _context_for(terms, read.rows),
+            provider_factory=lambda: make_provider(load_config(None)),
+            input_fn=input_fn, print_fn=print_fn,
+        )
     return 0
