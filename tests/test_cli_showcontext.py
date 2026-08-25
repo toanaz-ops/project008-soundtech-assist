@@ -273,6 +273,32 @@ def test_a_column_with_a_blank_header_can_be_mapped_by_its_letter(
     assert "chú thích" in capsys.readouterr().out
 
 
+def test_the_map_flow_folds_unmapped_columns_too(tmp_path, capsys):
+    """Same pipeline as the wizard: an unmapped technical column must
+    become a visible `[header] cell` comment, never dropped silently.
+    Mirrors test_ingest_build's fold test at the CLI level."""
+    from openpyxl import Workbook
+
+    book = Workbook()
+    page = book.active
+    page.append(["STT", "Tên tiết mục", "Âm thanh"])
+    page.append(["1", "Đón khách", "nhạc nền từ USB"])
+    sheet = tmp_path / "unmapped.xlsx"
+    book.save(sheet)
+
+    mapping = tmp_path / "map.yaml"
+    mapping.write_text(
+        "header_row: 1\ncolumns:\n  id: A\n  title: B\n", encoding="utf-8"
+    )
+    out = tmp_path / "out.yaml"
+    assert main([
+        "showcontext", "import", str(sheet),
+        "--map", str(mapping), "-o", str(out),
+    ]) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "[Âm thanh]" in text and "nhạc nền từ USB" in text
+
+
 def test_a_letter_past_the_end_of_the_sheet_is_still_refused(tmp_path, capsys):
     from openpyxl import Workbook
 

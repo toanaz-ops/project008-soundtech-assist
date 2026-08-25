@@ -108,8 +108,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     importer.add_argument("sheet", help="the .xlsx file")
     importer.add_argument(
-        "--map", dest="mapping", required=True,
-        help="the mapping file for this producer's template",
+        "--map", "--mapping", dest="mapping", default=None,
+        help="use a hand-written mapping instead of the wizard",
     )
     importer.add_argument("-o", "--output", default=None,
                           help="write here instead of printing")
@@ -117,6 +117,10 @@ def build_parser() -> argparse.ArgumentParser:
                           help="propose cues from this scene, as comments")
     importer.add_argument("--force", action="store_true",
                           help="overwrite an existing output file")
+    importer.add_argument("--one-shot", action="store_true",
+                          help="write the proposed map.yaml and stop")
+    importer.add_argument("--no-assist", action="store_true",
+                          help="require --mapping; skip the wizard entirely")
     importer.set_defaults(handler=commands.showcontext_import)
 
     node = sub.add_parser("net", help="talk to a live console over OSC")

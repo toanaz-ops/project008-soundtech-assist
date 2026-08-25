@@ -27,6 +27,9 @@ class Segment:
     time: str | None = None
     expects: tuple[str, ...] = ()
     cues: tuple[Cue, ...] = ()
+    sound: str = ""
+    lighting: str = ""
+    led: str = ""
 
 
 @dataclass(frozen=True)

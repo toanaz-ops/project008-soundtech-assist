@@ -67,7 +67,7 @@ def _text(value) -> str:
     return str(value).strip()
 
 
-def _worksheet(book, sheet: str | int | None):
+def worksheet_for(book, sheet: str | int | None):
     if sheet is None:
         return book.worksheets[0]
     if isinstance(sheet, int):
@@ -83,6 +83,10 @@ def _worksheet(book, sheet: str | int | None):
             + ", ".join(repr(name) for name in book.sheetnames)
         )
     return book[sheet]
+
+
+# Backwards-compatible alias for internal callers.
+_worksheet = worksheet_for
 
 
 def read_sheet(path: str | Path, sheet: str | int | None, header_row: int) -> SheetRead:
@@ -108,7 +112,7 @@ def read_sheet(path: str | Path, sheet: str | int | None, header_row: int) -> Sh
     except (zipfile.BadZipFile, KeyError) as exc:
         raise ValueError(f"{path}: not a readable .xlsx file ({exc}).") from exc
     try:
-        worksheet = _worksheet(book, sheet)
+        worksheet = worksheet_for(book, sheet)
         # Materialised inside the try: a read-only workbook cannot be
         # iterated once it is closed.
         raw = [tuple(row) for row in worksheet.iter_rows(values_only=True)]

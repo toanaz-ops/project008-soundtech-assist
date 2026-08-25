@@ -15,7 +15,9 @@ from pathlib import Path
 
 import yaml
 
-FIELDS: tuple[str, ...] = ("id", "title", "time", "performers", "note")
+FIELDS: tuple[str, ...] = (
+    "id", "title", "time", "performers", "note", "sound", "lighting", "led",
+)
 REQUIRED: tuple[str, ...] = ("title",)
 
 _LETTERS = re.compile(r"^[A-Z]{1,3}$")

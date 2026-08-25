@@ -153,3 +153,13 @@ def test_a_missing_header_row_is_refused(tmp_path):
     with pytest.raises(ValueError) as caught:
         mapping_module.load_mapping(path)
     assert "header_row" in str(caught.value)
+
+
+def test_structured_fields_are_accepted(tmp_path):
+    path = _write(
+        tmp_path,
+        "sheet: 1\nheader_row: 4\ncolumns:\n  title: C\n  sound: F\n"
+    )
+    raw = mapping_module.load_mapping(path)
+    resolved = mapping_module.resolve_columns(raw, {**HEADERS, "F": "Sound"})
+    assert resolved.fields["sound"] == "F"

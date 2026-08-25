@@ -19,7 +19,7 @@ import os
 
 from wing_parser.classifier.matcher import Classification
 
-MODEL = "claude-opus-5"
+_MODEL = "claude-opus-5"
 DISABLE_VAR = "WING_DISABLE_LLM"
 
 _PROMPT = """You are labelling a mixing-console scene file.
@@ -48,17 +48,28 @@ _DOMAIN_WORD = {"channels": "channel", "buses": "bus"}
 _OFF = {"", "0", "false", "no", "off"}
 
 
-def _kill_switch_thrown() -> bool:
+def kill_switch_on() -> bool:
     """True unless the variable is unset or set to something meaning "no".
 
     Bare truthiness would make WING_DISABLE_LLM=0 disable the fallback,
     which is the opposite of what anyone typing that expects.
+
+    Public because every path that would construct a provider must ask
+    it first, not just this module's own fallback: the wizard's mapping
+    proposal and term guessing call make_provider() directly. The check
+    lives here rather than in provider.py because DISABLE_VAR and the
+    _OFF table are model policy -- provider.py is a transport layer and
+    does not decide whether models are used at all.
     """
     return os.environ.get(DISABLE_VAR, "").strip().casefold() not in _OFF
 
 
+# Internal callers predate the rename.
+_kill_switch_thrown = kill_switch_on
+
+
 def available() -> bool:
-    if _kill_switch_thrown():
+    if kill_switch_on():
         return False
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return False
@@ -70,39 +81,24 @@ def available() -> bool:
 
 
 def _ask(name: str, domain: str, context: str) -> tuple[str, float]:
-    """Single API call. Split out so tests can replace it."""
-    import anthropic
-    from pydantic import BaseModel, Field
+    """Single API call through the provider layer. Tests replace _ask itself."""
+    from wing_parser.classifier.provider import complete_json
+    from wing_parser.classifier.provider_anthropic import AnthropicProvider
 
-    class SourceGuess(BaseModel):
-        kind: str = Field(description="dotted source type, or 'unknown'")
-        confidence: float = Field(description="0.0 to 1.0")
-
-    client = anthropic.Anthropic()
-    response = client.messages.parse(
-        model=MODEL,
-        # Headroom, not appetite. On claude-opus-5 thinking is ON by default
-        # -- unlike opus-4-8, where omitting the parameter meant no thinking
-        # -- and max_tokens caps thinking PLUS the reply. The answer here is
-        # two short fields, but 1024 would truncate the moment the model
-        # thinks first, and classify() swallows the resulting exception into
-        # a silent None. Overshooting costs nothing: billing is per token
-        # emitted, not per token allowed.
-        max_tokens=4096,
-        messages=[
-            {
-                "role": "user",
-                "content": _PROMPT.format(
-                    domain_word=_DOMAIN_WORD.get(domain, "channel"),
-                    name=name,
-                    context=f"{context}\n" if context else "",
-                ),
-            }
-        ],
-        output_format=SourceGuess,
+    schema = {
+        "type": "object",
+        "properties": {"kind": {"type": "string"}, "confidence": {"type": "number"}},
+        "required": ["kind", "confidence"],
+    }
+    reply = complete_json(
+        AnthropicProvider(model=_MODEL),
+        "You are labelling a mixing-console scene file.",
+        _PROMPT.format(domain_word=_DOMAIN_WORD.get(domain, "channel"),
+                       name=name,
+                       context=f"{context}\n" if context else ""),
+        schema,
     )
-    guess = response.parsed_output
-    return guess.kind, guess.confidence
+    return reply["kind"], reply["confidence"]
 
 
 def classify(name: str, domain: str, context: str = "") -> Classification | None:

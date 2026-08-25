@@ -64,7 +64,7 @@ def test_confidence_is_clamped_into_range(monkeypatch):
 
 
 def test_model_is_opus_5():
-    assert llm.MODEL == "claude-opus-5"
+    assert llm._MODEL == "claude-opus-5"
 
 
 @pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  "])

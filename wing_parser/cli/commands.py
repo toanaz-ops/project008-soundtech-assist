@@ -258,6 +258,26 @@ def showcontext_lint(args) -> int:
 
 
 def showcontext_import(args) -> int:
+    if getattr(args, "no_assist", False) and args.mapping is None:
+        print("error: --no-assist requires --map.", file=sys.stderr)
+        return 2
+    if args.mapping is not None and getattr(args, "one_shot", False):
+        print(
+            "error: --one-shot belongs to the wizard; drop --map to use it.",
+            file=sys.stderr,
+        )
+        return 2
+    if args.mapping is None:
+        from wing_parser.showcontext.ingest.wizard import run_wizard
+
+        return run_wizard(
+            args.sheet,
+            output=args.output,
+            force=args.force,
+            scene=args.scene,
+            one_shot=bool(getattr(args, "one_shot", False)),
+        )
+
     from wing_parser.classifier import cache
     from wing_parser.classifier.normalize import clean
     from wing_parser.showcontext.ingest import build, emit, mapping, propose, sheet
@@ -291,6 +311,10 @@ def showcontext_import(args) -> int:
             resolved,
             lambda term: vocabulary.get(clean(term)),
             blank_rows=read.blank_rows,
+            # Same pipeline, same behavior: the wizard passes headers so
+            # an unmapped technical column folds into a visible comment;
+            # omitting it here would drop those cells silently.
+            headers=read.headers,
         )
     except (OSError, ValueError, sheet.MissingExtra) as exc:
         print(f"error: {exc}", file=sys.stderr)
