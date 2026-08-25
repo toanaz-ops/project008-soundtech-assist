@@ -117,6 +117,20 @@ def test_a_scalar_cues_field_raises_naming_the_file_and_field(tmp_path):
     assert "cues" in str(caught.value)
 
 
+def test_technical_fields_load_back_and_default_to_empty(tmp_path):
+    doc = {"show": "x", "segments": [
+        {"id": "S1", "sound": "DCA 3 trống", "lighting": "full wash", "led": "warm"},
+        {"id": "S2"},
+    ]}
+    context = load_show_context(_write(tmp_path, doc))
+    assert (context.segments[0].sound,
+            context.segments[0].lighting,
+            context.segments[0].led) == ("DCA 3 trống", "full wash", "warm")
+    assert (context.segments[1].sound,
+            context.segments[1].lighting,
+            context.segments[1].led) == ("", "", "")
+
+
 def test_expects_without_brackets_raises_naming_the_file_and_field(tmp_path):
     # The single most likely YAML slip in this format: leaving off the
     # `[ ]` around a one-item `expects` list. A bare string is truthy and

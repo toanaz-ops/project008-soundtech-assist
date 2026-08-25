@@ -60,6 +60,10 @@ def _segment(built, proposal: tuple[str, ...]) -> CommentedMap:
     item["id"] = built.segment.id
     item["title"] = built.segment.title
     item["expects"] = _flow(list(built.segment.expects))
+    for field_name in ("sound", "lighting", "led"):
+        value = getattr(built.segment, field_name)
+        if value:
+            item[field_name] = value
     item["cues"] = _flow([])
     if proposal:
         item.yaml_set_comment_before_after_key(

@@ -171,6 +171,9 @@ def parse_show_context(doc: dict, where_from: Path) -> ShowContext:
             time=segment_time,
             expects=tuple(expects),
             cues=tuple(cues),
+            sound=str(entry.get("sound") or ""),
+            lighting=str(entry.get("lighting") or ""),
+            led=str(entry.get("led") or ""),
         ))
 
     return ShowContext(
