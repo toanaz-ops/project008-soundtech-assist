@@ -177,6 +177,91 @@ def test_closed_input_is_one_line_and_a_clean_nonzero_exit(tmp_path, capsys, mon
     assert not list(tmp_path.glob("*.map.yaml"))  # nothing was saved
 
 
+def test_kill_switch_skips_the_mapping_proposal(tmp_path, capsys, monkeypatch):
+    """WING_DISABLE_LLM=1 must gate the wizard's model paths too, not only
+    classifier/llm.py: no provider is ever constructed, one line, manual
+    questions with no defaults."""
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+
+    def forbidden(config):
+        raise AssertionError("provider must not be constructed")
+
+    monkeypatch.setattr(
+        "wing_parser.classifier.provider.make_provider", forbidden
+    )
+    monkeypatch.delenv("WING_PROVIDER_CONFIG", raising=False)
+    monkeypatch.chdir(tmp_path)
+    answers = iter([
+        "Rundown", "4", "B", "C", "F", "On stage", "CHUẨN BỊ", "", "", "",
+    ])
+    out = tmp_path / "vivo.yaml"
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda *a, **k: next(answers),
+        print_fn=lambda *a, **k: print(*a),
+        output=str(out),
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    assert code == 0
+    lines = [
+        line for line in capsys.readouterr().out.splitlines()
+        if "WING_DISABLE_LLM" in line
+    ]
+    # One line per gated call site: the proposal and the term guess
+    # (the vivo sheet has unresolved performers, so both paths run).
+    assert any("continuing manually" in line for line in lines)
+    assert any("stay as comments" in line for line in lines)
+    assert out.exists()
+
+
+def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
+    """With the switch on, unresolved terms stay comments: no provider is
+    built and no Record question is ever asked."""
+    from openpyxl import Workbook
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+
+    def forbidden(config):
+        raise AssertionError("provider must not be constructed")
+
+    monkeypatch.setattr(
+        "wing_parser.classifier.provider.make_provider", forbidden
+    )
+    monkeypatch.delenv("WING_PROVIDER_CONFIG", raising=False)
+    monkeypatch.chdir(tmp_path)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Rundown"
+    ws.append(["No", "Nội dung"])
+    ws.append([1, "Đón khách", "tốp múa"])
+    xlsx = tmp_path / "run.xlsx"
+    wb.save(xlsx)
+
+    asked = []
+    answers = iter(["Rundown", "1", "A", "", "B", "", "", "", "", ""])
+
+    def answer(prompt):
+        asked.append(prompt)
+        return next(answers)
+
+    out = tmp_path / "out.yaml"
+    code = run_wizard(
+        str(xlsx),
+        input_fn=answer,
+        print_fn=lambda *a, **k: print(*a),
+        output=str(out),
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    assert code == 0
+    captured = capsys.readouterr()
+    assert not any(p.startswith("Record") for p in asked)
+    assert "WING_DISABLE_LLM" in captured.out
+
+
 def test_provider_failure_prints_one_line_and_walks_manual_questions(
     tmp_path, capsys, monkeypatch
 ):

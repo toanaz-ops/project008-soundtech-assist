@@ -48,17 +48,28 @@ _DOMAIN_WORD = {"channels": "channel", "buses": "bus"}
 _OFF = {"", "0", "false", "no", "off"}
 
 
-def _kill_switch_thrown() -> bool:
+def kill_switch_on() -> bool:
     """True unless the variable is unset or set to something meaning "no".
 
     Bare truthiness would make WING_DISABLE_LLM=0 disable the fallback,
     which is the opposite of what anyone typing that expects.
+
+    Public because every path that would construct a provider must ask
+    it first, not just this module's own fallback: the wizard's mapping
+    proposal and term guessing call make_provider() directly. The check
+    lives here rather than in provider.py because DISABLE_VAR and the
+    _OFF table are model policy -- provider.py is a transport layer and
+    does not decide whether models are used at all.
     """
     return os.environ.get(DISABLE_VAR, "").strip().casefold() not in _OFF
 
 
+# Internal callers predate the rename.
+_kill_switch_thrown = kill_switch_on
+
+
 def available() -> bool:
-    if _kill_switch_thrown():
+    if kill_switch_on():
         return False
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return False

@@ -34,12 +34,20 @@ def _propose_or_none(xlsx, print_fn):
     """
     import zipfile
 
+    from wing_parser.classifier.llm import kill_switch_on
     from wing_parser.classifier.provider import (
         ProviderError,
         load_config,
         make_provider,
     )
     from wing_parser.showcontext.ingest.suggest import propose_mapping
+
+    if kill_switch_on():
+        print_fn(
+            "(model assist disabled: WING_DISABLE_LLM is set "
+            "-- continuing manually)"
+        )
+        return None
 
     try:
         provider = make_provider(load_config(None))
@@ -193,6 +201,14 @@ def _finish(xlsx, read, resolved, *, output, force, scene, print_fn,
 
     terms = guess.unresolved_terms(result)
     if terms:
+        from wing_parser.classifier.llm import kill_switch_on
+
+        if kill_switch_on():
+            print_fn(
+                "(model assist disabled: WING_DISABLE_LLM is set "
+                "-- unresolved terms stay as comments)"
+            )
+            return 0
         from wing_parser.classifier.provider import load_config, make_provider
 
         guess.offer_terms(
