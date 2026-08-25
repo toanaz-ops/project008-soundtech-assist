@@ -117,7 +117,8 @@ def _unique(wanted: str, used: set[str]) -> str:
     return f"{wanted}-{suffix}"
 
 
-def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
+def build(rows, mapping, lookup, blank_rows: int = 0,
+          *, headers: dict[str, str] | None = None) -> BuildResult:
     """Segment ids are unique here, and every consumer downstream needs that.
 
     `propose.for_segments` returns a dict keyed by segment id and
@@ -137,6 +138,9 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
         title = _cell(row, mapping, "title").strip()
         performers = _cell(row, mapping, "performers")
         note = _cell(row, mapping, "note").strip()
+        sound = _cell(row, mapping, "sound").strip()
+        lighting = _cell(row, mapping, "lighting").strip()
+        led = _cell(row, mapping, "led").strip()
         written_time = _cell(row, mapping, "time").strip()
         written_id = _cell(row, mapping, "id").strip()
 
@@ -164,6 +168,14 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
             notes.insert(0, f"row {row.number}: time {written_time!r}")
         if note:
             notes.append(f"row {row.number}: note {note!r}")
+        if headers is not None:
+            consumed = set(mapping.fields.values())
+            for letter in sorted(headers):
+                if letter in consumed:
+                    continue
+                cell = row.cells.get(letter, "").strip()
+                if cell:
+                    notes.append(f"[{headers[letter]}] {cell}")
 
         if not written_id:
             # A generated id steps over one the sheet already spent: a
@@ -183,7 +195,14 @@ def build(rows, mapping, lookup, blank_rows: int = 0) -> BuildResult:
 
         built.append(
             BuiltSegment(
-                segment=Segment(id=written_id, title=title, expects=kinds),
+                segment=Segment(
+                    id=written_id,
+                    title=title,
+                    expects=kinds,
+                    sound=sound,
+                    lighting=lighting,
+                    led=led,
+                ),
                 comments=tuple(notes),
             )
         )

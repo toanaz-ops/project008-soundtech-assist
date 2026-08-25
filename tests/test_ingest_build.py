@@ -179,3 +179,66 @@ def test_the_counts_reconcile():
 def test_every_comment_names_its_source_row():
     result = builder.build([row(9, C="x", D="tốp múa")], MAPPING, lookup)
     assert all("row 9" in note for note in result.segments[0].comments)
+
+
+def test_sound_column_lands_in_segment():
+    result = builder.build(
+        [row(2, B="19:00", C="Mo dau", D="Nhac don khach")],
+        SheetMapping(source="t", fields={"title": "C", "time": "B", "sound": "D"}),
+        lookup,
+        headers={"B": "Start", "C": "Nội dung", "D": "Sound"},
+    )
+    seg = result.segments[0].segment
+    assert seg.sound == "Nhac don khach"
+    assert any("Nhac don khach" not in note
+               for note in result.segments[0].comments)
+
+
+def test_lighting_and_led_columns_lands_in_segment():
+    result = builder.build(
+        [row(2, B="19:00", C="Mo dau", E="đèn full", F="màn hình chạy logo")],
+        SheetMapping(
+            source="t", fields={"title": "C", "lighting": "E", "led": "F"}
+        ),
+        lookup,
+        headers={"B": "Start", "C": "Nội dung", "E": "Lighting", "F": "LED"},
+    )
+    seg = result.segments[0].segment
+    assert seg.lighting == "đèn full"
+    assert seg.led == "màn hình chạy logo"
+
+
+def test_unmapped_column_folds_into_comment_with_header_prefix():
+    result = builder.build(
+        [row(2, B="19:00", C="Mo dau", E="2 ban check-in")],
+        SheetMapping(source="t", fields={"title": "C", "time": "B"}),
+        lookup,
+        headers={"B": "Start", "C": "Nội dung", "E": "CHUẨN BỊ"},
+    )
+    comments = " ".join(result.segments[0].comments)
+    assert "[CHUẨN BỊ]" in comments and "2 ban check-in" in comments
+
+
+def test_mapped_column_is_not_folded_again_as_an_unmapped_comment():
+    """A consumed column must not also appear as `[header] cell`, or the
+    structured value would be duplicated in prose."""
+    result = builder.build(
+        [row(2, B="19:00", C="Mo dau", D="guitar")],
+        SheetMapping(source="t", fields={"title": "C", "time": "B",
+                                         "performers": "D"}),
+        lookup,
+        headers={"B": "Start", "C": "Nội dung", "D": "Nghệ sĩ"},
+    )
+    comments = " ".join(result.segments[0].comments)
+    assert "[Nghệ sĩ]" not in comments
+
+
+def test_without_headers_nothing_folds_into_comments():
+    result = builder.build(
+        [row(2, B="19:00", C="Mo dau", E="2 ban check-in")],
+        SheetMapping(source="t", fields={"title": "C", "time": "B"}),
+        lookup,
+    )
+    built = result.segments[0]
+    assert built.comments == ("row 2: time '19:00'",)
+    assert built.segment.sound == ""
