@@ -23,6 +23,15 @@ TEXTS: dict[str, str] = {
     "overview.col.name": "Name",
     "overview.col.fader": "Fader",
     "overview.col.kind": "Kind",
+    "channels.table": "Channels",
+    "channels.col.number": "Number",
+    "channels.col.name": "Name",
+    "channels.col.kind": "Kind",
+    "channels.col.confidence": "Confidence",
+    "channels.col.fader": "Fader",
+    "channels.col.muted": "Muted",
+    "channels.detail_empty": "",
+    "channels.title": "Channel {number}: {name}",
 }
 
 
