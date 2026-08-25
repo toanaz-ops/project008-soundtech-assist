@@ -72,6 +72,13 @@ def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
         return 1
 
     proposal = _propose_or_none(xlsx, print_fn)
+    if proposal is not None and proposal.problems:
+        # Spec section 4: a proposal the checker could not verify is shown
+        # marked, BEFORE its values become any question's default.
+        print_fn(
+            "(proposal unverified: " + "; ".join(proposal.problems)
+            + "; check every default)"
+        )
     try:
         sheet_name = _ask("Sheet", proposal.sheet if proposal else "", input_fn)
         header_row = int(_ask(

@@ -262,6 +262,55 @@ def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     assert "WING_DISABLE_LLM" in captured.out
 
 
+class UnverifiedProvider:
+    """A proposal that survives decoding but fails the title check.
+
+    propose_mapping retries once and still gets problems back, so the
+    wizard receives a MappingProposal with a non-empty problems tuple.
+    """
+
+    def complete_json(self, system, user, schema):
+        return {
+            "sheet": "Rundown",
+            "header_row": 4,
+            "columns": '{"id": "B", "time": "C"}',
+            "headers": '{"performers": "On stage"}',
+        }
+
+
+def test_an_unverified_proposal_is_marked_before_its_defaults_are_used(
+    tmp_path, capsys, monkeypatch
+):
+    """Spec section 4: shown marked unverified for hand-editing. The
+    marker must come before the first question, because that question's
+    default is the unverified value."""
+    _fake_provider(monkeypatch, UnverifiedProvider())
+    monkeypatch.chdir(tmp_path)
+    seen = []
+
+    def note(text=""):
+        seen.append(text)
+
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda prompt: (seen.append(prompt), "")[1],
+        print_fn=note,
+        output=str(tmp_path / "out.yaml"),
+        force=False,
+        scene=None,
+        one_shot=False,
+    )
+    markers = [i for i, s in enumerate(seen) if "proposal unverified" in s]
+    assert len(markers) == 1
+    assert "title" in seen[markers[0]]
+    first_question = next(
+        i for i, s in enumerate(seen) if s.startswith("Sheet")
+    )
+    assert markers[0] < first_question
+    # Without a title the mapping is refused before anything is saved.
+    assert code == 1
+
+
 def test_provider_failure_prints_one_line_and_walks_manual_questions(
     tmp_path, capsys, monkeypatch
 ):
