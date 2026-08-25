@@ -1,7 +1,7 @@
 # wing-parser — roadmap
 
 **Last updated:** 2026-08-24, sub-project G2b complete · **`main` @ `5f4e2a6`** ·
-1266 tests passing, 21 skipped (environmental)
+1266 tests passing → **1271** after G2b's fix wave, 21 skipped (environmental)
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -70,7 +70,7 @@ subsystem; each handoff records what it measured and what it left open.
 | C · D | **WING over Ethernet** | OSC read and write; `wing net identity / snapshot`, `doctor --live`, `diff --live-before`. 20 commits. | not recorded in that handoff |
 | C2 | **Live watch** | `wing net watch` polls a live desk for changes. | 1055 |
 | G2a | **Assisted ingest (deterministic half)** | `wing showcontext import` — an Excel running order becomes a show-context file, entirely offline. | **1134** |
-| G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | 1262+ (see acceptance) |
+| G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | **1271** |
 
 ### Where each one's paperwork lives
 
@@ -84,6 +84,7 @@ subsystem; each handoff records what it measured and what it left open.
 | C · D | `2026-08-21-wing-net-design.md` | — | `2026-08-21-wing-net-complete.md` |
 | C2 | `2026-08-21-live-watch-design.md` | `2026-08-21-live-watch.md` | `2026-08-22-live-watch-complete.md` |
 | G2a | `2026-08-22-assisted-ingest-design.md` | `2026-08-22-assisted-ingest-g2a.md` | `2026-08-22-assisted-ingest-g2a-complete.md` |
+| G2b | `2026-08-24-g2b-assisted-ingest-model-design.md` | `2026-08-24-g2b-assisted-ingest-model.md` | — |
 
 Specs are in `docs/superpowers/specs/`, plans in `docs/superpowers/plans/`,
 handoffs in `docs/handoff/`.
@@ -101,11 +102,11 @@ flowchart TD
         H["H · desktop app (.exe)"]
         P1 --> A
         G1["G1 · show context (cue sheet + Q1–Q7)"] --> G2a["G2a · assisted ingest,<br/>deterministic half (xlsx → show context, offline)"]
+        G2a --> G2b["G2b · assisted ingest, model half:<br/>propose column mapping + guess vocabulary terms"]
         B --> G1
         CD["C·D · WING over Ethernet (OSC read/write)"] --> C2["C2 · live watch (net watch)"]
     end
 
-    G2a --> G2b["G2b · assisted ingest, model half:<br/>propose column mapping + guess vocabulary terms<br/>(multi-provider question becomes real here)"]
     CD -.->|"needs its own UDP metering transport first"| E["E · audio analysis<br/>(LUFS, RT60, SPL) — BLOCKED on that transport"]
 
     A --> F
@@ -120,48 +121,46 @@ flowchart TD
 
 | | Sub-project | Depends on | Size | Console? |
 |---|---|---|---|---|
-| **G2b** | The assisted half of ingest: a model proposes a column mapping from a header sample, and guesses cue-sheet terms the vocabulary lacks | G2a | medium | no |
 | **E** | Audio analysis — LUFS, RT60, SPL | a metering transport | large | eventually |
 | **F** | Decision tier / auto-mix | A, B, C, D, E, G | largest | eventually |
 
 Each gets its own **brainstorm → spec → plan → implementation** cycle. Invoke
 `superpowers:brainstorming` before designing any of them.
 
-### G2b — the recommended next piece
+### G2b — assisted ingest's model half (done)
 
 The sequenced execution order for everything below lives in
 `docs/superpowers/plans/2026-08-23-next-steps.md`.
 
-G2a deliberately contains **no model call**. It reads a spreadsheet through a
+G2a deliberately contained **no model call**. It reads a spreadsheet through a
 mapping file ToanAZ writes by hand, and resolves Vietnamese performer terms
-through a vocabulary he curates. G2b removes the typing, in the two places where
+through a vocabulary he curates. G2b removed the typing, in the two places where
 judgement is genuinely required:
 
-1. **Proposing the column mapping.** Every producer sends a different layout,
-   with the header row often not row 1. Reading an arbitrary spreadsheet's
-   *structure* is a judgement task; G2a made ToanAZ do it once per client. G2b
-   offers to do it from a ~20-line header sample and hand him a mapping to
-   check — a small, reviewable artifact, not 200 rows through a model.
+1. **Proposing the column mapping** (`showcontext/ingest/suggest.py`,
+   `wizard.py`). Every producer sends a different layout, with the header row
+   often not row 1. Reading an arbitrary spreadsheet's *structure* is a
+   judgement task; a ~20-line header sample goes to the model and comes back as
+   a small, reviewable mapping proposal — checked against the workbook before
+   any of its values becomes a question default — not 200 rows through a model.
 2. **Guessing a term the `cuesheet:` vocabulary lacks**, and offering to record
    the answer permanently — the pattern `classifier/llm.py` and
-   `classifier/cache.py` already establish.
+   `classifier/cache.py` already establish (`showcontext/ingest/guess.py`).
 
-**G2b is where the multi-provider question becomes real.** ToanAZ asked on
+**G2b is where the multi-provider question became real.** ToanAZ asked on
 2026-08-21 for the design to admit providers other than Anthropic, and decided on
 2026-08-22: *not in G2a, but leave the room.* G2a left it by taking its
 vocabulary lookup as an injected callable.
 
-What makes it non-trivial, recorded so G2b's brainstorm starts from it:
+What made it non-trivial, recorded here because it shaped the shipped design:
 `wing_parser/classifier/llm.py` hard-codes Anthropic at three levels. `MODEL`
 (`:22`) and `import anthropic` (`:66`, `:74`) are renames.
 `client.messages.parse(..., output_format=…)` (`:82-102`) is a
 **provider-specific structured-output call** that OpenAI and Gemini each spell
-differently. That is the actual content of the question.
-
-**Do the cheap thing before starting G2b** (see §5, items 1 and 2). G2a was built
-entirely against an invented fixture, and G2b's whole job is to guess what the
-vocabulary lacks. Sizing it against a real sheet costs an hour and changes what
-G2b should be.
+differently. That analysis produced `classifier/provider.py`: one
+`complete_json(provider, system, user, schema)` seam with an Anthropic adapter
+and an OpenAI-compatible/DeepSeek one, chosen per run through
+`WING_PROVIDER_CONFIG`.
 
 ### E — blocked on a transport that does not exist yet
 
