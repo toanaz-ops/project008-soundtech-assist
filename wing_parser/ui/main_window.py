@@ -29,6 +29,7 @@ from wing_parser.ui.import_page import ImportPage
 from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
+from wing_parser.ui.settings_dialog import SettingsDialog
 from wing_parser.ui.texts import text
 
 FILTER = "WING scene (*.snap);;All files (*)"
@@ -63,8 +64,14 @@ class MainWindow(QMainWindow):
         self._save_action = file_menu.addAction("Save &As...", self.save_as)
         edit_menu = self.menuBar().addMenu("&Edit")
         self._undo_action = edit_menu.addAction("&Undo", self.undo)
+        tools_menu = self.menuBar().addMenu("&Tools")
+        tools_menu.addAction(text("menu.settings"), self.open_settings)
         help_menu = self.menuBar().addMenu("&Help")
         help_menu.addAction("Where my judgements are stored...", self.show_knowledge_dir)
+
+    def open_settings(self) -> None:
+        """Modal: the operator finishes or cancels the key edit in one go."""
+        SettingsDialog(self).exec()
 
     def show_knowledge_dir(self) -> None:
         """Name the directory holding the verdict log and the principles.

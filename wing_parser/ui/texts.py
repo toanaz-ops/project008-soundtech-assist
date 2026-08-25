@@ -63,6 +63,22 @@ TEXTS: dict[str, str] = {
     "import.save_as": "Save As...",
     "import.error": "{error}",
     "import.needs_kind": "Type a kind before recording — never write a blank.",
+    "menu.settings": "&Settings...",
+    "settings.title": "Settings",
+    "settings.provider": "Provider",
+    "settings.model": "Model",
+    "settings.base_url": "Base URL",
+    "settings.api_key": "API key",
+    "settings.key_placeholder": (
+        "Paste your own key — it stays in provider.yaml on this machine."
+    ),
+    "settings.api_key_env": "API key env var (optional)",
+    "settings.save": "Save",
+    "settings.test": "Test connection",
+    "settings.close": "Close",
+    "settings.probe_ok": "Connection OK — {message}",
+    "settings.probe_fail": "Connection FAILED — {message}",
+    "settings.save_failed": "Could not write {path}: {error}",
 }
 
 
