@@ -1,7 +1,7 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-24, dependency diagram redrawn · **`main` @ `5f4e2a6`** ·
-1225 tests passing, 1 skipped (FastMCP, by design)
+**Last updated:** 2026-08-24, sub-project G2b complete · **`main` @ `5f4e2a6`** ·
+1266 tests passing, 21 skipped (environmental)
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -70,6 +70,7 @@ subsystem; each handoff records what it measured and what it left open.
 | C · D | **WING over Ethernet** | OSC read and write; `wing net identity / snapshot`, `doctor --live`, `diff --live-before`. 20 commits. | not recorded in that handoff |
 | C2 | **Live watch** | `wing net watch` polls a live desk for changes. | 1055 |
 | G2a | **Assisted ingest (deterministic half)** | `wing showcontext import` — an Excel running order becomes a show-context file, entirely offline. | **1134** |
+| G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | 1262+ (see acceptance) |
 
 ### Where each one's paperwork lives
 
@@ -104,7 +105,7 @@ flowchart TD
         CD["C·D · WING over Ethernet (OSC read/write)"] --> C2["C2 · live watch (net watch)"]
     end
 
-    G2a ==>|"NEXT"| G2b["G2b · assisted ingest, model half:<br/>propose column mapping + guess vocabulary terms<br/>(multi-provider question becomes real here)"]
+    G2a --> G2b["G2b · assisted ingest, model half:<br/>propose column mapping + guess vocabulary terms<br/>(multi-provider question becomes real here)"]
     CD -.->|"needs its own UDP metering transport first"| E["E · audio analysis<br/>(LUFS, RT60, SPL) — BLOCKED on that transport"]
 
     A --> F
@@ -113,7 +114,6 @@ flowchart TD
     G2b --> F["F · decision tier / auto-mix<br/>largest — decompose again when reached"]
     E --> F
 
-    style G2b fill:#fff3bf,stroke:#e8b500
     style E fill:#ffe3e3,stroke:#e03131
     style F fill:#e7f5ff,stroke:#1971c2
 ```
@@ -186,7 +186,9 @@ supply. **Do not guess them.**
    five real files into `tests/data/` — two running-order `.xlsx` (vivo,
    BIDV), plus `.docx`/`.pdf` scripts the importer cannot read yet. They are
    untracked and unread; reading the `.xlsx` headers is the highest-value hour
-   available, and may change G2b's mapping fields.)*
+   available, and may change G2b's mapping fields.) (Closed 2026-08-24: five
+   real files committed; both .xlsx read during G2b design and pinned by
+   `tests/test_g2b_acceptance.py`.)
 2. **The `cuesheet:` vocabulary ships empty.** Only loanwords `patterns.yaml`
    already catches (`guitar`, `bass`, `piano`) resolve; everything else becomes
    a comment — correct, but a seed of the twenty terms he meets most would make
