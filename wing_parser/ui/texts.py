@@ -36,6 +36,15 @@ TEXTS: dict[str, str] = {
     "routing.col.label": "Item",
     "routing.col.value": "Count",
     "routing.unclassified": "Unclassified",
+    "diff.compare": "Compare with...",
+    "diff.clear": "Clear",
+    "diff.table": "Differences",
+    "diff.col.path": "Path",
+    "diff.col.before": "Before",
+    "diff.col.after": "After",
+    "diff.col.magnitude": "Magnitude",
+    "diff.no_session": "Open a scene first — it is the left side of the diff.",
+    "diff.error": "Cannot read that file: {error}",
 }
 
 

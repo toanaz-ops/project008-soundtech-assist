@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 from wing_parser import config
 from wing_parser.ui.changes_panel import ChangesPanel
 from wing_parser.ui.channels_page import ChannelsPage
+from wing_parser.ui.diff_page import DiffPage
 from wing_parser.ui.doctor_page import DoctorPage
 from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.page_base import EmptyState
@@ -87,12 +88,13 @@ class MainWindow(QMainWindow):
         self.pages["overview"] = OverviewPage()
         self.pages["channels"] = ChannelsPage()
         self.pages["routing"] = RoutingPage()
+        self.pages["diff"] = DiffPage()
         for key in PAGE_ORDER[1:]:
-            if key in ("overview", "channels", "routing"):
+            if key in ("overview", "channels", "routing", "diff"):
                 continue
             empty = EmptyState(text(f"page.{key.removesuffix('_')}"))
             empty.open_requested.connect(self.open_file)
-            self.pages[key] = empty  # replaced by Tasks 9-11
+            self.pages[key] = empty  # replaced by Tasks 10-11
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:
