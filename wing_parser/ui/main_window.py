@@ -1,4 +1,4 @@
-"""The window shell: menus, file dialogs, layout and the title.
+"""The window shell: menus, file dialogs, the sidebar and the title.
 
 Behaviour lives in Session. This file turns clicks into Session calls
 and Session state into widgets, and holds no rule knowledge of its own.
@@ -6,25 +6,39 @@ and Session state into widgets, and holds no rule knowledge of its own.
 
 from __future__ import annotations
 
+import qtawesome as qta
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDockWidget,
     QFileDialog,
+    QHBoxLayout,
+    QListWidget,
+    QListWidgetItem,
     QMainWindow,
     QMessageBox,
-    QSplitter,
-    QVBoxLayout,
+    QStackedWidget,
     QWidget,
 )
 
 from wing_parser import config
 from wing_parser.ui.changes_panel import ChangesPanel
-from wing_parser.ui.detail_panel import DetailPanel
-from wing_parser.ui.findings_view import FindingsView
+from wing_parser.ui.doctor_page import DoctorPage
+from wing_parser.ui.page_base import EmptyState
 from wing_parser.ui.session import Session
-from wing_parser.ui.verdict_bar import VerdictBar
+from wing_parser.ui.texts import text
 
 FILTER = "WING scene (*.snap);;All files (*)"
+
+PAGE_ORDER = ["doctor", "overview", "channels", "routing", "diff", "import_"]
+
+PAGE_ICONS = {
+    "doctor": "fa5s.stethoscope",
+    "overview": "fa5s.chart-bar",
+    "channels": "fa5s.sliders-h",
+    "routing": "fa5s.project-diagram",
+    "diff": "fa5s.code-branch",
+    "import_": "fa5s.file-import",
+}
 
 
 class MainWindow(QMainWindow):
@@ -65,24 +79,34 @@ class MainWindow(QMainWindow):
         )
 
     def _build_body(self) -> None:
-        self.findings_view = FindingsView()
-        self.detail_panel = DetailPanel()
-        self.verdict_bar = VerdictBar()
+        self.pages: dict[str, QWidget] = {"doctor": DoctorPage()}
+        self.pages["doctor"].repaired.connect(self._refresh)
+        for key in PAGE_ORDER[1:]:
+            empty = EmptyState(text(f"page.{key.removesuffix('_')}"))
+            empty.open_requested.connect(self.open_file)
+            self.pages[key] = empty  # replaced by Tasks 6-11
 
-        self.findings_view.selected.connect(self._show_finding)
-        self.detail_panel.repaired.connect(self._refresh)
+        self.stack = QStackedWidget()
+        for key in PAGE_ORDER:
+            self.stack.addWidget(self.pages[key])
 
-        right = QWidget()
-        right_layout = QVBoxLayout(right)
-        right_layout.addWidget(self.detail_panel, stretch=1)
-        right_layout.addWidget(self.verdict_bar)
+        self.sidebar = QListWidget()
+        for key in PAGE_ORDER:
+            label = text(f"page.{key.removesuffix('_')}")
+            item = QListWidgetItem(qta.icon(PAGE_ICONS[key]), label)
+            self.sidebar.addItem(item)
+        self.sidebar.currentRowChanged.connect(self.stack.setCurrentIndex)
+        self.sidebar.setCurrentRow(0)
 
-        body = QSplitter(Qt.Orientation.Horizontal)
-        body.addWidget(self.findings_view)
-        body.addWidget(right)
-        body.setStretchFactor(0, 3)
-        body.setStretchFactor(1, 2)
-        self.setCentralWidget(body)
+        body = QHBoxLayout()
+        body.addWidget(self.sidebar)
+        body.addWidget(self.stack, stretch=1)
+        central = QWidget()
+        central.setLayout(body)
+        self.setCentralWidget(central)
+
+    def switch_to(self, key: str) -> None:
+        self.sidebar.setCurrentRow(PAGE_ORDER.index(key))
 
     def _build_changes_dock(self) -> None:
         self.changes_panel = ChangesPanel()
@@ -91,6 +115,20 @@ class MainWindow(QMainWindow):
         self._changes_dock.setWidget(self.changes_panel)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self._changes_dock)
         self._changes_dock.setVisible(False)
+
+    # -- delegating attributes -------------------------------------------
+
+    @property
+    def findings_view(self):
+        return self.pages["doctor"].findings_view
+
+    @property
+    def detail_panel(self):
+        return self.pages["doctor"].detail_panel
+
+    @property
+    def verdict_bar(self):
+        return self.pages["doctor"].verdict_bar
 
     # -- actions --------------------------------------------------------
 
@@ -105,6 +143,7 @@ class MainWindow(QMainWindow):
             # leave the operator with an empty window and a lost session.
             QMessageBox.critical(self, "Cannot open that file", str(exc))
             return
+        self.switch_to("doctor")
         self._show_finding(None)
         self._refresh()
 
@@ -134,21 +173,22 @@ class MainWindow(QMainWindow):
     # -- state ----------------------------------------------------------
 
     def _show_finding(self, finding) -> None:
-        self.detail_panel.show_finding(finding, self.session)
-        self.verdict_bar.show_finding(finding, self.session)
+        self.pages["doctor"].show_finding(finding)
 
     def _refresh(self) -> None:
         loaded = self.session is not None
         self._save_action.setEnabled(loaded)
         self._undo_action.setEnabled(loaded and self.session.dirty)
 
-        self.findings_view.set_findings(self.session.findings() if loaded else [])
+        for page in self.pages.values():
+            if hasattr(page, "set_session"):
+                page.set_session(self.session)
+
         self.changes_panel.set_changes(self.session.changes() if loaded else ())
         self._changes_dock.setVisible(loaded and self.session.dirty)
 
         if not loaded:
-            self.setWindowTitle("wing")
-            self._show_finding(None)
+            self.setWindowTitle(text("app.title"))
             return
         mark = " *" if self.session.dirty else ""
         profile = f"  [{self.session.profile}]" if self.session.profile else ""

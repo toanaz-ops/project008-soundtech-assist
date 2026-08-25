@@ -9,6 +9,7 @@ TEXTS: dict[str, str] = {
     "page.diff": "Diff",
     "page.import": "Import",
     "empty.open_hint": "Open a scene file to begin.",
+    "empty.open_button": "Open a scene...",
 }
 
 
