@@ -99,6 +99,7 @@ def test_env_var_points_at_missing_file_raises(tmp_path, monkeypatch):
 
 def test_make_provider_dispatch(tmp_path, monkeypatch):
     monkeypatch.delenv("WING_PROVIDER_CONFIG", raising=False)
+    monkeypatch.chdir(tmp_path)
     cfg = resolve(load_config(None))
     assert isinstance(make_provider(cfg), AnthropicProvider)
     cfg2 = resolve(load_config(_write_openai(tmp_path)))
