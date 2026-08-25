@@ -10,6 +10,10 @@ def knowledge(tmp_path, monkeypatch):
     from wing_parser import config
 
     monkeypatch.setenv(config.ENV_VAR, str(tmp_path))
+    # load_config(None) falls back to ./provider.yaml relative to cwd;
+    # chdir out of the repo so a real checkout's git-ignored key file
+    # (or a malformed one) can never leak into these tests.
+    monkeypatch.chdir(tmp_path)
     return tmp_path
 
 
