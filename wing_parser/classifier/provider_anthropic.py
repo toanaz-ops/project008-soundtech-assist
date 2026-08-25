@@ -19,9 +19,12 @@ _TYPE_MAP = {"string": (str, ...), "number": (float, ...)}
 
 
 class AnthropicProvider:
-    def __init__(self, model: str, api_key_env: str = "ANTHROPIC_API_KEY"):
+    def __init__(self, model: str, api_key_env: str = "ANTHROPIC_API_KEY",
+                 api_key: str = ""):
         self.model = model
         self.api_key_env = api_key_env
+        # A key pasted into provider.yaml beats the env var.
+        self.api_key = api_key
 
     def _parse_model(self, schema: dict):
         import pydantic
@@ -33,9 +36,12 @@ class AnthropicProvider:
         return pydantic.create_model("Reply", **fields)
 
     def complete_json(self, system: str, user: str, schema: dict) -> dict:
-        key = os.environ.get(self.api_key_env, "")
+        key = self.api_key or os.environ.get(self.api_key_env, "")
         if not key:
-            raise RuntimeError(f"{self.api_key_env!r} is not set")
+            raise RuntimeError(
+                f"no API key: paste api_key: into provider.yaml or set "
+                f"{self.api_key_env!r}"
+            )
         try:
             import anthropic
         except ImportError as exc:

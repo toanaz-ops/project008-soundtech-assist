@@ -35,16 +35,21 @@ def _example(schema: dict) -> str:
 class OpenAICompatProvider:
     """`base_url` is what makes this cover DeepSeek, OpenAI, or a local box."""
 
-    def __init__(self, model: str, api_key_env: str, base_url: str = ""):
+    def __init__(self, model: str, api_key_env: str, base_url: str = "",
+                 api_key: str = ""):
         self.model = model
         self.api_key_env = api_key_env
         self.base_url = base_url
+        # A key pasted into provider.yaml beats the env var: the file was
+        # edited deliberately, most recently, by the person running this.
+        self.api_key = api_key
 
     def _client(self):
-        key = os.environ.get(self.api_key_env, "")
+        key = self.api_key or os.environ.get(self.api_key_env, "")
         if not key:
             raise ProviderError(
-                f"environment variable {self.api_key_env!r} is not set"
+                f"no API key: paste api_key: into provider.yaml or set "
+                f"environment variable {self.api_key_env!r}"
             )
         try:
             from openai import OpenAI

@@ -84,6 +84,10 @@ class ProviderConfig:
     model: str = ""
     api_key_env: str = ""
     base_url: str = ""
+    # A key pasted straight into the YAML. It beats the env var, because
+    # whoever edited the file just now said exactly what they want.
+    # provider.yaml is git-ignored for this reason.
+    api_key: str = ""
 
 
 DEFAULT_CONFIG = ProviderConfig()
@@ -99,7 +103,7 @@ _NAME_DEFAULTS = {
 
 ENV_VAR = "WING_PROVIDER_CONFIG"
 
-_KNOWN_KEYS = {"provider", "model", "api_key_env", "base_url", "name"} | set(
+_KNOWN_KEYS = {"provider", "model", "api_key_env", "base_url", "api_key", "name"} | set(
     _NAME_DEFAULTS
 )
 
@@ -127,6 +131,7 @@ def _load_named_file(path: Path) -> ProviderConfig:
         model=str(doc.get("model", "")),
         api_key_env=str(doc.get("api_key_env", "")),
         base_url=str(doc.get("base_url", "")),
+        api_key=str(doc.get("api_key", "")),
     )
 
 
@@ -161,11 +166,15 @@ def make_provider(config: ProviderConfig):
     if resolved.name == "anthropic":
         from wing_parser.classifier.provider_anthropic import AnthropicProvider
 
-        return AnthropicProvider(model=resolved.model, api_key_env=resolved.api_key_env)
+        return AnthropicProvider(
+            model=resolved.model, api_key_env=resolved.api_key_env,
+            api_key=resolved.api_key,
+        )
     from wing_parser.classifier.provider_openai import OpenAICompatProvider
 
     return OpenAICompatProvider(
         model=resolved.model,
         api_key_env=resolved.api_key_env,
         base_url=resolved.base_url,
+        api_key=resolved.api_key,
     )

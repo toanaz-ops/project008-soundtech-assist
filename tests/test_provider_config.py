@@ -103,3 +103,31 @@ def test_make_provider_dispatch(tmp_path, monkeypatch):
     assert isinstance(make_provider(cfg), AnthropicProvider)
     cfg2 = resolve(load_config(_write_openai(tmp_path)))
     assert isinstance(make_provider(cfg2), OpenAICompatProvider)
+
+
+def test_pasted_api_key_reaches_the_adapter(tmp_path):
+    """ToanAZ pastes the key straight into provider.yaml; no env var needed."""
+    target = tmp_path / "provider.yaml"
+    target.write_text(
+        "provider: openai-compat\nbase_url: https://api.deepseek.com\n"
+        'api_key: "sk-pasted-key"\n', encoding="utf-8"
+    )
+    provider = make_provider(load_config(target))
+    assert isinstance(provider, OpenAICompatProvider)
+    assert provider.api_key == "sk-pasted-key"
+
+
+def test_pasted_key_beats_env_var(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "from-env")
+    target = tmp_path / "provider.yaml"
+    target.write_text('api_key: "sk-pasted"\n', encoding="utf-8")
+    provider = make_provider(load_config(target))
+    assert provider.api_key == "sk-pasted"
+
+
+def test_anthropic_adapter_takes_a_pasted_key_too(tmp_path):
+    target = tmp_path / "provider.yaml"
+    target.write_text('api_key: "sk-ant-pasted"\n', encoding="utf-8")
+    provider = make_provider(load_config(target))
+    assert isinstance(provider, AnthropicProvider)
+    assert provider.api_key == "sk-ant-pasted"
