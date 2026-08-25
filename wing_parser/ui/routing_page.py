@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QHeaderView
 
 from wing_parser.ui import data
 from wing_parser.ui.session import Session
@@ -36,6 +37,9 @@ class RoutingPage(QWidget):
         summary_table.setModel(self.summary_model)
         summary_table.verticalHeader().setVisible(False)
         summary_table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
+        summary_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
         summary_group = QGroupBox(text("routing.summary"))
         summary_layout = QVBoxLayout(summary_group)
         summary_layout.addWidget(summary_table)

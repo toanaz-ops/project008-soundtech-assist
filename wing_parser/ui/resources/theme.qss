@@ -3,11 +3,6 @@
    token values, listed here so they survive any literal substitution:
    @background: #fafafa;  @foreground: #1f1f1f;  @accent: #0078d4;
 */
-* {
-  --background: #fafafa;
-  --foreground: #1f1f1f;
-  --accent: #0078d4;
-}
-QWidget { background: var(--background); color: var(--foreground); }
+QWidget { background: #fafafa; color: #1f1f1f; }
 QTableView { alternate-background-color: #f3f3f3; gridline-color: #e0e0e0; }
 QHeaderView::section { padding: 4px; border: none; font-weight: bold; }

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from wing_parser import config
 
@@ -24,6 +25,13 @@ def main(argv: list[str] | None = None) -> int:
         prog="wing-ui", description="Open a WING .snap scene in the desktop app"
     )
     parser.add_argument("file", nargs="?", help="a .snap scene to open on start")
+    parser.add_argument(
+        "--screenshot",
+        nargs="?",
+        const="screenshots",
+        metavar="DIR",
+        help="grab one PNG per page and exit",
+    )
     parser.add_argument(
         "--profile",
         default=None,
@@ -60,15 +68,25 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    from wing_parser.ui.main_window import MainWindow
+    from wing_parser.ui.main_window import PAGE_ORDER, MainWindow
+    from wing_parser.ui.theme import apply as apply_theme
 
     # Qt permits exactly one QApplication per process, and constructing
     # a second raises. Reusing an existing one is what lets this
     # function be called from a test process that already has one.
     application = QApplication.instance() or QApplication(sys.argv[:1])
+    apply_theme(application)
 
     window = MainWindow(session)
     window.show()
+    if args.screenshot:
+        directory = Path(args.screenshot)
+        directory.mkdir(parents=True, exist_ok=True)
+        for key in PAGE_ORDER:
+            window.switch_to(key)
+            QApplication.processEvents()
+            window.grab().save(str(directory / f"{key}.png"))
+        return 0
     return application.exec()
 
 
