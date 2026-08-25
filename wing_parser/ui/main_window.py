@@ -26,6 +26,7 @@ from wing_parser.ui.channels_page import ChannelsPage
 from wing_parser.ui.doctor_page import DoctorPage
 from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.page_base import EmptyState
+from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
 
@@ -85,12 +86,13 @@ class MainWindow(QMainWindow):
         self.pages["doctor"].repaired.connect(self._refresh)
         self.pages["overview"] = OverviewPage()
         self.pages["channels"] = ChannelsPage()
+        self.pages["routing"] = RoutingPage()
         for key in PAGE_ORDER[1:]:
-            if key in ("overview", "channels"):
+            if key in ("overview", "channels", "routing"):
                 continue
             empty = EmptyState(text(f"page.{key.removesuffix('_')}"))
             empty.open_requested.connect(self.open_file)
-            self.pages[key] = empty  # replaced by Tasks 8-11
+            self.pages[key] = empty  # replaced by Tasks 9-11
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:

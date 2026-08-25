@@ -32,6 +32,10 @@ TEXTS: dict[str, str] = {
     "channels.col.muted": "Muted",
     "channels.detail_empty": "",
     "channels.title": "Channel {number}: {name}",
+    "routing.summary": "Routing summary",
+    "routing.col.label": "Item",
+    "routing.col.value": "Count",
+    "routing.unclassified": "Unclassified",
 }
 
 
