@@ -54,7 +54,12 @@ def channel_rows(scene) -> tuple[ChannelRow, ...]:
 
 
 def channel_detail_rows(channel) -> list[tuple[str, str]]:
-    """Label/value pairs mirroring render.channel_detail, line for line."""
+    """Label/value pairs mirroring render.channel_detail, line for line.
+
+    Keep in sync with render.channel_detail — the duplication is
+    deliberate: the CLI needs one text block, the desktop app needs the
+    same facts as widget rows, and neither should shell out to the other.
+    """
     st = channel.source_type
     rows = [
         ("Name", repr(channel.name)),

@@ -7,6 +7,7 @@ has no signals at all: selection is internal to this widget.
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QGridLayout,
@@ -18,7 +19,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from PySide6.QtCore import Qt
 
 from wing_parser.cli.render import level
 from wing_parser.ui import data

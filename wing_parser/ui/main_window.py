@@ -59,14 +59,14 @@ class MainWindow(QMainWindow):
     # -- construction ---------------------------------------------------
 
     def _build_menus(self) -> None:
-        file_menu = self.menuBar().addMenu("&File")
+        file_menu = self.menuBar().addMenu(text("menu.file"))
         file_menu.addAction("&Open...", self.open_file)
         self._save_action = file_menu.addAction("Save &As...", self.save_as)
-        edit_menu = self.menuBar().addMenu("&Edit")
+        edit_menu = self.menuBar().addMenu(text("menu.edit"))
         self._undo_action = edit_menu.addAction("&Undo", self.undo)
-        tools_menu = self.menuBar().addMenu("&Tools")
+        tools_menu = self.menuBar().addMenu(text("menu.tools"))
         tools_menu.addAction(text("menu.settings"), self.open_settings)
-        help_menu = self.menuBar().addMenu("&Help")
+        help_menu = self.menuBar().addMenu(text("menu.help"))
         help_menu.addAction("Where my judgements are stored...", self.show_knowledge_dir)
 
     def open_settings(self) -> None:
@@ -83,10 +83,8 @@ class MainWindow(QMainWindow):
         directory = config.knowledge_dir()
         QMessageBox.information(
             self,
-            "Knowledge directory",
-            f"Verdicts, principles and show profiles live in:\n\n{directory}\n\n"
-            f"feedback.jsonl holds every verdict recorded here.\n"
-            f"principles.yaml and shows/ are yours to edit.",
+            text("knowledge.title"),
+            text("knowledge.body").format(directory=directory),
         )
 
     def _build_body(self) -> None:
@@ -159,7 +157,7 @@ class MainWindow(QMainWindow):
         except (ValueError, OSError) as exc:
             # Stay on the scene already loaded. A failed Open must never
             # leave the operator with an empty window and a lost session.
-            QMessageBox.critical(self, "Cannot open that file", str(exc))
+            QMessageBox.critical(self, text("error.open"), str(exc))
             return
         self.switch_to("doctor")
         self._show_finding(None)
@@ -180,9 +178,9 @@ class MainWindow(QMainWindow):
             self.session.save_as(name)
         except OSError as exc:
             # The journal is untouched and the window stays dirty.
-            QMessageBox.critical(self, "Cannot save", str(exc))
+            QMessageBox.critical(self, text("error.save"), str(exc))
             return
-        QMessageBox.information(self, "Saved", f"Wrote {name}")
+        QMessageBox.information(self, text("save.done"), f"Wrote {name}")
 
     def undo(self) -> None:
         if self.session is not None and self.session.undo():

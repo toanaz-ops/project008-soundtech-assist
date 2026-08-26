@@ -17,13 +17,12 @@ from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.normalize import clean
 from wing_parser.classifier.provider import ProviderError
 from wing_parser.showcontext.ingest import build, emit, guess, mapping, sheet
+from wing_parser.showcontext.ingest.sample import sample_workbook
 from wing_parser.showcontext.ingest.suggest import propose_mapping
 
 
 def sample(xlsx):
     """Each sheet sampled as text lines, for a what-is-in-here preview."""
-    from wing_parser.showcontext.ingest.sample import sample_workbook
-
     return sample_workbook(xlsx)
 
 

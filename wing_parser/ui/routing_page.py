@@ -7,17 +7,17 @@ underneath. No rule knowledge, no styling.
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QGroupBox,
+    QHeaderView,
     QListWidget,
     QSplitter,
     QTableView,
     QVBoxLayout,
     QWidget,
 )
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHeaderView
 
 from wing_parser.ui import data
 from wing_parser.ui.session import Session

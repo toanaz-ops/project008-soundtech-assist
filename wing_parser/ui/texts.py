@@ -67,6 +67,19 @@ TEXTS: dict[str, str] = {
     ),
     "import.needs_kind": "Type a kind before recording — never write a blank.",
     "menu.settings": "&Settings...",
+    "menu.file": "&File",
+    "menu.edit": "&Edit",
+    "menu.tools": "&Tools",
+    "menu.help": "&Help",
+    "error.open": "Cannot open that file",
+    "error.save": "Cannot save",
+    "save.done": "Saved",
+    "knowledge.title": "Knowledge directory",
+    "knowledge.body": (
+        "Verdicts, principles and show profiles live in:\n\n{directory}\n\n"
+        "feedback.jsonl holds every verdict recorded here.\n"
+        "principles.yaml and shows/ are yours to edit."
+    ),
     "settings.title": "Settings",
     "settings.provider": "Provider",
     "settings.model": "Model",
