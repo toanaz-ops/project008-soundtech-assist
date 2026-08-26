@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import qtawesome as qta
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
+    QComboBox,
     QDockWidget,
     QFileDialog,
     QHBoxLayout,
@@ -16,6 +18,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMainWindow,
     QMessageBox,
+    QScrollArea,
     QStackedWidget,
     QWidget,
 )
@@ -47,6 +50,47 @@ PAGE_ICONS = {
 }
 
 
+def _tab_stops(parent: QWidget) -> list[QWidget]:
+    """The widgets of one page a Tab press can actually land on.
+
+    Scroll-area internals (viewport, bars) and combo-popup machinery
+    take focus but only ever forward it, so they are not stops; the
+    scroll *container* itself is skipped the same way. QTableView stays:
+    it is a real stop that merely happens to own scrollbars.
+    """
+    stops: list[QWidget] = []
+    for child in parent.findChildren(QWidget):
+        policy = child.focusPolicy()
+        if not policy & Qt.FocusPolicy.TabFocus and not policy & Qt.FocusPolicy.StrongFocus:
+            continue
+        ancestor = child.parentWidget()
+        while ancestor is not None and ancestor is not parent:
+            if isinstance(ancestor, QComboBox):
+                break  # popup list of a combo: focus lands via the combo
+            ancestor = ancestor.parentWidget()
+        else:
+            name = child.objectName()
+            forwards = name.startswith("qt_scrollarea") or isinstance(child, QScrollArea)
+            if not forwards:
+                # Views route focus through their viewport (focusProxy),
+                # so the chain speaks in proxies — normalise to it.
+                effective = child.focusProxy() or child
+                if effective not in stops:
+                    stops.append(effective)
+    return stops
+
+
+def _chain_tab_order(parent: QWidget) -> None:
+    """Link the page's own focus stops into one explicit Tab chain.
+
+    Without this Qt invents a chain across the whole window in creation
+    order, and Tab wanders out of the visible page. The Task 18 focus
+    ring makes the resulting order visible.
+    """
+    for current, following in zip(_tab_stops(parent), _tab_stops(parent)[1:]):
+        QWidget.setTabOrder(current, following)
+
+
 class MainWindow(QMainWindow):
     def __init__(self, session: Session | None = None) -> None:
         super().__init__()
@@ -54,6 +98,7 @@ class MainWindow(QMainWindow):
         self._build_menus()
         self._build_body()
         self._build_changes_dock()
+        self._build_accelerators()
         self.resize(1280, 760)
         self._refresh()
 
@@ -61,14 +106,36 @@ class MainWindow(QMainWindow):
 
     def _build_menus(self) -> None:
         file_menu = self.menuBar().addMenu(text("menu.file"))
-        file_menu.addAction("&Open...", self.open_file)
+        self._open_action = file_menu.addAction("&Open...", self.open_file)
         self._save_action = file_menu.addAction("Save &As...", self.save_as)
         edit_menu = self.menuBar().addMenu(text("menu.edit"))
         self._undo_action = edit_menu.addAction("&Undo", self.undo)
         tools_menu = self.menuBar().addMenu(text("menu.tools"))
         tools_menu.addAction(text("menu.settings"), self.open_settings)
+        self._reanalyse_action = tools_menu.addAction(
+            text("menu.reanalyse"), self.reanalyse
+        )
         help_menu = self.menuBar().addMenu(text("menu.help"))
         help_menu.addAction("Where my judgements are stored...", self.show_knowledge_dir)
+
+    def _build_accelerators(self) -> None:
+        """The ruled map: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / Ctrl+1..6 / F5.
+
+        Menu labels stay clean — the shortcut is bound with setShortcut,
+        never appended to the text. Page keys are QShortcuts so they do
+        not become menu rows; emitting their activated signal is how the
+        tests prove each one lands on its page.
+        """
+        self._open_action.setShortcut(QKeySequence("Ctrl+O"))
+        # Save As semantics per the 2026-08-26 ruling: plain Ctrl+S stays free.
+        self._save_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        self._undo_action.setShortcut(QKeySequence("Ctrl+Z"))
+        self._reanalyse_action.setShortcut(QKeySequence("F5"))
+        for index, key in enumerate(PAGE_ORDER, start=1):
+            shortcut = QShortcut(QKeySequence(f"Ctrl+{index}"), self)
+            shortcut.activated.connect(
+                lambda checked=False, page=key: self.switch_to(page)
+            )
 
     def open_settings(self) -> None:
         """Modal: the operator finishes or cancels the key edit in one go."""
@@ -118,6 +185,9 @@ class MainWindow(QMainWindow):
         central = QWidget()
         central.setLayout(body)
         self.setCentralWidget(central)
+
+        for key in PAGE_ORDER:
+            _chain_tab_order(self.pages[key])
 
     def switch_to(self, key: str) -> None:
         try:
@@ -190,6 +260,16 @@ class MainWindow(QMainWindow):
         if self.session is not None and self.session.undo():
             self._refresh()
 
+    def reanalyse(self) -> None:
+        """F5: re-run the whole derive pipeline on the current session.
+
+        The findings list is always re-computed truth (see session.py),
+        so a fresh derivation is all "re-analyse" has to mean.
+        """
+        if self.session is not None:
+            self.session.reanalyse()
+            self._refresh()
+
     # -- state ----------------------------------------------------------
 
     def _show_finding(self, finding) -> None:
@@ -199,6 +279,7 @@ class MainWindow(QMainWindow):
         loaded = self.session is not None
         self._save_action.setEnabled(loaded)
         self._undo_action.setEnabled(loaded and self.session.dirty)
+        self._reanalyse_action.setEnabled(loaded)
 
         for page in self.pages.values():
             if hasattr(page, "set_session"):

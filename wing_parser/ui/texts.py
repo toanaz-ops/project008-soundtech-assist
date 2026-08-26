@@ -79,6 +79,7 @@ TEXTS: dict[str, str] = {
     ),
     "import.needs_kind": "Type a kind before recording — never write a blank.",
     "menu.settings": "&Settings...",
+    "menu.reanalyse": "&Reanalyse",
     "menu.file": "&File",
     "menu.edit": "&Edit",
     "menu.tools": "&Tools",
