@@ -40,6 +40,23 @@ def test_bad_other_file_is_an_error_not_a_crash(qt_app, vu_path, tmp_path,
     assert page.error_label.text() != ""
 
 
+def test_seeded_other_gives_the_ab_capture_rows_to_bar(vu_path, tmp_path,
+                                                       monkeypatch):
+    """The screenshot A/B pair is dead on an empty table, so the capture
+    seeds a comparison: the live scene against a copy with every stored
+    fader nudged. The seed must yield a non-empty diff."""
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser.cli.diffcore import diff_rows
+    from wing_parser import WingScene
+    from wing_parser.ui.diff_page import seeded_other
+
+    session = Session.open(vu_path)
+    path = seeded_other(session, tmp_path)
+    rows = diff_rows(session.scene, WingScene.load(path))
+    assert len(rows) >= 1
+    assert any(row.magnitude for row in rows)
+
+
 def test_magnitude_rows_sort_first_largest_then_the_rest(qt_app, vu_path,
                                                          tmp_path,
                                                          monkeypatch):

@@ -7,6 +7,10 @@ point of the page. The right side is whatever file the operator picks.
 
 from __future__ import annotations
 
+import json
+import tempfile
+from pathlib import Path
+
 import qtawesome as qta
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -36,6 +40,37 @@ FILTER = "WING scene (*.snap);;All files (*)"
 # captures the page with this on AND forced off (diff-b.png) so the two
 # treatments can be compared side by side before the flag's fate is set.
 SHOW_MAGNITUDE_BAR = True
+
+
+def seeded_other(session, captures: Path) -> Path:
+    """A review scene for the A/B capture: the live scene with every
+    stored fader nudged +3.5 dB, written to a temp directory.
+
+    The screenshot pair is dead on an empty table, so --screenshot
+    compares against this seed to give the magnitude bar real rows.
+    The rows are synthetic by construction and labelled so nowhere in
+    the app itself.
+    """
+    from wing_parser.edit import writer
+
+    document = json.loads(session.path.read_text(encoding="utf-8"))
+
+    def walk(node) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key == "fdr" and isinstance(value, (int, float)):
+                    node[key] = value + 3.5
+                else:
+                    walk(value)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+
+    walk(document)
+    directory = Path(tempfile.mkdtemp(prefix="wing-ui-ab-"))
+    path = directory / "ab-seed.snap"
+    writer.write_snap(document, path)
+    return path
 
 
 class DiffPage(QWidget):

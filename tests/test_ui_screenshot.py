@@ -24,6 +24,11 @@ def test_screenshot_captures_the_diff_page_twice_for_the_bar_review(
     assert (out / "diff.png").exists()
     assert (out / "diff-b.png").exists()
     assert diff_page.SHOW_MAGNITUDE_BAR is True, "the flag must be restored"
+    # An identical pair reviews nothing: the bar must actually show in
+    # the "on" capture, so the table is seeded before both grabs.
+    assert (out / "diff.png").read_bytes() != (out / "diff-b.png").read_bytes(), (
+        "diff-a and diff-b must differ, or the A/B reviews nothing"
+    )
 
 
 def test_every_page_renders_in_the_house_palette(tmp_path, qt_app, vu_path,

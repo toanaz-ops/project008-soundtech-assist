@@ -94,6 +94,13 @@ def main(argv: list[str] | None = None) -> int:
         directory.mkdir(parents=True, exist_ok=True)
         for key in PAGE_ORDER:
             window.switch_to(key)
+            if key == "diff" and window.session is not None:
+                # A/B review artifact: seed the diff table (live scene
+                # vs a fader-nudged copy) so the magnitude bar has rows.
+                from wing_parser.ui import diff_page
+                window.pages["diff"].compare_with(
+                    str(diff_page.seeded_other(window.session, directory))
+                )
             QApplication.processEvents()
             # Render straight into a 1:1 image rather than grab(): a
             # host that built QApplication before the pins above (a
