@@ -174,3 +174,51 @@ QListWidget#sidebar::item:selected {
     border-left: 3px solid $accent;
     color: $text;
 }
+
+/* -- splitters and scrollbars ------------------------------------------ */
+
+QSplitter::handle {
+    background: $background;
+}
+
+QSplitter::handle:horizontal {
+    width: ${METRICS_gap}px;
+}
+
+QSplitter::handle:vertical {
+    height: ${METRICS_gap}px;
+}
+
+QScrollBar:vertical {
+    background: $panel;
+    width: ${METRICS_gap}px;
+}
+
+QScrollBar:horizontal {
+    background: $panel;
+    height: ${METRICS_gap}px;
+}
+
+QScrollBar::handle:vertical,
+QScrollBar::handle:horizontal {
+    background: $border;
+    border-radius: 2px;
+    min-height: ${METRICS_gap}px;
+    min-width: ${METRICS_gap}px;
+}
+
+QScrollBar::handle:vertical:hover,
+QScrollBar::handle:horizontal:hover {
+    background: $faded;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: transparent;
+}
