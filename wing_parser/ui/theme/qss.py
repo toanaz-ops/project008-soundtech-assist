@@ -21,5 +21,11 @@ def mapping() -> dict[str, str]:
 
 
 def build() -> str:
-    template = resource_path("theme.qss").read_text(encoding="utf-8")
+    # Two templates, concatenated before substitution: one file per
+    # concern, both under the house line budget. `substitute` (not
+    # `safe_substitute`) still guards every placeholder across both.
+    template = "\n".join(
+        resource_path(name).read_text(encoding="utf-8")
+        for name in ("theme.qss", "chrome.qss")
+    )
     return string.Template(template).substitute(mapping())
