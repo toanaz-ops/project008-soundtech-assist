@@ -16,8 +16,7 @@ from wing_parser.ui.theme.paths import resource_path
 def mapping() -> dict[str, str]:
     m = {name: tokens.hex_str(name) for name in tokens.COLOURS}
     for key, value in tokens.METRICS.items():
-        if key.endswith(("_field", "_switch")) and key.startswith("radius"):
-            m[f"METRICS_{key}"] = str(value)
+        m[f"METRICS_{key}"] = str(value)
     return m
 
 

@@ -42,3 +42,25 @@ QLineEdit {
 QLineEdit:focus {
     border: 1px solid $accent;
 }
+
+/* -- containers ------------------------------------------------------- */
+
+QGroupBox {
+    background: $panel;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    margin-top: ${METRICS_gap}px;
+    padding: ${METRICS_margin}px ${METRICS_gap}px ${METRICS_gap}px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: ${METRICS_margin}px;
+    top: ${METRICS_gap}px;
+    padding: 0 3px;
+    color: $dim;
+}
+
+Caption {
+    color: $dim;
+}
