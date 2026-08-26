@@ -18,6 +18,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QApplication
 
 from wing_parser.ui.theme import fonts, palette, qss, tokens
+from wing_parser.ui.theme.proxy_style import HouseStyle
 
 _GUARD = "_wing_theme_applied"
 
@@ -27,7 +28,7 @@ def apply(app: QApplication) -> None:
         return
     setattr(app, _GUARD, True)
 
-    app.setStyle("Fusion")
+    app.setStyle(HouseStyle())
     fonts.load()
     app.setFont(fonts.base_font(tokens.BASE_SIZE))
     app.setPalette(palette.build())
