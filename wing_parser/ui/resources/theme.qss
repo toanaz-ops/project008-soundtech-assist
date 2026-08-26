@@ -1,8 +1,44 @@
-/* Design tokens - the only place raw colors appear.
-   Plain Qt qss does not support CSS variables; these are the canonical
-   token values, listed here so they survive any literal substitution:
-   @background: #fafafa;  @foreground: #1f1f1f;  @accent: #0078d4;
+/* WING Parser house stylesheet -- GENERATED, not hand-edited colours.
+   Every colour here is substituted from the token table by
+   wing_parser.ui.theme.qss.
+   Plain Qt QSS has no CSS custom properties (tech-debt D-20); this
+   template plus string.Template.substitute() is the mechanism instead.
+   A missing or misspelt token raises at startup rather than shipping
+   a literal placeholder into a rule Qt discards silently.
+
+   NO type declarations of any kind here (no face, size, weight):
+   such a rule would override the tracking-carrying QFont, and Qt
+   QSS has no letter-spacing to put it back.
 */
-QWidget { background: #fafafa; color: #1f1f1f; }
-QTableView { alternate-background-color: #f3f3f3; gridline-color: #e0e0e0; }
-QHeaderView::section { padding: 4px; border: none; font-weight: bold; }
+
+QWidget {
+    background: $background;
+    color: $text;
+}
+
+QTableView {
+    alternate-background-color: $panel;
+    gridline-color: $border;
+    selection-background-color: $accent;
+    selection-color: $shade;
+}
+
+QHeaderView::section {
+    background: $panel;
+    color: $dim;
+    border: none;
+    border-bottom: 1px solid $border;
+    padding: 4px;
+}
+
+QLineEdit {
+    background: $well;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    padding: 2px;
+}
+
+QLineEdit:focus {
+    border: 1px solid $accent;
+}

@@ -16,5 +16,5 @@ def test_stylesheet_carries_tokens():
     from wing_parser.ui.theme import load_stylesheet
 
     qss = load_stylesheet()
-    assert "#background" in qss or "@" in qss  # token markers survive
+    assert "#0a0b0d" in qss  # the background token, substituted in
     assert len(qss) > 200

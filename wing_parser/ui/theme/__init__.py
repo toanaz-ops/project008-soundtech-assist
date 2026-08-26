@@ -1,25 +1,26 @@
-"""Minimal theme package shim.
+"""The theme package: tokens, generated QSS, palette, install.
 
-Task 1b-16 turns the single-module theme into a package so
-`wing_parser.ui.theme.paths` and `...fonts` can exist while the rest of
-the split (tokens, qss, palette, install) is still the NEXT task.
-The old `wing_parser/ui/theme.py` stays on disk untouched but is
-shadowed by this package; its two remaining functions are carried here
-verbatim and it is deleted by the token-package task.
+Public surface (kept stable for existing imports):
+  resource_path(name)  -- bundle-safe resource lookup (paths.py)
+  load_stylesheet()    -- the fully substituted stylesheet (qss.py)
+  apply(app)           -- fonts + palette + icons + stylesheet (install.py)
 """
 
 from __future__ import annotations
 
+from wing_parser.ui.theme.install import apply
 from wing_parser.ui.theme.paths import resource_path
+from wing_parser.ui.theme.qss import build
+
+_SUBSTITUTED = None
 
 
 def load_stylesheet() -> str:
-    return resource_path("theme.qss").read_text(encoding="utf-8")
+    """Cached so repeated calls do not re-substitute the template."""
+    global _SUBSTITUTED
+    if _SUBSTITUTED is None:
+        _SUBSTITUTED = build()
+    return _SUBSTITUTED
 
 
-def apply(app) -> None:
-    app.setStyle("Fusion")
-    from wing_parser.ui.theme import fonts
-
-    fonts.load()
-    app.setStyleSheet(load_stylesheet())
+__all__ = ["resource_path", "load_stylesheet", "apply"]
