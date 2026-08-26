@@ -40,16 +40,91 @@ QTableCornerButton::section {
     border-bottom: 1px solid $border;
 }
 
-QLineEdit {
+/* -- inputs ------------------------------------------------------------ */
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QSpinBox {
     background: $well;
     color: $text;
     border: 1px solid $border;
     border-radius: ${METRICS_radius_field}px;
-    padding: 2px;
+    padding: 2px ${METRICS_unit}px;
 }
 
-QLineEdit:focus {
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QSpinBox:focus {
     border: 1px solid $accent;
+}
+
+QComboBox {
+    background: $well;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    padding: 2px ${METRICS_unit}px 2px ${METRICS_gap}px;
+}
+
+QComboBox:hover {
+    border: 1px solid $faded;
+}
+
+QComboBox:focus {
+    border: 1px solid $accent;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: ${METRICS_field_height}px;
+}
+
+QComboBox QAbstractItemView {
+    background: $raise_;
+    color: $text;
+    border: 1px solid $border;
+    selection-background-color: $accent;
+    selection-color: $shade;
+}
+
+QPushButton {
+    background: $raise_;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    padding: ${METRICS_unit}px ${METRICS_gap}px;
+    min-height: ${METRICS_field_height}px;
+}
+
+QPushButton:hover {
+    border: 1px solid $faded;
+}
+
+QPushButton:pressed {
+    background: $well;
+}
+
+QPushButton:disabled {
+    color: $faded;
+    border: 1px solid $grid;
+}
+
+/* Destructive: outline only, fills on hover -- never a solid slab. */
+QPushButton[azStyle="danger"] {
+    background: transparent;
+    color: $danger;
+    border: 1px solid $danger;
+}
+
+QPushButton[azStyle="danger"]:hover {
+    background: $danger;
+    color: $shade;
+}
+
+QPushButton[azStyle="danger"]:pressed {
+    background: $shade;
 }
 
 /* -- containers ------------------------------------------------------- */

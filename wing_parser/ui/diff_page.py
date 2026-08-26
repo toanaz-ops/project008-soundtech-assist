@@ -24,6 +24,7 @@ from wing_parser import WingScene
 from wing_parser.cli.diffcore import diff_rows
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
+from wing_parser.ui.theme.widgets import set_style
 
 COLUMNS = ("path", "before", "after", "magnitude")
 
@@ -41,6 +42,7 @@ class DiffPage(QWidget):
         self.clear_button = QPushButton(text("diff.clear"))
         self.clear_button.setIcon(qta.icon("fa5s.eraser"))
         self.clear_button.clicked.connect(self._clear)
+        set_style(self.clear_button, "danger")
 
         controls = QHBoxLayout()
         controls.addWidget(self.compare_button)
