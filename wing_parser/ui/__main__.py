@@ -9,6 +9,7 @@ this module costs nothing when Qt is not wanted.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -52,6 +53,7 @@ def main(argv: list[str] | None = None) -> int:
     config.seed_user_dir()
 
     try:
+        from PySide6.QtGui import QImage
         from PySide6.QtWidgets import QApplication
     except ImportError:
         print(MISSING_PYSIDE, file=sys.stderr)
@@ -71,6 +73,12 @@ def main(argv: list[str] | None = None) -> int:
     from wing_parser.ui.main_window import PAGE_ORDER, MainWindow
     from wing_parser.ui.theme import apply as apply_theme
 
+    if args.screenshot:
+        # Qt reads these at QApplication construction, not later -- so
+        # they must be set before the line below, never after.
+        os.environ.setdefault("QT_SCALE_FACTOR", "1")
+        os.environ.setdefault("QT_ENABLE_HIGHDPI_SCALING", "0")
+
     # Qt permits exactly one QApplication per process, and constructing
     # a second raises. Reusing an existing one is what lets this
     # function be called from a test process that already has one.
@@ -80,12 +88,21 @@ def main(argv: list[str] | None = None) -> int:
     window = MainWindow(session)
     window.show()
     if args.screenshot:
+        # Fixed frame so grabs compare across machines and DPI settings.
+        window.setFixedSize(1280, 760)
         directory = Path(args.screenshot)
         directory.mkdir(parents=True, exist_ok=True)
         for key in PAGE_ORDER:
             window.switch_to(key)
             QApplication.processEvents()
-            window.grab().save(str(directory / f"{key}.png"))
+            # Render straight into a 1:1 image rather than grab(): a
+            # host that built QApplication before the pins above (a
+            # test process sharing one app) grabs at the display's
+            # device pixel ratio, and resampling those pixels back to
+            # 1280x760 blurs every glyph off its exact token colour.
+            frame = QImage(1280, 760, QImage.Format.Format_ARGB32_Premultiplied)
+            window.render(frame)
+            frame.save(str(directory / f"{key}.png"))
         return 0
     return application.exec()
 
