@@ -222,3 +222,46 @@ QScrollBar::add-page,
 QScrollBar::sub-page {
     background: transparent;
 }
+
+/* -- dock, menus and dialogs ------------------------------------------- */
+
+QMenuBar {
+    background: $panel;
+    border-bottom: 1px solid $border;
+    padding-left: ${METRICS_unit}px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: ${METRICS_unit}px ${METRICS_gap}px;
+}
+
+QMenuBar::item:selected {
+    background: $raise_;
+}
+
+QMenu {
+    background: $raise_;
+    color: $text;
+    border: 1px solid $border;
+}
+
+QMenu::item {
+    padding: ${METRICS_unit}px ${METRICS_margin}px;
+}
+
+QMenu::item:selected {
+    background: $accent;
+    color: $shade;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: $border;
+}
+
+QDockWidget::title {
+    background: $panel;
+    border-bottom: 1px solid $border;
+    padding: ${METRICS_unit}px ${METRICS_gap}px;
+}
