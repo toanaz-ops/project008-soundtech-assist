@@ -103,6 +103,14 @@ def main(argv: list[str] | None = None) -> int:
             frame = QImage(1280, 760, QImage.Format.Format_ARGB32_Premultiplied)
             window.render(frame)
             frame.save(str(directory / f"{key}.png"))
+            if key == "diff":
+                # A/B review artifact: the same frame with the magnitude
+                # bar forced off, so ToanAZ can judge the option.
+                from wing_parser.ui import diff_page
+                diff_page.SHOW_MAGNITUDE_BAR = False
+                window.render(frame)
+                frame.save(str(directory / "diff-b.png"))
+                diff_page.SHOW_MAGNITUDE_BAR = True
         return 0
     return application.exec()
 

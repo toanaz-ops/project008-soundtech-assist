@@ -124,3 +124,62 @@ def test_painting_elides_a_value_that_does_not_fit(qt_app):
     option.rect = QRect(0, 0, 30, 24)
     delegate.paint(painter, option, model.index(0, 0))
     painter.end()
+
+
+# -- the magnitude bar -------------------------------------------------
+
+
+def _magnitude_model(qt_app):
+    from PySide6.QtGui import QStandardItem, QStandardItemModel
+
+    model = QStandardItemModel(0, 4)
+    for path, before, after, magnitude in (
+        ("ch.1.fader_dB", "0.0", "-12.5", "-12.50"),
+        ("ch.2.send.8.level", "-inf", "-30.0", "30.00"),
+        ("ch.3.name", "Ana", "Analog", "0.00"),
+    ):
+        model.appendRow([QStandardItem(value) for value in
+                         (path, before, after, magnitude)])
+    return model
+
+
+def _bar_frame(qt_app, delegate, model):
+    from PySide6.QtCore import QRect
+    from PySide6.QtGui import QImage, QPainter
+    from PySide6.QtWidgets import QStyleOptionViewItem
+
+    image = QImage(80, 24, QImage.Format.Format_ARGB32_Premultiplied)
+    painter = QPainter(image)
+    option = QStyleOptionViewItem()
+    option.rect = QRect(0, 0, 80, 24)
+    delegate.paint(painter, option, model.index(1, 3))
+    painter.end()
+    return image.constBits().tobytes()
+
+
+def test_the_magnitude_bar_paints_only_while_enabled(qt_app):
+    from wing_parser.ui.diff_page import SHOW_MAGNITUDE_BAR
+    from wing_parser.ui.elide import MonoDelegate
+
+    model = _magnitude_model(qt_app)
+    assert SHOW_MAGNITUDE_BAR is True, "the bar ships enabled"
+
+    on = MonoDelegate(numeric_columns={3}, bar_column=3,
+                      bar_enabled=lambda: SHOW_MAGNITUDE_BAR)
+    off = MonoDelegate(numeric_columns={3}, bar_column=3,
+                       bar_enabled=lambda: False)
+    assert _bar_frame(qt_app, on, model) != _bar_frame(qt_app, off, model), (
+        "the bar must change pixels when the flag is live"
+    )
+
+
+def test_bar_colours_come_from_the_token_table(qt_app):
+    """dim at zero magnitude, accent at the column peak."""
+    from wing_parser.ui.elide import _lerp_colour
+    from wing_parser.ui.theme import tokens
+
+    low, high = _lerp_colour(0.0), _lerp_colour(1.0)
+    assert low.red() == tokens.COLOURS["dim"] >> 16 & 0xFF
+    assert low.green() == tokens.COLOURS["dim"] >> 8 & 0xFF
+    assert high.red() == tokens.COLOURS["accent"] >> 16 & 0xFF
+    assert low != high

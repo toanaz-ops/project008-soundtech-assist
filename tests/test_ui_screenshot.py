@@ -10,6 +10,22 @@ def test_screenshot_flag_writes_pngs(tmp_path, qt_app, monkeypatch, vu_path):
     assert {"doctor", "overview", "channels", "routing", "diff", "import_"} <= names
 
 
+def test_screenshot_captures_the_diff_page_twice_for_the_bar_review(
+        tmp_path, qt_app, monkeypatch, vu_path):
+    """The A/B pair ToanAZ reviews the magnitude bar with: diff.png as
+    shipped, diff-b.png with the bar forced off."""
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser.ui import diff_page
+    from wing_parser.ui.__main__ import main
+
+    out = tmp_path / "shots"
+    assert main(["--screenshot", str(out), str(vu_path)]) == 0
+    assert (out / "diff.png").exists()
+    assert (out / "diff-b.png").exists()
+    assert diff_page.SHOW_MAGNITUDE_BAR is True, "the flag must be restored"
+
+
 def test_every_page_renders_in_the_house_palette(tmp_path, qt_app, vu_path,
                                                  monkeypatch):
     """The assertion that would have caught theme.apply() having no caller."""

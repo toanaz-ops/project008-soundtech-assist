@@ -31,6 +31,12 @@ COLUMNS = ("path", "before", "after", "magnitude")
 
 FILTER = "WING scene (*.snap);;All files (*)"
 
+# The magnitude visual is under review (ToanAZ, 2026-08-26): True ships
+# a 2px dim-to-accent bar beside each magnitude cell. --screenshot
+# captures the page with this on AND forced off (diff-b.png) so the two
+# treatments can be compared side by side before the flag's fate is set.
+SHOW_MAGNITUDE_BAR = True
+
 
 class DiffPage(QWidget):
     def __init__(self) -> None:
@@ -57,8 +63,10 @@ class DiffPage(QWidget):
         table = QTableView()
         table.setModel(self.model)
         # every cell is technical text; only magnitude is a figure.
-        table.setItemDelegate(MonoDelegate(mono_columns={0, 1, 2},
-                                           numeric_columns={3}))
+        table.setItemDelegate(MonoDelegate(
+            mono_columns={0, 1, 2}, numeric_columns={3},
+            bar_column=3, bar_enabled=lambda: SHOW_MAGNITUDE_BAR,
+        ))
         table.verticalHeader().setVisible(False)
         table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
 
