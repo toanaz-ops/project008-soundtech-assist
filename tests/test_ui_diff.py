@@ -6,6 +6,9 @@ import pytest
 
 pytest.importorskip("PySide6.QtWidgets")
 
+from wing_parser.ui.diff_page import DiffPage  # noqa: E402
+from wing_parser.ui.session import Session  # noqa: E402
+
 
 @pytest.fixture
 def other_snap(vu_path, tmp_path):
@@ -19,9 +22,6 @@ def other_snap(vu_path, tmp_path):
 def test_comparing_two_files_lists_changes(qt_app, vu_path, other_snap,
                                            monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    from wing_parser.ui.diff_page import DiffPage
-    from wing_parser.ui.session import Session
-
     page = DiffPage()
     page.set_session(Session.open(vu_path))
     page.compare_with(str(other_snap))       # public seam for the dialog
@@ -31,9 +31,6 @@ def test_comparing_two_files_lists_changes(qt_app, vu_path, other_snap,
 def test_bad_other_file_is_an_error_not_a_crash(qt_app, vu_path, tmp_path,
                                                 monkeypatch):
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    from wing_parser.ui.diff_page import DiffPage
-    from wing_parser.ui.session import Session
-
     page = DiffPage()
     page.set_session(Session.open(vu_path))
     bad = tmp_path / "bad.snap"
@@ -43,14 +40,20 @@ def test_bad_other_file_is_an_error_not_a_crash(qt_app, vu_path, tmp_path,
     assert page.error_label.text() != ""
 
 
-def test_magnitude_rows_sort_first_largest_first(qt_app, vu_path, tmp_path,
-                                                 monkeypatch):
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
-    from wing_parser.ui.diff_page import DiffPage
-    from wing_parser.ui.session import Session
+def test_magnitude_rows_sort_first_largest_then_the_rest(qt_app, vu_path,
+                                                         tmp_path,
+                                                         monkeypatch):
+    """Descending magnitude groups first; only then the None-magnitude rows.
 
+    The magnitudes are chosen so descending order (ch.10 > ch.8 > ch.12)
+    is NOT natural path order (ch.2 < ch.8 < ch.10 < ch.12) — a sort by
+    path alone, or by magnitude without grouping, fails this sequence.
+    """
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
     doc = json.loads(vu_path.read_text(encoding="utf-8"))
-    doc["ae_data"]["ch"]["8"]["fdr"] = -13.0   # numeric: has a magnitude
+    doc["ae_data"]["ch"]["8"]["fdr"] = -20.0   # magnitude 12.1
+    doc["ae_data"]["ch"]["10"]["fdr"] = -30.0  # magnitude 27.4
+    doc["ae_data"]["ch"]["12"]["fdr"] = -0.5   # magnitude 0.9
     doc["ae_data"]["ch"]["2"]["mute"] = True   # boolean: magnitude is None
     out = tmp_path / "mixed.snap"
     out.write_text(json.dumps(doc), encoding="utf-8")
@@ -58,9 +61,11 @@ def test_magnitude_rows_sort_first_largest_first(qt_app, vu_path, tmp_path,
     page = DiffPage()
     page.set_session(Session.open(vu_path))
     page.compare_with(str(out))
-    texts = [page.model.item(row, 3).text()
+    paths = [page.model.item(row, 0).text()
              for row in range(page.model.rowCount())]
-    magnitudes = [float(value) for value in texts if value]
-    assert magnitudes == sorted(magnitudes, reverse=True)
-    first_empty = texts.index("")
-    assert all(value for value in texts[:first_empty])
+    assert paths == [
+        "ch.10.fader_dB",
+        "ch.8.fader_dB",
+        "ch.12.fader_dB",
+        "ch.2.muted",
+    ]
