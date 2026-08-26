@@ -30,6 +30,7 @@ from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
 from wing_parser.ui.settings_dialog import SettingsDialog
+from wing_parser.ui.theme.widgets import caption_font
 from wing_parser.ui.texts import text
 
 FILTER = "WING scene (*.snap);;All files (*)"
@@ -101,9 +102,11 @@ class MainWindow(QMainWindow):
             self.stack.addWidget(self.pages[key])
 
         self.sidebar = QListWidget()
+        self.sidebar.setObjectName("sidebar")
+        self.sidebar.setFont(caption_font())
         for key in PAGE_ORDER:
             label = text(f"page.{key.removesuffix('_')}")
-            item = QListWidgetItem(qta.icon(PAGE_ICONS[key]), label)
+            item = QListWidgetItem(qta.icon(PAGE_ICONS[key]), label.upper())
             self.sidebar.addItem(item)
         self.sidebar.currentRowChanged.connect(self.stack.setCurrentIndex)
         self.sidebar.setCurrentRow(0)

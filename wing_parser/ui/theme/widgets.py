@@ -22,10 +22,15 @@ def set_style(widget: QWidget, style: str | None) -> None:
     widget.update()
 
 
+def caption_font():
+    """The one legend face: Saira Bold at the caption size, tracked."""
+    return fonts.legend_font(
+        tokens.CAPTION_SIZE, bold=True, tracking=tokens.TRACK_CAPTION)
+
+
 class Caption(QLabel):
     """A tracked, uppercase legend line -- a section label."""
 
     def __init__(self, text_value: str, parent: QWidget | None = None) -> None:
         super().__init__(text_value.upper(), parent)
-        self.setFont(fonts.legend_font(
-            tokens.CAPTION_SIZE, bold=True, tracking=tokens.TRACK_CAPTION))
+        self.setFont(caption_font())

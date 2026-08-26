@@ -148,3 +148,29 @@ QGroupBox::title {
 Caption {
     color: $dim;
 }
+
+/* -- sidebar: the transport lamp rotated ------------------------------- */
+
+QListWidget#sidebar {
+    background: $panel;
+    border: none;
+    border-right: 1px solid $border;
+}
+
+QListWidget#sidebar::item {
+    min-height: ${METRICS_touch_target}px;
+    padding-left: ${METRICS_gap}px;
+    /* The dark lamp track: reserved so the lit row never shifts text. */
+    border-left: 3px solid transparent;
+    color: $dim;
+}
+
+QListWidget#sidebar::item:hover {
+    background: $raise_;
+}
+
+QListWidget#sidebar::item:selected {
+    background: $raise_;
+    border-left: 3px solid $accent;
+    color: $text;
+}
