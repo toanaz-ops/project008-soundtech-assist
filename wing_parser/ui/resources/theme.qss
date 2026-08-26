@@ -16,9 +16,11 @@ QWidget {
     color: $text;
 }
 
+/* -- tables and headers ------------------------------------------------ */
+
 QTableView {
     alternate-background-color: $panel;
-    gridline-color: $border;
+    gridline-color: $grid;
     selection-background-color: $accent;
     selection-color: $shade;
 }
@@ -28,7 +30,14 @@ QHeaderView::section {
     color: $dim;
     border: none;
     border-bottom: 1px solid $border;
-    padding: 4px;
+    border-right: 1px solid $grid;
+    padding: ${METRICS_unit}px;
+}
+
+QTableCornerButton::section {
+    background: $panel;
+    border: none;
+    border-bottom: 1px solid $border;
 }
 
 QLineEdit {
