@@ -1,8 +1,7 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-26, GUI waves 1+1b complete on
-**`feature/gui-parity-wave1`** (`04db887`, not yet merged to `main`) ·
-**1433 passed / 3 skipped** measured on that commit
+**Last updated:** 2026-08-26, GUI waves 1+1b complete and **merged into
+`main`** (`075335d`) · **1433 passed / 3 skipped** measured at merge
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
