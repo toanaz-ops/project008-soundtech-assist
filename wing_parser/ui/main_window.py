@@ -1,47 +1,42 @@
-"""The window shell: menus, file dialogs, the sidebar and the title.
+"""The window shell: pages, sidebar, dock and title.
 
 Behaviour lives in Session. This file turns clicks into Session calls
-and Session state into widgets, and holds no rule knowledge of its own.
+and Session state into widgets, and holds no rule knowledge of its
+own. The task-C split moved the menus and their actions into
+`menus.py`, the persistence wiring into `window_state.py` and the Tab
+chain into `focus_chain.py`, keeping every file under the cap.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import qtawesome as qta
-from PySide6.QtCore import QByteArray, Qt
-from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QDockWidget,
-    QFileDialog,
     QHBoxLayout,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
-    QMessageBox,
     QScrollArea,
     QStackedWidget,
     QWidget,
 )
 
-from wing_parser import config
+from wing_parser.ui import menus, state_store, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
 from wing_parser.ui.channels_page import ChannelsPage
 from wing_parser.ui.diff_page import DiffPage
 from wing_parser.ui.doctor_page import DoctorPage
+from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops
 from wing_parser.ui.import_page import ImportPage
 from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
-from wing_parser.ui.settings_dialog import SettingsDialog
-from wing_parser.ui import state_store
 from wing_parser.ui.theme.widgets import caption_font
 from wing_parser.ui.texts import text
 
-FILTER = "WING scene (*.snap);;All files (*)"
-
-PAGE_ORDER = ["doctor", "overview", "channels", "routing", "diff", "import_"]
+PAGE_ORDER = list(state_store.PAGE_KEYS)
 
 PAGE_ICONS = {
     "doctor": "fa5s.stethoscope",
@@ -53,112 +48,19 @@ PAGE_ICONS = {
 }
 
 
-def _tab_stops(parent: QWidget) -> list[QWidget]:
-    """The widgets of one page a Tab press can actually land on.
-
-    Scroll-area internals (viewport, bars) and combo-popup machinery
-    take focus but only ever forward it, so they are not stops; the
-    scroll *container* itself is skipped the same way. QTableView stays:
-    it is a real stop that merely happens to own scrollbars.
-    """
-    stops: list[QWidget] = []
-    for child in parent.findChildren(QWidget):
-        policy = child.focusPolicy()
-        if not policy & Qt.FocusPolicy.TabFocus and not policy & Qt.FocusPolicy.StrongFocus:
-            continue
-        ancestor = child.parentWidget()
-        while ancestor is not None and ancestor is not parent:
-            if isinstance(ancestor, QComboBox):
-                break  # popup list of a combo: focus lands via the combo
-            ancestor = ancestor.parentWidget()
-        else:
-            name = child.objectName()
-            forwards = name.startswith("qt_scrollarea") or isinstance(child, QScrollArea)
-            if not forwards:
-                # Views route focus through their viewport (focusProxy),
-                # so the chain speaks in proxies — normalise to it.
-                effective = child.focusProxy() or child
-                if effective not in stops:
-                    stops.append(effective)
-    return stops
-
-
-def _chain_tab_order(parent: QWidget) -> None:
-    """Link the page's own focus stops into one explicit Tab chain.
-
-    Without this Qt invents a chain across the whole window in creation
-    order, and Tab wanders out of the visible page. The Task 18 focus
-    ring makes the resulting order visible.
-    """
-    for current, following in zip(_tab_stops(parent), _tab_stops(parent)[1:]):
-        QWidget.setTabOrder(current, following)
-
-
 class MainWindow(QMainWindow):
     def __init__(self, session: Session | None = None) -> None:
         super().__init__()
         self.session = session
         self._recent: list[str] = []
-        self._build_menus()
+        menus.build_menus(self)
         self._build_body()
         self._build_changes_dock()
-        self._build_accelerators()
-        self._restore_state()
+        menus.build_accelerators(self)
+        window_state.restore(self)
         self._refresh()
 
     # -- construction ---------------------------------------------------
-
-    def _build_menus(self) -> None:
-        file_menu = self.menuBar().addMenu(text("menu.file"))
-        self._open_action = file_menu.addAction("&Open...", self.open_file)
-        self._save_action = file_menu.addAction("Save &As...", self.save_as)
-        self._recent_menu = file_menu.addMenu(text("menu.recent"))
-        edit_menu = self.menuBar().addMenu(text("menu.edit"))
-        self._undo_action = edit_menu.addAction("&Undo", self.undo)
-        tools_menu = self.menuBar().addMenu(text("menu.tools"))
-        tools_menu.addAction(text("menu.settings"), self.open_settings)
-        self._reanalyse_action = tools_menu.addAction(
-            text("menu.reanalyse"), self.reanalyse
-        )
-        help_menu = self.menuBar().addMenu(text("menu.help"))
-        help_menu.addAction("Where my judgements are stored...", self.show_knowledge_dir)
-
-    def _build_accelerators(self) -> None:
-        """The ruled map: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / Ctrl+1..6 / F5.
-
-        Menu labels stay clean — the shortcut is bound with setShortcut,
-        never appended to the text. Page keys are QShortcuts so they do
-        not become menu rows; emitting their activated signal is how the
-        tests prove each one lands on its page.
-        """
-        self._open_action.setShortcut(QKeySequence("Ctrl+O"))
-        # Save As semantics per the 2026-08-26 ruling: plain Ctrl+S stays free.
-        self._save_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
-        self._undo_action.setShortcut(QKeySequence("Ctrl+Z"))
-        self._reanalyse_action.setShortcut(QKeySequence("F5"))
-        for index, key in enumerate(PAGE_ORDER, start=1):
-            shortcut = QShortcut(QKeySequence(f"Ctrl+{index}"), self)
-            shortcut.activated.connect(
-                lambda checked=False, page=key: self.switch_to(page)
-            )
-
-    def open_settings(self) -> None:
-        """Modal: the operator finishes or cancels the key edit in one go."""
-        SettingsDialog(self).exec()
-
-    def show_knowledge_dir(self) -> None:
-        """Name the directory holding the verdict log and the principles.
-
-        Worth a menu item because in a packaged build it is not where
-        anyone would guess: the app runs from one place and keeps his
-        work in another, since a frozen bundle is deleted on exit.
-        """
-        directory = config.knowledge_dir()
-        QMessageBox.information(
-            self,
-            text("knowledge.title"),
-            text("knowledge.body").format(directory=directory),
-        )
 
     def _build_body(self) -> None:
         self.pages: dict[str, QWidget] = {"doctor": DoctorPage()}
@@ -225,115 +127,36 @@ class MainWindow(QMainWindow):
     def verdict_bar(self):
         return self.pages["doctor"].verdict_bar
 
-    # -- actions --------------------------------------------------------
+    # -- actions: seams here; bodies live beside their menus -------------
+
+    def open_settings(self) -> None:
+        menus.open_settings(self)
+
+    def show_knowledge_dir(self) -> None:
+        window_state.show_knowledge_dir(self)
 
     def open_file(self) -> None:
-        name, _ = QFileDialog.getOpenFileName(self, "Open a WING scene", "", FILTER)
-        if not name:
-            return
-        try:
-            self.session = Session.open(name)
-        except (ValueError, OSError) as exc:
-            # Stay on the scene already loaded. A failed Open must never
-            # leave the operator with an empty window and a lost session.
-            QMessageBox.critical(self, text("error.open"), str(exc))
-            return
-        self._remember_recent(str(self.session.path))
-        self._adopt_session()
-
-    def _adopt_session(self) -> None:
-        """Everything a freshly opened scene needs, wherever it came from."""
-        self.switch_to("doctor")
-        self._show_finding(None)
-        self._refresh()
+        menus.open_file(self)
 
     def save_as(self) -> None:
-        if self.session is None:
-            return
-        suggested = str(
-            self.session.path.with_name(self.session.path.stem + "-edited.snap")
-        )
-        name, _ = QFileDialog.getSaveFileName(
-            self, "Save the edited scene", suggested, FILTER
-        )
-        if not name:
-            return
-        try:
-            self.session.save_as(name)
-        except OSError as exc:
-            # The journal is untouched and the window stays dirty.
-            QMessageBox.critical(self, text("error.save"), str(exc))
-            return
-        QMessageBox.information(self, text("save.done"), f"Wrote {name}")
+        menus.save_as(self)
 
     def undo(self) -> None:
-        if self.session is not None and self.session.undo():
-            self._refresh()
+        menus.undo(self)
 
     def reanalyse(self) -> None:
-        """F5: re-run the whole derive pipeline on the current session.
-
-        The findings list is always re-computed truth (see session.py),
-        so a fresh derivation is all "re-analyse" has to mean.
-        """
-        if self.session is not None:
-            self.session.reanalyse()
-            self._refresh()
+        menus.reanalyse(self)
 
     # -- state ----------------------------------------------------------
 
-    def _restore_state(self) -> None:
-        """Geometry, last page and recents, read before first paint."""
-        state = state_store.load(config.knowledge_dir())
-        self._recent = state["recent"]
-        self._rebuild_recent_menu()
-        if state["geometry"]:
-            self.restoreGeometry(
-                QByteArray.fromHex(state["geometry"].encode("ascii"))
-            )
-        else:
-            self.resize(1280, 760)
-        if state["page"]:
-            self.switch_to(state["page"])
-
     def _remember_recent(self, path: str) -> None:
-        self._recent = state_store.remember_recent(self._recent, path)
-        self._rebuild_recent_menu()
-
-    def _rebuild_recent_menu(self) -> None:
-        self._recent_menu.clear()
-        for entry in self._recent:
-            self._recent_menu.addAction(
-                Path(entry).name, lambda checked=False, path=entry: self._open_recent(path)
-            )
+        window_state.remember_recent(self, path)
 
     def _open_recent(self, path: str) -> None:
-        try:
-            self.session = Session.open(path)
-        except (ValueError, OSError):
-            # Chosen degradation (ruled task 1b-21): tell the operator,
-            # then drop the dead entry so the menu self-heals.
-            QMessageBox.information(
-                self,
-                text("recent.missing.title"),
-                text("recent.missing.body").format(file=path),
-            )
-            self._recent = state_store.forget_recent(self._recent, path)
-            self._rebuild_recent_menu()
-            return
-        self._remember_recent(str(self.session.path))
-        self._adopt_session()
+        window_state.open_recent(self, path)
 
     def closeEvent(self, event) -> None:
-        row = self.sidebar.currentRow()
-        state_store.save(
-            config.knowledge_dir(),
-            {
-                "geometry": bytes(self.saveGeometry().toHex()).decode("ascii"),
-                "page": PAGE_ORDER[row] if 0 <= row < len(PAGE_ORDER) else None,
-                "recent": self._recent,
-            },
-        )
+        window_state.save_on_close(self)
         super().closeEvent(event)
 
     def _show_finding(self, finding) -> None:
