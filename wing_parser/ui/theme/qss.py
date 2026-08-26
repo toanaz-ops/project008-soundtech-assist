@@ -25,7 +25,9 @@ def build() -> str:
     # concern, both under the house line budget. `substitute` (not
     # `safe_substitute`) still guards every placeholder across both.
     template = "\n".join(
-        resource_path(name).read_text(encoding="utf-8")
+        # utf-8-sig, not utf-8: a BOM saved by an editor must be
+        # dropped here, not carried into setStyleSheet as U+FEFF.
+        resource_path(name).read_text(encoding="utf-8-sig")
         for name in ("theme.qss", "chrome.qss")
     )
     return string.Template(template).substitute(mapping())

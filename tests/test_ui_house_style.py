@@ -127,3 +127,34 @@ def test_tracking_adds_the_studys_em_per_glyph(qt_app):
              - QFontMetricsF(plain).horizontalAdvance(sample))
     expected = TRACK_CAPTION * int(CAPTION_SIZE + 0.5) * len(sample)
     assert abs(delta - expected) < 0.6
+
+
+def test_no_danger_state_paints_the_label_its_own_background():
+    """Qt matches :hover AND :pressed together (equal specificity, the
+    later rule wins per property), so any azStyle="danger" state block
+    that sets both background and colour must never resolve them to the
+    same shade -- the label would vanish exactly while the mouse is
+    down, the one moment the operator is watching it.
+    """
+    from wing_parser.ui.theme import load_stylesheet
+    qss = load_stylesheet()
+    blocks = re.findall(
+        r'QPushButton\[azStyle="danger"\][^{}]*\{([^}]*)\}', qss)
+    assert blocks, "the danger rules vanished from the stylesheet"
+    for body in blocks:
+        props = dict(re.findall(
+            r"(background|color)\s*:\s*(#[0-9a-f]{6})", body))
+        if "background" in props and "color" in props:
+            assert props["background"] != props["color"], (
+                f"danger state paints text its own background: {props}")
+
+
+def test_the_stylesheet_templates_start_without_a_bom():
+    """A BOM saved by an editor rides a plain utf-8 read into
+    setStyleSheet as U+FEFF and silently kills the first rule. The
+    reader uses utf-8-sig; this pins the files themselves to bare UTF-8.
+    """
+    from wing_parser.ui.theme.paths import resource_path
+    for name in ("theme.qss", "chrome.qss"):
+        head = resource_path(name).read_bytes()[:3]
+        assert head != b"\xef\xbb\xbf", f"{name} starts with a UTF-8 BOM"

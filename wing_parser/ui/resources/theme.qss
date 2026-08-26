@@ -1,4 +1,4 @@
-﻿/* WING Parser house stylesheet -- GENERATED, not hand-edited colours.
+/* WING Parser house stylesheet -- GENERATED, not hand-edited colours.
    Every colour here is substituted from the token table by
    wing_parser.ui.theme.qss.
    Plain Qt QSS has no CSS custom properties (tech-debt D-20); this
@@ -123,8 +123,13 @@ QPushButton[azStyle="danger"]:hover {
     color: $shade;
 }
 
+/* :hover also matches while pressed (equal specificity, later rule
+   wins), so the pressed state must name BOTH properties or the hover
+   pair bleeds through and the label can vanish. Invert: shade fill,
+   danger text. */
 QPushButton[azStyle="danger"]:pressed {
     background: $shade;
+    color: $danger;
 }
 
 /* -- containers ------------------------------------------------------- */
