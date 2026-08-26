@@ -22,6 +22,7 @@ from PySide6.QtGui import QStandardItem, QStandardItemModel
 
 from wing_parser import WingScene
 from wing_parser.cli.diffcore import diff_rows
+from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import set_style
@@ -55,6 +56,9 @@ class DiffPage(QWidget):
         )
         table = QTableView()
         table.setModel(self.model)
+        # every cell is technical text; only magnitude is a figure.
+        table.setItemDelegate(MonoDelegate(mono_columns={0, 1, 2},
+                                           numeric_columns={3}))
         table.verticalHeader().setVisible(False)
         table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
 

@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.cli.render import level
 from wing_parser.ui import data
+from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme import fonts, tokens
@@ -62,6 +63,8 @@ class OverviewPage(QWidget):
         )
         table = QTableView()
         table.setModel(model)
+        # number and fader compare down the page: mono face, right edge.
+        table.setItemDelegate(MonoDelegate(numeric_columns={0, 2}))
         table.verticalHeader().setVisible(False)
         table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         group_layout = QVBoxLayout(self._table_group)

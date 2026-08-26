@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.ui import data
+from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
 
@@ -35,6 +36,8 @@ class RoutingPage(QWidget):
         )
         summary_table = QTableView()
         summary_table.setModel(self.summary_model)
+        # the value column is counts: mono face, right edge.
+        summary_table.setItemDelegate(MonoDelegate(numeric_columns={1}))
         summary_table.verticalHeader().setVisible(False)
         summary_table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         summary_table.horizontalHeader().setSectionResizeMode(

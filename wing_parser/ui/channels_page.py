@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.cli.render import level
 from wing_parser.ui import data
+from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
 
@@ -41,6 +42,8 @@ class ChannelsPage(QWidget):
         )
         self.table = QTableView()
         self.table.setModel(self.channels_model)
+        # number, confidence, fader: mono face, right edge.
+        self.table.setItemDelegate(MonoDelegate(numeric_columns={0, 3, 4}))
         self.table.verticalHeader().setVisible(False)
         self.table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         table_layout = QVBoxLayout(self._table_group)
