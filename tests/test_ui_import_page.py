@@ -114,7 +114,7 @@ def test_valid_mapping_advances_to_the_terms_step(bidv_terms, monkeypatch):
 
     monkeypatch.setattr(import_page.ic, "unresolved",
                         lambda result: ("ca trống",))
-    bidv_terms.show_terms_step(bidv_terms._result)
+    bidv_terms.show_terms_step(bidv_terms.result)
     assert bidv_terms.step_area.currentIndex() == 2
     assert bidv_terms.term_row_state("ca trống") == "pending"
 
@@ -135,7 +135,7 @@ def test_record_writes_vocabulary_only_on_click(page, tmp_path, monkeypatch):
                             ("ca trống", Classification(
                                 kind="music.traditional", confidence=0.9,
                                 origin="g2b-assisted"))])
-    page._directory = tmp_path               # where record_term writes
+    page.set_output_directory(tmp_path)      # where record_term writes
     page.show_terms_step(FakeResult())       # builds step 3 UI
     vocab = tmp_path / "classifier.yaml"
 
@@ -162,7 +162,7 @@ def test_skip_marks_the_row_without_writing(page, tmp_path, monkeypatch):
                         lambda result: ("múa rối",))
     monkeypatch.setattr(import_page.ic, "guesses_for",
                         lambda terms, ctx, factory: [])
-    page._directory = tmp_path
+    page.set_output_directory(tmp_path)
     page.show_terms_step(FakeResult())
     page.skip_button_for("múa rối").click()
     assert page.term_row_state("múa rối") == "skipped"

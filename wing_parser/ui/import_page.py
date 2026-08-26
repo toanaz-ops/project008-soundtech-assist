@@ -57,6 +57,15 @@ class ImportPage(QWidget):
     def set_session(self, session) -> None:
         """Accepted but unused: import is scene-independent."""
 
+    @property
+    def result(self):
+        """Public seam: the BuildResult-shaped object behind step 3."""
+        return self._result
+
+    def set_output_directory(self, path) -> None:
+        """Public seam: where record_term writes; None restores the default."""
+        self._directory = path
+
     def _provider_factory(self):
         from wing_parser.classifier.provider import load_config, make_provider
 
