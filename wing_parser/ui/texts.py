@@ -78,6 +78,12 @@ TEXTS: dict[str, str] = {
         "then try again: {error}"
     ),
     "import.needs_kind": "Type a kind before recording — never write a blank.",
+    "import.proposing": "Reading the workbook with the model...",
+    "import.guessing": "Asking the model about each term...",
+    "import.cancel": "Cancel",
+    "import.cancelled": "Cancelled — nothing was applied.",
+    "import.timeout": "The model did not answer within {seconds} s.",
+    "import.busy": "A model request is already running — cancel it or wait.",
     "menu.settings": "&Settings...",
     "menu.reanalyse": "&Reanalyse",
     "menu.recent": "Open &Recent",
@@ -113,6 +119,10 @@ TEXTS: dict[str, str] = {
     "settings.probe_ok": "Connection OK — {message}",
     "settings.probe_fail": "Connection FAILED — {message}",
     "settings.save_failed": "Could not write {path}: {error}",
+    "settings.probing": "Testing the connection...",
+    "settings.cancelled": "Probe cancelled.",
+    "settings.timeout": "No reply within {seconds} s — check the base URL.",
+    "settings.busy": "A connection test is already running.",
 }
 
 

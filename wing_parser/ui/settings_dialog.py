@@ -2,14 +2,11 @@
 
 The key lives in provider.yaml inside the knowledge directory, never in
 the repo. Saving writes that file and pins $WING_PROVIDER_CONFIG to it
-immediately, so the running process's next `provider.load_config(None)`
-picks the new settings up without a restart -- in dev and frozen alike.
-If the write fails, the previous env pin survives untouched.
-
-`Test connection` is injectable: `probe` takes the written
-ProviderConfig and returns (ok, message). The default probe builds a
-provider from the written config and pings one trivial completion; tests
-inject fakes so nothing here ever touches the network on its own.
+immediately, so the running process picks the new settings up without a
+restart; if the write fails, the previous env pin survives untouched.
+`Test connection` is injectable (`probe(cfg) -> (ok, message)`); the
+default is `provider.ping`, run on a cancellable worker under the ruled
+30 s timeout (task C). Tests inject fakes -- no network here.
 """
 
 from __future__ import annotations
@@ -31,25 +28,11 @@ from PySide6.QtWidgets import (
 
 from wing_parser import config
 from wing_parser.classifier import provider
+from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.texts import text
+from wing_parser.ui.workers import CallRunner
 
 MASK = "•" * 4
-
-_PING_SCHEMA = {
-    "type": "object",
-    "properties": {"ok": {"type": "string"}},
-    "required": ["ok"],
-}
-
-
-def _default_probe(cfg: provider.ProviderConfig) -> tuple[bool, str]:
-    """One trivial round-trip against the configured endpoint."""
-    try:
-        engine = provider.make_provider(cfg)
-        provider.complete_json(engine, "You reply ok.", "ping", _PING_SCHEMA)
-    except Exception as exc:  # noqa: BLE001 - every failure becomes a message
-        return False, str(exc)
-    return True, f"{cfg.name} replied"
 
 
 def _mask(key: str) -> str:
@@ -68,7 +51,7 @@ def _dump_yaml(doc: dict) -> str:
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, *, probe=None) -> None:
         super().__init__(parent)
-        self._probe = probe or _default_probe
+        self._probe = probe or provider.ping
         self.setWindowTitle(text("settings.title"))
         self.setMinimumWidth(460)
 
@@ -99,14 +82,28 @@ class SettingsDialog(QDialog):
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
 
-        test_btn = QPushButton(text("settings.test"))
-        test_btn.clicked.connect(self.run_probe)
+        self.test_button = QPushButton(text("settings.test"))
+        self.test_button.clicked.connect(self.run_probe)
+        self.cancel_button = QPushButton(text("import.cancel"))
+        self.cancel_button.setVisible(False)
         save_btn = QPushButton(text("settings.save"))
         save_btn.clicked.connect(self._save_and_close)
         close_btn = QPushButton(text("settings.close"))
         close_btn.clicked.connect(self.reject)
+        self._runner = CallRunner(self)
+        self._probe_call = ButtonRunner(
+            runner=self._runner, primary=self.test_button,
+            cancel=self.cancel_button, report=self.status_label.setText,
+            running=text("settings.probing"),
+            cancelled=text("settings.cancelled"),
+            timeout_text=text("settings.timeout"),
+            busy_text=text("settings.busy"),
+            on_error=self._show_probe_error,
+        )
+        self.cancel_button.clicked.connect(self._probe_call.cancel)
         buttons = QHBoxLayout()
-        buttons.addWidget(test_btn)
+        buttons.addWidget(self.test_button)
+        buttons.addWidget(self.cancel_button)
         buttons.addWidget(save_btn)
         buttons.addStretch(1)
         buttons.addWidget(close_btn)
@@ -134,10 +131,8 @@ class SettingsDialog(QDialog):
 
     # -- driving ---------------------------------------------------------
 
-    def fill(
-        self, name: str, model: str, base_url: str, api_key: str,
-        api_key_env: str = "",
-    ) -> None:
+    def fill(self, name: str, model: str, base_url: str, api_key: str,
+             api_key_env: str = "") -> None:
         self.name_box.setCurrentText(name)
         self.model_edit.setText(model)
         self.base_url_edit.setText(base_url)
@@ -169,15 +164,28 @@ class SettingsDialog(QDialog):
         os.environ[provider.ENV_VAR] = str(path)
         return True
 
-    def run_probe(self) -> tuple[bool, str]:
+    def run_probe(self) -> bool:
+        """Save, then ping off the GUI thread; False when one runs already.
+
+        The outcome lands in the status label either way -- the dialog
+        never blocks on the network, and Cancel settles the wait now.
+        """
         self.save()
-        try:
-            ok, message = self._probe(provider.load_config(None))
-        except Exception as exc:  # noqa: BLE001 - a probe failure is a message
-            ok, message = False, str(exc)
-        template = text("settings.probe_ok") if ok else text("settings.probe_fail")
-        self.status_label.setText(template.format(message=message))
-        return ok, message
+        return self._probe_call.run(
+            "probe", self._probe, provider.load_config(None),
+            on_success=self._show_probe_result,
+        )
+
+    def _show_probe_result(self, pair) -> None:
+        ok, message = pair
+        self._probe_line(ok, message)
+
+    def _show_probe_error(self, exc) -> None:
+        self._probe_line(False, str(exc))
+
+    def _probe_line(self, ok: bool, message: str) -> None:
+        key = "settings.probe_ok" if ok else "settings.probe_fail"
+        self.status_label.setText(text(key).format(message=message))
 
     # -- internals -------------------------------------------------------
 

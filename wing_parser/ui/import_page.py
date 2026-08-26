@@ -1,9 +1,9 @@
 """The Import page: an assisted ingest behind four buttons.
 
 Pick -> Mapping -> Terms -> Preview & Save, stacked in `step_area`.
-Wave 1 runs the model calls (`proposal_for`, `guesses_for`)
-synchronously under a wait cursor (threads deferred, YAGNI). Every
-failure degrades to a status label -- this page never tracebacks.
+Model calls (`proposal_for`, `guesses_for`) run on cancellable workers
+with ruled timeouts (task C, wave 1b) -- the page never blocks on the
+network. Every failure degrades to a status label -- no tracebacks.
 """
 
 from __future__ import annotations
@@ -11,9 +11,8 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QApplication,
     QFileDialog,
     QLabel,
     QPushButton,
@@ -24,6 +23,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.showcontext.ingest import sheet as sheet_mod
 from wing_parser.ui import import_controller as ic
+from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.key_status import KeyStatusLine
 from wing_parser.ui.mapping_step import MappingStep
 from wing_parser.ui.pick_step import PickStep
@@ -31,6 +31,7 @@ from wing_parser.ui.save_step import SaveStep
 from wing_parser.ui.step_rail import StepRail
 from wing_parser.ui.terms_step import TermsStep
 from wing_parser.ui.texts import text
+from wing_parser.ui.workers import CallRunner
 
 FILTER = "Excel workbook (*.xlsx)"
 SAVE_FILTER = "YAML (*.yaml);;All files (*)"
@@ -53,6 +54,10 @@ class ImportPage(QWidget):
         self.key_status = KeyStatusLine()
         self.key_status.open_settings_requested.connect(
             self.open_settings_requested)
+        self._runner = CallRunner(self)
+        self.cancel_button = QPushButton(text("import.cancel"))
+        self.cancel_button.setVisible(False)
+        self.cancel_button.clicked.connect(self._runner.cancel)
         self.step_rail = StepRail(
             tuple((s, text(f"import.step.{s}")) for s in STEPS))
 
@@ -62,10 +67,20 @@ class ImportPage(QWidget):
             self.step_area.addWidget(step)
         self.step_area.currentChanged.connect(self.step_rail.set_step)
 
+        self._proposal_call = ButtonRunner(
+            runner=self._runner, primary=self.pick_step.choose_button,
+            cancel=self.cancel_button, report=self.status.setText,
+            running=text("import.proposing"),
+            cancelled=text("import.cancelled"),
+            timeout_text=text("import.timeout"),
+            busy_text=text("import.busy"), on_error=self._fail,
+        )
+
         layout = QVBoxLayout(self)
         layout.addWidget(self.step_rail)
         layout.addWidget(self.status)
         layout.addWidget(self.key_status)
+        layout.addWidget(self.cancel_button)
         layout.addLayout(self.step_area)
 
     def set_session(self, session) -> None:
@@ -102,19 +117,27 @@ class ImportPage(QWidget):
             self.pick_file(name)
 
     def pick_file(self, path: str) -> None:
-        """Public seam: what choosing a file does, minus the dialog."""
-        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        """Public seam: what choosing a file does, minus the dialog.
+
+        Sampling is local and stays synchronous; the model proposal
+        runs on a worker with its ruled timeout -- the continuation
+        lands in `_proposal_done` when the wire answers.
+        """
         try:
-            try:
-                samples = ic.sample(path)
-                proposal = ic.proposal_for(path, self._provider_factory)
-            except (OSError, ValueError, zipfile.BadZipFile) as exc:
-                self._fail(exc)
-                return
-        finally:
-            QApplication.restoreOverrideCursor()
-        self._xlsx = path
+            samples = ic.sample(path)
+        except (OSError, ValueError, zipfile.BadZipFile) as exc:
+            self._fail(exc)
+            return
         self.pick_step.show_samples(samples)
+        self._proposal_call.run(
+            "proposal", ic.proposal_for, path, self._provider_factory,
+            on_success=lambda proposal: self._proposal_done(
+                path, samples, proposal),
+        )
+
+    def _proposal_done(self, path, samples, proposal) -> None:
+        """The exact success continuation `pick_file` always had."""
+        self._xlsx = path
         self.mapping_step.fill(proposal)
         self.status.setText("")
         self.step_area.setCurrentIndex(1)
@@ -153,7 +176,10 @@ class ImportPage(QWidget):
         self.show_terms_step(result)
 
     def _build_terms(self) -> QWidget:
-        self.terms_step = TermsStep(self._provider_factory, self._fail)
+        self.terms_step = TermsStep(
+            self._provider_factory, self._fail,
+            runner=self._runner, report=self.status.setText,
+        )
         self.load_guesses_button = self.terms_step.load_guesses_button
         self.preview_button = QPushButton(text("import.preview"))
         self.preview_button.clicked.connect(self._show_preview)

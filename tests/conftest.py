@@ -81,3 +81,24 @@ def _isolated_knowledge_dir(tmp_path_factory):
         os.environ.pop(config.ENV_VAR, None)
     else:
         os.environ[config.ENV_VAR] = previous
+
+
+@pytest.fixture
+def settle(qt_app):
+    """Pump Qt events until predicate() holds; queued signals need this.
+
+    Worker results arrive across a thread boundary and are only
+    delivered while the event loop runs -- tests pump instead of sleep.
+    """
+    import time
+
+    def _settle(predicate, limit_s=2.0):
+        deadline = time.monotonic() + limit_s
+        while time.monotonic() < deadline:
+            if predicate():
+                return True
+            qt_app.processEvents()
+            time.sleep(0.005)
+        return False
+
+    return _settle

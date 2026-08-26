@@ -5,13 +5,12 @@ editors -- nothing touches classifier.yaml until an explicit Record
 click on that term's row. A blank kind is refused too: never write a
 blank verdict. The page hands in the provider factory, a failure
 reporter and the write target directory; this widget does the rest.
+Guessing runs on the page's shared cancellable worker (task C).
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QApplication,
     QGridLayout,
     QLabel,
     QLineEdit,
@@ -22,11 +21,14 @@ from PySide6.QtWidgets import (
 
 from wing_parser.classifier.matcher import Classification
 from wing_parser.ui import import_controller as ic
+from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.texts import text
+from wing_parser.ui.workers import CallRunner
 
 
 class TermsStep(QWidget):
-    def __init__(self, provider_factory, fail) -> None:
+    def __init__(self, provider_factory, fail, runner=None,
+                 report=None) -> None:
         super().__init__()
         self._provider_factory = provider_factory
         self._fail = fail
@@ -38,11 +40,24 @@ class TermsStep(QWidget):
 
         self.load_guesses_button = QPushButton(text("import.load_guesses"))
         self.load_guesses_button.clicked.connect(self.load_guesses)
+        self.cancel_button = QPushButton(text("import.cancel"))
+        self.cancel_button.setVisible(False)
+        self._calls = ButtonRunner(
+            runner=runner or CallRunner(self),
+            primary=self.load_guesses_button, cancel=self.cancel_button,
+            report=report or (lambda message: None),
+            running=text("import.guessing"),
+            cancelled=text("import.cancelled"),
+            timeout_text=text("import.timeout"),
+            busy_text=text("import.busy"), on_error=fail,
+        )
+        self.cancel_button.clicked.connect(self._calls.cancel)
 
         self.grid = QGridLayout()
         self.grid.setColumnStretch(1, 1)
         layout = QVBoxLayout(self)
         layout.addWidget(self.load_guesses_button)
+        layout.addWidget(self.cancel_button)
         layout.addLayout(self.grid)
         layout.addStretch()
 
@@ -83,21 +98,22 @@ class TermsStep(QWidget):
     # -- actions ------------------------------------------------------------
 
     def load_guesses(self) -> None:
-        """Prefill proposed kinds only -- never a write."""
+        """Prefill proposed kinds only -- never a write.
+
+        One remote call per term, so this runs on the shared worker
+        under its "guesses" timeout; `_apply_guesses` is today's
+        continuation, arriving from the worker thread instead.
+        """
         if not self._rows:
             return
-        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-        try:
-            pairs = ic.guesses_for(
-                tuple(self._rows),
-                ic.context_for(tuple(self._rows), self._rows_data),
-                self._provider_factory,
-            )
-        except Exception as exc:  # noqa: BLE001 - a dead provider is a status line
-            self._fail(exc)
-            return
-        finally:
-            QApplication.restoreOverrideCursor()
+        terms = tuple(self._rows)
+        self._calls.run(
+            "guesses", ic.guesses_for, terms,
+            ic.context_for(terms, self._rows_data), self._provider_factory,
+            on_success=self._apply_guesses,
+        )
+
+    def _apply_guesses(self, pairs) -> None:
         for term, classification in pairs:
             if classification is not None and term in self._rows:
                 self.kind_editor_for(term).setText(classification.kind)

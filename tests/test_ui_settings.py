@@ -1,4 +1,5 @@
 import os
+import threading
 
 import pytest
 
@@ -29,16 +30,73 @@ def test_save_writes_yaml_and_pins_env(qt_app, knowledge, monkeypatch):
     assert os.environ["WING_PROVIDER_CONFIG"] == str(knowledge / "provider.yaml")
 
 
-def test_probe_failure_is_reported_not_raised(qt_app, knowledge):
+def test_probe_failure_is_reported_not_raised(qt_app, knowledge, settle):
     from wing_parser.ui.settings_dialog import SettingsDialog
 
     def bad_probe(config):
         raise RuntimeError("no network here")
 
     dlg = SettingsDialog(probe=bad_probe)
-    ok, message = dlg.run_probe()
-    assert ok is False
-    assert "no network here" in message
+    assert dlg.run_probe()                   # starts; raises nothing here
+    assert settle(lambda: "no network here" in dlg.status_label.text())
+    assert "no network here" in dlg.status_label.text()
+    assert dlg.test_button.isEnabled()
+
+
+def test_a_working_probe_reports_ok(qt_app, knowledge, settle):
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    dlg = SettingsDialog(
+        probe=lambda cfg: (True, f"{cfg.name} replied"))
+    assert dlg.run_probe()
+    assert settle(lambda: "replied" in dlg.status_label.text())
+    assert "Connection OK" in dlg.status_label.text()
+
+
+def test_a_stuck_probe_times_out_naming_the_seconds(qt_app, knowledge,
+                                                    monkeypatch, settle):
+    from wing_parser.ui import workers
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    gate = threading.Event()
+
+    def stuck(cfg):
+        gate.wait(timeout=5.0)
+
+    monkeypatch.setitem(workers.TIMEOUTS, "probe", 0)
+    dlg = SettingsDialog(probe=stuck)
+    assert dlg.run_probe()
+    try:
+        assert settle(lambda: "No reply within 0 s" in dlg.status_label.text())
+        assert dlg.test_button.isEnabled()
+    finally:
+        gate.set()
+
+
+def test_cancelling_a_probe_restores_the_dialog_and_allows_retry(
+        qt_app, knowledge, monkeypatch, settle):
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    gate = threading.Event()
+    started = threading.Event()
+
+    def slow_ok(cfg):
+        started.set()
+        gate.wait(timeout=5.0)
+        return True, "late"
+
+    dlg = SettingsDialog(probe=slow_ok)
+    assert dlg.run_probe()
+    assert settle(lambda: started.is_set())
+    dlg.cancel_button.click()                # settles without waiting
+    assert dlg.test_button.isEnabled()
+    assert not dlg.cancel_button.isVisibleTo(dlg)
+    assert "cancelled" in dlg.status_label.text().lower()
+
+    dlg._probe = lambda cfg: (True, "fast")
+    assert dlg.run_probe()
+    assert settle(lambda: "fast" in dlg.status_label.text())
+    gate.set()
 
 
 def test_existing_config_loads_masked(qt_app, knowledge):

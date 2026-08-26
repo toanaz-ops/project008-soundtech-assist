@@ -178,3 +178,20 @@ def make_provider(config: ProviderConfig):
         base_url=resolved.base_url,
         api_key=resolved.api_key,
     )
+
+
+_PING_SCHEMA = {
+    "type": "object",
+    "properties": {"ok": {"type": "string"}},
+    "required": ["ok"],
+}
+
+
+def ping(cfg: ProviderConfig) -> tuple[bool, str]:
+    """One trivial round-trip; any failure becomes the message."""
+    try:
+        engine = make_provider(cfg)
+        complete_json(engine, "You reply ok.", "ping", _PING_SCHEMA)
+    except Exception as exc:  # noqa: BLE001 - every failure becomes a message
+        return False, str(exc)
+    return True, f"{cfg.name} replied"
