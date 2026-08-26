@@ -138,7 +138,8 @@ by the command shown.
     yet)"*. Task 14 never ran. Confirmed still true — see **D-26**, which is the
     packaging half of the same problem.
   - close: fix the docstring in the same commit that adds the DATAS entry (D-26)
-  - status: open
+  - status: closed 2026-08-26 — `theme/paths.py` docstring now states the mapping;
+    fixed in the same commit as **D-26** (task 1b-22)
 
 - **D-17** A raising `provider_factory` propagates by design
   - owner: deliberate-no
@@ -246,7 +247,9 @@ by the command shown.
   - close: add the entry (it covers the qss, the fonts and their OFL licences in
     one, because `resource_path()` maps that directory to the same relative
     position in dev and under `sys._MEIPASS`); rebuild and launch the exe
-  - status: open — fix in the same commit as **D-16**
+  - status: closed 2026-08-26 — DATAS entry added (task 1b-22); exe rebuilt and
+    all six pages screenshot-verified FROM `dist\wing-ui.exe` (dark theme,
+    vendored mixed-case fonts). Same commit as **D-16**.
 
 - **D-27** `anthropic` is excluded from the bundle but offered in the Settings dialog
   - owner: needs-human
@@ -261,7 +264,10 @@ by the command shown.
   - close: pick one — drop the exclusion, or hide `anthropic` when
     `sys.frozen`. Either way translate the ImportError so it names its cause, and
     rewrite the now-false justification comment in the spec file.
-  - status: open — **needs ToanAZ**
+  - status: closed 2026-08-26 — ruled by ToanAZ (delegated): dropped the
+    `anthropic` exclusion and rewrote the false spec comment (Settings performs
+    user-initiated provider calls, so the SDK ships). With the SDK bundled the
+    ImportError path is unreachable (task 1b-22).
 
 - **D-28** `packaging/wing-ui-debug.spec` is an untracked copy that will drift
   - owner: machine-doable
@@ -270,7 +276,10 @@ by the command shown.
     DATAS change must now be made twice or the debug build silently diverges —
     and **D-26** is exactly such a change.
   - close: delete it, or make it read the shared spec instead of copying it
-  - status: open
+  - status: closed 2026-08-26 — `packaging/make-debug-spec.py` now GENERATES it
+    from `wing-ui.spec` (two transforms: name, console=True); it is regenerated
+    output, stays untracked, and is regenerated after any spec change (task
+    1b-22).
 
 ---
 
