@@ -54,6 +54,33 @@ def test_pick_of_a_non_xlsx_degrades_to_status_label(page, tmp_path):
     assert page.step_area.currentIndex() == 0
 
 
+def test_error_message_reads_as_a_sentence_naming_a_next_action(page,
+                                                                tmp_path):
+    bad = tmp_path / "bad.xlsx"
+    bad.write_bytes(b"not a zip")
+    page.pick_file(str(bad))
+
+    message = page.status.text()
+    assert "Could not read that sheet" in message
+    assert str(bad) not in message           # the raw exception is not shown
+    assert "header row" in message
+
+
+def test_save_dialog_offers_a_yaml_filter_not_xlsx(page, monkeypatch):
+    seen = {}
+
+    def fake_get_save_file_name(parent, title, directory, filt):
+        seen["filter"] = filt
+        return "", ""
+
+    from wing_parser.ui import import_page
+
+    monkeypatch.setattr(import_page.QFileDialog, "getSaveFileName",
+                        fake_get_save_file_name)
+    page.save_step.save_button.click()
+    assert seen["filter"] == "YAML (*.yaml);;All files (*)"
+
+
 def test_without_proposal_the_grid_starts_empty(page):
     page.pick_file(BIDV)
     assert page.letter_edit("title").text() == ""

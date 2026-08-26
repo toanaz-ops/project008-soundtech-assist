@@ -61,7 +61,10 @@ TEXTS: dict[str, str] = {
     "import.skip": "Skip",
     "import.preview": "Preview",
     "import.save_as": "Save As...",
-    "import.error": "{error}",
+    "import.error": (
+        "Could not read that sheet — check the header row, "
+        "then try again: {error}"
+    ),
     "import.needs_kind": "Type a kind before recording — never write a blank.",
     "menu.settings": "&Settings...",
     "settings.title": "Settings",

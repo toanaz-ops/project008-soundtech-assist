@@ -75,6 +75,10 @@ class ChannelsPage(QWidget):
 
     def set_session(self, session: Session | None) -> None:
         loaded = session is not None
+        # Reset unconditionally: a swapped-in session must never inherit
+        # the previous selection's detail pane.
+        self.detail_title.setText(text("channels.detail_empty"))
+        self._clear_rows()
         self.channels_model.removeRows(0, self.channels_model.rowCount())
         self.rows = data.channel_rows(session.scene) if loaded else ()
         self._channels_by_number = (
@@ -91,9 +95,6 @@ class ChannelsPage(QWidget):
                 QStandardItem(level(row.fader_dB)),
                 QStandardItem(str(row.muted)),
             ])
-        if not loaded:
-            self.detail_title.setText(text("channels.detail_empty"))
-            self._clear_rows()
 
     def _clear_rows(self) -> None:
         while self._detail_grid.count():

@@ -43,7 +43,7 @@ class DoctorPage(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(body)
 
-        self.findings_view.selected.connect(self.show_finding)
+        self.findings_view.selected.connect(self._on_view_selected)
         self.detail_panel.repaired.connect(self.repaired)
 
     def set_session(self, session: Session | None) -> None:
@@ -53,7 +53,12 @@ class DoctorPage(QWidget):
         if not loaded:
             self.show_finding(None)
 
-    def show_finding(self, finding) -> None:
+    def _on_view_selected(self, finding) -> None:
+        """The user-driven path: announce, then show."""
         self.selected.emit(finding)
+        self.show_finding(finding)
+
+    def show_finding(self, finding) -> None:
+        """The programmatic path: update the panes without announcing."""
         self.detail_panel.show_finding(finding, self._session)
         self.verdict_bar.show_finding(finding, self._session)

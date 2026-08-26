@@ -25,6 +25,16 @@ def test_switching_changes_the_visible_page(window):
     assert window.stack.currentWidget() is window.pages["overview"]
 
 
+def test_switching_to_an_unknown_key_raises_keyerror_naming_the_valid_ones(
+        window):
+    from wing_parser.ui.main_window import PAGE_ORDER
+
+    with pytest.raises(KeyError) as excinfo:
+        window.switch_to("no-such-page")
+    for key in PAGE_ORDER:
+        assert key in str(excinfo.value)
+
+
 def test_open_session_fans_out_to_every_page(window, vu_path, monkeypatch):
     from wing_parser.ui.doctor_page import DoctorPage
     from wing_parser.ui.session import Session

@@ -31,6 +31,7 @@ from wing_parser.ui.terms_step import TermsStep
 from wing_parser.ui.texts import text
 
 FILTER = "Excel workbook (*.xlsx)"
+SAVE_FILTER = "YAML (*.yaml);;All files (*)"
 
 
 class ImportPage(QWidget):
@@ -200,7 +201,7 @@ class ImportPage(QWidget):
 
     def _save_dialog(self) -> None:
         name, _ = QFileDialog.getSaveFileName(
-            self, text("import.save_as"), "", FILTER
+            self, text("import.save_as"), "", SAVE_FILTER
         )
         if name:
             self.save_as(name)

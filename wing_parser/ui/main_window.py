@@ -118,7 +118,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
 
     def switch_to(self, key: str) -> None:
-        self.sidebar.setCurrentRow(PAGE_ORDER.index(key))
+        try:
+            row = PAGE_ORDER.index(key)
+        except ValueError:
+            raise KeyError(
+                f"unknown page {key!r}; valid keys are {PAGE_ORDER}"
+            ) from None
+        self.sidebar.setCurrentRow(row)
 
     def _build_changes_dock(self) -> None:
         self.changes_panel = ChangesPanel()
