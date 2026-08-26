@@ -58,6 +58,11 @@ counts and the whole channel list at a glance; **Channels** and
 scene against a second one, with a magnitude bar per changed value;
 **Import** walks an Excel running order through the G2a/G2b wizard.
 
+Model assist is opt-in per machine: **Tools ▸ Settings** takes your own
+provider key (it is stored locally, masked on screen), offers a real
+Test connection, and without a key every page still works — only the
+mapping proposal and vocabulary guessing stay quiet.
+
 The look is one house style: a 19-token dark palette generates the
 stylesheet (no colour literal lives outside `wing_parser/ui/theme/`),
 the typefaces ship inside the app, numbers read in a mono face, and the
