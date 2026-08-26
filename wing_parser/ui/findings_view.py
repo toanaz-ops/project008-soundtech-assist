@@ -69,6 +69,15 @@ class FindingsView(QWidget):
         self._all = list(findings)
         self._apply_filters()
 
+    def select_first(self) -> None:
+        """Programmatic: light row 0 without announcing it as a click."""
+        if not self._model.rowCount():
+            return
+        selection = self._table.selectionModel()
+        was_blocked = selection.blockSignals(True)
+        self._table.selectRow(0)
+        selection.blockSignals(was_blocked)
+
     def visible_findings(self) -> list[Finding]:
         severity, layer = self._severity.currentText(), self._layer.currentText()
         return [

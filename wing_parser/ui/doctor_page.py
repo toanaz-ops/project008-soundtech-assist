@@ -49,8 +49,14 @@ class DoctorPage(QWidget):
     def set_session(self, session: Session | None) -> None:
         self._session = session
         loaded = session is not None
-        self.findings_view.set_findings(session.findings() if loaded else [])
-        if not loaded:
+        findings = session.findings() if loaded else []
+        self.findings_view.set_findings(findings)
+        if findings:
+            # A doctor with a patient shows it: row 0 lights up and the
+            # detail pane fills, so the page never reads as broken.
+            self.findings_view.select_first()
+            self.show_finding(self.findings_view.visible_findings()[0])
+        else:
             self.show_finding(None)
 
     def _on_view_selected(self, finding) -> None:

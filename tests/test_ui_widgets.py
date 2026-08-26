@@ -198,6 +198,18 @@ def test_the_verdict_buttons_are_dead_with_nothing_selected(qt_app):
     assert all(not button.isEnabled() for button in bar.buttons.values())
 
 
+def test_the_whole_verdict_bar_wakes_only_with_a_selection(qt_app, session):
+    from wing_parser.ui.verdict_bar import VerdictBar
+
+    bar = VerdictBar()
+    assert all(not button.isEnabled() for button in bar.buttons.values())
+    assert not bar.note.isEnabled()
+
+    bar.show_finding(a_finding(session, "G8"), session)
+    assert all(button.isEnabled() for button in bar.buttons.values())
+    assert bar.note.isEnabled()
+
+
 # -- changes panel ------------------------------------------------------
 
 
