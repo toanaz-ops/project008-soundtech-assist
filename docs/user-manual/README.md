@@ -44,9 +44,20 @@ chạy đủ, chỉ thiếu phần "đề xuất hộ".
 Ngoài CLI, dự án có app desktop: `wing-ui user-files\example-Vu.snap`.
 Sidebar sáu trang — **Doctor** (tư vấn), **Overview** (tổng quan),
 **Channels**, **Routing**, **Diff** (so sánh hai scene), **Import**
-(wizard đưa Excel vào) — cùng phím tắt Ctrl+O / Ctrl+Shift+S / Ctrl+Z /
-F5 / Ctrl+1…6. Mô tả đầy đủ (verdict, repair, journal, đóng gói `.exe`)
-nằm ở mục [Desktop app trong README](../../README.md#desktop-app).
+(wizard đưa Excel vào) — cùng trang **Settings** (dán API key riêng,
+nút Test connection). Mô tả đầy đủ (verdict, repair, journal, đóng gói
+`.exe`) nằm ở mục [Desktop app trong README](../../README.md#desktop-app).
+
+Phím tắt trong app:
+
+| Phím | Làm gì |
+|---|---|
+| `Ctrl+O` | Mở file `.snap` |
+| `Ctrl+Shift+S` | Save As (luôn ghi file mới) |
+| `Ctrl+Z` | Undo thay đổi gần nhất |
+| `F5` | Phân tích lại scene đang mở |
+| `Ctrl+1` … `Ctrl+6` | Nhảy tới trang 1–6 trong sidebar |
+| `Esc` | Đóng hộp thoại đang mở |
 
 ## Nguyên tắc hoạt động (đọc 30 giây, hiểu mọi lệnh)
 

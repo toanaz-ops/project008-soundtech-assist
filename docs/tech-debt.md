@@ -157,7 +157,11 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     packaging half of the same problem.
   - close: fix the docstring in the same commit that adds the DATAS entry (D-26)
   - status: closed 2026-08-26 — `theme/paths.py` docstring now states the mapping;
-    fixed in the same commit as **D-26** (task 1b-22)
+    fixed in the same commit as **D-26** (task 1b-22). Clarification (reviewer
+    Minor finding): there is no `theme.py` any more — it became the
+    `wing_parser/ui/theme/` package (`tokens.py`, `paths.py`, `fonts.py`,
+    `proxy_style.py`, …), so every `theme.py` citation in older documents reads
+    as that package today.
 
 - **D-17** A raising `provider_factory` propagates by design
   - owner: deliberate-no
