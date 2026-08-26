@@ -80,6 +80,11 @@ TEXTS: dict[str, str] = {
     "import.needs_kind": "Type a kind before recording — never write a blank.",
     "menu.settings": "&Settings...",
     "menu.reanalyse": "&Reanalyse",
+    "menu.recent": "Open &Recent",
+    "recent.missing.title": "File is gone",
+    "recent.missing.body": (
+        "{file} is no longer on disk — it has been removed from this list."
+    ),
     "menu.file": "&File",
     "menu.edit": "&Edit",
     "menu.tools": "&Tools",

@@ -6,8 +6,10 @@ and Session state into widgets, and holds no rule knowledge of its own.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import qtawesome as qta
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QComboBox,
@@ -33,6 +35,7 @@ from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
 from wing_parser.ui.settings_dialog import SettingsDialog
+from wing_parser.ui import state_store
 from wing_parser.ui.theme.widgets import caption_font
 from wing_parser.ui.texts import text
 
@@ -95,11 +98,12 @@ class MainWindow(QMainWindow):
     def __init__(self, session: Session | None = None) -> None:
         super().__init__()
         self.session = session
+        self._recent: list[str] = []
         self._build_menus()
         self._build_body()
         self._build_changes_dock()
         self._build_accelerators()
-        self.resize(1280, 760)
+        self._restore_state()
         self._refresh()
 
     # -- construction ---------------------------------------------------
@@ -108,6 +112,7 @@ class MainWindow(QMainWindow):
         file_menu = self.menuBar().addMenu(text("menu.file"))
         self._open_action = file_menu.addAction("&Open...", self.open_file)
         self._save_action = file_menu.addAction("Save &As...", self.save_as)
+        self._recent_menu = file_menu.addMenu(text("menu.recent"))
         edit_menu = self.menuBar().addMenu(text("menu.edit"))
         self._undo_action = edit_menu.addAction("&Undo", self.undo)
         tools_menu = self.menuBar().addMenu(text("menu.tools"))
@@ -233,6 +238,11 @@ class MainWindow(QMainWindow):
             # leave the operator with an empty window and a lost session.
             QMessageBox.critical(self, text("error.open"), str(exc))
             return
+        self._remember_recent(str(self.session.path))
+        self._adopt_session()
+
+    def _adopt_session(self) -> None:
+        """Everything a freshly opened scene needs, wherever it came from."""
         self.switch_to("doctor")
         self._show_finding(None)
         self._refresh()
@@ -271,6 +281,60 @@ class MainWindow(QMainWindow):
             self._refresh()
 
     # -- state ----------------------------------------------------------
+
+    def _restore_state(self) -> None:
+        """Geometry, last page and recents, read before first paint."""
+        state = state_store.load(config.knowledge_dir())
+        self._recent = state["recent"]
+        self._rebuild_recent_menu()
+        if state["geometry"]:
+            self.restoreGeometry(
+                QByteArray.fromHex(state["geometry"].encode("ascii"))
+            )
+        else:
+            self.resize(1280, 760)
+        if state["page"]:
+            self.switch_to(state["page"])
+
+    def _remember_recent(self, path: str) -> None:
+        self._recent = state_store.remember_recent(self._recent, path)
+        self._rebuild_recent_menu()
+
+    def _rebuild_recent_menu(self) -> None:
+        self._recent_menu.clear()
+        for entry in self._recent:
+            self._recent_menu.addAction(
+                Path(entry).name, lambda checked=False, path=entry: self._open_recent(path)
+            )
+
+    def _open_recent(self, path: str) -> None:
+        try:
+            self.session = Session.open(path)
+        except (ValueError, OSError):
+            # Chosen degradation (ruled task 1b-21): tell the operator,
+            # then drop the dead entry so the menu self-heals.
+            QMessageBox.information(
+                self,
+                text("recent.missing.title"),
+                text("recent.missing.body").format(file=path),
+            )
+            self._recent = state_store.forget_recent(self._recent, path)
+            self._rebuild_recent_menu()
+            return
+        self._remember_recent(str(self.session.path))
+        self._adopt_session()
+
+    def closeEvent(self, event) -> None:
+        row = self.sidebar.currentRow()
+        state_store.save(
+            config.knowledge_dir(),
+            {
+                "geometry": bytes(self.saveGeometry().toHex()).decode("ascii"),
+                "page": PAGE_ORDER[row] if 0 <= row < len(PAGE_ORDER) else None,
+                "recent": self._recent,
+            },
+        )
+        super().closeEvent(event)
 
     def _show_finding(self, finding) -> None:
         self.pages["doctor"].show_finding(finding)
