@@ -47,6 +47,18 @@ TEXTS: dict[str, str] = {
     "diff.error": "Cannot read that file: {error}",
     "import.pick": "Pick a rundown (.xlsx)...",
     "import.sample_pane": "What is in this workbook",
+    "import.resting": (
+        "Pick a rundown workbook (.xlsx) — its sheets and first rows "
+        "appear here, then the wizard walks you to mapping."
+    ),
+    "import.step.pick": "Pick",
+    "import.step.mapping": "Mapping",
+    "import.step.vocabulary": "Vocabulary",
+    "import.step.save": "Save",
+    "import.no_key": (
+        "No model key configured — assisted term guessing needs one."
+    ),
+    "import.open_settings": "Open Settings…",
     "import.sheet": "Sheet",
     "import.header_row": "Header row",
     "import.verified": "Model proposal verified",

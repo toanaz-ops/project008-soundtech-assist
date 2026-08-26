@@ -11,7 +11,7 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -24,17 +24,22 @@ from PySide6.QtWidgets import (
 
 from wing_parser.showcontext.ingest import sheet as sheet_mod
 from wing_parser.ui import import_controller as ic
+from wing_parser.ui.key_status import KeyStatusLine
 from wing_parser.ui.mapping_step import MappingStep
 from wing_parser.ui.pick_step import PickStep
 from wing_parser.ui.save_step import SaveStep
+from wing_parser.ui.step_rail import StepRail
 from wing_parser.ui.terms_step import TermsStep
 from wing_parser.ui.texts import text
 
 FILTER = "Excel workbook (*.xlsx)"
 SAVE_FILTER = "YAML (*.yaml);;All files (*)"
+STEPS = ("pick", "mapping", "vocabulary", "save")
 
 
 class ImportPage(QWidget):
+    open_settings_requested = Signal()
+
     def __init__(self) -> None:
         super().__init__()
         self._xlsx: str | None = None
@@ -45,14 +50,22 @@ class ImportPage(QWidget):
 
         self.status = QLabel("")
         self.status.setWordWrap(True)
+        self.key_status = KeyStatusLine()
+        self.key_status.open_settings_requested.connect(
+            self.open_settings_requested)
+        self.step_rail = StepRail(
+            tuple((s, text(f"import.step.{s}")) for s in STEPS))
 
         self.step_area = QStackedLayout()
         for step in (self._build_pick(), self._build_mapping(),
                      self._build_terms(), self._build_save()):
             self.step_area.addWidget(step)
+        self.step_area.currentChanged.connect(self.step_rail.set_step)
 
         layout = QVBoxLayout(self)
+        layout.addWidget(self.step_rail)
         layout.addWidget(self.status)
+        layout.addWidget(self.key_status)
         layout.addLayout(self.step_area)
 
     def set_session(self, session) -> None:

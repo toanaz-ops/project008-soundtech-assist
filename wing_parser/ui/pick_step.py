@@ -22,6 +22,7 @@ class PickStep(QWidget):
 
         self.sample_pane = QTextEdit()
         self.sample_pane.setReadOnly(True)
+        self.sample_pane.setPlainText(text("import.resting"))
         group = QGroupBox(text("import.sample_pane"))
         inner = QVBoxLayout(group)
         inner.addWidget(self.sample_pane)

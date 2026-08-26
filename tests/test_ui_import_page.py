@@ -223,3 +223,85 @@ def test_preview_renders_and_save_writes_utf8(bidv_terms, tmp_path):
     out = tmp_path / "out.yaml"
     assert bidv_terms.save_as(str(out))      # public seam, no dialog
     assert out.read_text(encoding="utf-8") == rendered
+
+
+# -- the step rail and the honest empty states (task 1b-19c) --------------
+
+
+def test_the_wizard_has_a_step_rail_starting_at_pick(page):
+    assert page.step_rail.step == 0
+    assert page.step_rail.names == ("pick", "mapping", "vocabulary", "save")
+    assert page.step_rail.labels[0].isEnabled()
+    assert not page.step_rail.labels[-1].isEnabled()
+
+
+def test_the_rail_follows_the_wizard(page):
+    page.pick_file(BIDV)
+    assert page.step_rail.step == 1
+
+
+def test_the_workbook_pane_says_something_at_rest(page):
+    assert page.pick_step.sample_pane.toPlainText().strip() != ""
+
+
+def test_a_missing_key_names_itself_and_offers_settings(qt_app, monkeypatch,
+                                                        tmp_path):
+    from wing_parser import config
+    from wing_parser.classifier import provider
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    monkeypatch.setenv(config.ENV_VAR, str(tmp_path / "knowledge"))
+    monkeypatch.delenv(provider.ENV_VAR, raising=False)
+    monkeypatch.chdir(tmp_path)   # away from the repo's own ./provider.yaml
+    for env in ("ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY"):
+        monkeypatch.delenv(env, raising=False)   # the machine's real keys
+    from wing_parser.ui.import_page import ImportPage
+
+    page = ImportPage()
+    assert page.key_status.text() != ""
+
+    requested = []
+    page.key_status.open_settings_requested.connect(lambda: requested.append(1))
+    page.key_status.linkActivated.emit("settings")   # the click, offscreen
+    assert requested == [1]
+
+
+def test_a_present_key_keeps_the_line_empty(qt_app, monkeypatch, tmp_path):
+    from wing_parser import config
+    from wing_parser.classifier import provider
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text("api_key: sk-test\n",
+                                             encoding="utf-8")
+    monkeypatch.setenv(config.ENV_VAR, str(knowledge))
+    monkeypatch.delenv(provider.ENV_VAR, raising=False)
+    from wing_parser.ui.import_page import ImportPage
+
+    page = ImportPage()
+    assert page.key_status.text() == ""
+
+
+def test_the_key_line_rechecks_when_the_page_is_shown(qt_app, monkeypatch,
+                                                      tmp_path):
+    from wing_parser import config
+    from wing_parser.classifier import provider
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text("api_key: sk-test\n",
+                                             encoding="utf-8")
+    monkeypatch.setenv(config.ENV_VAR, str(knowledge))
+    monkeypatch.delenv(provider.ENV_VAR, raising=False)
+    from wing_parser.ui.import_page import ImportPage
+
+    page = ImportPage()
+    assert page.key_status.text() == ""
+
+    # The named-config branch beats the knowledge-dir fallback, so a
+    # vanished WING_PROVIDER_CONFIG flips the line without touching disk.
+    monkeypatch.setenv(provider.ENV_VAR, str(tmp_path / "missing.yaml"))
+    page.show()                              # the re-check trigger
+    assert page.key_status.text() != ""

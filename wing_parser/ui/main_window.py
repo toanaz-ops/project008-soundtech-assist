@@ -96,6 +96,7 @@ class MainWindow(QMainWindow):
         self.pages["routing"] = RoutingPage()
         self.pages["diff"] = DiffPage()
         self.pages["import_"] = ImportPage()
+        self.pages["import_"].open_settings_requested.connect(self.open_settings)
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:
