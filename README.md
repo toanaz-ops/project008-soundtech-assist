@@ -47,11 +47,27 @@ or `python -m wing_parser.ui user-files\example-Vu.snap`. Both accept
 installed the command prints one line naming the extra and exits 1; the
 CLI and the engine are unaffected by its absence.
 
-The window is the advisory report. Findings fill the left pane, errors
-first, filterable by severity and by layer. Selecting one shows, on the
-right, the rule's title, the message, the rule's **rationale and source
-verbatim**, and its evidence — the rationale is on screen because it is
-the argument you are being asked to accept or reject.
+The window is a sidebar plus six pages. **Doctor** is the advisory
+report: findings fill the left pane, errors first, filterable by
+severity and by layer. Selecting one shows, on the right, the rule's
+title, the message, the rule's **rationale and source verbatim**, and
+its evidence — the rationale is on screen because it is the argument
+you are being asked to accept or reject. **Overview** shows the scene
+counts and the whole channel list at a glance; **Channels** and
+**Routing** give the classified detail; **Diff** compares the loaded
+scene against a second one, with a magnitude bar per changed value;
+**Import** walks an Excel running order through the G2a/G2b wizard.
+
+The look is one house style: a 19-token dark palette generates the
+stylesheet (no colour literal lives outside `wing_parser/ui/theme/`),
+the typefaces ship inside the app, numbers read in a mono face, and the
+sidebar marks the live page with an orange edge rather than a slab.
+Keyboard: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5, Ctrl+1…6 for the pages,
+Esc, and a tab order that stays inside the visible page — pinned by
+`tests/test_ui_keyboard.py`. Model calls (mapping proposal, vocabulary
+guess) run on cancellable workers with a timeout, so a slow provider
+never freezes the window; the app also remembers window geometry, the
+last page and your recent scenes.
 
 **Verdicts.** Three buttons under the detail — Correct, False positive,
 Irrelevant — write straight to the same `feedback.jsonl` that

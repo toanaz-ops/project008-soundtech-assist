@@ -39,6 +39,15 @@ chạy đủ, chỉ thiếu phần "đề xuất hộ".
 | [03-console-truc-tiep.md](03-console-truc-tiep.md) | Làm việc với mixer đang bật: `net identity/snapshot/get/set/toggle/push/watch` |
 | [04-cau-hinh-model.md](04-cau-hinh-model.md) | `provider.yaml`, DeepSeek, tắt model bằng `WING_DISABLE_LLM` |
 
+## Ứng dụng desktop (wing-ui)
+
+Ngoài CLI, dự án có app desktop: `wing-ui user-files\example-Vu.snap`.
+Sidebar sáu trang — **Doctor** (tư vấn), **Overview** (tổng quan),
+**Channels**, **Routing**, **Diff** (so sánh hai scene), **Import**
+(wizard đưa Excel vào) — cùng phím tắt Ctrl+O / Ctrl+Shift+S / Ctrl+Z /
+F5 / Ctrl+1…6. Mô tả đầy đủ (verdict, repair, journal, đóng gói `.exe`)
+nằm ở mục [Desktop app trong README](../../README.md#desktop-app).
+
 ## Nguyên tắc hoạt động (đọc 30 giây, hiểu mọi lệnh)
 
 1. **Offline first** — venue hay mất mạng; mọi tính năng cốt lõi không cần mạng.
