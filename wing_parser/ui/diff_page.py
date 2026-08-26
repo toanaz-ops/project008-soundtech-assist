@@ -8,7 +8,6 @@ point of the page. The right side is whatever file the operator picks.
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 import qtawesome as qta
@@ -44,12 +43,13 @@ SHOW_MAGNITUDE_BAR = True
 
 def seeded_other(session, captures: Path) -> Path:
     """A review scene for the A/B capture: the live scene with every
-    stored fader nudged +3.5 dB, written to a temp directory.
+    stored fader nudged +3.5 dB, written into the captures directory
+    the caller named.
 
     The screenshot pair is dead on an empty table, so --screenshot
     compares against this seed to give the magnitude bar real rows.
     The rows are synthetic by construction and labelled so nowhere in
-    the app itself.
+    the app itself; the seed file lands beside the PNGs as ab-seed.snap.
     """
     from wing_parser.edit import writer
 
@@ -67,8 +67,7 @@ def seeded_other(session, captures: Path) -> Path:
                 walk(item)
 
     walk(document)
-    directory = Path(tempfile.mkdtemp(prefix="wing-ui-ab-"))
-    path = directory / "ab-seed.snap"
+    path = captures / "ab-seed.snap"
     writer.write_snap(document, path)
     return path
 
