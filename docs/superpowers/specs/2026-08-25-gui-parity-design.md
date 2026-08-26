@@ -14,6 +14,13 @@ behind buttons so he can test real results in the packaged app.
 
 ## Decisions made with ToanAZ
 
+> **Superseded 2026-08-26 by wave 1b** (`2026-08-26-gui-house-style-wave1b.md`
+> and the rulings recorded in `docs/tech-debt.md`): QFluentWidgets was removed
+> (declared, never imported — D-21); the look is the Sodium Rack token table
+> with generated QSS and vendored OFL fonts; import vocabulary terms render as
+> simultaneous rows, each still requiring an explicit Record click (the G2b
+> invariant). The text below is the wave-1 record.
+
 | Question | Decision |
 |---|---|
 | Scope | B: two waves. Wave 1 = Import + Analyze/Routing/Channels/Diff. Wave 2 = Live console (`net`). |

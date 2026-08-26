@@ -47,9 +47,9 @@ def seeded_other(session, captures: Path) -> Path:
     the caller named.
 
     The screenshot pair is dead on an empty table, so --screenshot
-    compares against this seed to give the magnitude bar real rows.
-    The rows are synthetic by construction and labelled so nowhere in
-    the app itself; the seed file lands beside the PNGs as ab-seed.snap.
+    seeds the comparison with this scene to give the magnitude bar
+    real rows. The seed exists only inside the captures directory as
+    ab-seed.snap; nothing in the running app reads it.
     """
     from wing_parser.edit import writer
 

@@ -1,4 +1,4 @@
-﻿"""Middle elision that protects the tail, and the table cell painter.
+"""Middle elision that protects the tail, and the table cell painter.
 
 Handsfree's rule: an identifier cut in the middle with its last two
 characters preserved ("Ana…1") stays readable, while an end cut

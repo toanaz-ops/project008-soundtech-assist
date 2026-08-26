@@ -259,10 +259,13 @@ by the command shown. The wave-1 / wave-1b closures below were written on
   - close: the keyboard map, tab order and visible focus ring ruled by ToanAZ on
     2026-08-26; assert each accelerator in a shell test
   - status: closed 2026-08-26 — keyboard map per ruling (Ctrl+O/Ctrl+Shift+S/Ctrl+Z/Ctrl+1..6/F5/Esc), per-page tab-order tests, visible focus ring via QProxyStyle (tasks 1b-18/1b-21, `b75097c`/`e7bb449`). Two honest skips: overview/channels hold exactly one focusable widget today.
-    `menus.py` binds Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5 (`:50-54`),
-    Ctrl+1…6 and Esc in `main_window.py`, `focus_chain.py` keeps Tab
-    inside the visible page, and `HouseStyle` (`theme/proxy_style.py`)
-    draws the focus ring from the style. Close output:
+    `menus.py` binds Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5 and the
+    Ctrl+1…6 page QShortcuts; **Esc is NOT a binding** — it is
+    QDialog's built-in reject, characterised (not implemented) by
+    `test_escape_closes_the_settings_dialog`; `focus_chain.py` keeps
+    Tab inside the visible page, and `HouseStyle`
+    (`theme/proxy_style.py`) draws the focus ring from the style.
+    Close output:
     `tests/test_ui_keyboard.py` (161 lines) passes — inside
     `45 passed, 2 skipped` (measured 2026-08-26 on `04db887`).
 
@@ -358,6 +361,66 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     works today, misleads the next texts.py reader.
   - close: add settings.cancel key and consume it.
   - status: open
+
+- **D-32** `fonts._family_for` falls back silently when a face is missing
+  - owner: machine-doable (parked — guarded elsewhere)
+  - evidence: final review 2026-08-26, `wing_parser/ui/theme/fonts.py` — a
+    missing face returns `QFont().family()` instead of failing; the
+    `failed() == ()` test is the only guard.
+  - close: raise or return a guaranteed-absent name; keep the failed() pin.
+  - status: open
+
+- **D-33** `theme/install.py` bypasses the stylesheet cache; qtawesome
+  ImportError degrades silently
+  - owner: machine-doable (parked — cosmetic)
+  - evidence: final review 2026-08-26 — apply() calls `qss.build()` directly
+    so applied sheet and cached copy come from different paths; bare
+    `except ImportError: pass` around qtawesome means missing icon dep ships
+    unstyled icons with no log.
+  - close: route through load_stylesheet(); log once on qtawesome miss.
+  - status: open
+
+- **D-34** Magnitude-bar peak cache keyed on row count only
+  - owner: machine-doable (parked — latent)
+  - evidence: final review 2026-08-26, `wing_parser/ui/elide.py` `_bar_peak` —
+    same row count with different data scales bars against a stale peak.
+    Latent because compare rebuilds rows wholesale.
+  - close: invalidate on model reset / dataChanged.
+  - status: open
+
+- **D-35** `SHOW_MAGNITUDE_BAR` restore in --screenshot is not exception-safe
+  - owner: machine-doable (parked — process exits anyway)
+  - evidence: final review 2026-08-26, `wing_parser/ui/__main__.py` A/B block;
+    a raise between flag-off and flag-on leaves it off. Impact nil (screenshot
+    mode exits); corroborated by the offscreen COM banner there.
+  - close: wrap in try/finally on next touch of that block.
+  - status: open
+
+- **D-36** `tests/test_ui_elide.py` shipped with a UTF-8 BOM
+  - owner: machine-doable
+  - evidence: final review 2026-08-26 measured `EF BB BF`; violates the house
+    UTF-8 rule the same branch enforces for its qss templates.
+  - close: strip bytes; done in the final-review fix commit.
+  - status: closed 2026-08-26 — BOM stripped (`xxd`-equivalent byte read shows
+    `2F 20` head now); no test change needed.
+
+- **D-37** Delegate paint-elision smoke test asserts nothing
+  - owner: machine-doable (parked)
+  - evidence: final review 2026-08-26, tests/test_ui_elide.py paint smoke —
+    renders but no assertion; bar tests carry real pixel assertions.
+  - close: one pixel-differs-vs-untruncated assertion.
+  - status: open
+
+- **D-38** Spec text still promises the removed QFluentWidgets shell
+  - owner: machine-doable
+  - evidence: final review 2026-08-26 — spec `2026-08-25-gui-parity-design.md`
+    §Theme still names QFluentWidgets components + hidden-import hooks after
+    D-21's removal ruling; also §Import says terms are offered "one at a
+    time" while TermsStep renders simultaneous rows (explicit-Record
+    invariant preserved).
+  - close: add a superseding note pointing at the wave-1b plan + rulings.
+  - status: closed 2026-08-26 — superseding note added to the spec in the
+    final-review fix commit.
 
 ---
 
