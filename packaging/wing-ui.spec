@@ -20,26 +20,40 @@
 
 from PyInstaller.utils.hooks import collect_submodules
 
+import os
+
+# A bare ".." in pathex resolves against the CURRENT DIRECTORY at
+# build time, not the spec directory, so it silently ships an exe
+# without wing_parser in it. Anchor on SPECPATH (where this spec
+# lives) instead.
+PATH_TO_REPO_ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
+
 DATAS = [
     ("../wing_parser/advisory/base_rules", "wing_parser/advisory/base_rules"),
     ("../wing_parser/classifier/data", "wing_parser/classifier/data"),
     ("../wing_parser/descriptors/data", "wing_parser/descriptors/data"),
     ("../wing_parser/edit/data", "wing_parser/edit/data"),
+    # Theme resources (qss templates, vendored fonts, licences).
+    # resource_path() maps this directory to the same relative position
+    # in dev and under sys._MEIPASS, so one entry serves both.
+    ("../wing_parser/ui/resources", "wing_parser/ui/resources"),
     # The seed. Target path must match config._REPO_DEFAULT, which is
     # <bundle root>/knowledge/toanaz.
     ("../knowledge/toanaz", "knowledge/toanaz"),
 ]
 
 # Optional extras this build deliberately does not carry. The tool is
-# for venues where the network is unreliable or absent, and the desktop
-# app adds no network surface of its own.
-EXCLUDES = ["anthropic", "mcp", "pytest", "PySide6.QtWebEngineCore"]
+# for venues where the network is unreliable or absent, but Settings
+# does perform user-initiated provider calls (the Test connection
+# button), so the anthropic SDK is NOT excluded -- only mcp, pytest
+# and the web engine are.
+EXCLUDES = ["mcp", "pytest", "PySide6.QtWebEngineCore"]
 
 analysis = Analysis(
     ["wing-ui.py"],
-    pathex=[".."],
+    pathex=[PATH_TO_REPO_ROOT],
     datas=DATAS,
-    hiddenimports=collect_submodules("wing_parser"),
+    hiddenimports=collect_submodules("wing_parser") + ["qtawesome"],
     excludes=EXCLUDES,
     noarchive=False,
 )

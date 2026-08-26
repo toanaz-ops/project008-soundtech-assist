@@ -1,0 +1,155 @@
+/* WING Parser house stylesheet -- GENERATED, not hand-edited colours.
+   Every colour here is substituted from the token table by
+   wing_parser.ui.theme.qss.
+   Plain Qt QSS has no CSS custom properties (tech-debt D-20); this
+   template plus string.Template.substitute() is the mechanism instead.
+   A missing or misspelt token raises at startup rather than shipping
+   a literal placeholder into a rule Qt discards silently.
+
+   NO type declarations of any kind here (no face, size, weight):
+   such a rule would override the tracking-carrying QFont, and Qt
+   QSS has no letter-spacing to put it back.
+*/
+
+QWidget {
+    background: $background;
+    color: $text;
+}
+
+/* -- tables and headers ------------------------------------------------ */
+
+QTableView {
+    alternate-background-color: $panel;
+    gridline-color: $grid;
+    selection-background-color: $accent;
+    selection-color: $shade;
+}
+
+QHeaderView::section {
+    background: $panel;
+    color: $dim;
+    border: none;
+    border-bottom: 1px solid $border;
+    border-right: 1px solid $grid;
+    padding: ${METRICS_unit}px;
+}
+
+QTableCornerButton::section {
+    background: $panel;
+    border: none;
+    border-bottom: 1px solid $border;
+}
+
+/* -- inputs ------------------------------------------------------------ */
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QSpinBox {
+    background: $well;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    padding: 2px ${METRICS_unit}px;
+}
+
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QSpinBox:focus {
+    border: 1px solid $accent;
+}
+
+QComboBox {
+    background: $well;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    padding: 2px ${METRICS_unit}px 2px ${METRICS_gap}px;
+}
+
+QComboBox:hover {
+    border: 1px solid $faded;
+}
+
+QComboBox:focus {
+    border: 1px solid $accent;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: ${METRICS_field_height}px;
+}
+
+QComboBox QAbstractItemView {
+    background: $raise_;
+    color: $text;
+    border: 1px solid $border;
+    selection-background-color: $accent;
+    selection-color: $shade;
+}
+
+QPushButton {
+    background: $raise_;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    padding: ${METRICS_unit}px ${METRICS_gap}px;
+    min-height: ${METRICS_field_height}px;
+}
+
+QPushButton:hover {
+    border: 1px solid $faded;
+}
+
+QPushButton:pressed {
+    background: $well;
+}
+
+QPushButton:disabled {
+    color: $faded;
+    border: 1px solid $grid;
+}
+
+/* Destructive: outline only, fills on hover -- never a solid slab. */
+QPushButton[azStyle="danger"] {
+    background: transparent;
+    color: $danger;
+    border: 1px solid $danger;
+}
+
+QPushButton[azStyle="danger"]:hover {
+    background: $danger;
+    color: $shade;
+}
+
+/* :hover also matches while pressed (equal specificity, later rule
+   wins), so the pressed state must name BOTH properties or the hover
+   pair bleeds through and the label can vanish. Invert: shade fill,
+   danger text. */
+QPushButton[azStyle="danger"]:pressed {
+    background: $shade;
+    color: $danger;
+}
+
+/* -- containers ------------------------------------------------------- */
+
+QGroupBox {
+    background: $panel;
+    border: 1px solid $border;
+    border-radius: ${METRICS_radius_field}px;
+    margin-top: ${METRICS_gap}px;
+    padding: ${METRICS_margin}px ${METRICS_gap}px ${METRICS_gap}px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: ${METRICS_margin}px;
+    top: ${METRICS_gap}px;
+    padding: 0 3px;
+    color: $dim;
+}
+
+Caption {
+    color: $dim;
+}

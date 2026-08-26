@@ -1,88 +1,109 @@
-"""The window shell: menus, file dialogs, layout and the title.
+"""The window shell: pages, sidebar, dock and title.
 
 Behaviour lives in Session. This file turns clicks into Session calls
-and Session state into widgets, and holds no rule knowledge of its own.
+and Session state into widgets, and holds no rule knowledge of its
+own. The task-C split moved the menus and their actions into
+`menus.py`, the persistence wiring into `window_state.py` and the Tab
+chain into `focus_chain.py`, keeping every file under the cap.
 """
 
 from __future__ import annotations
 
+import qtawesome as qta
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QComboBox,
     QDockWidget,
-    QFileDialog,
+    QHBoxLayout,
+    QListWidget,
+    QListWidgetItem,
     QMainWindow,
-    QMessageBox,
-    QSplitter,
-    QVBoxLayout,
+    QScrollArea,
+    QStackedWidget,
     QWidget,
 )
 
-from wing_parser import config
+from wing_parser.ui import menus, state_store, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
-from wing_parser.ui.detail_panel import DetailPanel
-from wing_parser.ui.findings_view import FindingsView
+from wing_parser.ui.channels_page import ChannelsPage
+from wing_parser.ui.diff_page import DiffPage
+from wing_parser.ui.doctor_page import DoctorPage
+from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops
+from wing_parser.ui.import_page import ImportPage
+from wing_parser.ui.overview_page import OverviewPage
+from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
-from wing_parser.ui.verdict_bar import VerdictBar
+from wing_parser.ui.theme.widgets import caption_font
+from wing_parser.ui.texts import text
 
-FILTER = "WING scene (*.snap);;All files (*)"
+PAGE_ORDER = list(state_store.PAGE_KEYS)
+
+PAGE_ICONS = {
+    "doctor": "fa5s.stethoscope",
+    "overview": "fa5s.chart-bar",
+    "channels": "fa5s.sliders-h",
+    "routing": "fa5s.project-diagram",
+    "diff": "fa5s.code-branch",
+    "import_": "fa5s.file-import",
+}
 
 
 class MainWindow(QMainWindow):
     def __init__(self, session: Session | None = None) -> None:
         super().__init__()
         self.session = session
-        self._build_menus()
+        self._recent: list[str] = []
+        menus.build_menus(self)
         self._build_body()
         self._build_changes_dock()
-        self.resize(1280, 760)
+        menus.build_accelerators(self)
+        window_state.restore(self)
         self._refresh()
 
     # -- construction ---------------------------------------------------
 
-    def _build_menus(self) -> None:
-        file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction("&Open...", self.open_file)
-        self._save_action = file_menu.addAction("Save &As...", self.save_as)
-        edit_menu = self.menuBar().addMenu("&Edit")
-        self._undo_action = edit_menu.addAction("&Undo", self.undo)
-        help_menu = self.menuBar().addMenu("&Help")
-        help_menu.addAction("Where my judgements are stored...", self.show_knowledge_dir)
-
-    def show_knowledge_dir(self) -> None:
-        """Name the directory holding the verdict log and the principles.
-
-        Worth a menu item because in a packaged build it is not where
-        anyone would guess: the app runs from one place and keeps his
-        work in another, since a frozen bundle is deleted on exit.
-        """
-        directory = config.knowledge_dir()
-        QMessageBox.information(
-            self,
-            "Knowledge directory",
-            f"Verdicts, principles and show profiles live in:\n\n{directory}\n\n"
-            f"feedback.jsonl holds every verdict recorded here.\n"
-            f"principles.yaml and shows/ are yours to edit.",
-        )
-
     def _build_body(self) -> None:
-        self.findings_view = FindingsView()
-        self.detail_panel = DetailPanel()
-        self.verdict_bar = VerdictBar()
+        self.pages: dict[str, QWidget] = {"doctor": DoctorPage()}
+        self.pages["doctor"].repaired.connect(self._refresh)
+        self.pages["overview"] = OverviewPage()
+        self.pages["channels"] = ChannelsPage()
+        self.pages["routing"] = RoutingPage()
+        self.pages["diff"] = DiffPage()
+        self.pages["import_"] = ImportPage()
+        self.pages["import_"].open_settings_requested.connect(self.open_settings)
 
-        self.findings_view.selected.connect(self._show_finding)
-        self.detail_panel.repaired.connect(self._refresh)
+        self.stack = QStackedWidget()
+        for key in PAGE_ORDER:
+            self.stack.addWidget(self.pages[key])
 
-        right = QWidget()
-        right_layout = QVBoxLayout(right)
-        right_layout.addWidget(self.detail_panel, stretch=1)
-        right_layout.addWidget(self.verdict_bar)
+        self.sidebar = QListWidget()
+        self.sidebar.setObjectName("sidebar")
+        self.sidebar.setFont(caption_font())
+        for key in PAGE_ORDER:
+            label = text(f"page.{key.removesuffix('_')}")
+            item = QListWidgetItem(qta.icon(PAGE_ICONS[key]), label.upper())
+            self.sidebar.addItem(item)
+        self.sidebar.currentRowChanged.connect(self.stack.setCurrentIndex)
+        self.sidebar.setCurrentRow(0)
 
-        body = QSplitter(Qt.Orientation.Horizontal)
-        body.addWidget(self.findings_view)
-        body.addWidget(right)
-        body.setStretchFactor(0, 3)
-        body.setStretchFactor(1, 2)
-        self.setCentralWidget(body)
+        body = QHBoxLayout()
+        body.addWidget(self.sidebar)
+        body.addWidget(self.stack, stretch=1)
+        central = QWidget()
+        central.setLayout(body)
+        self.setCentralWidget(central)
+
+        for key in PAGE_ORDER:
+            _chain_tab_order(self.pages[key])
+
+    def switch_to(self, key: str) -> None:
+        try:
+            row = PAGE_ORDER.index(key)
+        except ValueError:
+            raise KeyError(
+                f"unknown page {key!r}; valid keys are {PAGE_ORDER}"
+            ) from None
+        self.sidebar.setCurrentRow(row)
 
     def _build_changes_dock(self) -> None:
         self.changes_panel = ChangesPanel()
@@ -92,63 +113,70 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self._changes_dock)
         self._changes_dock.setVisible(False)
 
-    # -- actions --------------------------------------------------------
+    # -- delegating attributes -------------------------------------------
+
+    @property
+    def findings_view(self):
+        return self.pages["doctor"].findings_view
+
+    @property
+    def detail_panel(self):
+        return self.pages["doctor"].detail_panel
+
+    @property
+    def verdict_bar(self):
+        return self.pages["doctor"].verdict_bar
+
+    # -- actions: seams here; bodies live beside their menus -------------
+
+    def open_settings(self) -> None:
+        menus.open_settings(self)
+
+    def show_knowledge_dir(self) -> None:
+        window_state.show_knowledge_dir(self)
 
     def open_file(self) -> None:
-        name, _ = QFileDialog.getOpenFileName(self, "Open a WING scene", "", FILTER)
-        if not name:
-            return
-        try:
-            self.session = Session.open(name)
-        except (ValueError, OSError) as exc:
-            # Stay on the scene already loaded. A failed Open must never
-            # leave the operator with an empty window and a lost session.
-            QMessageBox.critical(self, "Cannot open that file", str(exc))
-            return
-        self._show_finding(None)
-        self._refresh()
+        menus.open_file(self)
 
     def save_as(self) -> None:
-        if self.session is None:
-            return
-        suggested = str(
-            self.session.path.with_name(self.session.path.stem + "-edited.snap")
-        )
-        name, _ = QFileDialog.getSaveFileName(
-            self, "Save the edited scene", suggested, FILTER
-        )
-        if not name:
-            return
-        try:
-            self.session.save_as(name)
-        except OSError as exc:
-            # The journal is untouched and the window stays dirty.
-            QMessageBox.critical(self, "Cannot save", str(exc))
-            return
-        QMessageBox.information(self, "Saved", f"Wrote {name}")
+        menus.save_as(self)
 
     def undo(self) -> None:
-        if self.session is not None and self.session.undo():
-            self._refresh()
+        menus.undo(self)
+
+    def reanalyse(self) -> None:
+        menus.reanalyse(self)
 
     # -- state ----------------------------------------------------------
 
+    def _remember_recent(self, path: str) -> None:
+        window_state.remember_recent(self, path)
+
+    def _open_recent(self, path: str) -> None:
+        window_state.open_recent(self, path)
+
+    def closeEvent(self, event) -> None:
+        window_state.save_on_close(self)
+        super().closeEvent(event)
+
     def _show_finding(self, finding) -> None:
-        self.detail_panel.show_finding(finding, self.session)
-        self.verdict_bar.show_finding(finding, self.session)
+        self.pages["doctor"].show_finding(finding)
 
     def _refresh(self) -> None:
         loaded = self.session is not None
         self._save_action.setEnabled(loaded)
         self._undo_action.setEnabled(loaded and self.session.dirty)
+        self._reanalyse_action.setEnabled(loaded)
 
-        self.findings_view.set_findings(self.session.findings() if loaded else [])
+        for page in self.pages.values():
+            if hasattr(page, "set_session"):
+                page.set_session(self.session)
+
         self.changes_panel.set_changes(self.session.changes() if loaded else ())
         self._changes_dock.setVisible(loaded and self.session.dirty)
 
         if not loaded:
-            self.setWindowTitle("wing")
-            self._show_finding(None)
+            self.setWindowTitle(text("app.title"))
             return
         mark = " *" if self.session.dirty else ""
         profile = f"  [{self.session.profile}]" if self.session.profile else ""

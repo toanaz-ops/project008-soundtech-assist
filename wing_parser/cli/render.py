@@ -44,6 +44,11 @@ def scene_overview(scene) -> str:
 
 
 def channel_detail(channel) -> str:
+    """One channel as text lines for the CLI.
+
+    Keep in sync with wing_parser.ui.data.channel_detail_rows — the
+    duplication is deliberate (text vs widget rows, see that docstring).
+    """
     source = channel.source
     lines = [
         f"Channel {channel.number}: {channel.name!r}",

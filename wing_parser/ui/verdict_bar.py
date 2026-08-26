@@ -66,8 +66,10 @@ class VerdictBar(QWidget):
 
     def show_finding(self, finding: Finding | None, session) -> None:
         self._finding, self._session = finding, session
+        live = finding is not None
         for button in self.buttons.values():
-            button.setEnabled(finding is not None)
+            button.setEnabled(live)
+        self.note.setEnabled(live)
         self.tally.setText(self._tally_text(finding))
 
     def _tally_text(self, finding: Finding | None) -> str:

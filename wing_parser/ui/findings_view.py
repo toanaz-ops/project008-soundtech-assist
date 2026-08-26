@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.advisory.models import LAYERS, SEVERITIES, Finding
+from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.findings_model import FindingsModel
 
 ALL = "all"
@@ -49,6 +50,9 @@ class FindingsView(QWidget):
         self._table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self._table.selectionModel().selectionChanged.connect(self._emit_selection)
         self._table.verticalHeader().setVisible(False)
+        # targets are identifiers cut in the middle, tail protected; the
+        # message is prose, cut with Qt's own middle elision.
+        self._table.setItemDelegate(MonoDelegate(prose_columns={3}))
         header = self._table.horizontalHeader()
         header.setStretchLastSection(False)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
@@ -68,6 +72,15 @@ class FindingsView(QWidget):
     def set_findings(self, findings: list[Finding]) -> None:
         self._all = list(findings)
         self._apply_filters()
+
+    def select_first(self) -> None:
+        """Programmatic: light row 0 without announcing it as a click."""
+        if not self._model.rowCount():
+            return
+        selection = self._table.selectionModel()
+        was_blocked = selection.blockSignals(True)
+        self._table.selectRow(0)
+        selection.blockSignals(was_blocked)
 
     def visible_findings(self) -> list[Finding]:
         severity, layer = self._severity.currentText(), self._layer.currentText()

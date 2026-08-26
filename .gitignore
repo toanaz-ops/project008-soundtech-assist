@@ -39,3 +39,6 @@ Thumbs.db
 /pytest_out.log
 /baseline.txt
 /*.junit.xml
+
+screenshots/
+shots-test/

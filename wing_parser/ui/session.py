@@ -74,6 +74,14 @@ class Session:
         self._derive()
         return True
 
+    def reanalyse(self) -> None:
+        """Re-run the whole derive pipeline against the current journal.
+
+        The public face of the F5 accelerator: findings and rules are
+        recomputed from the patched document, never carried over stale.
+        """
+        self._derive()
+
     def changes(self) -> tuple[Patch, ...]:
         return self._journal.patches()
 

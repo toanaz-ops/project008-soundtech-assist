@@ -1,7 +1,8 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-24, sub-project G2b complete · **`main` @ `5f4e2a6`** ·
-1266 tests passing → **1271** after G2b's fix wave, 21 skipped (environmental)
+**Last updated:** 2026-08-26, GUI waves 1+1b complete on
+**`feature/gui-parity-wave1`** (`04db887`, not yet merged to `main`) ·
+**1433 passed / 3 skipped** measured on that commit
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -31,8 +32,9 @@ decided and why.
 live console ┘        (showcontext/ attaches a cue sheet alongside)
    net/                (net/watch/ polls a live desk for changes)
                        (showcontext/ingest/ builds a cue sheet from a spreadsheet)
-   edit/ + ui/         (desktop app: journal, repairs, PySide findings UI;
-                        packaging/wing-ui builds a standalone .exe)
+   edit/ + ui/         (desktop app: six-page wing-ui over doctor/analyze/
+                        channels/routing/diff/import; packaging/wing-ui
+                        builds a standalone .exe)
 ```
 
 ## 2. Standing constraints that shape every decision below
@@ -71,6 +73,8 @@ subsystem; each handoff records what it measured and what it left open.
 | C2 | **Live watch** | `wing net watch` polls a live desk for changes. | 1055 |
 | G2a | **Assisted ingest (deterministic half)** | `wing showcontext import` — an Excel running order becomes a show-context file, entirely offline. | **1134** |
 | G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | **1271** |
+| GUI 1 | **Desktop GUI parity** | The six-page sidebar app — Doctor, Overview, Channels, Routing, Diff, and the G2a/G2b Import wizard — replacing the doctor-only window: every page backed by the same query/advisory layer as the CLI, all user-facing strings through `texts.py`. Tasks 0–13 of the wave-1 plan. | **1342** (1 skipped) |
+| GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
 
 ### Where each one's paperwork lives
 
@@ -85,6 +89,8 @@ subsystem; each handoff records what it measured and what it left open.
 | C2 | `2026-08-21-live-watch-design.md` | `2026-08-21-live-watch.md` | `2026-08-22-live-watch-complete.md` |
 | G2a | `2026-08-22-assisted-ingest-design.md` | `2026-08-22-assisted-ingest-g2a.md` | `2026-08-22-assisted-ingest-g2a-complete.md` |
 | G2b | `2026-08-24-g2b-assisted-ingest-model-design.md` | `2026-08-24-g2b-assisted-ingest-model.md` | — |
+| GUI 1 | `2026-08-25-gui-parity-design.md` | `2026-08-25-gui-parity-wave1.md` | `2026-08-26-gui-house-style-complete.md` (covers both waves) |
+| GUI 1b | `2026-08-25-gui-parity-design.md` §house-style + the wave-1b plan's own bindings | `2026-08-26-gui-house-style-wave1b.md` | `2026-08-26-gui-house-style-complete.md` |
 
 Specs are in `docs/superpowers/specs/`, plans in `docs/superpowers/plans/`,
 handoffs in `docs/handoff/`.
