@@ -66,4 +66,35 @@ CONSOLE_TEXTS: dict[str, str] = {
     "console.export_title": "Export the pulled scene",
     "console.exported": "Exported to {file}",
     "console.export_failed": "Could not write {file}: {error}",
+    "console.watch": "Watch",
+    "console.start": "Start watch",
+    "console.stop": "Stop",
+    "console.reconnect": "Reconnect",
+    "console.interval": "Interval",
+    "console.interval_suffix": " s",
+    "console.col.time": "Time (s)",
+    "console.col.strip": "Strip",
+    "console.col.key": "Key",
+    "console.col.change": "Change",
+    # Two value cells, formatted where every other value cell is: a
+    # repr, so "0" and 0 never read the same, and the arrow is language
+    # like any other glyph.
+    "console.event_time": "{seconds:.2f}",
+    "console.event_change": "{before!r} → {after!r}",
+    "console.watching": "Watching {host} — {total} leaves.",
+    "console.watch_rate": "{rate:.2f} events/s · {elapsed:.1f} s elapsed",
+    "console.stopping": "Stopping — the watch ends after this round.",
+    "console.watch_stopped": (
+        "Watch ended — {events} event(s) over {rounds} round(s)."
+    ),
+    "console.watch_cancelled": (
+        "Watch stopped — the events above stay on screen."
+    ),
+    "console.watch_lost": (
+        "Lost {host}: {error} — the events above are real. Reconnect to "
+        "carry on."
+    ),
+    "console.no_watch_list": (
+        "Discover the console first — a watch needs the leaf list."
+    ),
 }

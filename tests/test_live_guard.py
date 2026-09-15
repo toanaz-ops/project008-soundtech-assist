@@ -23,7 +23,13 @@ from wing_parser.net.codec import OscMessage
 from wing_parser.net.watch import poller
 from wing_parser.net.watch.events import split_address
 from wing_parser.net.watch.list import FAMILIES, WatchList, load_watch_keys
-from wing_parser.ui.live_guard import Cancelled, DeskLost, RoundGuard, watch_rate
+from wing_parser.ui.live_guard import (
+    DEFAULT_INTERVAL,
+    Cancelled,
+    DeskLost,
+    RoundGuard,
+    watch_rate,
+)
 
 HOST = "192.168.128.28"
 
@@ -235,3 +241,8 @@ def test_watch_rate_returns_events_per_second_and_elapsed():
 def test_watch_rate_is_zero_rather_than_a_zero_division_at_time_zero():
     assert watch_rate(7, 0.0) == (0.0, 0.0)
     assert watch_rate(0, 0.0) == (0.0, 0.0)
+
+
+def test_the_default_interval_is_the_pollers_own():
+    """`LiveEventsView`'s spin defaults to this; `net` is spelled once."""
+    assert DEFAULT_INTERVAL == poller.DEFAULT_INTERVAL

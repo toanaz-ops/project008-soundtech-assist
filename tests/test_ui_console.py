@@ -792,3 +792,203 @@ def test_a_pull_is_refused_from_a_state_that_does_not_allow_it(
 
     assert not panel.pull_now(), "a pull started while the watch was running"
     assert panel._state is LiveState.WATCHING, "and the watch state survived"
+
+
+# -- the watch: LiveEventsView (task 12) -------------------------------------
+#
+# Every watch below runs the REAL `poller.watch` over a `FakeDesk` whose
+# rounds are scripted (D5, spec S9.1) -- no socket, and no stand-in loop
+# written to agree with the widget. The interval is pushed to the spin's
+# floor so a bounded `settle` pump covers several rounds; nothing here
+# waits a real second.
+
+FAST = 0.05          # the interval spin's floor, in seconds
+TIME, STRIP, KEY, CHANGE = 0, 1, 2, 3
+
+
+def _fader(address, db):
+    from wing_parser.net.codec import OscMessage
+
+    return OscMessage(address, "sff", (str(db), 0.5, db))
+
+
+def _mute(address, on):
+    from wing_parser.net.codec import OscMessage
+
+    return OscMessage(address, "sfi", (str(on), float(on), on))
+
+
+def _watch_desk(rounds):
+    """One strip, three leaves, and a scripted round per `get_many`.
+
+    `poller.watch` spends one round on `read_labels` and one on the
+    priming sample before its first loop round (`poller.py:84-86`), so
+    every script below opens with two no-change entries.
+    """
+    from tests.fake_desk import FakeDesk
+
+    leaves = {
+        "/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0),
+        "/ch/1/$mute": _mute("/ch/1/$mute", 0),
+        "/ch/1/name": _nameleaf(),
+    }
+    return FakeDesk(leaves=leaves, rounds=rounds, strips={"ch": 1})
+
+
+def _nameleaf():
+    from wing_parser.net.codec import OscMessage
+
+    return OscMessage("/ch/1/name", "s", ("KICK",))
+
+
+def _events_view(desk, fast=True, **kwargs):
+    """A `LiveEventsView` over `desk`, discovered and ready to watch."""
+    from wing_parser.ui.live_events_view import LiveEventsView
+    from wing_parser.ui.live_state import LiveState
+
+    transport = desk.transport()
+    view = LiveEventsView(transport=transport, **kwargs)
+    view.set_host(HOST)
+    view.set_watch_list(transport.walk(HOST))
+    view.set_state(LiveState.CONNECTED)
+    if fast:
+        view.bar.interval.setValue(FAST)
+    return view
+
+
+def _quiet(view, settle):
+    """Stop the watch and wait for its thread -- no test leaves one running."""
+    view.stop_watch()
+    assert settle(lambda: not view.is_watching()), "the watch thread never ended"
+
+
+def _two_events():
+    """$fdr moves on round 1, $mute on round 2, then steady state."""
+    return [
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0)},          # read_labels
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0)},          # priming sample
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -3.0)},          # round 1
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -3.0),           # round 2, and
+         "/ch/1/$mute": _mute("/ch/1/$mute", 1)},            # every round after
+    ]
+
+
+def test_the_interval_spin_starts_at_the_pollers_default(qt_app):
+    """0.25 s, and the floor is not zero: an unpaced loop is a flood."""
+    from wing_parser.ui.live_guard import DEFAULT_INTERVAL
+
+    view = _events_view(_watch_desk([]), fast=False)
+    assert view.bar.interval.value() == DEFAULT_INTERVAL == 0.25
+    assert view.bar.interval.minimum() == FAST
+
+
+def test_scripted_changes_land_in_the_table_in_order(qt_app, settle):
+    view = _events_view(_watch_desk(_two_events()))
+    started = []
+    view.started.connect(lambda: started.append(True))
+
+    assert view.start_watch(), "the watch never began"
+    assert started == [True]
+    assert settle(lambda: view.model.rowCount() >= 2), "only one round landed"
+
+    keys = [view.model.item(row, KEY).text() for row in range(2)]
+    assert keys == ["$fdr", "$mute"], "the poller's order is the table's order"
+    _quiet(view, settle)
+
+
+def test_the_row_shows_the_strip_label_the_key_and_before_to_after(
+        qt_app, settle):
+    view = _events_view(_watch_desk(_two_events()))
+    assert view.start_watch()
+    assert settle(lambda: view.model.rowCount() >= 1)
+
+    assert view.model.item(0, STRIP).text() == "KICK", "the strip's own name"
+    assert view.model.item(0, KEY).text() == "$fdr"
+    cell = view.model.item(0, CHANGE).text()
+    assert "-6.0" in cell and "-3.0" in cell and "→" in cell, cell
+    float(view.model.item(0, TIME).text())     # the poller's own elapsed
+    _quiet(view, settle)
+
+
+def test_stop_settles_the_worker_and_restores_the_buttons(qt_app, settle):
+    from wing_parser.ui.live_state import LiveState
+
+    view = _events_view(_watch_desk(_two_events()))
+    ended = []
+    view.stopped.connect(lambda: ended.append(True))
+
+    assert view.start_watch()
+    assert view._state is LiveState.WATCHING
+    assert not view.bar.start_button.isEnabled()
+    assert settle(lambda: view.model.rowCount() >= 1)
+
+    assert view.stop_watch(), "Stop was refused while the watch was running"
+    assert settle(lambda: bool(ended)), "stopped never arrived"
+    assert settle(lambda: not view.is_watching()), "the thread outlived Stop"
+    assert view._state is LiveState.CONNECTED
+    assert view.bar.start_button.isEnabled()
+    assert not view.bar.stop_button.isEnabled()
+    assert view.model.rowCount() >= 1, "Stop keeps what the watch collected"
+
+
+def test_desk_lost_leaves_the_events_on_screen_and_offers_reconnect(
+        qt_app, settle):
+    """D6 + the spec's `lost` state: the events above the banner were real."""
+    from wing_parser.ui.live_guard import DeskLost
+    from wing_parser.ui.live_state import LiveState
+
+    desk = _watch_desk([
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0)},      # read_labels
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0)},      # priming sample
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -3.0)},      # round 1: one event
+        {}, {}, {},                                      # three silent rounds
+    ])
+    view = _events_view(desk)
+    gone = []
+    view.lost.connect(gone.append)
+
+    assert view.start_watch()
+    assert settle(lambda: bool(gone)), "the desk was never declared lost"
+    assert isinstance(gone[0], DeskLost) and gone[0].rounds == 3
+    assert view._state is LiveState.LOST
+    assert view.model.rowCount() == 1, "the event it did see stays on screen"
+    assert view.bar.reconnect_button.isVisibleTo(view.bar), "Reconnect is offered"
+    assert view.bar.reconnect_button.isEnabled()
+    assert settle(lambda: not view.is_watching())
+
+    asked = []
+    view.reconnect_requested.connect(lambda: asked.append(True))
+    view.bar.reconnect_button.click()
+    assert asked == [True]
+
+
+def test_the_rate_line_comes_from_watch_rate_not_from_the_widget(
+        qt_app, settle, monkeypatch):
+    """No arithmetic in the widget: the line follows `watch_rate` exactly."""
+    from wing_parser.ui import live_guard
+
+    monkeypatch.setattr(live_guard, "watch_rate", lambda events, seconds: (42.0, 7.0))
+    view = _events_view(_watch_desk([]))
+
+    assert view.start_watch()
+    assert "42.00" in view.bar.rate_label.text(), view.bar.rate_label.text()
+    assert "7.0" in view.bar.rate_label.text(), view.bar.rate_label.text()
+    _quiet(view, settle)
+
+
+def test_a_watch_is_refused_without_a_leaf_list_or_from_the_wrong_state(
+        qt_app):
+    """Both guards, and neither may start a thread."""
+    from wing_parser.ui.live_state import LiveState
+
+    view = _events_view(_watch_desk([]))
+    view.set_watch_list(None)
+    assert not view.start_watch(), "a watch began with nothing to watch"
+    assert view.status_label.text()
+    assert not view.is_watching()
+
+    view.set_watch_list(view._transport.walk(HOST))
+    view.set_state(LiveState.PULLING)
+    assert not view.start_watch(), "a watch began while a pull was running"
+    assert view._state is LiveState.PULLING
+    assert not view.is_watching()

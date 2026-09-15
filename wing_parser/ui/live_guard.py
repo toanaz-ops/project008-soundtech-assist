@@ -19,6 +19,14 @@ from __future__ import annotations
 import threading
 from typing import Any, Callable
 
+# `net/watch/poller.py:20`'s own DEFAULT_INTERVAL, restated rather than
+# imported: nothing under `ui/` but `live_controller.py` may name `net`,
+# and `Transport` carries no such field for it to travel on. The two are
+# pinned equal by
+# `tests/test_live_guard.py::test_the_default_interval_is_the_pollers_own`
+# -- the one wave-2 test file already allowed to name both sides.
+DEFAULT_INTERVAL = 0.25
+
 
 class Cancelled(Exception):
     """Stop was pressed. Not a failure -- the operator asked."""
