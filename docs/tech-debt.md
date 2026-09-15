@@ -277,7 +277,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     user-facing strings go through `wing_parser/ui/texts.py`.
   - close: move them into `texts.py`; add a test that scans `wing_parser/ui/` for
     quoted strings passed to `setText`/`setWindowTitle`/`QMessageBox`
-  - status: open (narrowed 2026-08-26) — the twelve enumerated strings moved to texts.py (task 16W1 `6d131c2`); still owed: the repo-wide scanner test over setText/setWindowTitle/QMessageBox literals.
+  - status: closed 2026-09-15 — `ast` scanner over `wing_parser/ui/**/*.py` fails naming file:line for any literal handed to setText/setWindowTitle/setToolTip/setPlaceholderText/addMenu/addAction/a QMessageBox static; the eight it found routed through texts.py (`0a7eaa2`, `6be328e`, `fad8076`, `fd8f15e`), scanner `0b5e295`, pinned by `test_no_user_facing_literal_bypasses_texts_py` (tests/test_ui_texts.py).
 
 - **D-25** Provider calls block the GUI thread with no cancel and no timeout
   - owner: machine-doable — ToanAZ ruled on 2026-08-26 that a worker, a Cancel
@@ -344,7 +344,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     step_rail.py/key_status.py.
   - close: extract remaining step orchestration (pick/mapping glue) into its
     own module; `.venv/Scripts/python.exe -m pytest tests/test_ui_import_page.py -q`
-  - status: open
+  - status: closed 2026-09-15 — step builders and the `finish_mapping`/`show_preview` transitions extracted to `wing_parser/ui/import_steps.py`; import_page.py 246 → 177, the new module 117, tests/test_ui_import_page.py unchanged (`be22878`), pinned by `test_no_ui_module_is_over_the_line_ceiling` (tests/test_ui_house_style.py).
 
 - **D-30** Placeholder API key reads as configured
   - owner: machine-doable
@@ -353,14 +353,14 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     the unconfigured warning while the assisted path fails on first model call.
   - close: treat known placeholder prefixes as unconfigured in KeyStatusLine;
     add a test with a placeholder-bearing provider.yaml.
-  - status: open
+  - status: closed 2026-09-15 — the placeholder set lives once as `provider.is_placeholder_key` / `has_usable_key`, shared by KeyStatusLine and both adapters (so the CLI says "no API key" instead of earning a 401), and the key line now also reads the knowledge-dir provider.yaml the Settings dialog writes (`02cadb6`), pinned by `test_the_repos_own_provider_yaml_placeholder_is_not_a_key` (tests/test_provider_config.py).
 
 - **D-31** Settings Cancel button reuses the `import.cancel` texts key
   - owner: machine-doable
   - evidence: settings_dialog.py builds its Cancel from texts["import.cancel"];
     works today, misleads the next texts.py reader.
   - close: add settings.cancel key and consume it.
-  - status: open
+  - status: closed 2026-09-15 — `settings.cancel` added to texts.py and consumed by settings_dialog.py (`b5c506d`), pinned by `test_cancel_uses_its_own_texts_key` (tests/test_ui_settings.py).
 
 - **D-32** `fonts._family_for` falls back silently when a face is missing
   - owner: machine-doable (parked — guarded elsewhere)
