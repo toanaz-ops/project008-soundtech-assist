@@ -92,9 +92,12 @@ class ImportPage(QWidget):
         self._directory = path
 
     def _provider_factory(self):
-        from wing_parser.classifier.provider import load_config, make_provider
+        """The provider a real call uses -- `key_status` reads the same
+        resolver, and the two must never disagree (tech-debt.md#d-30)."""
+        from wing_parser import config
+        from wing_parser.classifier.provider import make_provider, resolve_config
 
-        return make_provider(load_config(None))
+        return make_provider(resolve_config(config.knowledge_dir()))
 
     def _fail(self, exc: Exception) -> None:
         self.status.setText(text("import.error").format(error=exc))

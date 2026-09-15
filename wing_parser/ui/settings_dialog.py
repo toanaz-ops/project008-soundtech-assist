@@ -171,10 +171,9 @@ class SettingsDialog(QDialog):
         never blocks on the network, and Cancel settles the wait now.
         """
         self.save()
+        cfg = provider.resolve_config(config.knowledge_dir())
         return self._probe_call.run(
-            "probe", self._probe, provider.load_config(None),
-            on_success=self._show_probe_result,
-        )
+            "probe", self._probe, cfg, on_success=self._show_probe_result)
 
     def _show_probe_result(self, pair) -> None:
         ok, message = pair

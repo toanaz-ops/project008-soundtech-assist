@@ -190,6 +190,37 @@ def has_usable_key(config: ProviderConfig) -> bool:
     return not is_placeholder_key(os.environ.get(resolved.api_key_env, ""))
 
 
+def resolve_config(knowledge_dir: str | Path | None = None) -> ProviderConfig:
+    """The ONE config a model call and the UI's key hint both read.
+
+    Two nearly-identical chains is how the import page came to say "no
+    model key configured" about a machine whose next call would have
+    authenticated fine, so there is one chain and both callers take it:
+
+    1. `$WING_PROVIDER_CONFIG`. The pin the Settings dialog drops the
+       moment it saves; whoever set it named that file on purpose, so a
+       pin at a missing file raises rather than being stepped over.
+    2. `<knowledge_dir>/provider.yaml`, but only when it carries a usable
+       key. That is the copy Settings writes, and it must beat the CWD
+       file -- but a keyless one (an empty key field) is a half-filled
+       form, not an instruction to stop looking.
+    3. Whatever `load_config(None)` finds: ./provider.yaml, then the
+       built-in defaults.
+
+    Step 2 is the only thing this adds to `load_config`; 1 and 3 ARE
+    `load_config(None)`, which is why the two cannot disagree on a
+    machine that has no knowledge-dir copy.
+    """
+    if knowledge_dir is None or os.environ.get(ENV_VAR):
+        return load_config(None)
+    saved = Path(knowledge_dir) / "provider.yaml"
+    if saved.exists():
+        candidate = load_config(saved)
+        if has_usable_key(candidate):
+            return candidate
+    return load_config(None)
+
+
 def make_provider(config: ProviderConfig):
     resolved = resolve(config)
     if resolved.name == "anthropic":

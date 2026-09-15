@@ -9,8 +9,6 @@ this page is already alive.
 
 from __future__ import annotations
 
-import os
-
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QLabel, QWidget
 
@@ -42,27 +40,22 @@ class KeyStatusLine(QLabel):
 
 
 def _key_configured() -> bool:
-    """Cheap and offline: does the effective config carry a *real* key?
+    """Cheap and offline: would a model call from this page find a key?
 
-    $WING_PROVIDER_CONFIG wins outright -- it is the pin the Settings
-    dialog drops after a save, and a pin naming a missing file counts as
-    unconfigured, not as a crash: this line is a hint, not a gate. With
-    no pin the knowledge-dir copy is read, which is where the dialog
-    writes and what a first run that never saved from here would miss;
-    ./provider.yaml and the defaults stay behind it, walked by
-    `load_config(None)`. A placeholder value ("PASTE_KEY..." and
-    friends) counts as unconfigured, not as a key -- see
-    `provider.is_placeholder_key` and docs/tech-debt.md#d-30.
+    Deliberately not its own search. `provider.resolve_config` is the
+    same function `ImportPage._provider_factory` builds the real provider
+    from, so this line cannot drift out of step with the call it is
+    describing -- which is exactly how it once warned about a configured
+    machine. A placeholder value counts as unconfigured, not as a key,
+    and a pin naming a missing file counts as unconfigured too rather
+    than as a crash: this line is a hint, not a gate.
+    See docs/tech-debt.md#d-30.
     """
     from wing_parser import config
     from wing_parser.classifier import provider
 
-    pinned = bool(os.environ.get(provider.ENV_VAR))
-    saved = config.knowledge_dir() / "provider.yaml"
     try:
-        loaded = provider.load_config(
-            None if pinned or not saved.exists() else saved
-        )
+        loaded = provider.resolve_config(config.knowledge_dir())
     except (OSError, ValueError):
         return False
     return provider.has_usable_key(loaded)
