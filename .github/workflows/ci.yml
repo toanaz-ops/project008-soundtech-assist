@@ -1,0 +1,60 @@
+name: CI
+
+# main only ever changes through a merged PR, so every change is seen here
+# first. See docs/git-workflow.md.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A second push to the same branch makes the first run's answer worthless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # Branch protection requires this check by name -- do not rename it.
+    name: test
+    # The product ships as a Windows .exe (packaging/wing-ui.spec) and the
+    # desktop suite is the primary surface, so the suite runs where it ships.
+    runs-on: windows-latest
+    # The suite itself takes ~1 minute on a developer machine; the rest of
+    # this is the ~200 MB PySide6 install and a slower runner.
+    timeout-minutes: 20
+    env:
+      # The suite builds one QApplication for the whole run (tests/conftest.py)
+      # before any test can set this, so it is set for the job, not per test.
+      #
+      # The plain `offscreen` platform gives an 800x800 virtual screen, which
+      # silently clamps windows wider than that -- tests/test_ui_state_store.py
+      # resizes to 1010 wide and would read back 798. The config file widens
+      # the virtual screen. Its path must stay RELATIVE: Qt splits the platform
+      # string on ':', so an absolute Windows path (C:\...) aborts the process
+      # with no message at all.
+      QT_QPA_PLATFORM: offscreen:configfile=.github/ci-offscreen-screen.json
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          # There is no requirements.txt; pip's default cache glob would
+          # match nothing and fail the step.
+          cache-dependency-path: pyproject.toml
+
+      - name: Install the package and its test extras
+        # The `mcp` extra is deliberately absent: tests/test_mcp.py asserts the
+        # error message `wing-mcp` prints when that extra is missing, and skips
+        # that test when `mcp` is installed. Adding it runs no extra test.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,ui,ingest,llm,llm-openai]"
+
+      - name: Run the test suite
+        # -q already comes from [tool.pytest.ini_options] in pyproject.toml.
+        run: python -m pytest
