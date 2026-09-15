@@ -2,7 +2,7 @@
 
 `window_state.py`'s job, for the one scene that arrives from a desk
 rather than from a file -- kept out of `main_window.py`, which is at
-189 lines and would not survive a fourth responsibility, and out of
+190 lines and would not survive a fourth responsibility, and out of
 `live_snapshot.py`, which must not import the window it talks to.
 
 The adopt path here is deliberately **not** `window_state.adopt_session`
@@ -36,7 +36,7 @@ def wire_console(window, page) -> None:
     """Connect the Console page to the window, if the page is built yet.
 
     The `hasattr` guard is the same idiom `MainWindow._refresh` uses for
-    `set_session` (`main_window.py:174-176`) and exists for the same
+    `set_session` (`main_window.py:175-177`) and exists for the same
     reason: the Console page arrives over several tasks, and until task
     13 replaces it the slot still holds task 8's `EmptyState`, which has
     none of these signals. A page that has `session_pulled` is expected

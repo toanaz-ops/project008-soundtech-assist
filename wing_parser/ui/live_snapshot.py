@@ -6,7 +6,7 @@ What this one adds is the only thing on the page producing a `Session`:
 
 * **Both of `_load()`'s guards, shown.** `EmptyReadError` reports the
   ported CLI sentence and **no session leaves this widget** -- the whole
-  reason that error exists (`live_controller.py:44-64`). A partial read
+  reason that error exists (`live_controller.py:44-57`). A partial read
   is usable, so it loads, and `incomplete_report` becomes a *persistent*
   banner: a scene that is not the whole desk must never look complete.
 * **Export writes `Session.save_as`** (D3) -- the *patched* document
@@ -14,7 +14,7 @@ What this one adds is the only thing on the page producing a `Session`:
   is kept beside it as `original`, Diff's "as pulled" baseline, and is
   deliberately not what Export writes: that would drop every repair.
 * **No `set_session`.** `MainWindow._refresh` fans the session out to
-  every page defining one (`main_window.py:174-176`); this panel
+  every page defining one (`main_window.py:175-177`); this panel
   produces sessions rather than consuming them.
 
 The window is reached by signal only (`live_wiring.py`) -- this module
