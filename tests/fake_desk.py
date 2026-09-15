@@ -37,6 +37,11 @@ class _FakeClient:
         addresses = tuple(addresses)
         self._desk.calls.append(("get_many", len(addresses)))
         round_ = self._next_round()
+        if round_ is not None and not round_:
+            # A round the desk ignored: it answered nothing, so nothing
+            # resolved -- not even an address `leaves` could have served.
+            return BatchResult(replies={}, unresolved=addresses)
+        round_ = round_ or {}
         replies: dict[str, OscMessage] = {}
         unresolved: list[str] = []
         for address in addresses:
@@ -61,20 +66,22 @@ class _FakeClient:
     def __exit__(self, *exc_info: object) -> None:
         self.close()
 
-    def _next_round(self) -> dict[str, object]:
-        """The round `get_many` consumes this call.
+    def _next_round(self) -> dict[str, object] | None:
+        """The round `get_many` consumes this call, or `None` for no script.
 
-        Empty when no rounds were scripted at all -- every address then
-        falls back to `leaves` below, which is what a plain discovery
-        walk or snapshot pull scripts. A scripted-but-empty round (`{}`)
-        is a round the desk chose to ignore -- it falls back the same
-        way, this call just contributed nothing new. Once the list runs
-        out its last entry repeats forever, so a caller polling past the
-        end of a script sees steady state rather than an IndexError.
+        `None` when no rounds were scripted at all -- every address then
+        falls back to `leaves`, which is what a plain discovery walk or
+        snapshot pull scripts. A scripted-but-empty round (`{}`) is a
+        round the desk IGNORED: `get_many` answers nothing and leaves
+        every requested address unresolved, with no fallback, which is
+        how a test scripts a desk that has gone quiet without raising.
+        Once the list runs out its last entry repeats forever, so a
+        caller polling past the end of a script sees steady state rather
+        than an IndexError.
         """
         rounds = self._desk.rounds
         if not rounds:
-            return {}
+            return None
         index = min(self._round_index, len(rounds) - 1)
         self._round_index += 1
         return rounds[index]
@@ -88,8 +95,9 @@ class FakeDesk:
     unresolved : tuple[str, ...]            -- what the walk could not resolve
     strips     : dict[str, int]             -- per-family counts for the WatchList
     rounds     : list[dict[str, object]]    -- scripted samples, consumed one per get_many;
-                 an EMPTY dict is a round the desk ignored, and a list that runs out
-                 repeats its last entry forever
+                 an EMPTY dict is a round the desk ignored (nothing answered, every
+                 address unresolved, no fallback to `leaves`), and a list that runs
+                 out repeats its last entry forever
     calls      : list[tuple[str, int]]      -- ("get_many", len(addresses)), in order
     """
 

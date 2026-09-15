@@ -41,14 +41,40 @@ def test_get_many_returns_real_batchresult_objects():
 def test_a_scripted_round_is_consumed_once_per_get_many():
     round_one = {"/ch/1/$fdr": OscMessage("/ch/1/$fdr", "sff", ("-3.0", 0.6, -3.0))}
     round_two = {"/ch/1/$fdr": OscMessage("/ch/1/$fdr", "sff", ("0.0", 0.75, 0.0))}
-    desk = FakeDesk(rounds=[round_one, round_two])
+    # A round that answers some addresses still falls back to `leaves` for
+    # the rest -- only a round the desk IGNORED (an empty dict, below)
+    # answers nothing at all.
+    desk = FakeDesk(
+        leaves={"/ch/2/$fdr": OscMessage("/ch/2/$fdr", "sff", ("-9.0", 0.4, -9.0))},
+        rounds=[round_one, round_two],
+    )
     client = desk.client()
 
-    first = client.get_many(["/ch/1/$fdr"])
-    second = client.get_many(["/ch/1/$fdr"])
+    first = client.get_many(["/ch/1/$fdr", "/ch/2/$fdr"])
+    second = client.get_many(["/ch/1/$fdr", "/ch/2/$fdr"])
 
     assert first.replies["/ch/1/$fdr"] is round_one["/ch/1/$fdr"]
     assert second.replies["/ch/1/$fdr"] is round_two["/ch/1/$fdr"]
+    assert first.replies["/ch/2/$fdr"] is desk.leaves["/ch/2/$fdr"]
+    assert second.replies["/ch/2/$fdr"] is desk.leaves["/ch/2/$fdr"]
+
+
+def test_an_empty_scripted_round_answers_nothing():
+    # A round the desk IGNORED, per the task-1 brief: no replies at all,
+    # every requested address unresolved -- NOT a fallback to `leaves`.
+    # The second desk below is the no-rounds case, for contrast: same
+    # leaves, same request, an answer.
+    leaf = OscMessage("/ch/1/$fdr", "sff", ("-6.0", 0.5, -6.0))
+    ignored = FakeDesk(leaves={"/ch/1/$fdr": leaf}, rounds=[{}])
+    answering = FakeDesk(leaves={"/ch/1/$fdr": leaf})
+
+    silent = ignored.client().get_many(["/ch/1/$fdr", "/ch/2/$fdr"])
+    answered = answering.client().get_many(["/ch/1/$fdr", "/ch/2/$fdr"])
+
+    assert silent.replies == {}
+    assert silent.unresolved == ("/ch/1/$fdr", "/ch/2/$fdr")
+    assert answered.replies == {"/ch/1/$fdr": leaf}
+    assert answered.unresolved == ("/ch/2/$fdr",)
 
 
 def test_an_exhausted_round_list_repeats_its_last_entry():
