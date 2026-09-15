@@ -88,7 +88,11 @@ def test_disconnect_clears_the_readout_and_the_lamp(qt_app, settle):
 
 
 def test_a_timeout_shows_one_error_line_naming_the_host(qt_app, settle):
-    """The 5 s backstop, run at 0 s so no test waits (workers.py:97-99)."""
+    """The 5 s backstop, run at 0 s so no test waits (workers.py:109-114).
+
+    The brief cites this as workers.py:97-99; re-read on 2026-09-16, the
+    `timeout` override lives at :109 (docstring) and :114 (the branch).
+    """
     from wing_parser.ui.workers import CallTimedOut
 
     gate = threading.Event()
