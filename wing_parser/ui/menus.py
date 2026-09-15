@@ -23,20 +23,21 @@ FILTER = "WING scene (*.snap);;All files (*)"
 
 def build_menus(window) -> None:
     file_menu = window.menuBar().addMenu(text("menu.file"))
-    window._open_action = file_menu.addAction("&Open...", window.open_file)
-    window._save_action = file_menu.addAction("Save &As...", window.save_as)
+    window._open_action = file_menu.addAction(
+        text("menu.open"), window.open_file)
+    window._save_action = file_menu.addAction(
+        text("menu.save_as"), window.save_as)
     window._recent_menu = file_menu.addMenu(text("menu.recent"))
     edit_menu = window.menuBar().addMenu(text("menu.edit"))
-    window._undo_action = edit_menu.addAction("&Undo", window.undo)
+    window._undo_action = edit_menu.addAction(
+        text("menu.undo"), window.undo)
     tools_menu = window.menuBar().addMenu(text("menu.tools"))
     tools_menu.addAction(text("menu.settings"), window.open_settings)
     window._reanalyse_action = tools_menu.addAction(
         text("menu.reanalyse"), window.reanalyse
     )
     help_menu = window.menuBar().addMenu(text("menu.help"))
-    help_menu.addAction(
-        "Where my judgements are stored...", window.show_knowledge_dir
-    )
+    help_menu.addAction(text("menu.knowledge"), window.show_knowledge_dir)
 
 
 def build_accelerators(window) -> None:
@@ -98,7 +99,9 @@ def save_as(window) -> None:
         # The journal is untouched and the window stays dirty.
         QMessageBox.critical(window, text("error.save"), str(exc))
         return
-    QMessageBox.information(window, text("save.done"), f"Wrote {name}")
+    QMessageBox.information(
+        window, text("save.done"), text("save.body").format(file=name)
+    )
 
 
 def undo(window) -> None:

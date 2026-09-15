@@ -84,6 +84,10 @@ TEXTS: dict[str, str] = {
     "import.cancelled": "Cancelled — nothing was applied.",
     "import.timeout": "The model did not answer within {seconds} s.",
     "import.busy": "A model request is already running — cancel it or wait.",
+    "menu.open": "&Open...",
+    "menu.save_as": "Save &As...",
+    "menu.undo": "&Undo",
+    "menu.knowledge": "Where my judgements are stored...",
     "menu.settings": "&Settings...",
     "menu.reanalyse": "&Reanalyse",
     "menu.recent": "Open &Recent",
@@ -98,6 +102,7 @@ TEXTS: dict[str, str] = {
     "error.open": "Cannot open that file",
     "error.save": "Cannot save",
     "save.done": "Saved",
+    "save.body": "Wrote {file}",
     "knowledge.title": "Knowledge directory",
     "knowledge.body": (
         "Verdicts, principles and show profiles live in:\n\n{directory}\n\n"
