@@ -20,7 +20,7 @@ MAX_RECENT = 8
 
 PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_")
 
-DEFAULTS: dict = {"geometry": None, "page": None, "recent": []}
+DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": []}
 
 
 def normalize(state: dict) -> dict:
@@ -28,11 +28,15 @@ def normalize(state: dict) -> dict:
     geometry = state.get("geometry")
     page = state.get("page")
     recent = state.get("recent")
+    consoles = state.get("consoles")
     return {
         "geometry": geometry if isinstance(geometry, str) else None,
         "page": page if page in PAGE_KEYS else None,
         "recent": [
             entry for entry in (recent or []) if isinstance(entry, str)
+        ][:MAX_RECENT],
+        "consoles": [
+            entry for entry in (consoles or []) if isinstance(entry, str)
         ][:MAX_RECENT],
     }
 
@@ -46,7 +50,7 @@ def load(directory: Path) -> dict:
         raw = state_path(directory).read_text(encoding="utf-8")
         return normalize(json.loads(raw))
     except (OSError, ValueError):
-        return dict(DEFAULTS, recent=[])
+        return dict(DEFAULTS, recent=[], consoles=[])
 
 
 def save(directory: Path, state: dict) -> None:
@@ -66,3 +70,17 @@ def remember_recent(recents: list[str], path: str) -> list[str]:
 
 def forget_recent(recents: list[str], path: str) -> list[str]:
     return [entry for entry in recents if Path(entry) != Path(path)]
+
+
+def remember_console(consoles: list[str], host: str) -> list[str]:
+    """Move `host` to the top, drop its older selves, cap the list.
+
+    Addresses are opaque strings (an IP or a hostname), not filesystem
+    paths, so this compares plain strings -- unlike `remember_recent`.
+    """
+    rest = [entry for entry in consoles if entry != host]
+    return [str(host), *rest][:MAX_RECENT]
+
+
+def forget_console(consoles: list[str], host: str) -> list[str]:
+    return [entry for entry in consoles if entry != host]
