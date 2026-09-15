@@ -42,3 +42,10 @@ Thumbs.db
 
 screenshots/
 shots-test/
+dist-shots/
+
+# ...except a set deliberately attached to a PR. Those are review
+# evidence -- the only thing that shows a page actually rendered from
+# the exe -- so they have to survive on the branch. The pattern above
+# is unanchored and would otherwise swallow this directory too.
+!docs/screenshots/
