@@ -7,8 +7,13 @@ built the same way spec S9.1 and the task-1 brief spell out.
 
 from __future__ import annotations
 
+import pytest
+
 from wing_parser.net.client import BatchResult
 from wing_parser.net.codec import OscMessage, leaf_value
+from wing_parser.net.identity import WingIdentity
+from wing_parser.net.snapshot import SnapshotResult
+from wing_parser.net.watch.list import WatchList
 from tests.fake_desk import FakeDesk
 
 
@@ -66,3 +71,56 @@ def test_calls_records_the_address_count_of_every_round():
     client.get_many(["/x"])
 
     assert desk.calls == [("get_many", 3), ("get_many", 1)]
+
+
+def test_transport_builds_the_four_callables_from_the_desks_own_fields():
+    identity = WingIdentity(
+        ip="192.168.128.28",
+        name="WING-GIAQUY",
+        model="wing-rack",
+        serial="01009Y90604AAE",
+        firmware="3.1-0-g9f314617:release",
+    )
+    desk = FakeDesk(
+        identity=identity,
+        leaves={
+            "/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",)),
+            "/$ctl/cfg/dark": OscMessage("/$ctl/cfg/dark", "sfi", ("1", 0.0, 0)),
+        },
+        unresolved=("/mtx",),
+        strips={"ch": 1},
+    )
+    transport = desk.transport()
+
+    assert transport.identity("192.168.128.28") is identity
+
+    walked = transport.walk("192.168.128.28")
+    assert type(walked) is WatchList
+    assert walked.addresses == ("/ch/1/name", "/$ctl/cfg/dark")
+    assert walked.unresolved == ("/mtx",)
+    assert walked.strips == {"ch": 1}
+
+    pulled = transport.snapshot("192.168.128.28")
+    assert type(pulled) is SnapshotResult
+    # Decoded by the real `leaf_value` and filed by the real `_place`, so
+    # `/$ctl/...` lands in ce_data keyed from below $ctl, per net S2.2.
+    assert pulled.raw.ae == {"ch": {"1": {"name": "KICK"}}}
+    assert pulled.raw.ce == {"cfg": {"dark": 1}}
+    assert pulled.raw.source == "wing://192.168.128.28"
+    assert pulled.unresolved_nodes == ("/mtx",)
+    assert pulled.unresolved_leaves == ()
+
+    with transport.client("192.168.128.28") as client:
+        assert client.get_many(["/ch/1/name"]).replies["/ch/1/name"] is (
+            desk.leaves["/ch/1/name"]
+        )
+
+
+def test_transport_identity_raises_the_exception_the_desk_was_given():
+    refused = TimeoutError("no WING? reply from 10.0.0.9:2222 within 2.0s")
+    desk = FakeDesk(identity=refused)
+
+    with pytest.raises(TimeoutError) as caught:
+        desk.transport().identity("10.0.0.9")
+
+    assert caught.value is refused

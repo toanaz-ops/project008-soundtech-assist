@@ -13,9 +13,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from wing_parser.core.loader import RawScene
+from wing_parser.core.versions import load_registry, resolve
 from wing_parser.net.client import BatchResult
-from wing_parser.net.codec import OscMessage
+from wing_parser.net.codec import OscMessage, leaf_value
 from wing_parser.net.identity import WingIdentity
+
+# `_place` is private, and imported anyway: it is the ae/ce nesting rule
+# net S2.2 defines, and a double that re-implemented it could drift from
+# the real `take_snapshot` while still passing its own tests.
+from wing_parser.net.snapshot import SNAPSHOT_TYPE_ID, SnapshotResult, _place
+from wing_parser.net.watch.list import WatchList
 
 
 class _FakeClient:
@@ -103,13 +111,62 @@ class FakeDesk:
     def transport(self):
         """The `live_controller.Transport` wrapping this desk.
 
-        Imported here, not at module level, so this file stands alone
-        before `live_controller.py` exists -- only a caller that reaches
-        for a live transport needs that module at all.
+        Imported here, not at module level, so `live_controller` is only
+        needed by a caller that actually reaches for a live transport.
         """
         from wing_parser.ui import live_controller
 
-        return live_controller.Transport(self)
+        return live_controller.Transport(
+            identity=self._identity,
+            walk=self._walk,
+            snapshot=self._snapshot,
+            client=self.client,
+        )
 
     def client(self, host: str | None = None) -> _FakeClient:
         return _FakeClient(self)
+
+    # -- the four transport callables -------------------------------------
+
+    def _identity(self, host: str) -> WingIdentity:
+        """`query_identity`: the scripted identity, returned or raised."""
+        if isinstance(self.identity, Exception):
+            raise self.identity
+        return self.identity
+
+    def _walk(self, host: str) -> WatchList:
+        """`build_watch_list`, from the desk's own fields.
+
+        Deliberately does not go through `client()`: the real walk reads
+        the console's SHAPE, and letting it spend rounds here would put
+        entries in `calls` that a watch test then has to skip past.
+        """
+        return WatchList(
+            addresses=tuple(self.leaves),
+            unresolved=self.unresolved,
+            strips=dict(self.strips),
+        )
+
+    def _snapshot(self, host: str) -> SnapshotResult:
+        """`take_snapshot`: every leaf read through `client()`, then
+        decoded and filed by the real `leaf_value`/`_place`, so a pulled
+        `RawScene` is assembled by exactly the rule a real pull uses
+        (`snapshot.py:87-113`). Costs one `("get_many", n)` in `calls`."""
+        batch = self.client(host).get_many(tuple(self.leaves))
+        ae: dict[str, Any] = {}
+        ce: dict[str, Any] = {}
+        for address, message in batch.replies.items():
+            value, _display = leaf_value(message)
+            _place(ae, ce, address, value)
+        return SnapshotResult(
+            raw=RawScene(
+                version=resolve(SNAPSHOT_TYPE_ID, load_registry()),
+                ae=ae,
+                ce=ce,
+                meta={},
+                path=None,
+                source=f"wing://{host}",
+            ),
+            unresolved_nodes=self.unresolved,
+            unresolved_leaves=batch.unresolved,
+        )
