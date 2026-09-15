@@ -349,8 +349,14 @@ by the command shown. The wave-1 / wave-1b closures below were written on
 - **D-30** Placeholder API key reads as configured
   - owner: machine-doable
   - evidence: KeyStatusLine treats any non-empty provider.yaml as configured;
-    the repo's committed-shape placeholder value ("PASTE_KEY...") would hide
-    the unconfigured warning while the assisted path fails on first model call.
+    a local, untracked provider.yaml carrying the `PASTE_KEY_<PROVIDER>_VAO_DAY`
+    convention (or the manual's `sk-xxxxxxxx...`, docs/user-manual/04 lines 14
+    and 24) would hide the unconfigured warning while the assisted path fails
+    on the first model call. Nothing of the sort is committed: provider.yaml
+    has never been tracked (.gitignore line 28; `git log --all -- provider.yaml`
+    is empty), because it holds a key. Wording corrected 2026-09-15 — the
+    original said "the repo's committed-shape placeholder value", which reads
+    as a key file in git.
   - close: treat known placeholder prefixes as unconfigured in KeyStatusLine;
     add a test with a placeholder-bearing provider.yaml.
   - status: closed 2026-09-15 — the placeholder set lives once as `provider.is_placeholder_key` / `has_usable_key`, shared by KeyStatusLine and both adapters (so the CLI says "no API key" instead of earning a 401), and the key line now also reads the knowledge-dir provider.yaml the Settings dialog writes (`02cadb6`), pinned by `test_the_paste_key_convention_is_not_a_key` (tests/test_provider_config.py).
