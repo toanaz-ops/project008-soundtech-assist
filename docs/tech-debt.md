@@ -428,6 +428,48 @@ by the command shown. The wave-1 / wave-1b closures below were written on
   - status: closed 2026-08-26 — superseding note added to the spec in the
     final-review fix commit.
 
+- **D-39** A key saved in the desktop Settings dialog never reaches the CLI
+  - owner: machine-doable
+  - evidence: found 2026-09-15 while closing **D-30**, which unified the
+    DESKTOP config chain and made this gap visible by contrast.
+    `SettingsDialog.save()` writes `<knowledge_dir>/provider.yaml` and pins
+    `$WING_PROVIDER_CONFIG` at `settings_dialog.py:164` — but that pin lives in
+    the dialog's own process. A later `wing showcontext import` starts fresh,
+    and the wizard resolves with `make_provider(load_config(None))` at
+    `wing_parser/showcontext/ingest/wizard.py:53` (mapping proposal) and `:223`
+    (term guessing). `load_config` walks `$WING_PROVIDER_CONFIG` →
+    `./provider.yaml` → defaults; it never looks in the knowledge directory.
+    So the operator pastes a key into Settings, the app works, and the CLI
+    still prints `(no model assist: ...)`.
+    Measured, same environment, no pin, no env keys, no `./provider.yaml`:
+
+    ```
+    knowledge dir            : ...\tmp7mb7fpms\knowledge
+    UI  (resolve_config)     : 'sk-saved-from-settings'
+    CLI (load_config(None))  : ''
+    DIVERGE                  : True
+    ```
+
+    Not fixed with D-30 deliberately: the knowledge directory does not reach
+    the wizard. `commands.py:271-279` calls `run_wizard(args.sheet, output=,
+    force=, scene=, one_shot=)` — there is no `--knowledge` flag anywhere in
+    `wing_parser/cli/`, no `knowledge_dir=` keyword, and **no CLI module calls
+    `config.knowledge_dir()` at all** (every caller outside `config.py` is
+    under `wing_parser/ui/`). Making the wizard read it would be the first
+    CLI↔knowledge-dir coupling in the codebase, and the CLI's documented
+    contract (docs/user-manual/04) is `./provider.yaml` plus the env var. That
+    is a design call, not a tidy-up, so it is filed rather than smuggled into
+    a debt-closing PR.
+  - close: pass the knowledge directory into `run_wizard` and resolve both
+    sites through `provider.resolve_config(knowledge_dir)`, the same function
+    the desktop app uses; test that a key written the way
+    `SettingsDialog.save()` writes it is picked up by the wizard's provider
+    factory in a process with no `$WING_PROVIDER_CONFIG`. Decide at the same
+    time whether the CLI should honour the knowledge dir at all, or whether
+    Settings should instead offer to write `./provider.yaml` — the user manual
+    has to agree with whichever is chosen.
+  - status: open
+
 ---
 
 ## Appendix — rulings preserved, not debt
