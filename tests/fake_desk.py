@@ -23,6 +23,7 @@ from wing_parser.net.identity import WingIdentity
 # net S2.2 defines, and a double that re-implemented it could drift from
 # the real `take_snapshot` while still passing its own tests.
 from wing_parser.net.snapshot import SNAPSHOT_TYPE_ID, SnapshotResult, _place
+from wing_parser.net.watch import poller
 from wing_parser.net.watch.list import WatchList
 
 
@@ -129,6 +130,10 @@ class FakeDesk:
             walk=self._walk,
             snapshot=self._snapshot,
             client=self.client,
+            # The REAL poller, not a double: what a watch test needs
+            # faked is the desk, and `poller.watch` reaches it only
+            # through `client()` above.
+            watch=poller.watch,
         )
 
     def client(self, host: str | None = None) -> _FakeClient:

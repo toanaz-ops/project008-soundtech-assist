@@ -28,6 +28,7 @@ from wing_parser.net.identity import (
     query_identity,
 )
 from wing_parser.net.snapshot import SnapshotResult, take_snapshot
+from wing_parser.net.watch import poller
 from wing_parser.net.watch.list import WatchList, build_watch_list
 from wing_parser.ui.live_controller import (
     REAL,
@@ -198,11 +199,15 @@ def test_real_transport_names_only_read_only_entry_points():
         "walk",
         "snapshot",
         "client",
+        "watch",
     )
     assert REAL.identity is query_identity
     assert REAL.walk is build_watch_list
     assert REAL.snapshot is take_snapshot
     assert REAL.client is WingClient
+    # The poller is the fifth: `GeneratorWorker` drains it on a thread
+    # and must not import `net` itself, so the seam names it here (S7.3).
+    assert REAL.watch is poller.watch
     # Frozen: `REAL` is one module-level object every page shares, so a
     # write path must not be assignable onto it after import.
     with pytest.raises(dataclasses.FrozenInstanceError):

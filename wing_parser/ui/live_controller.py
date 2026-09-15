@@ -2,20 +2,19 @@
 
 Mirrors `import_controller.py` -- every decision the live page needs is a
 plain function, testable headless -- with one addition it does not need:
-a seam. `Transport` names the four `net/` entry points the page uses, so
+a seam. `Transport` names the five `net/` entry points the page uses, so
 this module is the ONLY place under `wing_parser/ui/` that says `net`,
 and a test can drive the whole page against an in-memory desk
 (`tests/fake_desk.py`) with no socket anywhere (spec S7.1, S9.1).
 
-That the seam names exactly four *read-only* calls is also how spec S8
-makes a write structurally impossible in this wave: `net/write.py` has no
-way in, because nothing here reaches for it.
+That the seam names five *read-only* calls and no others is also how
+spec S8 makes a write structurally impossible in this wave:
+`net/write.py` has no way in, because nothing here reaches for it.
 
-Failures pass through untouched. `query_identity` already raises
-`TimeoutError` naming the host and the 2.0 s it waited (`identity.py:83`)
-and `IdentityError`, which is a `ValueError` (`identity.py:29`), so the
-page shows one error line instead of inventing a second taxonomy -- the
-`import_controller.read_with` precedent.
+Failures pass through untouched: `query_identity`'s `TimeoutError`
+naming the host and the 2.0 s it waited (`identity.py:83`), and its
+`IdentityError`, a `ValueError` (`identity.py:29`), reach the page as
+they are -- the `import_controller.read_with` precedent.
 """
 
 from __future__ import annotations
@@ -24,12 +23,14 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterator
 
 from wing_parser.net.client import WingClient
 from wing_parser.net.export import to_snap_json
 from wing_parser.net.identity import WingIdentity, query_identity
 from wing_parser.net.snapshot import SnapshotResult, take_snapshot
+from wing_parser.net.watch import poller
+from wing_parser.net.watch.events import Change
 from wing_parser.net.watch.list import WatchList, build_watch_list
 from wing_parser.ui.session import Session
 
@@ -45,17 +46,14 @@ class EmptyReadError(OSError):
 
     Ported from `cli/commands.py:47-62`, where it is a printed line and a
     `None` return. It has to be an *error* rather than an empty result:
-    OSC is UDP, so an unreachable host raises nothing -- every leaf just
-    times out and `take_snapshot` faithfully returns a valid, empty
-    scene, which the advisory engine then truthfully finds nothing wrong
-    with. `doctor --live` showed "No findings." for a desk it had never
-    reached, until this guard existed.
-
-    An `OSError` because that is the vocabulary every other live-read
-    failure already speaks (`commands.py:25-28`).
-
-    Both counts, never one: `walk_schema` runs first and the leaf reads
-    run after it, so `nodes` can be 0 while every leaf timed out.
+    OSC is UDP, so an unreachable host raises nothing -- every leaf times
+    out, `take_snapshot` faithfully returns a valid empty scene, and the
+    advisory engine truthfully finds nothing wrong with it. `doctor
+    --live` showed "No findings." for a desk it had never reached, until
+    this guard existed. An `OSError` because that is the vocabulary every
+    other live-read failure already speaks (`commands.py:25-28`). Both
+    counts, never one: `walk_schema` runs first and the leaf reads run
+    after it, so `nodes` can be 0 while every leaf timed out.
     """
 
     def __init__(self, host: str, nodes: int, leaves: int) -> None:
@@ -71,12 +69,19 @@ class EmptyReadError(OSError):
 
 @dataclass(frozen=True)
 class Transport:
-    """The four net/ entry points the Console page uses, injectable."""
+    """The five net/ entry points the Console page uses, injectable.
+
+    `watch` is the poller's loop, read-only like the rest (it only calls
+    `get_many` on the client it is handed, `poller.py:90`), and named
+    here because `GeneratorWorker` (S7.3), which drains it on a thread,
+    must not say `net` either.
+    """
 
     identity: Callable[[str], WingIdentity]
     walk: Callable[[str], WatchList]
     snapshot: Callable[[str], SnapshotResult]
     client: Callable[[str], WingClient]
+    watch: Callable[..., Iterator[Change]]
 
 
 REAL = Transport(
@@ -84,6 +89,7 @@ REAL = Transport(
     walk=build_watch_list,
     snapshot=take_snapshot,
     client=WingClient,
+    watch=poller.watch,
 )
 
 
@@ -132,11 +138,10 @@ def incomplete_report(result: SnapshotResult) -> str | None:
     """How much of a partial read did not answer, or `None` if all of it did.
 
     The other half of `_load`'s pair (`cli/commands.py:64-78`). A partial
-    read is usable and must never look complete, so the page keeps this as
-    a persistent banner; a clean read reports nothing, because a warning
-    shown every time teaches the reader to skip it. The node names are
-    listed -- they are few and they say *where* the hole is -- and the
-    clause is dropped entirely, not rendered empty, when there are none.
+    read is usable and must never look complete, so this is a persistent
+    banner; a clean read reports nothing, because a warning shown every
+    time teaches the reader to skip it. The node names are listed -- few,
+    and they say *where* -- and that clause is dropped when there are none.
     """
     if not result.unresolved_nodes and not result.unresolved_leaves:
         return None
@@ -182,11 +187,10 @@ def session_from_snapshot(
     consoles.
 
     The text is returned as well, and it is the *pull-time original*
-    (D3). Export must go through `Session.save_as`, which writes the
-    patched document (`session.py:92-96` -> `_document()` at `:43-44`);
-    writing this string instead would silently drop every repair made
-    after the pull. It is here for Diff's "what did I change" baseline,
-    not as an export path.
+    (D3): export must go through `Session.save_as`, which writes the
+    patched document (`session.py:92-96` -> `_document()` at `:43-44`),
+    so writing this string instead would silently drop every repair made
+    after the pull. Diff's baseline, not an export path.
     """
     text = to_snap_json(result.raw, identity)
     host = result.raw.source.removeprefix(_LIVE_SOURCE)
