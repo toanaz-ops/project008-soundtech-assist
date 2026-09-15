@@ -33,6 +33,17 @@ DATAS = [
     ("../wing_parser/classifier/data", "wing_parser/classifier/data"),
     ("../wing_parser/descriptors/data", "wing_parser/descriptors/data"),
     ("../wing_parser/edit/data", "wing_parser/edit/data"),
+    # What the Console page reads once it is talking to a real desk.
+    # Both load lazily (an lru_cache on first call), so a missing one
+    # costs nothing at start-up and nothing during a screenshot run --
+    # it surfaces only at a venue, on the first Discover or Snapshot
+    # against a live console, which is the worst place to find it.
+    # net/watch/data/watchlist.yaml -> net/watch/list.py:29, the keys
+    # build_watch_list polls; net/data/wing_jsontypes.yaml ->
+    # net/jsontypes.py:28, which leaves a snapshot writes as JSON
+    # booleans. ui/live_controller.py:30,34 reaches both.
+    ("../wing_parser/net/data", "wing_parser/net/data"),
+    ("../wing_parser/net/watch/data", "wing_parser/net/watch/data"),
     # Theme resources (qss templates, vendored fonts, licences).
     # resource_path() maps this directory to the same relative position
     # in dev and under sys._MEIPASS, so one entry serves both.
