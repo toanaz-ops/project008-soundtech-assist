@@ -686,3 +686,109 @@ def test_the_export_dialog_suggests_a_sanitised_desk_name(
     assert suggested, "the dialog was never offered a suggestion"
     assert "FOH_Monitors" in suggested[0], suggested[0]
     assert "/" not in suggested[0] and "\\" not in suggested[0], suggested[0]
+
+
+# -- the wiring itself, both halves of its contract --------------------------
+#
+# Review of task 11 (round 1): `wire_console` guards on `session_pulled` and
+# then connects three signals, and neither branch was pinned. Both are now.
+
+
+def test_wiring_the_placeholder_console_page_connects_nothing(
+        qt_app, monkeypatch):
+    """Until task 13 the Console slot holds task 8's `EmptyState`.
+
+    `MainWindow.__init__` already calls `wire_console` on it, so the
+    window building at all is half the assertion; calling it again by
+    hand is the other half -- it must return quietly rather than raise
+    on the first missing signal.
+    """
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser.ui import live_wiring
+    from wing_parser.ui.main_window import MainWindow
+    from wing_parser.ui.page_base import EmptyState
+
+    window = MainWindow(None)
+    assert isinstance(window.pages["console"], EmptyState)
+    assert live_wiring.wire_console(window, window.pages["console"]) is None
+    assert window.session is None
+
+
+def test_each_console_signal_drives_the_window(
+        qt_app, monkeypatch, tmp_path, vu_path):
+    """The other half: a page carrying all three, each one firing.
+
+    A stub rather than `SnapshotPanel`, so this pins the wiring and not
+    the panel -- task 13's `ConsolePage` has to re-emit exactly these
+    three, and this is the test that says what "exactly these" means.
+    """
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from PySide6.QtCore import QObject, Signal
+
+    from wing_parser.ui import live_wiring
+    from wing_parser.ui.main_window import MainWindow
+    from wing_parser.ui.session import Session
+
+    class _ConsoleStub(QObject):
+        session_pulled = Signal(object)
+        exported = Signal(str)
+        doctor_requested = Signal()
+
+    window = MainWindow(None)
+    window.switch_to("console")
+    page = _ConsoleStub()
+    live_wiring.wire_console(window, page)
+
+    session = Session.open(vu_path)
+    page.session_pulled.emit(session)
+    assert window.session is session
+    assert window.stack.currentWidget() is window.pages["console"], "D16"
+
+    page.exported.emit(str(tmp_path / "exported.snap"))
+    assert window._recent == [str(tmp_path / "exported.snap")]
+
+    page.doctor_requested.emit()
+    assert window.stack.currentWidget() is window.pages["doctor"]
+
+
+def test_export_and_open_doctor_survive_a_later_failed_pull(
+        qt_app, settle, monkeypatch, vu_result):
+    """A scene in memory stays exportable when the NEXT pull fails.
+
+    Orchestrator ruling (task 11 review): writing a file is not a desk
+    action, so Export is gated on a loaded session alone. Gating it on
+    `allowed_actions` instead greyed out Export in `ERROR` -- exactly
+    when the operator most wants the scene he already has on disk.
+    """
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_state import LiveState
+
+    answers = iter([vu_result, FakeDesk().transport().snapshot(HOST)])
+    transport = dataclasses.replace(
+        FakeDesk().transport(), snapshot=lambda host: next(answers))
+    panel = _snapshot_panel(transport)
+    window = _wired(monkeypatch, panel)
+
+    assert _pull_settled(panel, settle)
+    assert window.session is not None
+    assert panel.export_button.isEnabled()
+
+    assert _pull_settled(panel, settle), "the second, empty pull never settled"
+    assert "no console answered" in panel.status_label.text()
+    assert panel._state is LiveState.ERROR
+    assert panel.export_button.isEnabled(), "the pulled scene is still in memory"
+    assert panel.doctor_button.isEnabled()
+    assert not panel.pull_button.isEnabled(), "error still needs a reset first"
+
+
+def test_a_pull_is_refused_from_a_state_that_does_not_allow_it(
+        qt_app, monkeypatch, vu_result):
+    """The button is disabled; a programmatic caller must be refused too."""
+    from wing_parser.ui.live_state import LiveState, allowed_actions
+
+    panel = _snapshot_panel(_replaying(vu_result))
+    panel.set_state(LiveState.WATCHING)
+    assert "pull" not in allowed_actions(LiveState.WATCHING)
+
+    assert not panel.pull_now(), "a pull started while the watch was running"
+    assert panel._state is LiveState.WATCHING, "and the watch state survived"

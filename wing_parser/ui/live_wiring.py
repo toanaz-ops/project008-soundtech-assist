@@ -7,9 +7,10 @@ rather than from a file -- kept out of `main_window.py`, which is at
 
 The adopt path here is deliberately **not** `window_state.adopt_session`
 (`:68-72`): that one opens with `switch_to("doctor")`, and D16 says a
-pull leaves the view where it is. A watch may be running and the
-operator may want to pull again; yanking the page away mid-session costs
-more than the one click `Open Doctor` asks for.
+pull leaves the view where it is. The operator is mid-console-workflow
+-- start a watch, rerun a short discovery, export what he just pulled --
+and all of that is on this page; yanking the view away costs him the
+place he was working in, where staying costs one click on Open Doctor.
 """
 
 from __future__ import annotations
@@ -35,14 +36,20 @@ def adopt_pulled_session(window, session) -> None:
 def wire_console(window, page) -> None:
     """Connect the Console page to the window, if the page is built yet.
 
-    The `hasattr` guard is the same idiom `MainWindow._refresh` uses for
-    `set_session` (`main_window.py:175-177`) and exists for the same
-    reason: the Console page arrives over several tasks, and until task
-    13 replaces it the slot still holds task 8's `EmptyState`, which has
-    none of these signals. A page that has `session_pulled` is expected
-    to carry all three -- they are one contract, not three optional
-    ones, so a page missing the other two should fail loudly here rather
-    than silently drop Export or Open Doctor.
+    **The contract is all three signals or none of them.** A Console
+    page offers `session_pulled`, `exported` and `doctor_requested`, or
+    it offers nothing and this is a no-op -- task 13's `ConsolePage` must
+    re-emit all three from its `SnapshotPanel` (or hand the panel itself
+    to this function). The `hasattr` is the same idiom
+    `MainWindow._refresh` uses for `set_session`
+    (`main_window.py:175-177`), and exists for the same reason: the
+    Console page arrives over several tasks, and until task 13 replaces
+    it the slot still holds task 8's `EmptyState`, which has none of
+    them. Deliberately only the first signal is guarded: a page carrying
+    `session_pulled` but missing one of the other two is a half-built
+    contract and raises `AttributeError` here, at construction, rather
+    than silently dropping Export or Open Doctor at a venue. Both
+    branches are pinned in `tests/test_ui_console.py`.
     """
     if not hasattr(page, "session_pulled"):
         return

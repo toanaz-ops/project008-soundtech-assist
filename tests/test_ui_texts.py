@@ -26,6 +26,16 @@ happens to be displayed), and `elide.py:23 ELLIPSIS` (typography).
 Line numbers re-read from the files on 2026-09-15, after this commit's
 own import shifted one of them -- a stale reference in a blind-spot
 list is worse than no list, because it is read as a thing checked.
+
+A fifth, of a different kind, added 2026-09-16 (wave 2): an
+**exception's own message** shown as the line --
+`live_snapshot.py:195`, `self.status_label.setText(str(exc))` for
+`live_controller.EmptyReadError`. Argued on the `menus.py:82` precedent
+(`QMessageBox.critical(window, text("error.open"), str(exc))`), which
+this suite has accepted since wave 1: the failure's sentence is authored
+where the failure is, and the frame around it -- here, none; there, a
+title -- is what comes from texts.py. Invisible to the scan either way,
+being a Call rather than a Constant.
 """
 import ast
 from pathlib import Path

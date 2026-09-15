@@ -23,8 +23,6 @@ must not import `main_window` -- so those three signals are the contract.
 
 from __future__ import annotations
 
-import re
-
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -36,21 +34,10 @@ from PySide6.QtWidgets import (
 
 from wing_parser.ui import live_controller
 from wing_parser.ui.live_call_panel import CallPanel
+from wing_parser.ui.live_export import export_name
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption, set_style
-
-#: Everything a proposed filename may NOT keep: `suggested_name` takes
-#: its stem from `WingIdentity.name`, so the ordinary desk name
-#: "FOH/Monitors" would reach the Save dialog as a *directory* that does
-#: not exist. Task 4's deferred minor, closed where the path is proposed.
-_UNSAFE = re.compile(r"[^\w.\-]")
-
-
-def export_name(path) -> str:
-    """The pulled scene's suggested filename, safe to hand a file dialog."""
-    return _UNSAFE.sub("_", str(path))
-
 
 class SnapshotPanel(CallPanel):
     """Pull, the empty/partial guards, the scene-loaded line, Export."""
@@ -112,22 +99,34 @@ class SnapshotPanel(CallPanel):
         self._identity = identity
 
     def set_state(self, state: LiveState) -> None:
-        """Wear `state`: which of Pull/Export/Open Doctor are live.
+        """Wear `state`: Pull follows the desk, the other two follow the scene.
 
-        Both scene-bound buttons also need a scene: `allowed_actions`
-        answers about the *desk*, not about what has been pulled.
+        Export and Open Doctor are **session-gated, not state-gated**
+        (orchestrator ruling, task 11 review): writing a file and
+        switching page are not desk actions, and gating Export on
+        `allowed_actions` greyed it out in `ERROR` -- i.e. after a second
+        pull failed, exactly when the scene already in memory is the one
+        thing worth saving. `live_state`'s `export` entries are left
+        alone; a table-driven test over this panel's buttons should read
+        these two as session-gated.
         """
         super().set_state(state)
         loaded = self._session is not None
         self.pull_button.setEnabled("pull" in allowed_actions(state))
-        self.export_button.setEnabled(
-            "export" in allowed_actions(state) and loaded)
+        self.export_button.setEnabled(loaded)
         self.doctor_button.setEnabled(loaded)
 
     # -- pulling ----------------------------------------------------------
 
     def pull_now(self) -> bool:
-        """Read the whole desk off the GUI thread; False if it never began."""
+        """Read the whole desk off the GUI thread; False if it never began.
+
+        The state guard is for callers, not for the button, which is
+        already disabled: a programmatic pull from `WATCHING` would move
+        the panel to `PULLING` and silently lose the running watch.
+        """
+        if "pull" not in allowed_actions(self._state):
+            return False
         if not self._host:
             self.status_label.setText(text("console.no_address"))
             return False
