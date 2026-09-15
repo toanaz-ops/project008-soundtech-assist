@@ -3,7 +3,9 @@
 **Not `ChangesPanel` (D8).** Reusing it was the obvious move and is
 ruled out: `ChangesPanel.set_changes` takes `edit.journal.Patch` tuples
 (`changes_panel.py:13,30-36`), and its dock's visibility is bound to
-`session.dirty` (`main_window.py:175-176`). A watch event is not an
+`session.dirty` (`main_window.py:179-180` -- the spec and the task
+brief both say :175-176, which is where that pair sat before task 11
+added three lines above it; re-read 2026-09-16). A watch event is not an
 unsaved edit -- nobody made it, and saving the scene does not clear it
 -- so feeding one into that dock would make the dock mean two things at
 once. This table is the other meaning, and owns nothing else: it holds
@@ -13,7 +15,7 @@ no transport, no state and no worker, which is why it fits beside
 Its one judgement is the fallback in `append`: a blank `Change.label` is
 ordinary -- `factory-scene.snap` names no channel at all -- so an
 unnamed strip shows its address rather than a gap, which is the same
-call `net/watch/events.py:31-34` makes for the CLI's own line.
+call `net/watch/events.py:30-33` makes for the CLI's own line.
 """
 
 from __future__ import annotations

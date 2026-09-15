@@ -11,9 +11,9 @@ once, in the open:
   the client before the first round was read.
 * **The guard is built inside it**, so nothing touches the desk until
   the thread actually runs, and so its rounds report straight into this
-  worker's `progress` signal (`generator_worker.py:70-80`).
+  worker's `progress` signal (`generator_worker.py:94-97`).
 * **`stop` sets an event, and nothing else.** `RoundGuard` raises
-  `Cancelled` before its next `get_many` (`live_guard.py:66-68`), so
+  `Cancelled` before its next `get_many` (`live_guard.py:89-91`), so
   stop latency is bounded by one round whatever the desk's speed -- and
   no watch logic lives in a widget. One session per watch (D5): the
   loop never runs on a `QTimer` on the GUI thread.
