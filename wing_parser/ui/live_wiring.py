@@ -25,7 +25,7 @@ def adopt_pulled_session(window, session) -> None:
     and without `remember_recent` (D4): the session's path is a bare
     suggested filename naming nothing on disk, so a recent-menu entry
     would later pop "File is gone" and self-heal itself away
-    (`window_state.py:50-66`). `SnapshotPanel.exported` is what puts a
+    (`window_state.py:76-89`). `SnapshotPanel.exported` is what puts a
     real path in that menu, once one exists.
     """
     window.session = session

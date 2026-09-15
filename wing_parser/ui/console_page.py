@@ -58,7 +58,7 @@ class ConsolePage(QWidget):
 
     #: The three `live_wiring.wire_console` connects, re-emitted whole
     #: from `SnapshotPanel`: its contract is all three or none of them
-    #: (`live_wiring.py:36-52`).
+    #: (`live_wiring.py:37-54`).
     session_pulled = Signal(object)
     exported = Signal(str)
     doctor_requested = Signal()

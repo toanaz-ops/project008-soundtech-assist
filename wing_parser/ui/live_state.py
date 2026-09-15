@@ -71,9 +71,9 @@ class LiveState(Enum):
 #   (PULLING, "cancel")           the three busy states and had a row in
 #                                 neither half. The targets are exactly
 #                                 the panels' own `_cancel_fallback`
-#                                 (live_connect_bar.py:149-152,
-#                                 live_discovery.py:120-123,
-#                                 live_snapshot.py:169-172).
+#                                 (live_connect_bar.py:153-156,
+#                                 live_discovery.py:126-129,
+#                                 live_snapshot.py:170-173).
 # The rule those four enforce, checked by
 # test_every_button_driven_event_is_offered_by_the_state_it_fires_from:
 # every event a state accepts that a BUTTON fires must also be in that
