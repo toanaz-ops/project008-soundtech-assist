@@ -109,6 +109,7 @@ TEXTS: dict[str, str] = {
         "feedback.jsonl holds every verdict recorded here.\n"
         "principles.yaml and shows/ are yours to edit."
     ),
+    "verdict.note": "Note (optional)",
     "settings.title": "Settings",
     "settings.provider": "Provider",
     "settings.model": "Model",

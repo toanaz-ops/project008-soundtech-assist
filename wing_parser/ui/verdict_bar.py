@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.advisory import feedback
 from wing_parser.advisory.models import Finding
+from wing_parser.ui.texts import text
 
 LABELS = {
     "correct": "Correct",
@@ -45,7 +46,7 @@ class VerdictBar(QWidget):
 
         self.tally = QLabel("")
         self.note = QLineEdit()
-        self.note.setPlaceholderText("Note (optional)")
+        self.note.setPlaceholderText(text("verdict.note"))
 
         buttons = QHBoxLayout()
         self.buttons: dict[str, QPushButton] = {}
