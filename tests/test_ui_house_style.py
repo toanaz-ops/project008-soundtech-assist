@@ -158,3 +158,27 @@ def test_the_stylesheet_templates_start_without_a_bom():
     for name in ("theme.qss", "chrome.qss"):
         head = resource_path(name).read_bytes()[:3]
         assert head != b"\xef\xbb\xbf", f"{name} starts with a UTF-8 BOM"
+
+
+# -- the file ceiling, enforced (docs/tech-debt.md#d-29) ------------------
+#
+# The wave-1 spec puts a ~200-line ceiling on a UI module: past it a file
+# has stopped being one responsibility. import_page.py crossed it at 246
+# during the 1b-19 wiring and nobody noticed until the ledger review, so
+# the ceiling is measured now rather than remembered.
+
+CEILING = 200
+
+
+def test_no_ui_module_is_over_the_line_ceiling():
+    over = []
+    for path in sorted(UI_ROOT.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        lines = len(path.read_text(encoding="utf-8").splitlines())
+        if lines > CEILING:
+            over.append(f"{path.relative_to(UI_ROOT).as_posix()}: {lines}")
+    assert over == [], (
+        f"UI modules over the ~{CEILING}-line ceiling -- split by "
+        "responsibility, do not raise the ceiling:\n  " + "\n  ".join(over)
+    )
