@@ -140,15 +140,17 @@ def test_anthropic_adapter_takes_a_pasted_key_too(tmp_path):
 
 # -- placeholder keys are not keys (docs/tech-debt.md#d-30) --------------
 #
-# The repo ships fill-me-in markers in two places: `provider.yaml` at the
-# root (`api_key: PASTE_KEY_DEEPSEEK_VAO_DAY`) and
-# `docs/user-manual/04-cau-hinh-model.md` (`api_key: sk-xxxxxxxx...`).
-# Both are non-empty, so a bare truthiness test calls them configured and
-# the operator only learns otherwise when the first model call fails.
+# Neither marker is shipped -- provider.yaml has never been tracked
+# (.gitignore line 28; `git log --all -- provider.yaml` is empty). They are
+# the shapes an operator's own untracked file carries: the user manual
+# (`docs/user-manual/04-cau-hinh-model.md` lines 14 and 24) tells them to
+# write `api_key: sk-xxxxxxxx...`, and the local file handed out with this
+# project uses a `PASTE_KEY_<PROVIDER>_VAO_DAY` convention. Both are
+# non-empty, so a bare truthiness test calls them configured and the
+# operator only learns otherwise when the first model call fails.
 
 
-def test_the_repos_own_provider_yaml_placeholder_is_not_a_key(tmp_path,
-                                                              monkeypatch):
+def test_the_paste_key_convention_is_not_a_key(tmp_path, monkeypatch):
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     target = tmp_path / "provider.yaml"
     target.write_text(

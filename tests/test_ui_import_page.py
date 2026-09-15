@@ -338,10 +338,12 @@ def test_the_key_hint_and_the_model_call_read_the_same_config(
 
 def test_a_placeholder_key_still_reads_as_missing(qt_app, monkeypatch,
                                                   tmp_path):
-    """docs/tech-debt.md#d-30: the shipped `PASTE_KEY...` is not a key.
+    """docs/tech-debt.md#d-30: a `PASTE_KEY...` marker is not a key.
 
-    Counting it as configured hid this warning and the assisted path
-    then died on the first model call instead of here.
+    Untracked, not shipped -- it is what the operator's own provider.yaml
+    carries before they paste a real key over it. Counting it as
+    configured hid this warning and the assisted path then died on the
+    first model call instead of here.
     """
     from wing_parser import config
     from wing_parser.classifier import provider

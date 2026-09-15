@@ -161,9 +161,13 @@ def resolve(config: ProviderConfig) -> ProviderConfig:
     )
 
 
-# Fill-me-in markers the repo itself ships: `provider.yaml` at the root
-# carries `api_key: PASTE_KEY_DEEPSEEK_VAO_DAY`, and
-# docs/user-manual/04-cau-hinh-model.md shows `api_key: sk-xxxxxxxx...`.
+# Fill-me-in markers an operator's own provider.yaml is likely to carry.
+# NOTHING here is shipped: provider.yaml has never been tracked (.gitignore
+# line 28, and `git log --all -- provider.yaml` is empty), because it holds
+# a key. The two shapes are documented rather than committed --
+# docs/user-manual/04-cau-hinh-model.md lines 14 and 24 tell the operator
+# to write `api_key: sk-xxxxxxxx...`, and the local untracked file this
+# project hands people follows a `PASTE_KEY_<PROVIDER>_VAO_DAY` convention.
 # Both are non-empty, so a truthiness test calls them configured and the
 # operator only finds out at the first model call
 # (docs/tech-debt.md#d-30). Matched case-insensitively on the stripped
