@@ -1,4 +1,12 @@
-"""Every UI string lives in one place for future language switching."""
+"""Every UI string lives in one place for future language switching.
+
+The Console page's own strings live in `texts_console.py` and are
+merged in below: wave 2 pushed this file past the ~200-line ceiling
+(`test_ui_house_style.py:173`), and a page's vocabulary is the one
+seam a flat table of strings actually has.
+"""
+
+from wing_parser.ui.texts_console import CONSOLE_TEXTS
 
 TEXTS: dict[str, str] = {
     "app.title": "wing",
@@ -97,40 +105,6 @@ TEXTS: dict[str, str] = {
     "import.cancelled": "Cancelled — nothing was applied.",
     "import.timeout": "The model did not answer within {seconds} s.",
     "import.busy": "A model request is already running — cancel it or wait.",
-    "console.address": "Console",
-    "console.address_hint": "IP address or hostname",
-    "console.connect": "Connect",
-    "console.disconnect": "Disconnect",
-    "console.cancel": "Cancel",
-    "console.lamp": "●",
-    "console.identity": "{name} · {model} · firmware {firmware}",
-    "console.connecting": "Asking {host} who it is...",
-    "console.cancelled": "Cancelled — nothing was read.",
-    "console.timeout": (
-        "No reply from {host} within {seconds} s — check the address "
-        "and that the desk is on this network."
-    ),
-    "console.failed": "Cannot reach {host}: {error}",
-    "console.busy": "A console call is already running — cancel it or wait.",
-    "console.no_address": "Type a console address first — an IP or a name.",
-    "console.discovery": "Discovery",
-    "console.discover": "Discover",
-    "console.rerun": "Rerun",
-    "console.discovering": "Walking the schema tree...",
-    "console.walk_cancelled": "Cancelled — nothing was walked.",
-    "console.walk_timeout": (
-        "No reply from {host} within {seconds} s while walking the "
-        "schema."
-    ),
-    "console.walk_busy": (
-        "A schema walk is already running — cancel it or wait."
-    ),
-    "console.walk_failed": "Could not walk the schema at {host}: {error}",
-    "console.inventory": "{total} leaves ({breakdown})",
-    "console.unresolved_banner": (
-        "Unresolved: {families} — would watch {total} leaves; rerun "
-        "before believing the list is small."
-    ),
     "menu.open": "&Open...",
     "menu.open_title": "Open a WING scene",
     "menu.save_title": "Save the edited scene",
@@ -180,6 +154,7 @@ TEXTS: dict[str, str] = {
     "settings.cancelled": "Probe cancelled.",
     "settings.timeout": "No reply within {seconds} s — check the base URL.",
     "settings.busy": "A connection test is already running.",
+    **CONSOLE_TEXTS,
 }
 
 

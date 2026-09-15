@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from wing_parser.ui import menus, state_store, window_state
+from wing_parser.ui import live_wiring, menus, state_store, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
 from wing_parser.ui.channels_page import ChannelsPage
 from wing_parser.ui.diff_page import DiffPage
@@ -74,6 +74,7 @@ class MainWindow(QMainWindow):
         self.pages["import_"] = ImportPage()
         self.pages["import_"].open_settings_requested.connect(self.open_settings)
         self.pages["console"] = EmptyState(text("page.console"))
+        live_wiring.wire_console(self, self.pages["console"])
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:

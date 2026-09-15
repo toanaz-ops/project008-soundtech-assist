@@ -468,3 +468,221 @@ def test_a_failed_walk_reports_one_line_and_needs_a_reset(qt_app, settle):
     assert "\n" not in line
     assert HOST in line
     assert not panel.discover_button.isEnabled(), "error needs a reset first"
+
+
+# -- SnapshotPanel: Pull, the two guards, Open Doctor, Export ----------------
+#
+# The desk here is the real `user-files/example-Vu.snap`, leaf by leaf:
+# `tests/test_live_controller.py::_desk_holding` already builds one and this
+# module imports it rather than growing a second copy. One pull is taken per
+# module and replayed, so no test re-walks the whole file twice.
+#
+# D16: the window stays on the Console page after a pull. D4: a pulled scene
+# joins the recent menu only once it has been exported. D3: Export writes the
+# PATCHED document through `Session.save_as`, never the pull-time bytes.
+
+
+@pytest.fixture(scope="module")
+def vu_result(vu_path):
+    """One real `SnapshotResult` off the Vu desk, taken once per module."""
+    from tests.test_live_controller import _desk_holding
+
+    return _desk_holding(vu_path).transport().snapshot(HOST)
+
+
+def _replaying(result):
+    """A `Transport` whose `snapshot` hands back `result` and nothing else."""
+    from tests.fake_desk import FakeDesk
+
+    return dataclasses.replace(
+        FakeDesk().transport(), snapshot=lambda host: result)
+
+
+def _snapshot_panel(transport, *, identity=None, host=HOST):
+    from wing_parser.ui.live_snapshot import SnapshotPanel
+    from wing_parser.ui.live_state import LiveState
+
+    panel = SnapshotPanel(transport=transport)
+    panel.set_identity(_identity() if identity is None else identity)
+    panel.set_host(host)
+    panel.set_state(LiveState.CONNECTED)
+    return panel
+
+
+def _wired(monkeypatch, panel):
+    """A real MainWindow with `panel` wired the way the app wires it."""
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    from wing_parser.ui import live_wiring
+    from wing_parser.ui.main_window import MainWindow
+
+    window = MainWindow(None)
+    live_wiring.wire_console(window, panel)
+    return window
+
+
+def _pull_settled(panel, settle):
+    """Pump until the pull's running line has been replaced by its outcome."""
+    from wing_parser.ui.texts import text
+
+    running = text("console.pulling").format(host=HOST)
+    assert panel.pull_now(), "the pull never started"
+    return settle(lambda: panel.status_label.text() != running)
+
+
+def test_an_empty_read_shows_an_error_line_and_no_session_reaches_the_window(
+        qt_app, settle, monkeypatch):
+    """The `EmptyReadError` guard, at the UI boundary this time.
+
+    A desk that answers nothing produces a valid, empty scene; without
+    this guard the window would adopt it and Doctor would truthfully
+    report "No findings." for a console it never reached.
+    """
+    from tests.fake_desk import FakeDesk
+
+    panel = _snapshot_panel(FakeDesk().transport())
+    window = _wired(monkeypatch, panel)
+    pulled = []
+    panel.session_pulled.connect(pulled.append)
+
+    assert _pull_settled(panel, settle), "the failure line never arrived"
+    line = panel.status_label.text()
+    assert "\n" not in line, f"more than one line: {line!r}"
+    assert "no console answered" in line and HOST in line
+    assert pulled == [], "a session escaped the guard"
+    assert window.session is None, "the window adopted an empty read"
+    assert not panel.export_button.isEnabled()
+    assert not panel.doctor_button.isEnabled()
+
+
+def test_a_partial_read_shows_a_persistent_banner_naming_the_counts(
+        qt_app, settle, monkeypatch, vu_result):
+    partial = dataclasses.replace(
+        vu_result,
+        unresolved_nodes=("/mtx", "/dca"),
+        unresolved_leaves=("/ch/7/$fdr", "/ch/8/$fdr", "/ch/9/$fdr"),
+    )
+    panel = _snapshot_panel(_replaying(partial))
+    window = _wired(monkeypatch, panel)
+
+    assert _pull_settled(panel, settle)
+    assert window.session is not None, "a partial read is still usable"
+    assert panel.banner.isVisibleTo(panel), "the banner is persistent"
+    line = panel.banner.text()
+    assert "2 node(s)" in line and "3 leaf" in line, line
+    assert "/mtx" in line and "/dca" in line, line
+
+
+def test_a_clean_pull_reaches_the_window_and_every_page_sees_it(
+        qt_app, settle, monkeypatch, vu_result):
+    panel = _snapshot_panel(_replaying(vu_result))
+    window = _wired(monkeypatch, panel)
+    seen = {}
+    for key, page in window.pages.items():
+        if hasattr(page, "set_session"):
+            seen[key] = []
+            page.set_session = lambda session, bucket=seen[key]: bucket.append(
+                session)
+    pulled = []
+    panel.session_pulled.connect(pulled.append)
+
+    assert _pull_settled(panel, settle)
+    assert pulled, "session_pulled never fired"
+    assert window.session is pulled[0]
+    assert window.session.findings(), "the Vu scene has findings; this one must too"
+    assert set(seen) >= {"doctor", "overview", "channels", "routing", "diff"}
+    for key, bucket in seen.items():
+        assert bucket and bucket[-1] is window.session, key
+    assert not panel.banner.isVisibleTo(panel), "a clean read shows no banner"
+    assert str(len(window.session.findings())) in panel.loaded_label.text()
+
+
+def test_the_view_stays_on_the_console_page_after_a_pull(
+        qt_app, settle, monkeypatch, vu_result):
+    """D16: the watch may be running and he may want to pull again."""
+    panel = _snapshot_panel(_replaying(vu_result))
+    window = _wired(monkeypatch, panel)
+    window.switch_to("console")
+
+    assert _pull_settled(panel, settle)
+    assert window.session is not None
+    assert window.stack.currentWidget() is window.pages["console"]
+
+
+def test_open_doctor_switches_to_the_doctor_page(
+        qt_app, settle, monkeypatch, vu_result):
+    panel = _snapshot_panel(_replaying(vu_result))
+    window = _wired(monkeypatch, panel)
+    window.switch_to("console")
+
+    assert _pull_settled(panel, settle)
+    assert panel.doctor_button.isEnabled(), "a loaded scene has a Doctor to open"
+    panel.doctor_button.click()
+    assert window.stack.currentWidget() is window.pages["doctor"]
+
+
+def test_export_writes_through_save_as_and_remembers_the_exported_path(
+        qt_app, settle, monkeypatch, tmp_path, vu_result):
+    """D3 + D4 in one: the patched document, and the path remembered after."""
+    import json
+
+    from wing_parser.edit import pointer
+    from wing_parser.ui import live_snapshot
+    from wing_parser.ui.session import Session
+
+    panel = _snapshot_panel(_replaying(vu_result))
+    window = _wired(monkeypatch, panel)
+    assert _pull_settled(panel, settle)
+
+    target = next(f for f in window.session.findings() if f.rule_id == "G8")
+    assert window.session.repair(target) is True
+    patch = window.session.changes()[0]
+
+    out = tmp_path / "exported.snap"
+    monkeypatch.setattr(live_snapshot.QFileDialog, "getSaveFileName",
+                        lambda *args, **kwargs: (str(out), ""))
+    assert panel.export_now()
+
+    written = json.loads(out.read_text(encoding="utf-8"))
+    assert pointer.read(written, patch.path) == patch.after
+    assert not [
+        finding
+        for finding in Session.open(out).findings()
+        if (finding.rule_id, finding.target) == (target.rule_id, target.target)
+    ]
+    assert window._recent == [str(out)], "the exported path is remembered"
+
+
+def test_a_pulled_session_is_not_in_the_recent_menu_before_export(
+        qt_app, settle, monkeypatch, vu_result):
+    """D4: its path names no file, so open_recent would pop 'File is gone'."""
+    panel = _snapshot_panel(_replaying(vu_result))
+    window = _wired(monkeypatch, panel)
+
+    assert _pull_settled(panel, settle)
+    assert window.session is not None
+    assert window._recent == []
+    assert window._recent_menu.actions() == []
+
+
+def test_the_export_dialog_suggests_a_sanitised_desk_name(
+        qt_app, settle, monkeypatch, vu_result):
+    """A desk named `FOH/Monitors` must not propose a path with a directory."""
+    from wing_parser.ui import live_snapshot
+
+    identity = dataclasses.replace(_identity(), name="FOH/Monitors")
+    panel = _snapshot_panel(_replaying(vu_result), identity=identity)
+    _wired(monkeypatch, panel)
+    assert _pull_settled(panel, settle)
+
+    suggested = []
+
+    def _capture(parent, caption, directory, selected_filter):
+        suggested.append(directory)
+        return "", ""
+
+    monkeypatch.setattr(
+        live_snapshot.QFileDialog, "getSaveFileName", _capture)
+    assert not panel.export_now(), "a cancelled dialog writes nothing"
+    assert suggested, "the dialog was never offered a suggestion"
+    assert "FOH_Monitors" in suggested[0], suggested[0]
+    assert "/" not in suggested[0] and "\\" not in suggested[0], suggested[0]
