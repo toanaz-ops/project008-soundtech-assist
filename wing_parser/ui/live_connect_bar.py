@@ -4,7 +4,10 @@ Layout, signals and one state->style table (design spec S6). Every
 decision it shows belongs to somebody else: the handshake is
 `live_controller.connect` over an injectable `Transport`, the legal
 states are `live_state`, and remembering the address is the window's
-job -- the bar only hands it `host()` and a `connected` signal.
+job -- the bar only hands it `host()` and a `connected` signal. The
+runner/state/cancel shell is `live_call_panel.CallPanel`, shared with
+`DiscoveryPanel` -- read that module's docstring for why the split runs
+where it does.
 
 The lamp is a QLabel wearing an `azStyle`, coloured by four
 `QLabel[azStyle="..."]` rules added to `resources/theme.qss` with this
@@ -23,15 +26,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QVBoxLayout,
-    QWidget,
 )
 
 from wing_parser.ui import live_controller
-from wing_parser.ui.call_button import ButtonRunner
+from wing_parser.ui.live_call_panel import CallPanel
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption, set_style
-from wing_parser.ui.workers import CallRunner
 
 #: Which azStyle the lamp wears in each state -- spec S6's mapping, whole.
 #: A table, not an if-chain, so a new LiveState fails a test rather than
@@ -48,7 +49,7 @@ LAMP_STYLES: dict[LiveState, str] = {
 }
 
 
-class ConnectBar(QWidget):
+class ConnectBar(CallPanel):
     """Address, Connect/Disconnect/Cancel, lamp, identity readout."""
 
     connected = Signal(object)      # the WingIdentity the desk answered
@@ -56,10 +57,7 @@ class ConnectBar(QWidget):
     disconnected = Signal()
 
     def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
-        super().__init__(parent)
-        self._transport = transport or live_controller.REAL
-        self._timeout = timeout
-        self._state = LiveState.DISCONNECTED
+        super().__init__(parent, transport=transport, timeout=timeout)
 
         self.address = QComboBox()
         self.address.setEditable(True)
@@ -86,7 +84,6 @@ class ConnectBar(QWidget):
         layout.addLayout(row)
         layout.addWidget(self.status_label)
 
-        self._runner = CallRunner(self)
         self.connect_button.clicked.connect(self.connect_now)
         self.disconnect_button.clicked.connect(self.disconnect_now)
         self.cancel_button.clicked.connect(self.cancel)
@@ -107,7 +104,7 @@ class ConnectBar(QWidget):
 
     def set_state(self, state: LiveState) -> None:
         """Wear `state`: the lamp's colour and which buttons are live."""
-        self._state = state
+        super().set_state(state)
         set_style(self.lamp, LAMP_STYLES[state])
         actions = allowed_actions(state)
         self.connect_button.setEnabled("connect" in actions)
@@ -121,24 +118,19 @@ class ConnectBar(QWidget):
         if not host:
             self.status_label.setText(text("console.no_address"))
             return False
-        call = ButtonRunner(
-            runner=self._runner, primary=self.connect_button,
-            cancel=self.cancel_button, report=self.status_label.setText,
+        return self._run_call(
+            "connect", live_controller.connect, host, self._transport,
+            primary=self.connect_button, cancel_button=self.cancel_button,
+            status=self.status_label,
             running=text("console.connecting").format(host=host),
             cancelled=text("console.cancelled"),
             # ButtonRunner formats this with `seconds` alone
             # (call_button.py:85), so the host goes in first.
             timeout_text=text("console.timeout").replace("{host}", host),
             busy_text=text("console.busy"),
-            on_error=self._refused, on_timeout=self._fail, parent=self,
+            on_success=self._arrived, on_error=self._refused,
+            busy_state=LiveState.CONNECTING,
         )
-        started = call.run(
-            "connect", live_controller.connect, host, self._transport,
-            on_success=self._arrived, timeout=self._timeout,
-        )
-        if started:
-            self.set_state(LiveState.CONNECTING)
-        return started
 
     def disconnect_now(self) -> None:
         """Drop the desk: settle any call in flight, clear the readout.
@@ -154,11 +146,10 @@ class ConnectBar(QWidget):
         self.set_state(LiveState.DISCONNECTED)
         self.disconnected.emit()
 
-    def cancel(self) -> None:
-        """Settle a running connect now; its late answer is discarded."""
-        self._runner.cancel()
+    def _cancel_fallback(self) -> LiveState | None:
         if self._state is LiveState.CONNECTING:
-            self.set_state(LiveState.DISCONNECTED)
+            return LiveState.DISCONNECTED
+        return None
 
     # -- internals --------------------------------------------------------
 
@@ -181,5 +172,5 @@ class ConnectBar(QWidget):
         `_refused` writes its own line first; a timeout arrives from
         `ButtonRunner.on_timeout` with its line already reported.
         """
-        self.set_state(LiveState.ERROR)
+        super()._fail(exc)
         self.failed.emit(exc)

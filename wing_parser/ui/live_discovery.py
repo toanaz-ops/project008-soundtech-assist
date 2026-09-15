@@ -1,13 +1,14 @@
 """The Console page's inventory row: Discover, leaf counts, the banner.
 
-Mirrors `live_connect_bar.py` in shape: a `transport`-injected widget that
-runs one call through `CallRunner` + `ButtonRunner` under a named kind
-(here `"walk"`, `live_controller.discover` -> `WatchList`), and maps
-`LiveState` -> enabled buttons through `live_state.allowed_actions`
-rather than a scattered `setEnabled`. What it owns that the bar does not
-is a *result*: `set_result` renders the leaf total, the per-family
-inventory, and -- the load-bearing part of this page (spec S6) -- the
-unresolved banner.
+Mirrors `live_connect_bar.py` in shape -- both now build on the shared
+`live_call_panel.CallPanel` (runner, transport, timeout, state, Cancel,
+the ButtonRunner dance) rather than repeating it; read that module's
+docstring for why the split runs where it does. What this widget owns
+that the bar does not is a *result*: `set_result` renders the leaf
+total, the per-family inventory, and -- the load-bearing part of this
+page (spec S6) -- the unresolved banner. It needs no `_fail` override of
+its own (unlike `ConnectBar`, which has a `failed` signal to emit) --
+the base's "state -> error" is the whole story here.
 
 The banner exists because of one measured incident (2026-08-23): a walk
 opened a watch on 16 leaves with seven top-level families unresolved,
@@ -32,24 +33,20 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.ui import live_controller
-from wing_parser.ui.call_button import ButtonRunner
+from wing_parser.ui.live_call_panel import CallPanel
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption, set_style
-from wing_parser.ui.workers import CallRunner
 
 
-class DiscoveryPanel(QWidget):
+class DiscoveryPanel(CallPanel):
     """Discover, the per-family inventory, and the unresolved banner."""
 
     discovered = Signal(object)     # the WatchList the walk returned
     rerun_requested = Signal()      # Rerun clicked, ahead of the retry
 
     def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
-        super().__init__(parent)
-        self._transport = transport or live_controller.REAL
-        self._timeout = timeout
-        self._state = LiveState.DISCONNECTED
+        super().__init__(parent, transport=transport, timeout=timeout)
         self._host = ""
         self._has_unresolved = False
 
@@ -82,7 +79,6 @@ class DiscoveryPanel(QWidget):
         layout.addWidget(self.banner)
         layout.addWidget(self.status_label)
 
-        self._runner = CallRunner(self)
         self.discover_button.clicked.connect(self.discover_now)
         self.rerun_button.clicked.connect(self._rerun)
         self.cancel_button.clicked.connect(self.cancel)
@@ -96,7 +92,7 @@ class DiscoveryPanel(QWidget):
 
     def set_state(self, state: LiveState) -> None:
         """Wear `state`: which of Discover/Rerun are live right now."""
-        self._state = state
+        super().set_state(state)
         self._refresh_buttons()
 
     def set_result(self, watch_list) -> None:
@@ -121,11 +117,10 @@ class DiscoveryPanel(QWidget):
         """Start the walk off the GUI thread; False if it never began."""
         return self._start()
 
-    def cancel(self) -> None:
-        """Settle a running walk now; its late answer is discarded."""
-        self._runner.cancel()
+    def _cancel_fallback(self) -> LiveState | None:
         if self._state is LiveState.WALKING:
-            self.set_state(LiveState.CONNECTED)
+            return LiveState.CONNECTED
+        return None
 
     # -- internals --------------------------------------------------------
 
@@ -137,9 +132,10 @@ class DiscoveryPanel(QWidget):
         if not self._host:
             self.status_label.setText(text("console.no_address"))
             return False
-        call = ButtonRunner(
-            runner=self._runner, primary=self.discover_button,
-            cancel=self.cancel_button, report=self.status_label.setText,
+        return self._run_call(
+            "walk", live_controller.discover, self._host, self._transport,
+            primary=self.discover_button, cancel_button=self.cancel_button,
+            status=self.status_label,
             running=text("console.discovering"),
             cancelled=text("console.walk_cancelled"),
             # ButtonRunner formats this with `seconds` alone
@@ -147,15 +143,9 @@ class DiscoveryPanel(QWidget):
             timeout_text=text("console.walk_timeout").replace(
                 "{host}", self._host),
             busy_text=text("console.walk_busy"),
-            on_error=self._refused, on_timeout=self._fail, parent=self,
+            on_success=self._arrived, on_error=self._refused,
+            busy_state=LiveState.WALKING,
         )
-        started = call.run(
-            "walk", live_controller.discover, self._host, self._transport,
-            on_success=self._arrived, timeout=self._timeout,
-        )
-        if started:
-            self.set_state(LiveState.WALKING)
-        return started
 
     def _refresh_buttons(self) -> None:
         actions = allowed_actions(self._state)
@@ -171,11 +161,3 @@ class DiscoveryPanel(QWidget):
         self.status_label.setText(text("console.walk_failed").format(
             host=self._host, error=exc))
         self._fail(exc)
-
-    def _fail(self, exc) -> None:
-        """Both failure paths end here: state -> error, no reset needed.
-
-        `_refused` writes its own line first; a timeout arrives from
-        `ButtonRunner.on_timeout` with its line already reported.
-        """
-        self.set_state(LiveState.ERROR)
