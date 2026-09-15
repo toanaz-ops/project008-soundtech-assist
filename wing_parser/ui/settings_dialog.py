@@ -84,7 +84,7 @@ class SettingsDialog(QDialog):
 
         self.test_button = QPushButton(text("settings.test"))
         self.test_button.clicked.connect(self.run_probe)
-        self.cancel_button = QPushButton(text("import.cancel"))
+        self.cancel_button = QPushButton(text("settings.cancel"))
         self.cancel_button.setVisible(False)
         save_btn = QPushButton(text("settings.save"))
         save_btn.clicked.connect(self._save_and_close)

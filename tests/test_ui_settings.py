@@ -108,3 +108,18 @@ def test_existing_config_loads_masked(qt_app, knowledge):
     )
     dlg = SettingsDialog()
     assert "abcd" in dlg.key_display.text() and "secret" not in dlg.key_display.text()
+
+
+def test_cancel_uses_its_own_texts_key(qt_app, knowledge):
+    """docs/tech-debt.md#d-31: the dialog used to borrow `import.cancel`.
+
+    It read the same today, which is exactly why nobody noticed; the next
+    reader retitling the wizard's Cancel would have silently retitled this
+    one too.
+    """
+    from wing_parser.ui.settings_dialog import SettingsDialog
+    from wing_parser.ui.texts import TEXTS, text
+
+    assert "settings.cancel" in TEXTS
+    dialog = SettingsDialog()
+    assert dialog.cancel_button.text() == text("settings.cancel")

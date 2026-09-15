@@ -114,6 +114,7 @@ TEXTS: dict[str, str] = {
     ),
     "settings.api_key_env": "API key env var (optional)",
     "settings.save": "Save",
+    "settings.cancel": "Cancel",
     "settings.test": "Test connection",
     "settings.close": "Close",
     "settings.probe_ok": "Connection OK — {message}",
