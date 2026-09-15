@@ -25,10 +25,7 @@ from wing_parser.advisory.models import Finding
 from wing_parser.edit import repairs
 from wing_parser.ui.texts import text
 
-NO_REPAIR = (
-    "No one-click repair for this rule: it states a window or a count, "
-    "so no single value follows from it. Adjust it by hand on the console."
-)
+NO_REPAIR = text("detail.no_repair")
 
 
 def _wrapped(text: str = "") -> QLabel:

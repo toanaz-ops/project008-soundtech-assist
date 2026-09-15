@@ -18,7 +18,10 @@ from wing_parser.ui.state_store import PAGE_KEYS
 from wing_parser.ui.texts import text
 from wing_parser.ui.window_state import adopt_session
 
-FILTER = "WING scene (*.snap);;All files (*)"
+# Bound to a name because two call sites share it. The texts.py scan
+# cannot see a Name argument, so this one is kept honest by reading --
+# see tests/test_ui_texts.py's docstring on blind spots.
+FILTER = text("menu.scene_filter")
 
 
 def build_menus(window) -> None:
@@ -67,7 +70,7 @@ def open_settings(window) -> None:
 
 def open_file(window) -> None:
     name, _ = QFileDialog.getOpenFileName(
-        window, "Open a WING scene", "", FILTER
+        window, text("menu.open_title"), "", FILTER
     )
     if not name:
         return
@@ -89,7 +92,7 @@ def save_as(window) -> None:
         window.session.path.with_name(window.session.path.stem + "-edited.snap")
     )
     name, _ = QFileDialog.getSaveFileName(
-        window, "Save the edited scene", suggested, FILTER
+        window, text("menu.save_title"), suggested, FILTER
     )
     if not name:
         return

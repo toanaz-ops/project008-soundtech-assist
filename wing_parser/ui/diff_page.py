@@ -32,7 +32,7 @@ from wing_parser.ui.theme.widgets import set_style
 
 COLUMNS = ("path", "before", "after", "magnitude")
 
-FILTER = "WING scene (*.snap);;All files (*)"
+FILTER = text("menu.scene_filter")   # same filter menus.py opens with
 
 # The magnitude visual is under review (ToanAZ, 2026-08-26): True ships
 # a 2px dim-to-accent bar beside each magnitude cell. --screenshot

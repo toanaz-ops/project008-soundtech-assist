@@ -30,8 +30,8 @@ from wing_parser.ui.step_rail import StepRail
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
 
-FILTER = "Excel workbook (*.xlsx)"
-SAVE_FILTER = "YAML (*.yaml);;All files (*)"
+FILTER = text("import.xlsx_filter")
+SAVE_FILTER = text("import.yaml_filter")
 STEPS = ("pick", "mapping", "vocabulary", "save")
 
 
