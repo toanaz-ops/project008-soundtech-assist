@@ -32,7 +32,19 @@ class LiveState(Enum):
     LOST = "lost"
 
 
-# One row per documented arrow in spec S6's diagram. Anything not listed
+# Every row traces to spec S6, but not every row is a literal arrow in
+# its ASCII diagram -- four are inferred from adjacent prose, and one
+# from the task-1 brief's own test:
+#   (CONNECTED, "disconnect")  -- S6's Connect/Disconnect button pair,
+#                                 not drawn as a return arrow
+#   (WATCHING, "stop")         -- S7.2: "a watch ends on Stop"
+#   (ERROR, "reset")           -- error needs a documented way back to
+#   (ERROR, "disconnect")         disconnected; the diagram shows the
+#                                 arrow but not which event(s) fire it
+#   (LOST, "connect")          -- not in the diagram at all; dictated by
+#                                 the task-1 brief's own test
+#                                 (test_lost_is_not_error_because_it_still_allows_reconnect)
+# Every other row below is a literal drawn arrow. Anything not listed
 # here is illegal and transition() raises for it.
 _TABLE: dict[tuple[LiveState, str], LiveState] = {
     (LiveState.DISCONNECTED, "connect"): LiveState.CONNECTING,
