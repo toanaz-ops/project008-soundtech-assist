@@ -33,8 +33,9 @@ class LiveState(Enum):
 
 
 # Every row traces to spec S6, but not every row is a literal arrow in
-# its ASCII diagram -- four are inferred from adjacent prose, and one
-# from the task-1 brief's own test:
+# its ASCII diagram -- two are inferred from adjacent prose, two from a
+# diagram arrow that does not name its events, and one from the task-1
+# brief's own test:
 #   (CONNECTED, "disconnect")  -- S6's Connect/Disconnect button pair,
 #                                 not drawn as a return arrow
 #   (WATCHING, "stop")         -- S7.2: "a watch ends on Stop"
