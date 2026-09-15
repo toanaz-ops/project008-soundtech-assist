@@ -299,3 +299,172 @@ def test_an_empty_address_starts_no_call(qt_app):
     assert not bar.connect_now()
     assert bar.status_label.text() == text("console.no_address")
     assert bar.lamp.property("azStyle") == "faded"
+
+
+# -- DiscoveryPanel: inventory, and the unresolved banner --------------------
+#
+# The 2026-08-23 incident this banner exists for: a walk opened a watch on
+# 16 leaves with seven top-level families unresolved
+# (docs/handoff/2026-08-23-live-watch-acceptance-complete.md); an immediate
+# rerun resolved all 220. `WatchList.addresses` here is a bag of dummy leaf
+# addresses -- FakeDesk._walk takes its leaf TOTAL from `leaves` and its
+# per-family breakdown from `strips` independently (fake_desk.py:150-161),
+# so the two are set separately to pin exactly the numbers this task names.
+
+UNRESOLVED = ("/io", "/ch", "/aux", "/bus", "/main", "/mtx", "/$ctl")
+
+
+def _leaves(n):
+    from wing_parser.net.codec import OscMessage
+
+    return {f"/probe/{i}": OscMessage(f"/probe/{i}", "i", (0,)) for i in range(n)}
+
+
+def _panel(desk=None, *, transport=None, **kwargs):
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_discovery import DiscoveryPanel
+
+    if transport is None:
+        desk = FakeDesk() if desk is None else desk
+        transport = desk.transport()
+    return DiscoveryPanel(transport=transport, **kwargs)
+
+
+def test_a_clean_walk_shows_the_leaf_total_and_the_family_counts(qt_app, settle):
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(
+        leaves=_leaves(220),
+        strips={"ch": 40, "bus": 16, "main": 4, "mtx": 8, "dca": 16},
+    )
+    panel = _panel(desk)
+    panel.set_state(LiveState.CONNECTED)
+    panel.set_host(HOST)
+    results = []
+    panel.discovered.connect(results.append)
+
+    assert panel.discover_now()
+    assert settle(lambda: results), "discovered never arrived"
+    assert len(results[0].addresses) == 220
+    assert results[0].strips == {
+        "ch": 40, "bus": 16, "main": 4, "mtx": 8, "dca": 16,
+    }
+    summary = panel.inventory_label.text()
+    assert "220" in summary
+    for piece in ("40 ch", "16 bus", "4 main", "8 mtx", "16 dca"):
+        assert piece in summary, summary
+
+
+def test_the_unresolved_banner_names_every_family_that_did_not_resolve(
+        qt_app, settle):
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(leaves=_leaves(16), unresolved=UNRESOLVED)
+    panel = _panel(desk)
+    panel.set_state(LiveState.CONNECTED)
+    panel.set_host(HOST)
+
+    assert panel.discover_now()
+    assert settle(lambda: panel.banner.isVisibleTo(panel))
+    line = panel.banner_label.text()
+    for family in UNRESOLVED:
+        assert family in line, line
+    assert "16" in line, "the leaf count it would watch"
+    assert panel.rerun_button.isEnabled()
+
+
+def test_the_banner_carries_the_rerun_sentence(qt_app, settle):
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(leaves=_leaves(16), unresolved=UNRESOLVED)
+    panel = _panel(desk)
+    panel.set_state(LiveState.CONNECTED)
+    panel.set_host(HOST)
+
+    assert panel.discover_now()
+    assert settle(lambda: panel.banner.isVisibleTo(panel))
+    assert "rerun before believing the list is small" in panel.banner_label.text()
+
+
+def test_the_banner_is_absent_after_a_clean_walk(qt_app, settle):
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(
+        leaves=_leaves(220),
+        strips={"ch": 40, "bus": 16, "main": 4, "mtx": 8, "dca": 16},
+    )
+    panel = _panel(desk)
+    panel.set_state(LiveState.CONNECTED)
+    panel.set_host(HOST)
+
+    assert panel.discover_now()
+    assert settle(lambda: panel.inventory_label.text())
+    assert not panel.banner.isVisibleTo(panel)
+
+
+def test_rerun_walks_again_and_clears_the_banner(qt_app, settle):
+    import dataclasses
+
+    from tests.fake_desk import FakeDesk
+    from wing_parser.net.watch.list import WatchList
+    from wing_parser.ui.live_state import LiveState
+
+    responses = iter([
+        WatchList(addresses=tuple(_leaves(16)), unresolved=UNRESOLVED, strips={}),
+        WatchList(
+            addresses=tuple(_leaves(220)), unresolved=(),
+            strips={"ch": 40, "bus": 16, "main": 4, "mtx": 8, "dca": 16},
+        ),
+    ])
+
+    def walk(host):
+        return next(responses)
+
+    transport = dataclasses.replace(FakeDesk().transport(), walk=walk)
+    panel = _panel(transport=transport)
+    panel.set_state(LiveState.CONNECTED)
+    panel.set_host(HOST)
+    seen = []
+    panel.discovered.connect(seen.append)
+    reruns = []
+    panel.rerun_requested.connect(lambda: reruns.append(True))
+
+    assert panel.discover_now()
+    assert settle(lambda: len(seen) == 1)
+    assert panel.banner.isVisibleTo(panel)
+    assert panel.rerun_button.isEnabled()
+
+    panel.rerun_button.click()
+    assert settle(lambda: len(seen) == 2)
+    assert reruns == [True]
+    assert not panel.banner.isVisibleTo(panel)
+
+
+def test_a_failed_walk_reports_one_line_and_needs_a_reset(qt_app, settle):
+    import dataclasses
+
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui.live_state import LiveState
+
+    from wing_parser.ui.texts import text
+
+    def raising(host):
+        raise OSError(f"no console answered at {host}")
+
+    transport = dataclasses.replace(FakeDesk().transport(), walk=raising)
+    panel = _panel(transport=transport)
+    panel.set_state(LiveState.CONNECTED)
+    panel.set_host(HOST)
+    running = text("console.discovering")
+
+    assert panel.discover_now()
+    assert settle(lambda: panel.status_label.text() != running), (
+        "the failure line never arrived")
+    line = panel.status_label.text()
+    assert "\n" not in line
+    assert HOST in line
+    assert not panel.discover_button.isEnabled(), "error needs a reset first"

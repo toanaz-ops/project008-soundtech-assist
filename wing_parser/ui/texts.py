@@ -113,6 +113,24 @@ TEXTS: dict[str, str] = {
     "console.failed": "Cannot reach {host}: {error}",
     "console.busy": "A console call is already running — cancel it or wait.",
     "console.no_address": "Type a console address first — an IP or a name.",
+    "console.discovery": "Discovery",
+    "console.discover": "Discover",
+    "console.rerun": "Rerun",
+    "console.discovering": "Walking the schema tree...",
+    "console.walk_cancelled": "Cancelled — nothing was walked.",
+    "console.walk_timeout": (
+        "No reply from {host} within {seconds} s while walking the "
+        "schema."
+    ),
+    "console.walk_busy": (
+        "A schema walk is already running — cancel it or wait."
+    ),
+    "console.walk_failed": "Could not walk the schema at {host}: {error}",
+    "console.inventory": "{total} leaves ({breakdown})",
+    "console.unresolved_banner": (
+        "Unresolved: {families} — would watch {total} leaves; rerun "
+        "before believing the list is small."
+    ),
     "menu.open": "&Open...",
     "menu.open_title": "Open a WING scene",
     "menu.save_title": "Save the edited scene",
