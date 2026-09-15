@@ -37,16 +37,30 @@ import threading
 from PySide6.QtCore import QCoreApplication
 
 from wing_parser.ui.generator_worker import GeneratorWorker
-from wing_parser.ui.live_guard import RoundGuard
+from wing_parser.ui.live_guard import MAX_INTERVAL, RoundGuard
 
-#: How long `finish` waits for a round to end, in milliseconds. Generous
-#: against the 0.05-5 s interval the panel offers, and bounded so a desk
-#: that has gone quiet cannot hang the quit.
-WAIT_MS = 2000
+#: How long `finish` waits for a round to end, in milliseconds --
+#: DERIVED from the slowest interval the panel offers, not picked. A
+#: cancel is seen before the next `get_many` but not during the pace
+#: sleep: `poller.watch` sleeps `remaining` without consulting anything
+#: (`poller.py:121-123`), so a watch at `MAX_INTERVAL` still owes a
+#: whole interval after Stop. 2000 ms -- the first number here -- was
+#: therefore SHORTER than one round at interval 5 and returned False
+#: with the thread alive. The real cure is a cancel the poller's own
+#: sleep can see, which is `net/watch/poller.py`, out of scope this wave.
+WAIT_MS = int((MAX_INTERVAL + 1.0) * 1000)
 
 
 def on_quit(slot) -> None:
     """Call `slot` when the application is about to quit, if there is one.
+
+    **`slot`'s answer is discarded, deliberately.** `shutdown` returns
+    False when the thread outlived its wait, and at `aboutToQuit` there
+    is nothing left to do with that: `QThread.terminate` is the only
+    stronger move and it is unsafe -- it can stop the thread inside the
+    socket read or inside the interpreter. So the wait is sized to cover
+    the worst legal case (see `WAIT_MS`) and a False is accepted as a
+    fact rather than acted on.
 
     The `None` guard is not defensive dressing: a widget built before
     `QApplication` exists is legal, and the import-time half of the test
@@ -90,12 +104,35 @@ class WatchSession:
     def bind(self, on_change, on_round, on_end, on_fail) -> None:
         """The worker's five signals onto four callbacks: a watch that
         ran itself out and one that was stopped end the same way for a
-        page, and only the payload differs (`on_end` takes it optional)."""
+        page, and only the payload differs (`on_end` takes it optional).
+
+        The two terminal ones go through `_gate`, so an abandoned
+        session answers for ITSELF. A page asking "was the current
+        session abandoned?" gets the wrong answer in the one sequence
+        that matters: abandon A, start B, and A's queued terminal signal
+        is then judged against B's flag, ends B's watch on the page and
+        -- through the disconnect guard -- abandons B too. Reproduced in
+        review round 2.
+        """
         self.worker.produced.connect(on_change)
         self.worker.progress.connect(on_round)
-        self.worker.finished.connect(on_end)
-        self.worker.finished_cancelled.connect(on_end)
-        self.worker.failed.connect(on_fail)
+        self.worker.finished.connect(self._gate(on_end))
+        self.worker.finished_cancelled.connect(self._gate(on_end))
+        self.worker.failed.connect(self._gate(on_fail))
+
+    def _gate(self, callback):
+        """`callback`, unless THIS session was abandoned by then.
+
+        The closure holds the session and the callback, so the worker's
+        connection keeps both alive until it really stops -- which is
+        also why a late signal cannot reach a half-destroyed page: it
+        reaches a whole one, and is dropped there.
+        """
+        def deliver(*payload) -> None:
+            if not self.abandoned:
+                callback(*payload)
+
+        return deliver
 
     def start(self) -> None:
         """Run it. The worker keeps itself referenced until it stops."""
@@ -118,9 +155,11 @@ class WatchSession:
 
         The only blocking call in this module, and it blocks the GUI
         thread on purpose: the caller is quitting, and the alternative is
-        the destroyed-while-running abort above. The guard raises before
-        its next round, so the wait is one round plus whatever the
-        in-flight `get_many` still owes.
+        the destroyed-while-running abort above. **The bound is honest,
+        not generous**: the guard raises before the next `get_many`, but
+        the poller's pace sleep sees no cancel, so the wait must cover a
+        whole interval plus the round in flight -- which is what
+        `WAIT_MS` derives. False means the thread outlived even that.
         """
         self.abandon()
         return self.worker.wait(wait_ms)

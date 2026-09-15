@@ -27,6 +27,15 @@ from typing import Any, Callable
 # -- the one wave-2 test file already allowed to name both sides.
 DEFAULT_INTERVAL = 0.25
 
+#: What the panel's interval spin offers around that default. The floor
+#: is not zero: at zero `poller.watch` never reaches its sleep
+#: (`poller.py:121-123`) and the loop becomes an unpaced flood on a show
+#: network. Both are here rather than beside the spin because the
+#: shutdown wait is derived from the ceiling, and a widget module is no
+#: place for the number a thread's lifetime depends on.
+MIN_INTERVAL = 0.05
+MAX_INTERVAL = 5.0
+
 
 class Cancelled(Exception):
     """Stop was pressed. Not a failure -- the operator asked."""

@@ -2,7 +2,9 @@
 
 Three parts, each carrying its own reasons, and this binds them:
 `live_watch_bar.py` (the controls, and the rate line, whose arithmetic
-is `live_guard.watch_rate`'s and no widget's), `live_events_table.py`
+is `live_guard.watch_rate`'s -- the one subtraction left here reads the
+clock the session started on, and is not the readout),
+`live_events_table.py`
 (D8 -- not `ChangesPanel`), `live_watch_session.py` (D5 -- one
 `GeneratorWorker` per watch, never a GUI-thread `QTimer`). Not a
 `CallPanel` either: that shell is one call with one numeric budget; a
@@ -157,9 +159,8 @@ class LiveEventsView(QWidget):
         self._render_rate()             # every round, no QTimer (D5)
 
     def _ended(self, summary=None) -> None:
-        """`finished` (with a summary) and `finished_cancelled` (without)."""
-        if self._session.abandoned:
-            return
+        """`finished` (with a summary) or `finished_cancelled` (without),
+        and only for a session `WatchSession._gate` did not drop."""
         self.status_label.setText(
             text("console.watch_cancelled") if summary is None
             else text("console.watch_stopped").format(
@@ -173,8 +174,6 @@ class LiveEventsView(QWidget):
         Both end in `lost` -- `watching` has no third exit -- but not in
         the same sentence: a stale watch list is not a quiet desk, and
         reading one as the other sends him to check cables."""
-        if self._session.abandoned:
-            return
         self.status_label.setText(text(
             "console.watch_lost" if isinstance(exc, DeskLost)
             else "console.watch_failed").format(host=self._host, error=exc))

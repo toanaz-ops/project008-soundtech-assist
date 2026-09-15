@@ -1083,3 +1083,65 @@ def test_a_failure_that_is_not_a_lost_desk_says_so(qt_app, settle):
     assert "went stale" in line, line
     assert "not the desk going quiet" in line, line
     assert settle(lambda: not view.is_watching())
+
+
+# -- task 12, review round 2 -------------------------------------------------
+
+
+def test_an_abandoned_sessions_late_end_cannot_touch_the_next_one(
+        qt_app, settle):
+    """Each session answers for ITSELF, not for whichever is current.
+
+    Reproduced in review: abandon A by disconnecting, reconnect, Start B,
+    and A's terminal signal then arrives while `_session` is B. Judged
+    against B's flag it passes, emits `stopped`, drags the page to
+    CONNECTED -- and the disconnect guard, seeing WATCHING -> CONNECTED
+    with a live session, abandons B as well. Two sessions lost to one
+    late signal.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    view = _events_view(_watch_desk(_two_events()))
+    ended, gone = [], []
+    view.stopped.connect(lambda: ended.append(True))
+    view.lost.connect(gone.append)
+
+    assert view.start_watch()
+    first = view._session
+    assert settle(lambda: view.model.rowCount() >= 1)
+    view.set_state(LiveState.DISCONNECTED)          # abandons A
+    assert settle(lambda: not first.is_running())
+
+    view.set_state(LiveState.CONNECTED)
+    assert view.start_watch()
+    second = view._session
+    assert second is not first
+
+    # A's terminal signal, delivered late. Emitted by hand because the
+    # real one already arrived while A was still `_session`, which is
+    # exactly the case the bug did NOT cover.
+    first.worker.finished_cancelled.emit()
+
+    assert view._state is LiveState.WATCHING, "A's late end moved the page"
+    assert ended == [] and gone == []
+    assert view.is_watching() and view._session is second, "B was abandoned too"
+    _quiet(view, settle)
+
+
+def test_the_shutdown_wait_outlasts_the_slowest_interval_the_spin_offers():
+    """`poller.watch` sleeps `remaining` without consulting the cancel
+    event (`poller.py:121-123`), so a watch at `MAX_INTERVAL` still owes
+    a whole interval after Stop. A wait shorter than that returns False
+    with the thread alive, and `aboutToQuit` has nothing left to do with
+    a False -- `QThread.terminate` is unsafe and `net/` is out of scope
+    this wave.
+
+    The derivation is asserted, not the wall clock: proving it for real
+    means running one watch at 5 s, and one number is not worth five
+    seconds on every suite run.
+    """
+    from wing_parser.ui.live_guard import MAX_INTERVAL
+    from wing_parser.ui.live_watch_session import WAIT_MS
+
+    assert WAIT_MS > MAX_INTERVAL * 1000, "shutdown gives up mid-sleep"
+    assert WAIT_MS >= (MAX_INTERVAL + 1.0) * 1000, "and one round beyond it"

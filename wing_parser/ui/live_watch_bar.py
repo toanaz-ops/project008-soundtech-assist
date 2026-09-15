@@ -25,17 +25,14 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.ui import live_guard
-from wing_parser.ui.live_guard import DEFAULT_INTERVAL
+from wing_parser.ui.live_guard import (
+    DEFAULT_INTERVAL,
+    MAX_INTERVAL,
+    MIN_INTERVAL,
+)
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption
-
-#: The spin's floor is not zero. At zero `poller.watch` never reaches
-#: its sleep (`poller.py:121-123`) and the loop becomes an unpaced flood
-#: on a show network; 0.05 s is the fastest paced round on offer.
-MIN_INTERVAL = 0.05
-MAX_INTERVAL = 5.0
-
 
 class WatchBar(QWidget):
     """Start/Stop/Reconnect, the interval spin, and the rate line."""
