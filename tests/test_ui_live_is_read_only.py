@@ -1,30 +1,31 @@
 """Spec S8: the write path must be structurally unreachable from wing_parser/ui/.
 
-Not a promise, a scan (S8.2). Two independent rules, each an `ast` walk over
-every `.py` under `wing_parser/ui/`:
+Not a promise, a scan (S8.2). Two rules, each an `ast` walk over every
+`.py` under `wing_parser/ui/`:
 
-1. **No import reaches `wing_parser.net.write`** -- `import
-   wing_parser.net.write`, any alias of it, `from wing_parser.net import
-   write`, or `from wing_parser.net.write import <anything>` are all the
-   same violation: the write surface entering the package at all.
-2. **No write verb is called on a name this module's own import table
-   bound from `wing_parser.net`** -- a `Call` whose `func` is an
-   `Attribute` named `set`/`toggle`/`node_write`/`push`, walked back
-   through any `Attribute`/`Call` chain to its leftmost `Name`, checked
-   against that Name's origin. Deliberately not bare-name matching:
-   `self.cancel.set()` (a `threading.Event`, `live_watch_session.py:143`)
-   and `self._cancelled.set()` (`workers.py:69`) both end at `self`, which
-   no import binds, so neither trips rule 2 -- proven by
-   `test_the_scan_ignores_an_unrelated_dot_set_call` below.
+1. No import, static or dynamic, reaches `wing_parser.net.write` -- plain
+   `import`/`from ... import` shapes, plus `importlib.import_module(...)`,
+   `import_module(...)`, `__import__(...)` with a literal first argument
+   naming it (or `wing_parser.net` with `write` in a `fromlist`). A
+   computed name is a blind spot either way.
+2. No write verb (`set`/`toggle`/`node_write`/`push`) is called on a name
+   bound, in this module's own import table, from `wing_parser.net` --
+   walked back through any `Attribute`/`Call` chain to its leftmost
+   `Name`. Not bare-name matching: `self.cancel.set()`
+   (`live_watch_session.py:143`) and `self._cancelled.set()`
+   (`workers.py:69`), both `threading.Event`, end at `self`, unbound.
 
-Known blind spot, same shape as `test_ui_texts.py`'s: a **local variable
-assigned from a net-bound call** is invisible to rule 2. `wc =
-client.WingClient(host)` then, on a later line, `wc.set(...)` -- `wc` is
-never itself an import-table entry, only the intermediate expression was.
-Only names bound directly by an `Import`/`ImportFrom` are tracked. A
-same-expression chain IS caught: `client.WingClient(host).set(...)`
-walks back through the `Call` and the `WingClient` `Attribute` to reach
-`Name('client')`, which the import table does know.
+`Transport.client(host)` (used at `live_watch_session.py:87`) returns a
+bare `WingClient`; rule 2 need not name it, since the four verbs are
+module *functions* in `net/write.py`, not `WingClient` methods -- the
+only real write through this seam, `write.node_write(client, ...)`,
+needs an import that rule 1 already catches. Pinned by
+`test_write_verbs_are_not_client_methods`, not just assumed.
+
+Blind spot shared with `test_ui_texts.py`: a local variable assigned from
+a net-bound call (`wc = client.WingClient(host)` then `wc.set(...)`) is
+invisible to rule 2 -- only names bound directly by an `Import`/`ImportFrom`
+are tracked; `client.WingClient(host).set(...)` in one expression IS caught.
 """
 from __future__ import annotations
 
@@ -45,56 +46,73 @@ def _py_files(root: Path):
 
 
 def _net_bound_names(tree: ast.Module) -> dict[str, str]:
-    """Local names this module's import table binds into `wing_parser.net`.
-
-    Covers `import wing_parser.net.client as c` (name `c`), `from
-    wing_parser.net import client` (name `client`), and `from
-    wing_parser.net.client import WingClient` (name `WingClient`). Values
-    are the dotted path bound, kept only so an offender message can say
-    where a flagged name came from.
-    """
+    """Local names bound from `wing_parser.net` (Import/ImportFrom only)."""
     bound: dict[str, str] = {}
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                dotted = alias.name
-                if dotted == "wing_parser.net" or dotted.startswith("wing_parser.net."):
-                    name = alias.asname or dotted.split(".")[0]
-                    bound[name] = dotted
+            for a in node.names:
+                if a.name == "wing_parser.net" or a.name.startswith("wing_parser.net."):
+                    bound[a.asname or a.name.split(".")[0]] = a.name
         elif isinstance(node, ast.ImportFrom):
             module = node.module or ""
             if module == "wing_parser.net" or module.startswith("wing_parser.net."):
-                for alias in node.names:
-                    bound[alias.asname or alias.name] = f"{module}.{alias.name}"
+                for a in node.names:
+                    bound[a.asname or a.name] = f"{module}.{a.name}"
     return bound
 
 
 def _import_reaches_write(node: ast.stmt) -> bool:
     if isinstance(node, ast.Import):
         return any(
-            alias.name == "wing_parser.net.write"
-            or alias.name.startswith("wing_parser.net.write.")
-            for alias in node.names
+            a.name == "wing_parser.net.write" or a.name.startswith("wing_parser.net.write.")
+            for a in node.names
         )
     if isinstance(node, ast.ImportFrom):
         module = node.module or ""
         if module == "wing_parser.net.write" or module.startswith("wing_parser.net.write."):
             return True
-        if module == "wing_parser.net":
-            return any(alias.name == "write" for alias in node.names)
+        return module == "wing_parser.net" and any(a.name == "write" for a in node.names)
     return False
 
 
+def _dynamic_call_reaches_write(node: ast.Call) -> str | None:
+    """Callee name for a dynamic import reaching write, else None (literal args only)."""
+    func = node.func
+    if isinstance(func, ast.Name) and func.id in {"import_module", "__import__"}:
+        name = func.id
+    elif isinstance(func, ast.Attribute) and func.attr == "import_module":
+        name = "import_module"
+    else:
+        return None
+    args = node.args
+    if not args or not isinstance(args[0], ast.Constant) or not isinstance(args[0].value, str):
+        return None
+    target = args[0].value
+    if target == "wing_parser.net.write" or target.startswith("wing_parser.net.write."):
+        return name
+    if target != "wing_parser.net":
+        return None
+    fromlist = args[3] if len(args) >= 4 else next(
+        (kw.value for kw in node.keywords if kw.arg == "fromlist"), None
+    )
+    ok = isinstance(fromlist, (ast.List, ast.Tuple)) and any(
+        isinstance(e, ast.Constant) and e.value == "write" for e in fromlist.elts
+    )
+    return name if ok else None
+
+
 def find_write_imports(root: Path) -> list[str]:
-    """Rule 1: every Import/ImportFrom reaching `wing_parser.net.write`."""
+    """Rule 1: every static or dynamic import reaching `wing_parser.net.write`."""
     offenders = []
     for path in _py_files(root):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)) and _import_reaches_write(node):
-                offenders.append(
-                    f"{path}:{node.lineno}: imports the write path (wing_parser.net.write)"
-                )
+                offenders.append(f"{path}:{node.lineno}: imports the write path (wing_parser.net.write)")
+            elif isinstance(node, ast.Call):
+                name = _dynamic_call_reaches_write(node)
+                if name:
+                    offenders.append(f"{path}:{node.lineno}: {name}(...) reaches the write path (wing_parser.net.write)")
     return sorted(offenders)
 
 
@@ -113,22 +131,19 @@ def _base_name(node):
 
 
 def find_write_verb_calls(root: Path) -> list[str]:
-    """Rule 2: a set/toggle/node_write/push call whose base name is
-    bound, in this module's own import table, from `wing_parser.net`."""
+    """Rule 2: a write-verb call whose base name is bound from `wing_parser.net`."""
     offenders = []
     for path in _py_files(root):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         net_bound = _net_bound_names(tree)
         for node in ast.walk(tree):
-            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
-                continue
-            if node.func.attr not in WRITE_VERBS:
+            if (not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute)
+                    or node.func.attr not in WRITE_VERBS):
                 continue
             base = _base_name(node.func.value)
-            if base is not None and base in net_bound:
+            if base in net_bound:
                 offenders.append(
-                    f"{path}:{node.lineno}: calls .{node.func.attr}(...) on "
-                    f"{base!r} (bound from {net_bound[base]})"
+                    f"{path}:{node.lineno}: calls .{node.func.attr}(...) on {base!r} (bound from {net_bound[base]})"
                 )
     return sorted(offenders)
 
@@ -143,13 +158,16 @@ def test_no_ui_module_calls_a_write_verb_on_a_net_binding():
     assert offenders == [], "no write verb may be called on a net-bound name:\n  " + "\n  ".join(offenders)
 
 
+def test_write_verbs_are_not_client_methods():
+    """The Transport.client(host) seam is safe because of this; pinned."""
+    from wing_parser.net.client import WingClient
+    assert not any(hasattr(WingClient, verb) for verb in WRITE_VERBS)
+
+
 def test_the_scan_catches_a_planted_import(tmp_path):
     planted = tmp_path / "planted_write_import.py"
     planted.write_text(
-        "from wing_parser.net import write\n"
-        "\n"
-        "def handler():\n"
-        "    return write\n",
+        "from wing_parser.net import write\n\ndef handler():\n    return write\n",
         encoding="utf-8",
     )
     offenders = find_write_imports(tmp_path)
@@ -158,20 +176,25 @@ def test_the_scan_catches_a_planted_import(tmp_path):
     assert ":1:" in offenders[0]
 
 
+def test_the_scan_catches_a_planted_dynamic_import(tmp_path):
+    planted = tmp_path / "planted_dynamic_import.py"
+    planted.write_text(
+        "import importlib\nimportlib.import_module('wing_parser.net.write')\n"
+        "__import__('wing_parser.net', fromlist=['write'])\n",
+        encoding="utf-8",
+    )
+    offenders = find_write_imports(tmp_path)
+    assert len(offenders) == 2
+    assert any(":2:" in o for o in offenders)
+    assert any(":3:" in o for o in offenders)
+
+
 def test_the_scan_ignores_an_unrelated_dot_set_call(tmp_path):
     planted = tmp_path / "unrelated_dot_set.py"
     planted.write_text(
-        "import threading\n"
-        "\n"
-        "class Config:\n"
-        "    def set(self, key, value):\n"
-        "        pass\n"
-        "\n"
-        "def handler():\n"
-        "    cancelled = threading.Event()\n"
-        "    cancelled.set()\n"
-        "    cfg = Config()\n"
-        "    cfg.set('k', 'v')\n",
+        "import threading\n\nclass Config:\n    def set(self, key, value):\n        pass\n\n"
+        "def handler():\n    cancelled = threading.Event()\n    cancelled.set()\n"
+        "    cfg = Config()\n    cfg.set('k', 'v')\n",
         encoding="utf-8",
     )
     assert find_write_verb_calls(tmp_path) == []
