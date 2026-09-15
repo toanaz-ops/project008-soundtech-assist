@@ -2,6 +2,7 @@
 
 TEXTS: dict[str, str] = {
     "app.title": "wing",
+    "window.title": "{app} — {file}{profile}{mark}",
     "page.doctor": "Doctor",
     "page.overview": "Overview",
     "page.channels": "Channels",

@@ -180,4 +180,7 @@ class MainWindow(QMainWindow):
             return
         mark = " *" if self.session.dirty else ""
         profile = f"  [{self.session.profile}]" if self.session.profile else ""
-        self.setWindowTitle(f"wing — {self.session.path.name}{profile}{mark}")
+        self.setWindowTitle(text("window.title").format(
+            app=text("app.title"), file=self.session.path.name,
+            profile=profile, mark=mark,
+        ))
