@@ -20,13 +20,24 @@ page shows one error line instead of inventing a second taxonomy -- the
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Callable
 
 from wing_parser.net.client import WingClient
+from wing_parser.net.export import to_snap_json
 from wing_parser.net.identity import WingIdentity, query_identity
 from wing_parser.net.snapshot import SnapshotResult, take_snapshot
 from wing_parser.net.watch.list import WatchList, build_watch_list
+from wing_parser.ui.session import Session
+
+# `wing://<host>` is the prefix `net/snapshot.py:106` stamps onto every
+# scene read off a console, and `RawScene.source` is the only record a
+# `SnapshotResult` keeps of which desk it came from -- so it is the one
+# place `session_from_snapshot` can recover the host its filename needs.
+_LIVE_SOURCE = "wing://"
 
 
 class EmptyReadError(OSError):
@@ -35,20 +46,16 @@ class EmptyReadError(OSError):
     Ported from `cli/commands.py:47-62`, where it is a printed line and a
     `None` return. It has to be an *error* rather than an empty result:
     OSC is UDP, so an unreachable host raises nothing -- every leaf just
-    times out -- and `take_snapshot` then faithfully returns a valid,
-    empty scene. A UI that passed that on would hand the advisory engine
-    nothing, which truthfully finds nothing wrong with nothing, and
-    Doctor would show "No findings." for a desk it never reached. That is
-    exactly what `doctor --live` did before this guard existed.
+    times out and `take_snapshot` faithfully returns a valid, empty
+    scene, which the advisory engine then truthfully finds nothing wrong
+    with. `doctor --live` showed "No findings." for a desk it had never
+    reached, until this guard existed.
 
     An `OSError` because that is the vocabulary every other live-read
-    failure already speaks (`commands.py:25-28`), so the page catches it
-    without inventing a third branch.
+    failure already speaks (`commands.py:25-28`).
 
     Both counts, never one: `walk_schema` runs first and the leaf reads
     run after it, so `nodes` can be 0 while every leaf timed out.
-    Reporting only nodes would say "0 top-level node(s)" and discard the
-    one number that says what actually happened.
     """
 
     def __init__(self, host: str, nodes: int, leaves: int) -> None:
@@ -142,3 +149,48 @@ def incomplete_report(result: SnapshotResult) -> str | None:
         f"incomplete read: {len(result.unresolved_nodes)} node(s) and "
         f"{len(result.unresolved_leaves)} leaf/leaves did not answer{named}"
     )
+
+
+def suggested_name(identity: WingIdentity | None, host: str) -> str:
+    """What to call a pulled scene: `WING-GIAQUY-20260915-1432.snap`.
+
+    A **bare filename, no directory** (D4): the pull named nothing on
+    disk, and a `Session` whose `path` pointed at a real file would let a
+    plain Save overwrite something nobody chose. `menus.save_as` uses
+    this only as its dialog's suggestion (`menus.py:87-89`).
+
+    Without an identity the desk has no name to use, so the host stands
+    in -- `wing-192.168.128.28-20260915-1432.snap` -- rather than a
+    generic "untitled" that two pulls would collide on.
+    """
+    stamp = datetime.now().strftime("%Y%m%d-%H%M")
+    who = identity.name if identity is not None else f"wing-{host}"
+    return f"{who}-{stamp}.snap"
+
+
+def session_from_snapshot(
+    result: SnapshotResult,
+    identity: WingIdentity | None,
+    profile: str | None = None,
+) -> tuple[Session, str]:
+    """A pulled scene as an ordinary `Session`, plus the pull-time text.
+
+    The scene goes through `net/export.py`'s serialiser and straight back
+    through `json.loads`, so what the `Session` holds is the same
+    document an opened `.snap` would give it -- which is why Doctor,
+    Overview, Channels, Routing and Diff need to know nothing about
+    consoles.
+
+    The text is returned as well, and it is the *pull-time original*
+    (D3). Export must go through `Session.save_as`, which writes the
+    patched document (`session.py:92-96` -> `_document()` at `:43-44`);
+    writing this string instead would silently drop every repair made
+    after the pull. It is here for Diff's "what did I change" baseline,
+    not as an export path.
+    """
+    text = to_snap_json(result.raw, identity)
+    host = result.raw.source.removeprefix(_LIVE_SOURCE)
+    session = Session(
+        json.loads(text), Path(suggested_name(identity, host)), profile
+    )
+    return session, text
