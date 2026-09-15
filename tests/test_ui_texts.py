@@ -41,6 +41,7 @@ def test_known_keys_resolve():
     assert text("page.routing") == "Routing"
     assert text("page.diff") == "Diff"
     assert text("page.import") == "Import"
+    assert text("page.console") == "Console"
     assert text("empty.open_hint")
 
 

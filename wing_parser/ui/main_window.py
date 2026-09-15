@@ -31,6 +31,7 @@ from wing_parser.ui.doctor_page import DoctorPage
 from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops
 from wing_parser.ui.import_page import ImportPage
 from wing_parser.ui.overview_page import OverviewPage
+from wing_parser.ui.page_base import EmptyState
 from wing_parser.ui.routing_page import RoutingPage
 from wing_parser.ui.session import Session
 from wing_parser.ui.theme.widgets import caption_font
@@ -45,6 +46,7 @@ PAGE_ICONS = {
     "routing": "fa5s.project-diagram",
     "diff": "fa5s.code-branch",
     "import_": "fa5s.file-import",
+    "console": "fa5s.network-wired",
 }
 
 
@@ -71,6 +73,7 @@ class MainWindow(QMainWindow):
         self.pages["diff"] = DiffPage()
         self.pages["import_"] = ImportPage()
         self.pages["import_"].open_settings_requested.connect(self.open_settings)
+        self.pages["console"] = EmptyState(text("page.console"))
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:

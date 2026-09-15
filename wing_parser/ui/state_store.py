@@ -18,7 +18,8 @@ from pathlib import Path
 STATE_FILE = "ui-state.json"
 MAX_RECENT = 8
 
-PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_")
+PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_",
+             "console")
 
 DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": []}
 

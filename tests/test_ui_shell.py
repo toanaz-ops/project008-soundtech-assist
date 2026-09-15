@@ -13,11 +13,22 @@ def window(qt_app, monkeypatch):
     return MainWindow(None)
 
 
-def test_sidebar_lists_six_pages_in_order(window):
+def test_sidebar_lists_seven_pages_in_order(window):
     from wing_parser.ui.main_window import PAGE_ORDER
 
     assert PAGE_ORDER == ["doctor", "overview", "channels", "routing",
-                          "diff", "import_"]
+                          "diff", "import_", "console"]
+
+
+def test_ctrl_7_switches_to_the_console_page(window):
+    from PySide6.QtGui import QShortcut
+
+    shortcut = next(
+        s for s in window.findChildren(QShortcut)
+        if s.key().toString() == "Ctrl+7"
+    )
+    shortcut.activated.emit()
+    assert window.stack.currentWidget() is window.pages["console"]
 
 
 def test_switching_changes_the_visible_page(window):

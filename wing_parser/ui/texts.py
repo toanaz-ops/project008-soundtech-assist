@@ -9,6 +9,7 @@ TEXTS: dict[str, str] = {
     "page.routing": "Routing",
     "page.diff": "Diff",
     "page.import": "Import",
+    "page.console": "Console",
     "empty.open_hint": "Open a scene file to begin.",
     "empty.open_button": "Open a scene...",
     "overview.counts": "Scene counts",
