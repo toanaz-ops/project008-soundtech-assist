@@ -3,7 +3,7 @@
 **Not `ChangesPanel` (D8).** Reusing it was the obvious move and is
 ruled out: `ChangesPanel.set_changes` takes `edit.journal.Patch` tuples
 (`changes_panel.py:13,30-36`), and its dock's visibility is bound to
-`session.dirty` (`main_window.py:179-180` -- the spec and the task
+`session.dirty` (`main_window.py:180-181` -- the spec and the task
 brief both say :175-176, which is where that pair sat before task 11
 added three lines above it; re-read 2026-09-16). A watch event is not an
 unsaved edit -- nobody made it, and saving the scene does not clear it

@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.session = session
         self._recent: list[str] = []
+        self._consoles: list[str] = []
         menus.build_menus(self)
         self._build_body()
         self._build_changes_dock()

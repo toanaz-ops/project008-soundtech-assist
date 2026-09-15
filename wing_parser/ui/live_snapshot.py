@@ -11,7 +11,7 @@ What this one adds is the only thing on the page producing a `Session`:
   banner: a scene that is not the whole desk must never look complete.
 * **The scene it holds is the window's too** (task 13 ruling): this
   panel produces sessions AND consumes one, because `ConsolePage`
-  forwards `MainWindow._refresh`'s fan-out (`main_window.py:175-177`)
+  forwards `MainWindow._refresh`'s fan-out (`main_window.py:176-178`)
   -- a stale scene-loaded line beside a live Export is worse than the
   coupling. The pulled session comes back round that loop, so
   re-adopting the SAME object changes nothing; only a different one

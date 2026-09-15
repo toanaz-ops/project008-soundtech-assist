@@ -447,7 +447,7 @@ def test_rerun_walks_again_and_clears_the_banner(qt_app, settle):
     assert not panel.banner.isVisibleTo(panel)
 
 
-def test_a_failed_walk_reports_one_line_and_needs_a_reset(qt_app, settle):
+def test_a_failed_walk_reports_one_line_and_leaves_discover_dead(qt_app, settle):
     import dataclasses
 
     from tests.fake_desk import FakeDesk
@@ -470,7 +470,10 @@ def test_a_failed_walk_reports_one_line_and_needs_a_reset(qt_app, settle):
     line = panel.status_label.text()
     assert "\n" not in line
     assert HOST in line
-    assert not panel.discover_button.isEnabled(), "error needs a reset first"
+    # Task-13 ruling: `error` offers Connect, so a retry is one click --
+    # but a walk is not what it offers. Discover stays dead until the
+    # desk is answering again.
+    assert not panel.discover_button.isEnabled(), "Discover is dead in error"
 
 
 # -- SnapshotPanel: Pull, the two guards, Open Doctor, Export ----------------
@@ -785,7 +788,8 @@ def test_export_and_open_doctor_survive_a_later_failed_pull(
     assert panel._state is LiveState.ERROR
     assert panel.export_button.isEnabled(), "the pulled scene is still in memory"
     assert panel.doctor_button.isEnabled()
-    assert not panel.pull_button.isEnabled(), "error still needs a reset first"
+    assert not panel.pull_button.isEnabled(), (
+        "Pull is dead in error -- Connect is what error offers (task 13)")
 
 
 def test_a_pull_is_refused_from_a_state_that_does_not_allow_it(
@@ -1010,7 +1014,7 @@ def test_leaving_the_watching_state_cancels_the_orphaned_session(
 
     `allowed_actions(WATCHING)` contains `disconnect`, and
     `ConnectBar.disconnect_now` sets its state directly
-    (`live_connect_bar.py:146`), so task 13 fanning that out reaches this
+    (`live_connect_bar.py:150`), so task 13 fanning that out reaches this
     view as a bare `set_state(DISCONNECTED)`. Without the cancel the
     worker polls that desk forever: Stop is hidden in DISCONNECTED and
     `stop_watch` refuses, because `stop` is not in that state's actions.
@@ -1038,7 +1042,7 @@ def test_shutdown_ends_a_running_watch_and_is_wired_to_the_quit(qt_app):
     """No thread outlives the app: `QThread: Destroyed while running`.
 
     `MainWindow.closeEvent` only saves window state
-    (`main_window.py:162-164`), and nothing else in the app stops a
+    (`main_window.py:163-165`), and nothing else in the app stops a
     watch, so the view hooks `aboutToQuit` itself and blocks there.
     """
     from wing_parser.ui.live_state import LiveState
@@ -1222,6 +1226,14 @@ def _table_driven(page):
         "pull": [page.snapshot.pull_button],
         "watch": [page.events.bar.start_button],
         "stop": [page.events.bar.stop_button],
+        # All three, deliberately: `cancel` is allowed in each busy
+        # state, so in `walking` the connect bar's and the snapshot's
+        # Cancel are enabled too. They are also HIDDEN -- `ButtonRunner`
+        # shows one only while that panel's own call runs
+        # (`call_button.py:59-60,70-73`) -- so an enabled Cancel on a
+        # panel with nothing running is unreachable, and
+        # `ConsolePage._cancelled` keys off the page's state rather than
+        # off which button was pressed.
         "cancel": [page.connect_bar.cancel_button,
                    page.discovery.cancel_button,
                    page.snapshot.cancel_button],
@@ -1473,7 +1485,7 @@ def test_the_window_offers_and_remembers_the_console_addresses(
         qt_app, monkeypatch, tmp_path):
     """Persisting is the window's job; the page only asks and answers.
 
-    Mirrors how `recent` is persisted (`window_state.py:36-38,90-100`) --
+    Mirrors how `recent` is persisted (`window_state.py:62-64` and `:116-128`) --
     restored before first paint, remembered on a successful connect,
     written back on close.
     """
@@ -1495,3 +1507,194 @@ def test_the_window_offers_and_remembers_the_console_addresses(
     assert window._consoles == [HOST, "10.0.0.9"]
     window_state.save_on_close(window)
     assert state_store.load(tmp_path)["consoles"] == [HOST, "10.0.0.9"]
+
+
+# -- the watch branch, end to end over the real panels ---------------------
+#
+# Review round 1 of task 13: every test above that reaches `watching` or
+# `lost` injects the state with `_apply_state`, so deleting any of the
+# three `events.*` connects in `ConsolePage._wire` left all 67 green. The
+# two tests below are the ones that would notice -- they drive a real
+# watch off a real `WatchSession` thread and let the real signals arrive.
+
+
+def _watch_page(rounds):
+    """A `ConsolePage` over a desk that answers a handshake AND a watch.
+
+    `FakeDesk._walk` and `._identity` deliberately do not go through
+    `client()` (`fake_desk.py:150-161`), so neither the connect nor the
+    discovery below eats a scripted round: the script is the watch's
+    alone, and its rounds land where the comments say they do.
+    """
+    desk = _watch_desk(rounds)
+    desk.identity = _identity()
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.events.bar.interval.setValue(FAST)
+    return page
+
+
+def _connected_and_walked(page, settle):
+    """Click through the two steps a watch needs, as the operator does."""
+    from wing_parser.ui.live_state import LiveState
+
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED), "no handshake"
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None), "no walk"
+    assert page.state is LiveState.CONNECTED
+
+
+def test_a_watch_runs_on_the_page_and_a_lost_desk_reconnects(qt_app, settle):
+    """connect -> discover -> watch -> an event -> lost -> reconnect.
+
+    The whole watch branch of the wiring in one pass, with nothing
+    injected: `started`, `lost` and `reconnect_requested` all arrive from
+    the widgets that really emit them.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    page = _watch_page([
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0)},      # read_labels
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -6.0)},      # priming sample
+        {"/ch/1/$fdr": _fader("/ch/1/$fdr", -3.0)},      # round 1: one event
+        {}, {}, {},                                      # three silent rounds
+    ])
+    _connected_and_walked(page, settle)
+
+    page.events.bar.start_button.click()
+    assert page.state is LiveState.WATCHING, "the page never heard `started`"
+    assert not page.snapshot.pull_button.isEnabled(), "a watch refuses a pull"
+    assert settle(lambda: page.events.model.rowCount() >= 1), "no event landed"
+
+    assert settle(lambda: page.state is LiveState.LOST), (
+        "the page never heard `lost`")
+    assert page.events.model.rowCount() >= 1, "the events stay on screen"
+    assert page.connect_bar.lamp.property("azStyle") == "danger"
+    assert settle(lambda: not page.events.is_watching()), "the thread lived on"
+
+    assert page.events.bar.reconnect_button.isEnabled()
+    page.events.bar.reconnect_button.click()
+    assert page.state is LiveState.CONNECTING, "Reconnect is a dead button"
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+
+def test_disconnecting_a_running_watch_abandons_its_thread(qt_app, settle):
+    """Disconnect out of a real watch, not an injected one.
+
+    `ConnectBar.disconnect_now` sets its own state and emits; the page
+    fires `disconnect` and fans `set_state`, and it is that fan that
+    reaches `LiveEventsView.set_state` and abandons the session. Every
+    part of that was covered alone; the composition was only inferred.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    page = _watch_page(_two_events())       # never goes silent: no DeskLost
+    _connected_and_walked(page, settle)
+
+    page.events.bar.start_button.click()
+    assert page.state is LiveState.WATCHING
+    assert settle(lambda: page.events.is_watching()), "the thread never ran"
+
+    page.connect_bar.disconnect_button.click()
+    assert page.state is LiveState.DISCONNECTED
+    assert settle(lambda: not page.events.is_watching()), (
+        "the thread outlived Disconnect")
+    assert not page.events.bar.start_button.isEnabled()
+    assert page.connect_bar.connect_button.isEnabled()
+
+
+def test_stopping_a_watch_from_the_page_returns_it_to_connected(
+        qt_app, settle):
+    """The third `events.*` connect: `stopped` -> the page, not just the row.
+
+    Split from the two above because neither reaches it -- one ends in
+    `lost`, and the other abandons its session, whose terminal signal
+    the gate drops on purpose (`live_watch_session.py:123-135`).
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    page = _watch_page(_two_events())       # never goes silent: no DeskLost
+    _connected_and_walked(page, settle)
+
+    page.events.bar.start_button.click()
+    assert page.state is LiveState.WATCHING
+    assert settle(lambda: page.events.model.rowCount() >= 1), "no event landed"
+
+    page.events.bar.stop_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED), (
+        "the page never heard `stopped`")
+    assert settle(lambda: not page.events.is_watching())
+    assert page.events.model.rowCount() >= 1, "Stop keeps what it collected"
+    assert page.events.bar.start_button.isEnabled(), "and another watch is offered"
+    assert page.snapshot.pull_button.isEnabled(), "the desk is free again"
+
+
+def test_the_windows_refresh_cannot_clear_the_banner_the_pull_just_raised(
+        qt_app, settle, monkeypatch, vu_result):
+    """`SnapshotPanel.set_session`'s identity guard, composed.
+
+    A pulled session travels panel -> page -> window -> `_refresh` ->
+    `set_session` and lands back on the panel that produced it. Without
+    the `session is self._session` guard that round trip clears
+    `original` and hides the incomplete banner the same pull raised one
+    moment earlier -- a partial scene would then look like a whole desk,
+    which is the one thing that banner exists to prevent.
+
+    The page under test is **the window's own**, with the transport
+    swapped underneath it. `_wired` above hands `wire_console` a
+    standalone panel that is not in `window.pages`, so `_refresh` never
+    reaches it -- and a first draft of this test built that way passed
+    with the guard deleted, which is how the difference was found.
+    """
+    from wing_parser.ui.live_state import LiveState
+    from wing_parser.ui.main_window import MainWindow
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    partial = dataclasses.replace(
+        vu_result,
+        unresolved_nodes=("/mtx", "/dca"),
+        unresolved_leaves=("/ch/7/$fdr",),
+    )
+    window = MainWindow(None)
+    page = window.pages["console"]
+    page.snapshot._transport = _replaying(partial)
+    page.snapshot.set_host(HOST)
+    page._apply_state(LiveState.CONNECTED)
+
+    page.snapshot.pull_button.click()
+    assert settle(lambda: window.session is not None), "no session arrived"
+    assert page.snapshot._session is window.session, "two different scenes"
+    assert page.snapshot.banner.isVisibleTo(page.snapshot), (
+        "the window's own _refresh hid the incomplete banner")
+    assert "/mtx" in page.snapshot.banner.text()
+    assert page.snapshot.original, "and it cleared Diff's as-pulled baseline"
+
+
+def test_a_terminal_signal_from_a_view_that_already_left_watching_is_silent(
+        qt_app):
+    """`LiveEventsView._leave`'s guard -- an invariant, not a fixed bug.
+
+    Reaching this through the UI is not possible today: `set_state`
+    abandons a running session on the way out of `watching`, and
+    `WatchSession._gate` drops an abandoned session's terminal signal
+    (`live_watch_session.py:123-135`). The guard keeps the view's
+    contract -- *it announces only a transition it actually made* --
+    true by construction, rather than by two other modules staying
+    correct; without it the page fires `stop`/`lost` from a state whose
+    table refuses the pair, i.e. a `ValueError` out of a Qt slot. Called
+    directly, because no public path produces it.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    view = _events_view(_watch_desk([]))        # CONNECTED, never started
+    heard = []
+    view.stopped.connect(lambda: heard.append("stopped"))
+    view.lost.connect(heard.append)
+
+    view._ended()
+    view._failed(OSError("a late answer from a watch nobody is running"))
+
+    assert heard == [], "a view that did not move asked its page to move"
+    assert view._state is LiveState.CONNECTED
+    assert not view.is_watching()

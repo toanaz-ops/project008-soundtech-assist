@@ -93,7 +93,7 @@ class ConsolePage(QWidget):
         return self._state
 
     def set_session(self, session) -> None:
-        """`MainWindow._refresh`'s fan-out (`main_window.py:175-177`).
+        """`MainWindow._refresh`'s fan-out (`main_window.py:176-178`).
 
         A sync, and nothing else: the Console page is not the session's
         consumer, but `SnapshotPanel` shows a scene-loaded line and gates
@@ -165,7 +165,7 @@ class ConsolePage(QWidget):
         """Whichever Cancel was pressed, the page leaves the busy state.
 
         Each panel has already reverted itself to the state this
-        transition names (`live_call_panel.py:82-89`); the guard covers a
+        transition names (`live_call_panel.py:75-80`); the guard covers a
         Cancel pressed with no call running, which the table refuses.
         """
         if "cancel" in allowed_actions(self._state):

@@ -29,7 +29,7 @@ list is worse than no list, because it is read as a thing checked.
 
 A fifth, of a different kind, added 2026-09-16 (wave 2): an
 **exception's own message** shown as the line --
-`live_snapshot.py:195`, `self.status_label.setText(str(exc))` for
+`live_snapshot.py:196`, `self.status_label.setText(str(exc))` for
 `live_controller.EmptyReadError`. Argued on the `menus.py:82` precedent
 (`QMessageBox.critical(window, text("error.open"), str(exc))`), which
 this suite has accepted since wave 1: the failure's sentence is authored

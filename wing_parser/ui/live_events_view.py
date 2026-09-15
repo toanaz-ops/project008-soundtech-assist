@@ -1,22 +1,20 @@
 """The watch, as it happens: one session, its events, and how it ended.
 
-Three parts, each carrying its own reasons, and this binds them:
-`live_watch_bar.py` (the controls, and the rate line, whose arithmetic
-is `live_guard.watch_rate`'s -- the one subtraction left here reads the
+Three parts, each with its own reasons, bound here: `live_watch_bar.py`
+(the controls, and the rate line, whose arithmetic is
+`live_guard.watch_rate`'s -- the one subtraction left here reads the
 clock the session started on, and is not the readout),
-`live_events_table.py`
-(D8 -- not `ChangesPanel`), `live_watch_session.py` (D5 -- one
-`GeneratorWorker` per watch, never a GUI-thread `QTimer`). Not a
-`CallPanel` either: that shell is one call with one numeric budget; a
-watch is a stream with no deadline (S7.2).
+`live_events_table.py` (D8 -- not `ChangesPanel`) and
+`live_watch_session.py` (D5 -- one `GeneratorWorker` per watch, never a
+GUI-thread `QTimer`). Not a `CallPanel` either: that shell is one call
+with one numeric budget; a watch is a stream with no deadline (S7.2).
 
 **Three things end a watch, not one.** Stop; a `set_state` that walks
 out of `watching` (`disconnect` is allowed there, so the page's own
 Disconnect arrives as one); and `shutdown()` at `aboutToQuit`, hooked in
-the constructor -- task 13 may call it again from its close path. The
-last two abandon the session, and the terminal signal that follows is
-dropped rather than left to drag the page back out of the state it was
-just put in.
+the constructor. The last two abandon the session, and the terminal
+signal that follows is dropped rather than left to drag the page back
+out of the state it was just put in.
 
 Two ways out of a *running* watch, exactly the two `live_state.py`
 documents: `stop` -> `connected`, and `lost` -> `lost`, which **keeps
@@ -92,7 +90,7 @@ class LiveEventsView(QWidget):
 
         Not only a repaint: `disconnect` is allowed in `watching` and
         `ConnectBar.disconnect_now` sets state directly
-        (`live_connect_bar.py:146`), so that arrives here as a bare
+        (`live_connect_bar.py:150`), so that arrives here as a bare
         `set_state`. Uncancelled, the worker polls on forever with Stop
         hidden and `stop_watch` refusing."""
         if (self._state is LiveState.WATCHING
@@ -159,14 +157,12 @@ class LiveEventsView(QWidget):
         self._render_rate()             # every round, no QTimer (D5)
 
     def _ended(self, summary=None) -> None:
-        """`finished` (with a summary) or `finished_cancelled` (without),
-        and only for a session `WatchSession._gate` did not drop."""
+        """Either terminal signal, for a session the gate did not drop."""
         self.status_label.setText(
             text("console.watch_cancelled") if summary is None
             else text("console.watch_stopped").format(
                 events=summary.events, rounds=summary.rounds))
-        self._leave("stop")
-        self.stopped.emit()
+        self._leave("stop", self.stopped)
 
     def _failed(self, exc) -> None:
         """`DeskLost`, or any other OSError/ValueError the stream raised.
@@ -177,19 +173,24 @@ class LiveEventsView(QWidget):
         self.status_label.setText(text(
             "console.watch_lost" if isinstance(exc, DeskLost)
             else "console.watch_failed").format(host=self._host, error=exc))
-        self._leave("lost")
-        self.lost.emit(exc)
+        self._leave("lost", self.lost, exc)
 
     # -- internals ---------------------------------------------------------
 
-    def _leave(self, event: str) -> None:
-        """Fire `event`, but only from `watching`: `transition` raises on
-        a pair S6 does not document. The session stays referenced either
-        way -- a `QThread` losing its last reference mid-run is deleted."""
-        if self._state is LiveState.WATCHING:
-            self.set_state(transition(self._state, event))
-        else:
+    def _leave(self, event: str, signal, *payload) -> None:
+        """Leave `watching` by `event` and say so -- or do neither.
+
+        The signal is INSIDE the guard (task 13 review): it is the
+        page's cue to fire the same event on its own table, so a view
+        that did not move must not ask the page to -- both tables raise
+        on `stop`/`lost` from a state S6 does not document, which is
+        also why the check comes first. The session stays referenced
+        either way: a `QThread` losing its last reference is deleted."""
+        if self._state is not LiveState.WATCHING:
             self._refresh_buttons()
+            return
+        self.set_state(transition(self._state, event))
+        signal.emit(*payload)
 
     def _render_rate(self) -> None:
         self.bar.show_rate(

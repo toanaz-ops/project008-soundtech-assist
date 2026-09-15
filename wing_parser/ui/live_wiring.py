@@ -6,7 +6,7 @@ rather than from a file -- kept out of `main_window.py`, which is at
 `live_snapshot.py`, which must not import the window it talks to.
 
 The adopt path here is deliberately **not** `window_state.adopt_session`
-(`:68-72`): that one opens with `switch_to("doctor")`, and D16 says a
+(`window_state.py:94-98`): it opens with `switch_to("doctor")`, and D16 says a
 pull leaves the view where it is. The operator is mid-console-workflow
 -- start a watch, rerun a short discovery, export what he just pulled --
 and all of that is on this page; yanking the view away costs him the
@@ -42,7 +42,7 @@ def wire_console(window, page) -> None:
     re-emits all three from its `SnapshotPanel`, and this function is
     also handed that panel directly by several tests. The `hasattr` is
     the same idiom `MainWindow._refresh` uses for `set_session`
-    (`main_window.py:175-177`), and existed for the same reason: the
+    (`main_window.py:176-178`), and existed for the same reason: the
     Console page arrived over several tasks, and until task 13 the slot
     held task 8's `EmptyState`, which has none of the three. The branch
     is still live and still pinned -- any widget without them reaches

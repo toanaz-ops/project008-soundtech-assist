@@ -24,7 +24,7 @@ module but `live_controller.py` follows.
 `finish` and `on_quit` are the other end of the same rule: a watch has
 no deadline, so something has to end it when the process does.
 `MainWindow.closeEvent` only saves window state
-(`main_window.py:162-164`), so nothing in the app would -- and a
+(`main_window.py:163-165`), so nothing in the app would -- and a
 `QThread` still running when Qt tears the application down prints
 "QThread: Destroyed while thread is still running" and can take the
 process with it.
