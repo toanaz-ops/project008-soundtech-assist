@@ -31,7 +31,7 @@ from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption, set_style
-from wing_parser.ui.workers import TIMEOUTS, CallRunner, CallTimedOut
+from wing_parser.ui.workers import CallRunner
 
 #: Which azStyle the lamp wears in each state -- spec S6's mapping, whole.
 #: A table, not an if-chain, so a new LiveState fails a test rather than
@@ -59,8 +59,6 @@ class ConnectBar(QWidget):
         super().__init__(parent)
         self._transport = transport or live_controller.REAL
         self._timeout = timeout
-        self._seconds = 0
-        self._timeout_line: str | None = None
         self._state = LiveState.DISCONNECTED
 
         self.address = QComboBox()
@@ -123,21 +121,16 @@ class ConnectBar(QWidget):
         if not host:
             self.status_label.setText(text("console.no_address"))
             return False
-        self._seconds = (
-            TIMEOUTS["connect"] if self._timeout is None else self._timeout
-        )
-        # ButtonRunner formats its timeout text with `seconds` alone
-        # (call_button.py:75), so the host goes in before the call starts.
-        template = text("console.timeout").replace("{host}", host)
-        self._timeout_line = template.format(seconds=self._seconds)
         call = ButtonRunner(
             runner=self._runner, primary=self.connect_button,
-            cancel=self.cancel_button, report=self._report,
+            cancel=self.cancel_button, report=self.status_label.setText,
             running=text("console.connecting").format(host=host),
             cancelled=text("console.cancelled"),
-            timeout_text=template,
+            # ButtonRunner formats this with `seconds` alone
+            # (call_button.py:85), so the host goes in first.
+            timeout_text=text("console.timeout").replace("{host}", host),
             busy_text=text("console.busy"),
-            on_error=self._refused, parent=self,
+            on_error=self._refused, on_timeout=self._fail, parent=self,
         )
         started = call.run(
             "connect", live_controller.connect, host, self._transport,
@@ -148,7 +141,14 @@ class ConnectBar(QWidget):
         return started
 
     def disconnect_now(self) -> None:
-        """Drop the desk: clear the readout, tell the owner."""
+        """Drop the desk: settle any call in flight, clear the readout.
+
+        The cancel is not optional. A connect still on the wire would
+        otherwise land after the bar said disconnected and drag it back
+        to connected; `CallRunner.cancel` settles it now and discards
+        the late answer (`workers.py:148-154`).
+        """
+        self._runner.cancel()
         self.identity_label.setText("")
         self.status_label.setText("")
         self.set_state(LiveState.DISCONNECTED)
@@ -161,21 +161,6 @@ class ConnectBar(QWidget):
             self.set_state(LiveState.DISCONNECTED)
 
     # -- internals --------------------------------------------------------
-
-    def _report(self, message: str) -> None:
-        """Every line ButtonRunner writes lands here.
-
-        The timeout is the one outcome it does not route to `on_error`:
-        it reports the line and stops (`call_button.py:74-77`). So the
-        line is recognised here -- against the exact string this call
-        handed it -- and the bar ends red and emits `failed` like any
-        other refused connect, instead of leaving an amber lamp under an
-        error message. The `CallTimedOut` re-made here carries the kind
-        and seconds `CallRunner` used (`workers.py:138`).
-        """
-        self.status_label.setText(message)
-        if message and message == self._timeout_line:
-            self._fail(CallTimedOut("connect", self._seconds))
 
     def _arrived(self, identity) -> None:
         self.identity_label.setText(text("console.identity").format(
@@ -191,5 +176,10 @@ class ConnectBar(QWidget):
         self._fail(exc)
 
     def _fail(self, exc) -> None:
+        """Both failure paths end here: red lamp, `failed` carrying `exc`.
+
+        `_refused` writes its own line first; a timeout arrives from
+        `ButtonRunner.on_timeout` with its line already reported.
+        """
         self.set_state(LiveState.ERROR)
         self.failed.emit(exc)

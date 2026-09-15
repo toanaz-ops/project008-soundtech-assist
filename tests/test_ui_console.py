@@ -87,6 +87,32 @@ def test_disconnect_clears_the_readout_and_the_lamp(qt_app, settle):
     assert bar.connect_button.isEnabled()
 
 
+def test_disconnect_settles_a_connect_still_in_flight(qt_app, settle):
+    """A disconnect mid-handshake must not be undone by the late answer.
+
+    `disconnect_now` cancels the running call; without that the gated
+    identity below lands after the bar has said disconnected and drags
+    it back to connected.
+    """
+    gate = threading.Event()
+    bar = _stuck_bar(gate)
+    bar.address.setCurrentText(HOST)
+    seen = []
+    bar.connected.connect(seen.append)
+    assert bar.connect_now()
+
+    bar.disconnect_now()
+    assert bar.lamp.property("azStyle") == "faded"
+    gate.set()
+    # The worker is free to return now; a call that was NOT settled
+    # would deliver during this pump.
+    assert not settle(lambda: bool(seen), limit_s=0.3), "the late answer landed"
+    assert seen == []
+    assert bar.lamp.property("azStyle") == "faded"
+    assert bar.identity_label.text() == ""
+    assert bar.connect_button.isEnabled(), "and the bar is usable again"
+
+
 def test_a_timeout_shows_one_error_line_naming_the_host(qt_app, settle):
     """The 5 s backstop, run at 0 s so no test waits (workers.py:109-114).
 

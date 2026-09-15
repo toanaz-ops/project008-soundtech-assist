@@ -263,6 +263,39 @@ def test_timeout_reports_the_distinct_message_and_restores(qt_app, chrome):
         gate.set()
 
 
+def test_on_timeout_hands_the_caller_the_call_timed_out(qt_app):
+    """The opt-in hook: the line still reports, and the object arrives.
+
+    `live_connect_bar` needs it because a timeout must move its lamp to
+    error. The three model-call sites pass no `on_timeout` and are
+    unaffected -- `test_timeout_reports_the_distinct_message_and_restores`
+    is that half, with a chrome that does not pass one.
+    """
+    from PySide6.QtWidgets import QLabel, QPushButton
+
+    from wing_parser.ui.call_button import ButtonRunner
+
+    primary, status = QPushButton("go"), QLabel("")
+    timeouts, errors = [], []
+    chrome_obj = ButtonRunner(
+        runner=CallRunner(), primary=primary, report=status.setText,
+        timeout_text="gave up after {seconds} s",
+        on_error=errors.append, on_timeout=timeouts.append,
+    )
+    gate = threading.Event()
+    assert chrome_obj.run(
+        "probe", hold_gate, gate, timeout=0, on_success=lambda r: None)
+    try:
+        assert settle(qt_app, lambda: bool(timeouts))
+        assert isinstance(timeouts[0], CallTimedOut)
+        assert timeouts[0].kind == "probe" and timeouts[0].seconds == 0
+        assert status.text() == "gave up after 0 s", "the line still reports"
+        assert errors == [], "a timeout is not an on_error"
+        assert primary.isEnabled()
+    finally:
+        gate.set()
+
+
 def test_a_failure_is_routed_to_on_error(qt_app, chrome):
     chrome_obj, primary, cancel, status, runner, seen = chrome
     assert chrome_obj.run("probe", boom, on_success=seen["success"].append)
