@@ -407,7 +407,7 @@ def test_generator_worker_turns_desklost_into_failed(qt_app):
 
 def test_generator_worker_keeps_a_stopped_thread_referenced(qt_app):
     """A running watch thread must never be GC'd, the way CallRunner keeps
-    retired workers referenced (`workers.py:152-157`)."""
+    retired workers referenced (`workers.py:166-169`)."""
     gate = threading.Event()
     worker = GeneratorWorker(hold_gate_then_yield, gate)
     worker.start()
@@ -471,7 +471,7 @@ def test_a_real_watch_over_a_fake_desk_produces_changes_and_counts_rounds(qt_app
     assert [change.address for change in produced] == ["/ch/1/$fdr"]
     assert produced[0].before == -6.0 and produced[0].after == -3.0
     # read_labels asks for one name, then the priming sample and the
-    # loop's single round ask for both watched leaves (`poller.py:84,90`).
+    # loop's single round ask for both watched leaves (`poller.py:84-86`).
     assert rounds == [(1, 1), (2, 2), (2, 2)]
     assert done[0].events == 1 and done[0].rounds == 3
     assert settle(qt_app, lambda: not worker.isRunning())

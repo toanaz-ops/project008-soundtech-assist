@@ -72,7 +72,7 @@ class Transport:
     """The five net/ entry points the Console page uses, injectable.
 
     `watch` is the poller's loop, read-only like the rest (it only calls
-    `get_many` on the client it is handed, `poller.py:90`), and named
+    `get_many` on the client it is handed, `poller.py:36,51`), and named
     here because `GeneratorWorker` (S7.3), which drains it on a thread,
     must not say `net` either.
     """

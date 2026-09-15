@@ -12,7 +12,7 @@ pytest. This class only drains a generator off the GUI thread and turns
 what comes out of it into signals: an item into `produced`, a normal end
 into `finished`, `Cancelled` into `finished_cancelled`, and anything
 else -- `DeskLost` included -- into `failed`. Exactly one of those three
-terminal signals fires (the `FunctionWorker` contract, `workers.py:37-71`).
+terminal signals fires (the `FunctionWorker` contract, `workers.py:49-83`).
 
 It also names no transport. It is handed a callable that returns an
 iterable, so the same worker drains the real `poller.watch` over a live
@@ -31,7 +31,7 @@ from wing_parser.ui.live_guard import Cancelled
 # Every started worker, pruned of the ones that really stopped. A
 # QThread whose last Python reference goes away while it is still
 # running is destroyed mid-run; `CallRunner._settle` keeps its retired
-# workers for the same reason (`workers.py:152-157`), and a watch -- the
+# workers for the same reason (`workers.py:166-169`), and a watch -- the
 # longest-lived thread in the app -- needs it most.
 _RUNNING: list["GeneratorWorker"] = []
 
@@ -48,7 +48,7 @@ class WatchSummary:
     `rounds` is every guarded read `RoundGuard` reported, which is one
     more than the loop's own rounds: `poller.watch` reads the strip
     labels once and takes a priming sample before the first round
-    (`poller.py:84-90`), and both go through the same guard. Counting
+    (`poller.py:84-86`), and both go through the same guard. Counting
     what the guard actually reported keeps this worker free of a second,
     disagreeing tally.
     """
