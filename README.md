@@ -47,7 +47,7 @@ or `python -m wing_parser.ui user-files\example-Vu.snap`. Both accept
 installed the command prints one line naming the extra and exits 1; the
 CLI and the engine are unaffected by its absence.
 
-The window is a sidebar plus six pages. **Doctor** is the advisory
+The window is a sidebar plus seven pages. **Doctor** is the advisory
 report: findings fill the left pane, errors first, filterable by
 severity and by layer. Selecting one shows, on the right, the rule's
 title, the message, the rule's **rationale and source verbatim**, and
@@ -56,7 +56,12 @@ you are being asked to accept or reject. **Overview** shows the scene
 counts and the whole channel list at a glance; **Channels** and
 **Routing** give the classified detail; **Diff** compares the loaded
 scene against a second one, with a magnitude bar per changed value;
-**Import** walks an Excel running order through the G2a/G2b wizard.
+**Import** walks an Excel running order through the G2a/G2b wizard;
+**Console** (`feat/gui-live-console-wave2`, not yet merged) talks to a
+live desk read-only — Connect, Discover its schema, Pull the whole
+scene with Export to `.snap` and Open Doctor, and start a live Watch
+with events in a table. No write path is reachable from the UI in this
+wave; see [docs/user-manual/03-console-truc-tiep.md](docs/user-manual/03-console-truc-tiep.md).
 
 Model assist is opt-in per machine: **Tools ▸ Settings** takes your own
 provider key (it is stored locally, masked on screen), offers a real
@@ -67,7 +72,7 @@ The look is one house style: a 19-token dark palette generates the
 stylesheet (no colour literal lives outside `wing_parser/ui/theme/`),
 the typefaces ship inside the app, numbers read in a mono face, and the
 sidebar marks the live page with an orange edge rather than a slab.
-Keyboard: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5, Ctrl+1…6 for the pages,
+Keyboard: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5, Ctrl+1…7 for the pages,
 Esc, and a tab order that stays inside the visible page — pinned by
 `tests/test_ui_keyboard.py`. Model calls (mapping proposal, vocabulary
 guess) run on cancellable workers with a timeout, so a slow provider

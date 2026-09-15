@@ -486,6 +486,109 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     `empty.open_hint` resolves.
   - status: open
 
+- **D-41** A live pull walks the schema twice
+  - owner: machine-doable, deferred to wave 3 (it is a `net/` change)
+  - evidence: GUI wave 2 (task 16 brief item 3). `take_snapshot` walks
+    internally (`wing_parser/net/snapshot.py:83-85`, calling `walk_schema`
+    before reading any leaf) and `build_watch_list` walks again
+    (`wing_parser/net/watch/list.py:89`) -- neither function accepts a
+    pre-computed `SchemaResult` from the other. Console page Discover then
+    Pull (or the reverse) therefore costs two walks where one would do;
+    the wave-2 design spec priced one walk at ~1 s (`docs/superpowers/specs/
+    2026-09-15-gui-live-console-wave2-design.md` D11), so this is roughly a
+    second of avoidable latency per round trip through the page, not a
+    correctness bug.
+  - close: add a `schema: SchemaResult | None = None` parameter to both
+    `take_snapshot` and `build_watch_list` that skips the internal
+    `walk_schema` call when supplied, and have `ConsolePage` pass the
+    Discovery panel's result into a later Pull (and vice versa). This
+    touches `wing_parser/net/`, which is why wave 2 did not do it (its own
+    rule: a UI consumer does not modify `net/client.py`, `codec.py` or
+    `schema.py`).
+  - status: open
+
+- **D-42** Quitting the app can wait up to ~5 s for a watch round in flight
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 12's own concern, carried forward at task
+    16. `net/watch/poller.py:121-123` computes the remaining time in the
+    round and calls a plain `sleep(remaining)` with no cancellation seam;
+    at `MAX_INTERVAL` (`wing_parser/ui/live_guard.py:37`, 5.0 s) a quit
+    requested right after a round starts waits out that sleep before the
+    `GeneratorWorker` thread can notice it has been cancelled and join.
+  - close: give `poller.watch` a cancel-aware sleep (short slices checked
+    against a `threading.Event`, or `Event.wait(remaining)` in place of
+    `sleep`), which is a `net/` change -- same wave-3 boundary as D-41.
+  - status: open
+
+- **D-43** Save As suggests an unsanitised name for a pulled scene
+  - owner: machine-doable
+  - evidence: GUI wave 2, flagged at task 4 (deferred to task 11, then
+    carried to final review). `suggested_name` (`wing_parser/ui/
+    live_controller.py:159-173`) builds a bare filename from
+    `identity.name` with no sanitisation --
+    `f"{who}-{stamp}.snap"` -- and `session_from_snapshot`
+    (`live_controller.py:195-199`) sets that string as the pulled
+    `Session.path`. `menus.save_as` (`wing_parser/ui/menus.py:88-93`)
+    then derives its dialog's suggestion from that same path
+    (`.with_name(stem + "-edited.snap")`), so any character a desk's
+    identity string carries -- a path separator, a leading dot -- reaches
+    the Save As dialog unsanitised. No desk observed so far has produced
+    one; this is a latent input-handling gap, not a reproduced failure.
+  - close: split the seam -- have `suggested_name` sanitise the desk-
+    supplied part only (e.g. `re.sub(r"[^\w.-]", "_", who)`) before it
+    ever becomes a `Session.path`, and add a test with a desk name
+    containing `/`, `\` and `..`.
+  - status: open
+
+- **D-44** The read-only scan misses a relative dynamic import
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 14's fix round (deferred to final review).
+    `tests/test_ui_live_is_read_only.py`'s `_dynamic_call_reaches_write`
+    (`:78-99`) recognises `import_module("wing_parser.net.write")` and
+    `import_module("wing_parser.net", fromlist=["write"])`, but never
+    reads `args[1]` or a `package=` keyword -- so the relative form
+    `importlib.import_module(".write", "wing_parser.net")` resolves to
+    the same module at runtime and is invisible to the scan (`target` at
+    `:90` is `".write"`, which matches neither branch at `:91-93`). No
+    module under `wing_parser/ui/` uses this form today; the scan's own
+    stated job is to make a future one fail loudly, and right now it
+    would not.
+  - close: in `_dynamic_call_reaches_write`, when `target` starts with a
+    dot, resolve it against `args[1]` (or the `package=` keyword) before
+    comparing, the same way `importlib.import_module` itself does; add a
+    planted-relative-import test alongside
+    `test_the_scan_catches_a_planted_dynamic_import`.
+  - status: open
+
+- **D-45** The wheel drops a YAML the exe already carries
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 15 (C5), found while fixing the exe's own
+    version of this gap. `pyproject.toml:31-32`'s
+    `[tool.setuptools.package-data]` lists `net/watch/data/*.yaml` but not
+    `net/data/*.yaml`, so `pip install .` ships `watchlist.yaml` and
+    drops `wing_jsontypes.yaml` -- read by `net/jsontypes.py:28` via
+    `net/export.py:41`, needed by any `wing net snapshot`, CLI included,
+    not only the UI. `packaging/wing-ui.spec`'s DATAS list was fixed at
+    the same task (task 15) and now names both directories explicitly, so
+    only the wheel install path has the gap.
+  - close: add `"net/data/*.yaml"` to the `package-data` glob list; test
+    with a built wheel installed into a clean venv running `wing net
+    snapshot` against `tests/fake_desk.py`. Out of this task's scope
+    (task 16 was told not to touch `pyproject.toml`).
+  - status: open
+
+- **D-46** The generated debug spec is untracked but not gitignored
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 15 (C3). `packaging/make-debug-spec.py:8`
+    states "It is generated output and stays UNTRACKED -- never
+    hand-edit it", but `.gitignore:21-22` covers only `*.spec.bak`; the
+    generated `packaging/wing-ui-debug.spec` sits as `??` in `git status`
+    and would be swept into a careless `git add -A`, against the
+    generator's own header.
+  - close: add `packaging/wing-ui-debug.spec` to `.gitignore`. Out of
+    this task's scope (task 16 was told not to touch `.gitignore`).
+  - status: open
+
 ---
 
 ## Appendix — rulings preserved, not debt

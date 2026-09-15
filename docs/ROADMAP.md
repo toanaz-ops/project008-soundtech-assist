@@ -1,7 +1,8 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-08-26, GUI waves 1+1b complete and **merged into
-`main`** (`075335d`) · **1433 passed / 3 skipped** measured at merge
+**Last updated:** 2026-09-16, GUI wave 2 (live console page) on branch
+`feat/gui-live-console-wave2` (PR #4, stacked on PR #1) — **not yet merged**,
+measured at `e8e3de1`: **1573 passed / 3 skipped**
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -31,9 +32,10 @@ decided and why.
 live console ┘        (showcontext/ attaches a cue sheet alongside)
    net/                (net/watch/ polls a live desk for changes)
                        (showcontext/ingest/ builds a cue sheet from a spreadsheet)
-   edit/ + ui/         (desktop app: six-page wing-ui over doctor/analyze/
-                        channels/routing/diff/import; packaging/wing-ui
-                        builds a standalone .exe)
+   edit/ + ui/         (desktop app: seven-page wing-ui over doctor/analyze/
+                        channels/routing/diff/import/console (live desk,
+                        read-only); packaging/wing-ui builds a standalone
+                        .exe)
 ```
 
 ## 2. Standing constraints that shape every decision below
@@ -74,6 +76,7 @@ subsystem; each handoff records what it measured and what it left open.
 | G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | **1271** |
 | GUI 1 | **Desktop GUI parity** | The six-page sidebar app — Doctor, Overview, Channels, Routing, Diff, and the G2a/G2b Import wizard — replacing the doctor-only window: every page backed by the same query/advisory layer as the CLI, all user-facing strings through `texts.py`. Tasks 0–13 of the wave-1 plan. | **1342** (1 skipped) |
 | GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
+| GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; not yet merged (PR #4). | **1573** (3 skipped), measured at `e8e3de1` |
 
 ### Where each one's paperwork lives
 
@@ -90,6 +93,7 @@ subsystem; each handoff records what it measured and what it left open.
 | G2b | `2026-08-24-g2b-assisted-ingest-model-design.md` | `2026-08-24-g2b-assisted-ingest-model.md` | — |
 | GUI 1 | `2026-08-25-gui-parity-design.md` | `2026-08-25-gui-parity-wave1.md` | `2026-08-26-gui-house-style-complete.md` (covers both waves) |
 | GUI 1b | `2026-08-25-gui-parity-design.md` §house-style + the wave-1b plan's own bindings | `2026-08-26-gui-house-style-wave1b.md` | `2026-08-26-gui-house-style-complete.md` |
+| GUI 2 | `2026-09-15-gui-live-console-wave2-design.md` | `2026-09-15-gui-live-console-wave2.md` | `2026-09-16-gui-live-console-wave2-complete.md` |
 
 Specs are in `docs/superpowers/specs/`, plans in `docs/superpowers/plans/`,
 handoffs in `docs/handoff/`.
@@ -212,6 +216,21 @@ supply. **Do not guess them.**
    `float | None` and `None` for the `a:b` form. Nothing reads it. Latent.
 7. **`expects:` accepts pattern-derived kinds only.** A kind declared by hand in
    `knowledge/toanaz/classifier.yaml` would be refused. Latent.
+8. **GUI wave 2's design questions were all decided by the orchestrator, ASSUMED
+   for ToanAZ — he has not looked at any of them.** Spec rulings D1 (read-only,
+   no write path), D6 (a desk is "lost" after 3 silent rounds), D9 (Console is
+   the 7th sidebar page, Ctrl+7), D10 (remembered console addresses capped at 8),
+   D12 (no watch-list editor — the YAML ships as-is), D14 (timeout budgets 5 s
+   connect / 60 s walk / 90 s snapshot), D15 (no `net get`-style single-address
+   box), D16 (the page stays on Console after a Pull rather than switching to
+   Doctor) and D17 (`console.*` texts namespace) — plus three rulings made
+   during implementation and not in the original spec: Export is gated on a
+   loaded session rather than on `allowed_actions` (a file write is not a desk
+   action), `ERROR` allows `connect` in one click, and `set_session` is a sync to
+   `SnapshotPanel` rather than a one-way push. Full list with evidence:
+   `docs/handoff/2026-09-16-gui-live-console-wave2-complete.md` (Task 17). Also
+   pending his review: §9.3's acceptance steps against the real desk
+   (WING-GIAQUY), and the exe's Console page screenshot.
 
 ## 6. Waiting on hardware — NOTHING
 

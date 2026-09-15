@@ -28,8 +28,13 @@ Hệ quả thiết kế — áp dụng cho MỌI tính năng mới:
    (menu ẩn/khu dev trong UI), không trộn với luồng show.
 3. Thứ tự ưu tiên chu kỳ UI: **import cue sheet lên UI trước** (việc hàng tuần
    khi đi show), rồi doctor/analyze đầy đủ, rồi console live panel.
-4. Hiện trạng mốc này: desktop app chỉ phủ luồng doctor (findings/repairs/
-   verdicts). Import, analyze/channel/routing, diff, toàn bộ `net` — vẫn CLI.
+4. Hiện trạng mốc này (2026-08-24): desktop app chỉ phủ luồng doctor
+   (findings/repairs/verdicts). Import, analyze/channel/routing, diff,
+   toàn bộ `net` — vẫn CLI. **(Cập nhật 2026-09-16: câu này đã SAI —
+   2026-08-26 wave 1 đưa import/analyze/channel/routing/diff lên UI;
+   2026-09-16 wave 2 đưa phần ĐỌC của `net` lên UI (trang Console).
+   Chỉ còn `net set/toggle/push/get` là CLI-only, cố ý — xem mục dưới
+   cùng.)**
 
 ## 2026-08-24 — G2b merged
 
@@ -62,3 +67,15 @@ feature/gui-parity-wave1, CHƯA merge — chờ ToanAZ). Cửa chặn done: khô
 trang nào xong nếu ToanAZ chưa nhìn ảnh từ exe. Còn mở: D-24 scanner test,
 D-29 import_page 246 dòng, D-30 placeholder-key, D-31 settings.cancel key,
 live DeepSeek smoke trong app. Nợ: docs/tech-debt.md.
+
+## 2026-09-16 — GUI wave 2: trang Console (read-only) trên nhánh, chờ merge
+
+Trang thứ 7 trong wing-ui: Connect (`net identity`), Discover (dò schema),
+Pull (`net snapshot`) + Export .snap + Open Doctor, Start watch
+(`net watch`) — bảng sự kiện sống. Không nút ghi nào (`set/toggle/push/get`
+vẫn CLI-only, cố ý). Suite **1573 passed / 3 skipped** @ `e8e3de1`, nhánh
+`feat/gui-live-console-wave2`, PR #4 stacked trên PR #1 — **CHƯA merge**.
+Còn treo: nghiệm thu §9.3 trên console thật (WING-GIAQUY, ToanAZ chưa nhìn
+ảnh từ exe); 3 câu hỏi mở (alert cho watch? có wave 3 ghi không?
+auto-connect lúc khởi động?); loạt ruling ASSUMED chờ ToanAZ duyệt lại —
+xem ROADMAP §5 mục 8 và `docs/handoff/2026-09-16-gui-live-console-wave2-complete.md`.

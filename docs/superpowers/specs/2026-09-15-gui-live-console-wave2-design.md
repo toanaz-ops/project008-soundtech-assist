@@ -418,3 +418,64 @@ Not re-asked: ROADMAP §5.5 (`$fdr` vs `fdr`) is open and unchanged by this wave
 Metering and the native transport (E). Subscription (closed negative). Any modification to
 `wing_parser/net/`. A watch-list editor. A `net get` read-one-address box (D15). Writing to a desk.
 Language switching (structure is ready). Mac packaging.
+
+## Deviations recorded 2026-09-16
+
+Task 16 (docs). The body above is left as designed and reviewed; this section
+records where the shipped code (tasks 1-15, `ac39cfa..e8e3de1`) diverges from it,
+so the design stays legible as a historical record rather than being rewritten to
+match the outcome. Each item names the module and the reviewing task that ruled
+on it; full detail is in that task's report under
+`.superpowers/sdd/2026-09-15-gui-live-console-wave2/`.
+
+- **RoundGuard and watch_rate live in a new `wing_parser/ui/live_guard.py`, not in
+  `live_controller.py`** as S7.1 says. Decided at task 5: `live_controller.py`
+  names `net` and was approaching its 200-line ceiling, so the pure logic
+  (`RoundGuard` at `live_guard.py:64`, `watch_rate` at `:130`, plus `Cancelled`,
+  `DeskLost`, `DEFAULT_INTERVAL`/`MIN_INTERVAL`/`MAX_INTERVAL`) moved to a sibling
+  module that imports no `net` at all, so "only one `ui/` file names `net`" still
+  holds.
+- **`Transport` carries five callables, not four.** S7.1 and S7.3 describe four.
+  Task 6 added a fifth, `watch` (`live_controller.py:70-84`), so `GeneratorWorker`
+  can drain the poller through the same injectable seam as `identity`, `walk`,
+  `snapshot` and `client`, without importing `net` itself.
+- **A shared `CallPanel` base class** (`wing_parser/ui/live_call_panel.py:34`) is
+  not in the design. Task 10's review found `ConnectBar` and `DiscoveryPanel`
+  duplicating the same runner/state/cancel plumbing and extracted it; `SnapshotPanel`
+  joined at task 11. `CallPanel.failed` and `CallPanel.state` were added at task 13
+  once the assembled page needed both.
+- **The page's strings split into a new `wing_parser/ui/texts_console.py`**, not
+  named in the design. `texts.py` was at its own 200-line ceiling by task 11; the
+  Console vocabulary is merged back into `TEXTS` so `text("console.pull")` resolves
+  exactly as any other key does.
+- **Export is gated on a loaded session, not on `live_state.allowed_actions`**
+  (`wing_parser/ui/live_snapshot.py:101-118`, specifically the `loaded =
+  self._session is not None` line at `:114`). Ruling at task 11: a file write is
+  not a desk action, so it should not be table-driven the way Connect/Discover/Pull
+  are.
+- **`ERROR` allows `connect` in one click**, plus two related table rows the design
+  did not anticipate, all found and fixed at task 13's sweep of `live_state.py`:
+  `(ERROR, "connect") -> CONNECTING` (`:100`); `(WATCHING, "disconnect") ->
+  DISCONNECTED` (`:99`), a row that was missing even though the Disconnect button
+  had been live in `WATCHING` since task 1; and `cancel` rows for all three busy
+  states -- `(CONNECTING, "cancel")`, `(WALKING, "cancel")`, `(PULLING,
+  "cancel")` (`:86,93,96`) -- since Cancel had been the only way out of those
+  states without ever appearing in the table. A consequence worth naming: `ERROR`
+  and `LOST` are now table-identical; only the view (which keeps `LOST`'s event
+  list and Reconnect label) tells them apart.
+- **`set_session` is a synchronous push to `SnapshotPanel`**
+  (`console_page.py:95` forwarding to `live_snapshot.py:120`), not a one-way
+  adoption. Ruling at task 13: `MainWindow._refresh` already fans `set_session` to
+  every page; without this, the pull -> window -> `_refresh` round trip would clear
+  the "scene loaded" banner the same pull had just raised. Re-adopting the same
+  session object is a no-op for exactly that reason.
+- **The Console page stays on after a Pull, by a new function, not by changing
+  `window_state.adopt_session`.** D16's text says this "needs a new adopt path:
+  `window_state.adopt_session` (`:68-72`) unconditionally calls
+  `switch_to("doctor")`" -- read as needing that function changed. Task 13 instead
+  added `adopt_pulled_session` in `live_wiring.py` (everything `adopt_session` does
+  except the page switch and the D4 recent-menu entry) and left
+  `window_state.adopt_session` untouched, since a file-opened scene must still
+  switch to Doctor. D16's *outcome* (stay on Console after a Pull) is exactly what
+  shipped; only the mechanism differs from the sentence describing it.
+

@@ -42,11 +42,14 @@ chạy đủ, chỉ thiếu phần "đề xuất hộ".
 ## Ứng dụng desktop (wing-ui)
 
 Ngoài CLI, dự án có app desktop: `wing-ui user-files\example-Vu.snap`.
-Sidebar sáu trang — **Doctor** (tư vấn), **Overview** (tổng quan),
+Sidebar bảy trang — **Doctor** (tư vấn), **Overview** (tổng quan),
 **Channels**, **Routing**, **Diff** (so sánh hai scene), **Import**
-(wizard đưa Excel vào) — cùng trang **Settings** (dán API key riêng,
-nút Test connection). Mô tả đầy đủ (verdict, repair, journal, đóng gói
-`.exe`) nằm ở mục [Desktop app trong README](../../README.md#desktop-app).
+(wizard đưa Excel vào), **Console** (kết nối console thật, chỉ đọc —
+nhánh `feat/gui-live-console-wave2`, chưa merge; xem
+[03-console-truc-tiep.md](03-console-truc-tiep.md)) — cùng trang
+**Settings** (dán API key riêng, nút Test connection). Mô tả đầy đủ
+(verdict, repair, journal, đóng gói `.exe`) nằm ở mục
+[Desktop app trong README](../../README.md#desktop-app).
 
 Phím tắt trong app:
 
@@ -56,7 +59,7 @@ Phím tắt trong app:
 | `Ctrl+Shift+S` | Save As (luôn ghi file mới) |
 | `Ctrl+Z` | Undo thay đổi gần nhất |
 | `F5` | Phân tích lại scene đang mở |
-| `Ctrl+1` … `Ctrl+6` | Nhảy tới trang 1–6 trong sidebar |
+| `Ctrl+1` … `Ctrl+7` | Nhảy tới trang 1–7 trong sidebar |
 | `Esc` | Đóng hộp thoại đang mở |
 
 ## Nguyên tắc hoạt động (đọc 30 giây, hiểu mọi lệnh)
