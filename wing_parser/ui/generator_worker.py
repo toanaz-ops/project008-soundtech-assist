@@ -41,6 +41,22 @@ def running_workers() -> tuple["GeneratorWorker", ...]:
     return tuple(_RUNNING)
 
 
+def _still_running(worker: "GeneratorWorker") -> bool:
+    """`worker.isRunning()`, but a deleted wrapper is simply not running.
+
+    The list below outlives any single caller, so one entry whose C++
+    object was destroyed -- a worker given a Qt parent that died first --
+    would make the NEXT `start()` raise `RuntimeError: Internal C++
+    object (GeneratorWorker) already deleted`, anywhere in the app and
+    with a traceback pointing at an unrelated watch. Measured in task 12,
+    four tests down. A corpse is dropped instead.
+    """
+    try:
+        return worker.isRunning()
+    except RuntimeError:
+        return False
+
+
 @dataclass(frozen=True)
 class WatchSummary:
     """How a finished watch went, for the page's closing line.
@@ -100,7 +116,7 @@ class GeneratorWorker(QThread):
         """Start the thread, and keep it referenced until it really stops."""
         super().start(*args, **kwargs)
         _RUNNING.append(self)
-        _RUNNING[:] = [w for w in _RUNNING if w is self or w.isRunning()]
+        _RUNNING[:] = [w for w in _RUNNING if w is self or _still_running(w)]
 
     def run(self) -> None:
         started = time.monotonic()

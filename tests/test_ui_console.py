@@ -992,3 +992,94 @@ def test_a_watch_is_refused_without_a_leaf_list_or_from_the_wrong_state(
     assert not view.start_watch(), "a watch began while a pull was running"
     assert view._state is LiveState.PULLING
     assert not view.is_watching()
+
+
+# -- task 12, review round 1: the two ways a session was orphaned ------------
+
+
+def test_leaving_the_watching_state_cancels_the_orphaned_session(
+        qt_app, settle):
+    """`set_state` is not only the page's paint call -- it can end a watch.
+
+    `allowed_actions(WATCHING)` contains `disconnect`, and
+    `ConnectBar.disconnect_now` sets its state directly
+    (`live_connect_bar.py:146`), so task 13 fanning that out reaches this
+    view as a bare `set_state(DISCONNECTED)`. Without the cancel the
+    worker polls that desk forever: Stop is hidden in DISCONNECTED and
+    `stop_watch` refuses, because `stop` is not in that state's actions.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    view = _events_view(_watch_desk(_two_events()))
+    ended, gone = [], []
+    view.stopped.connect(lambda: ended.append(True))
+    view.lost.connect(gone.append)
+    assert view.start_watch()
+    assert settle(lambda: view.model.rowCount() >= 1)
+
+    view.set_state(LiveState.DISCONNECTED)
+    assert settle(lambda: not view.is_watching()), "the worker outlived the page"
+    # Pump past the end: the terminal signal is delivered in here, and it
+    # must not drag the page back out of the state it was just put in.
+    assert not settle(lambda: bool(ended or gone), limit_s=0.3)
+    assert view._state is LiveState.DISCONNECTED
+    assert not view.stop_watch(), "there is nothing left to stop"
+    assert view.model.rowCount() >= 1, "and what it collected stays on screen"
+
+
+def test_shutdown_ends_a_running_watch_and_is_wired_to_the_quit(qt_app):
+    """No thread outlives the app: `QThread: Destroyed while running`.
+
+    `MainWindow.closeEvent` only saves window state
+    (`main_window.py:162-164`), and nothing else in the app stops a
+    watch, so the view hooks `aboutToQuit` itself and blocks there.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    view = _events_view(_watch_desk(_two_events()))
+    assert view.start_watch()
+    assert view.is_watching()
+    view.shutdown()
+    assert not view.is_watching(), "shutdown returned with the thread alive"
+
+    # And the hook itself, driven rather than counted: PySide6's
+    # `QObject.receivers` takes no SignalInstance, so the signal is
+    # emitted instead. Only this view is alive to hear it -- Qt drops a
+    # connection when either end is destroyed.
+    # `shutdown` ends the thread and leaves the state alone -- the app is
+    # quitting, so there is nothing to leave it in. A page that wanted to
+    # go on would put it back itself, which is what this does.
+    view.set_state(LiveState.CONNECTED)
+    assert view.start_watch()
+    qt_app.aboutToQuit.emit()
+    assert not view.is_watching(), "aboutToQuit did not reach shutdown"
+
+
+def test_a_failure_that_is_not_a_lost_desk_says_so(qt_app, settle):
+    """A code bug mid-watch must not be misdiagnosed as a quiet desk.
+
+    The state is still `lost` -- `live_state.py` gives `watching` no
+    third exit -- but the sentence is the other one.
+    """
+    from wing_parser.ui.live_events_view import LiveEventsView
+    from wing_parser.ui.live_state import LiveState
+
+    def boom(client, watch_list, **kwargs):
+        raise ValueError("the watch list went stale")
+
+    transport = dataclasses.replace(_watch_desk([]).transport(), watch=boom)
+    view = LiveEventsView(transport=transport)
+    view.set_host(HOST)
+    view.set_watch_list(transport.walk(HOST))
+    view.set_state(LiveState.CONNECTED)
+    seen = []
+    view.lost.connect(seen.append)
+
+    assert view.start_watch()
+    assert settle(lambda: bool(seen)), "the failure never reached the page"
+    assert isinstance(seen[0], ValueError)
+    assert view._state is LiveState.LOST
+    line = view.status_label.text()
+    assert "went stale" in line, line
+    assert "not the desk going quiet" in line, line
+    assert settle(lambda: not view.is_watching())

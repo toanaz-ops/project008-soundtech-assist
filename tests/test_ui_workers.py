@@ -541,3 +541,31 @@ def test_the_three_live_budgets_are_the_ruled_numbers():
     assert TIMEOUTS["connect"] == 5      # backstop over identity.py's 2.0 s
     assert TIMEOUTS["walk"] == 60        # ~60x the measured ~1.00 s clean walk
     assert TIMEOUTS["snapshot"] == 90    # 9x the measured ~10 s console read
+
+
+def test_a_deleted_worker_does_not_break_the_next_start(qt_app):
+    """One dead wrapper in `_RUNNING` must not take down the NEXT start.
+
+    Measured in task 12: a watch thread given its widget as a Qt parent
+    was deleted with that widget while this list still held the Python
+    wrapper, and the following `start()` died on `isRunning()` with
+    "Internal C++ object (GeneratorWorker) already deleted" -- four
+    tests in a row, none of them about threads. The prune drops such an
+    entry instead.
+    """
+    shiboken = pytest.importorskip("shiboken6")
+    from wing_parser.ui.generator_worker import _RUNNING, running_workers
+
+    first = GeneratorWorker(counting, 1)
+    first.start()
+    assert settle(qt_app, lambda: not first.isRunning())
+    assert any(worker is first for worker in _RUNNING)
+    shiboken.delete(first)
+
+    done = []
+    second = GeneratorWorker(counting, 1)
+    second.finished.connect(done.append)
+    second.start()                      # must not raise
+    assert settle(qt_app, lambda: bool(done))
+    assert all(worker is not first for worker in running_workers()), (
+        "the deleted worker was never pruned")

@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from wing_parser.ui import live_guard
 from wing_parser.ui.live_guard import DEFAULT_INTERVAL
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
@@ -62,6 +63,15 @@ class WatchBar(QWidget):
         row.addWidget(QLabel(text("console.interval")))
         row.addWidget(self.interval)
         row.addWidget(self.rate_label, 1)
+
+    def show_rate(self, events: int, seconds: float) -> None:
+        """The rate line. **No arithmetic here**: both numbers come back
+        from `live_guard.watch_rate`, its zero-second case included --
+        that is the one with a bug to have, because this renders the
+        moment Start is pressed, before any time has passed."""
+        rate, elapsed = live_guard.watch_rate(events, seconds)
+        self.rate_label.setText(
+            text("console.watch_rate").format(rate=rate, elapsed=elapsed))
 
     def set_actions(self, state: LiveState, watchable: bool) -> None:
         """Wear `state`. `watchable` is "discovery has been run" -- a

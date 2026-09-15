@@ -59,6 +59,11 @@ class EventTable(QTableView):
                 before=change.before, after=change.after)),
         ])
 
+    def count(self) -> int:
+        """How many events this session has shown. The rows are the only
+        tally there is -- a second counter beside them could disagree."""
+        return self.model.rowCount()
+
     def clear_events(self) -> None:
         """Empty the table for a new session. Only Start calls this: a
         watch that ended keeps what it collected on screen."""

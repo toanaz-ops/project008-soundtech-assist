@@ -94,6 +94,10 @@ CONSOLE_TEXTS: dict[str, str] = {
         "Lost {host}: {error} — the events above are real. Reconnect to "
         "carry on."
     ),
+    "console.watch_failed": (
+        "Watch failed on {host}: {error} — not the desk going quiet. The "
+        "events above are real; Reconnect to carry on."
+    ),
     "console.no_watch_list": (
         "Discover the console first — a watch needs the leaf list."
     ),
