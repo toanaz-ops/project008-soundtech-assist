@@ -21,8 +21,11 @@ exactly as a plain one does, and two such title strings were found that
 way. Known residue, checked 2026-09-15 and argued rather than routed:
 `__main__.py:18 MISSING_PYSIDE` (printed before Qt exists, so the
 bootstrap must not depend on any import that could itself fail),
-`findings_view.py:27 ALL` (a filter sentinel compared against, which
+`findings_view.py:28 ALL` (a filter sentinel compared against, which
 happens to be displayed), and `elide.py:23 ELLIPSIS` (typography).
+Line numbers re-read from the files on 2026-09-15, after this commit's
+own import shifted one of them -- a stale reference in a blind-spot
+list is worse than no list, because it is read as a thing checked.
 """
 import ast
 from pathlib import Path
