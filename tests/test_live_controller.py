@@ -1,9 +1,11 @@
-"""The live controller's transport seam, `connect` and `discover`.
+"""The live controller: the transport seam, `connect`, `discover`, `pull`.
 
 No socket anywhere: every test drives a `FakeDesk` (`tests/fake_desk.py`),
-the only desk wave 2 ever sees. Spec S7.1 (the four-callable seam) and
-S9.1 (connect: success, `TimeoutError`, malformed identity; discover:
-clean, and unresolved-families).
+the only desk wave 2 ever sees. Spec S7.1 (the four-callable seam, and
+both guards ported from `cli/commands.py:_load`) and S9.1 (connect:
+success, `TimeoutError`, malformed identity; discover: clean, and
+unresolved-families; pull against a desk that answers nothing; pull
+partial).
 """
 
 from __future__ import annotations
@@ -21,9 +23,17 @@ from wing_parser.net.identity import (
     parse_identity,
     query_identity,
 )
-from wing_parser.net.snapshot import take_snapshot
+from wing_parser.net.snapshot import SnapshotResult, take_snapshot
 from wing_parser.net.watch.list import WatchList, build_watch_list
-from wing_parser.ui.live_controller import REAL, Transport, connect, discover
+from wing_parser.ui.live_controller import (
+    REAL,
+    EmptyReadError,
+    Transport,
+    connect,
+    discover,
+    incomplete_report,
+    pull,
+)
 
 HOST = "192.168.128.28"
 
@@ -38,6 +48,37 @@ GIAQUY = WingIdentity(
 
 def _fader(address: str) -> OscMessage:
     return OscMessage(address, "sff", ("-6.0", 0.5, -6.0))
+
+
+def _loaded_desk() -> FakeDesk:
+    """A desk with one ae leaf and one ce leaf -- enough to be non-empty."""
+    return FakeDesk(
+        leaves={
+            "/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",)),
+            "/$ctl/cfg/dark": OscMessage("/$ctl/cfg/dark", "sfi", ("1", 0.0, 0)),
+        }
+    )
+
+
+def _real_snapshot() -> SnapshotResult:
+    """One `SnapshotResult` assembled by FakeDesk's real pull path.
+
+    Tests that need a *pathological* read `dataclasses.replace` fields on
+    this rather than hand-building a `RawScene`, so the version, meta and
+    source of every fixture below are the ones a real pull produces.
+    """
+    return _loaded_desk().transport().snapshot(HOST)
+
+
+def _transport_snapshotting(snapshot) -> Transport:
+    """A `Transport` whose `snapshot` is `snapshot` and nothing else changed.
+
+    Injecting the seam's own field is what `Transport` exists for (S7.1,
+    "injectable"): `FakeDesk` models a desk that answers, and a desk that
+    answers *nothing while raising nothing* -- the UDP case the guard was
+    written for -- is exactly what it cannot model.
+    """
+    return dataclasses.replace(FakeDesk().transport(), snapshot=snapshot)
 
 
 def test_connect_returns_the_desks_identity():
@@ -120,3 +161,101 @@ def test_real_transport_names_only_read_only_entry_points():
     # write path must not be assignable onto it after import.
     with pytest.raises(dataclasses.FrozenInstanceError):
         REAL.identity = query_identity
+
+
+def test_pull_against_a_silent_desk_raises_naming_host_and_both_counts():
+    # The shape the guard exists for (commands.py:39-62): OSC is UDP, so
+    # an unreachable host raises nothing at all -- the walk reported three
+    # nodes it could not reach, every one of the 220 leaf reads then timed
+    # out, and `take_snapshot` returned a perfectly valid empty scene.
+    clean = _real_snapshot()
+    silent = dataclasses.replace(
+        clean,
+        raw=dataclasses.replace(clean.raw, ae={}, ce={}),
+        unresolved_nodes=("/ch", "/bus", "/main"),
+        unresolved_leaves=tuple(f"/ch/{n}/$fdr" for n in range(1, 221)),
+    )
+    reads: list[str] = []
+
+    def _snapshot(host: str) -> SnapshotResult:
+        reads.append(host)
+        return silent
+
+    with pytest.raises(EmptyReadError) as caught:
+        pull("10.0.0.9", _transport_snapshotting(_snapshot))
+
+    assert str(caught.value) == (
+        "no console answered at 10.0.0.9: read nothing at all "
+        "(3 top-level node(s) and 220 leaf/leaves did not answer). "
+        "Check the address and that the desk is on the network."
+    )
+    assert (caught.value.host, caught.value.nodes, caught.value.leaves) == (
+        "10.0.0.9",
+        3,
+        220,
+    )
+    # No `Session` is built: the desk was read exactly once and `pull`
+    # raised instead of returning, so nothing downstream ever ran.
+    assert reads == ["10.0.0.9"]
+    # An `OSError`, like every other live-read failure, so the page needs
+    # no third branch to show it as one error line.
+    assert isinstance(caught.value, OSError)
+
+
+def test_pull_returns_the_snapshot_result_on_a_clean_read():
+    desk = _loaded_desk()
+
+    result = pull(HOST, desk.transport())
+
+    assert type(result) is SnapshotResult
+    assert result.raw.ae == {"ch": {"1": {"name": "KICK"}}}
+    assert result.raw.ce == {"cfg": {"dark": 1}}
+    assert result.unresolved_nodes == ()
+    assert result.unresolved_leaves == ()
+
+
+def test_incomplete_report_is_none_on_a_clean_read():
+    # Silence on a clean read is deliberate (commands.py:65-67): a warning
+    # printed every time teaches the reader to skip it.
+    assert incomplete_report(pull(HOST, _loaded_desk().transport())) is None
+
+
+def test_incomplete_report_names_the_counts_and_the_node_names():
+    clean = _real_snapshot()
+
+    both = dataclasses.replace(
+        clean,
+        unresolved_nodes=("/mtx", "/dca"),
+        unresolved_leaves=("/ch/7/$fdr", "/ch/8/$fdr", "/ch/9/$fdr"),
+    )
+    assert incomplete_report(both) == (
+        "incomplete read: 2 node(s) and 3 leaf/leaves did not answer; "
+        "nodes: /mtx, /dca"
+    )
+
+    # Leaves only: the node names clause is dropped entirely rather than
+    # rendered empty (the `if snapshot.unresolved_nodes else ""` at
+    # commands.py:72-76).
+    leaves_only = dataclasses.replace(
+        clean, unresolved_leaves=("/ch/7/$fdr", "/ch/8/$fdr", "/ch/9/$fdr")
+    )
+    assert incomplete_report(leaves_only) == (
+        "incomplete read: 0 node(s) and 3 leaf/leaves did not answer"
+    )
+
+
+def test_pull_lets_an_oserror_from_the_transport_through():
+    refused = OSError("[Errno 10051] a socket operation was attempted to an "
+                      "unreachable network")
+
+    def _snapshot(host: str) -> SnapshotResult:
+        raise refused
+
+    with pytest.raises(OSError) as caught:
+        pull("10.0.0.9", _transport_snapshotting(_snapshot))
+
+    assert caught.value is refused
+    # Untranslated means untranslated: not re-raised as the guard's own
+    # error, which would tell the operator the desk answered nothing when
+    # in fact the send itself never left the machine.
+    assert not isinstance(caught.value, EmptyReadError)

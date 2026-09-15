@@ -29,6 +29,39 @@ from wing_parser.net.snapshot import SnapshotResult, take_snapshot
 from wing_parser.net.watch.list import WatchList, build_watch_list
 
 
+class EmptyReadError(OSError):
+    """A pull that reached the desk's address and read nothing at all.
+
+    Ported from `cli/commands.py:47-62`, where it is a printed line and a
+    `None` return. It has to be an *error* rather than an empty result:
+    OSC is UDP, so an unreachable host raises nothing -- every leaf just
+    times out -- and `take_snapshot` then faithfully returns a valid,
+    empty scene. A UI that passed that on would hand the advisory engine
+    nothing, which truthfully finds nothing wrong with nothing, and
+    Doctor would show "No findings." for a desk it never reached. That is
+    exactly what `doctor --live` did before this guard existed.
+
+    An `OSError` because that is the vocabulary every other live-read
+    failure already speaks (`commands.py:25-28`), so the page catches it
+    without inventing a third branch.
+
+    Both counts, never one: `walk_schema` runs first and the leaf reads
+    run after it, so `nodes` can be 0 while every leaf timed out.
+    Reporting only nodes would say "0 top-level node(s)" and discard the
+    one number that says what actually happened.
+    """
+
+    def __init__(self, host: str, nodes: int, leaves: int) -> None:
+        super().__init__(
+            f"no console answered at {host}: read nothing at all "
+            f"({nodes} top-level node(s) and {leaves} leaf/leaves did not "
+            f"answer). Check the address and that the desk is on the network."
+        )
+        self.host = host
+        self.nodes = nodes
+        self.leaves = leaves
+
+
 @dataclass(frozen=True)
 class Transport:
     """The four net/ entry points the Console page uses, injectable."""
@@ -71,3 +104,41 @@ def discover(host: str, transport: Transport = REAL) -> WatchList:
     stays visible to its caller (`watch/list.py:39-48`).
     """
     return transport.walk(host)
+
+
+def pull(host: str, transport: Transport = REAL) -> SnapshotResult:
+    """Read the whole console, refusing a read that reached nothing.
+
+    Whatever the snapshot raises -- `OSError`, `ValueError` -- reaches the
+    caller untouched, as everywhere else here. The one thing this adds is
+    the failure that raises nothing at all: see `EmptyReadError`.
+    """
+    result = transport.snapshot(host)
+    if not result.raw.ae and not result.raw.ce:
+        raise EmptyReadError(
+            host, len(result.unresolved_nodes), len(result.unresolved_leaves)
+        )
+    return result
+
+
+def incomplete_report(result: SnapshotResult) -> str | None:
+    """How much of a partial read did not answer, or `None` if all of it did.
+
+    The other half of `_load`'s pair (`cli/commands.py:64-78`). A partial
+    read is usable and must never look complete, so the page keeps this as
+    a persistent banner; a clean read reports nothing, because a warning
+    shown every time teaches the reader to skip it. The node names are
+    listed -- they are few and they say *where* the hole is -- and the
+    clause is dropped entirely, not rendered empty, when there are none.
+    """
+    if not result.unresolved_nodes and not result.unresolved_leaves:
+        return None
+    named = (
+        f"; nodes: {', '.join(result.unresolved_nodes)}"
+        if result.unresolved_nodes
+        else ""
+    )
+    return (
+        f"incomplete read: {len(result.unresolved_nodes)} node(s) and "
+        f"{len(result.unresolved_leaves)} leaf/leaves did not answer{named}"
+    )
