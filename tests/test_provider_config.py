@@ -3,6 +3,8 @@ from pathlib import Path
 
 from wing_parser.classifier.provider import (
     DEFAULT_CONFIG,
+    has_usable_key,
+    is_placeholder_key,
     load_config,
     make_provider,
     resolve,
@@ -132,3 +134,55 @@ def test_anthropic_adapter_takes_a_pasted_key_too(tmp_path):
     provider = make_provider(load_config(target))
     assert isinstance(provider, AnthropicProvider)
     assert provider.api_key == "sk-ant-pasted"
+
+
+# -- placeholder keys are not keys (docs/tech-debt.md#d-30) --------------
+#
+# The repo ships fill-me-in markers in two places: `provider.yaml` at the
+# root (`api_key: PASTE_KEY_DEEPSEEK_VAO_DAY`) and
+# `docs/user-manual/04-cau-hinh-model.md` (`api_key: sk-xxxxxxxx...`).
+# Both are non-empty, so a bare truthiness test calls them configured and
+# the operator only learns otherwise when the first model call fails.
+
+
+def test_the_repos_own_provider_yaml_placeholder_is_not_a_key(tmp_path,
+                                                              monkeypatch):
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    target = tmp_path / "provider.yaml"
+    target.write_text(
+        "provider: openai-compat\napi_key: PASTE_KEY_DEEPSEEK_VAO_DAY\n",
+        encoding="utf-8",
+    )
+    assert is_placeholder_key("PASTE_KEY_DEEPSEEK_VAO_DAY") is True
+    assert has_usable_key(load_config(target)) is False
+
+
+def test_the_user_manuals_placeholder_is_not_a_key(tmp_path, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    target = tmp_path / "provider.yaml"
+    target.write_text(
+        "api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxx\n", encoding="utf-8"
+    )
+    assert has_usable_key(load_config(target)) is False
+
+
+def test_a_real_looking_pasted_key_is_usable(tmp_path):
+    target = tmp_path / "provider.yaml"
+    target.write_text('api_key: "sk-9f3ad2e1"\n', encoding="utf-8")
+    assert is_placeholder_key("sk-9f3ad2e1") is False
+    assert has_usable_key(load_config(target)) is True
+
+
+def test_an_env_key_rescues_a_placeholder_file(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-from-env")
+    target = tmp_path / "provider.yaml"
+    target.write_text(
+        "provider: openai-compat\napi_key: PASTE_KEY_DEEPSEEK_VAO_DAY\n",
+        encoding="utf-8",
+    )
+    assert has_usable_key(load_config(target)) is True
+
+
+def test_no_key_anywhere_is_not_usable(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    assert has_usable_key(DEFAULT_CONFIG) is False

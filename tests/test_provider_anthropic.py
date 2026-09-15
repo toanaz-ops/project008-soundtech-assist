@@ -45,3 +45,12 @@ def test_parse_call_carries_flat_model(fake_sdk):
     fields = output_format.model_fields
     assert set(fields) == {"kind", "confidence"}
     assert fake_sdk["max_tokens"] >= 4096  # thinking headroom, per llm.py:84-91
+
+
+def test_a_placeholder_key_is_refused_before_the_wire(monkeypatch):
+    """docs/tech-debt.md#d-30 -- the user manual's `sk-xxxx...` marker."""
+    monkeypatch.setenv("NOPE_KEY", "sk-xxxxxxxxxxxxxxxxxxxxxxxx")
+    provider = AnthropicProvider(model="m", api_key_env="NOPE_KEY")
+    with pytest.raises(RuntimeError) as excinfo:
+        provider.complete_json("s", "u", SCHEMA)
+    assert "no API key" in str(excinfo.value)

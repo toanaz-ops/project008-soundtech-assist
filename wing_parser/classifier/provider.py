@@ -161,6 +161,35 @@ def resolve(config: ProviderConfig) -> ProviderConfig:
     )
 
 
+# Fill-me-in markers the repo itself ships: `provider.yaml` at the root
+# carries `api_key: PASTE_KEY_DEEPSEEK_VAO_DAY`, and
+# docs/user-manual/04-cau-hinh-model.md shows `api_key: sk-xxxxxxxx...`.
+# Both are non-empty, so a truthiness test calls them configured and the
+# operator only finds out at the first model call
+# (docs/tech-debt.md#d-30). Matched case-insensitively on the stripped
+# value; `<` catches the `<your key>` shape docs tend to grow.
+KEY_PLACEHOLDER_PREFIXES = ("paste", "sk-xxx", "<")
+
+
+def is_placeholder_key(value: str) -> bool:
+    """True for an empty key or one of the repo's own fill-me-in markers."""
+    candidate = value.strip().lower()
+    return not candidate or candidate.startswith(KEY_PLACEHOLDER_PREFIXES)
+
+
+def has_usable_key(config: ProviderConfig) -> bool:
+    """Could this config authenticate a call, without making one?
+
+    Mirrors `make_provider`'s own precedence -- a pasted `api_key` beats
+    `api_key_env` -- and rejects the placeholders at both sites, so a
+    half-filled provider.yaml still falls through to the env var.
+    """
+    resolved = resolve(config)
+    if not is_placeholder_key(resolved.api_key):
+        return True
+    return not is_placeholder_key(os.environ.get(resolved.api_key_env, ""))
+
+
 def make_provider(config: ProviderConfig):
     resolved = resolve(config)
     if resolved.name == "anthropic":

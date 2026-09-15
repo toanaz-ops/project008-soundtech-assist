@@ -42,17 +42,27 @@ class KeyStatusLine(QLabel):
 
 
 def _key_configured() -> bool:
-    """Cheap and offline: does the effective provider config carry a key?
+    """Cheap and offline: does the effective config carry a *real* key?
 
-    A pasted api_key in provider.yaml wins, else its api_key_env. A
-    WING_PROVIDER_CONFIG naming a missing file counts as unconfigured,
-    not as a crash -- this line is a hint, not a gate.
+    $WING_PROVIDER_CONFIG wins outright -- it is the pin the Settings
+    dialog drops after a save, and a pin naming a missing file counts as
+    unconfigured, not as a crash: this line is a hint, not a gate. With
+    no pin the knowledge-dir copy is read, which is where the dialog
+    writes and what a first run that never saved from here would miss;
+    ./provider.yaml and the defaults stay behind it, walked by
+    `load_config(None)`. A placeholder value ("PASTE_KEY..." and
+    friends) counts as unconfigured, not as a key -- see
+    `provider.is_placeholder_key` and docs/tech-debt.md#d-30.
     """
+    from wing_parser import config
     from wing_parser.classifier import provider
 
+    pinned = bool(os.environ.get(provider.ENV_VAR))
+    saved = config.knowledge_dir() / "provider.yaml"
     try:
-        loaded = provider.load_config(None)
-    except ValueError:
+        loaded = provider.load_config(
+            None if pinned or not saved.exists() else saved
+        )
+    except (OSError, ValueError):
         return False
-    resolved = provider.resolve(loaded)
-    return bool(loaded.api_key) or bool(os.environ.get(resolved.api_key_env))
+    return provider.has_usable_key(loaded)

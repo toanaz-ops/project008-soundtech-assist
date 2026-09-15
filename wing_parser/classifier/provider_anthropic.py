@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import os
 
+from wing_parser.classifier.provider import is_placeholder_key
+
 EXTRA_HINT = (
     "talking to Claude needs the anthropic package. "
     "Install it with:  pip install -e .[llm]"
@@ -37,7 +39,9 @@ class AnthropicProvider:
 
     def complete_json(self, system: str, user: str, schema: dict) -> dict:
         key = self.api_key or os.environ.get(self.api_key_env, "")
-        if not key:
+        # A placeholder is as useless as no key at all, and saying so
+        # here beats a 401 from the far end (docs/tech-debt.md#d-30).
+        if is_placeholder_key(key):
             raise RuntimeError(
                 f"no API key: paste api_key: into provider.yaml or set "
                 f"{self.api_key_env!r}"
