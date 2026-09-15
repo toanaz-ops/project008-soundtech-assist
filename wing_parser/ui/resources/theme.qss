@@ -132,6 +132,33 @@ QPushButton[azStyle="danger"]:pressed {
     color: $danger;
 }
 
+/* -- the live lamp ----------------------------------------------------- */
+
+/* The Console page's connection lamp (design spec S6): one QLabel whose
+   azStyle names the state it is in -- faded disconnected, warn while a
+   call runs, ok connected, danger error/lost. Qt resolves the property
+   selector at polish, which theme/widgets.py:17-22 forces; these four
+   rules are the other half of that pair. Without them set_style on a
+   QLabel resolves to NOTHING -- no rule matches, the lamp keeps the
+   plain $text colour, and it says nothing at all while every test
+   that only reads the property stays green. */
+
+QLabel[azStyle="faded"] {
+    color: $faded;
+}
+
+QLabel[azStyle="warn"] {
+    color: $warn;
+}
+
+QLabel[azStyle="ok"] {
+    color: $ok;
+}
+
+QLabel[azStyle="danger"] {
+    color: $danger;
+}
+
 /* -- containers ------------------------------------------------------- */
 
 QGroupBox {

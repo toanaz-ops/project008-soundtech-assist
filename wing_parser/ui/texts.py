@@ -97,6 +97,22 @@ TEXTS: dict[str, str] = {
     "import.cancelled": "Cancelled — nothing was applied.",
     "import.timeout": "The model did not answer within {seconds} s.",
     "import.busy": "A model request is already running — cancel it or wait.",
+    "console.address": "Console",
+    "console.address_hint": "IP address or hostname",
+    "console.connect": "Connect",
+    "console.disconnect": "Disconnect",
+    "console.cancel": "Cancel",
+    "console.lamp": "●",
+    "console.identity": "{name} · {model} · firmware {firmware}",
+    "console.connecting": "Asking {host} who it is...",
+    "console.cancelled": "Cancelled — nothing was read.",
+    "console.timeout": (
+        "No reply from {host} within {seconds} s — check the address "
+        "and that the desk is on this network."
+    ),
+    "console.failed": "Cannot reach {host}: {error}",
+    "console.busy": "A console call is already running — cancel it or wait.",
+    "console.no_address": "Type a console address first — an IP or a name.",
     "menu.open": "&Open...",
     "menu.open_title": "Open a WING scene",
     "menu.save_title": "Save the edited scene",
