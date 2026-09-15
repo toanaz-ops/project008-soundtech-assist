@@ -72,6 +72,12 @@ class DiscoveryPanel(CallPanel):
         top.addWidget(Caption(text("console.discovery")))
         top.addWidget(self.discover_button)
         top.addWidget(self.cancel_button)
+        # The trailing stretch is what keeps the button beside its own
+        # caption: without it the row's spare width goes INTO the button
+        # (measured on the task-13 page grab -- a 226 px "Discover"
+        # floating in the middle of the panel, half a screen from the
+        # word it belongs to). It costs nothing when the panel is narrow.
+        top.addStretch(1)
 
         layout = QVBoxLayout(self)
         layout.addLayout(top)
@@ -151,6 +157,7 @@ class DiscoveryPanel(CallPanel):
         actions = allowed_actions(self._state)
         self.discover_button.setEnabled("discover" in actions)
         self.rerun_button.setEnabled("rerun" in actions and self._has_unresolved)
+        self.cancel_button.setEnabled("cancel" in actions)
 
     def _arrived(self, watch_list) -> None:
         self.set_state(LiveState.CONNECTED)

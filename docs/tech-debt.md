@@ -470,6 +470,22 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     has to agree with whichever is chosen.
   - status: open
 
+- **D-40** `page_base.EmptyState` is now reachable only from a test
+  - owner: machine-doable
+  - evidence: task 13 (GUI wave 2) filled the last placeholder slot --
+    `main_window.py` builds a real `ConsolePage` -- so nothing in
+    `wing_parser/` constructs `EmptyState` any more. Its only live caller
+    is `tests/test_ui_console.py::test_wiring_a_page_without_the_signals_connects_nothing`,
+    which uses it as a widget that has none of the three console signals.
+    Its two texts keys (`empty.open_hint`, `empty.open_button`) and its
+    `open_requested` signal are unused with it.
+  - close: decide between deleting `page_base.py` plus those two keys (and
+    giving that test a plain `QWidget`), and keeping it as the documented
+    placeholder for the next page that arrives over several tasks. Do not
+    half-delete: `test_ui_texts.py::test_known_keys_resolve` asserts
+    `empty.open_hint` resolves.
+  - status: open
+
 ---
 
 ## Appendix — rulings preserved, not debt

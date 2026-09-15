@@ -11,9 +11,11 @@ is a bug, and this makes it fail loudly instead of freezing quietly.
 `pulling` and `lost` are states of their own, not flags on `connected`:
 `take_snapshot` runs its own walk plus ~25,062 leaf reads and every
 other action must be refused while it runs, and `lost` differs from
-`error` in that the event list stays on screen (a watch that lost the
-desk mid-stream still has everything it already collected) and a
-reconnect is one click away rather than requiring a reset first.
+`error` in that the event list stays on screen -- a watch that lost the
+desk mid-stream still has everything it already collected. That is now
+the WHOLE difference: task 13 ruled that `error` reconnects in one
+click too, so the two states hold identical rows here and only the view
+tells them apart.
 """
 
 from __future__ import annotations
@@ -47,20 +49,55 @@ class LiveState(Enum):
 #                                 (test_lost_is_not_error_because_it_still_allows_reconnect)
 # Every other row below is a literal drawn arrow. Anything not listed
 # here is illegal and transition() raises for it.
+#
+# Five rows are task 13's, added when the page that fires these events
+# was finally assembled and the two halves of this module were made to
+# agree (orchestrator ruling, disclosed here as asked):
+#   (ERROR, "connect")         -- RULED: error reconnects in one click,
+#                                 like lost. It no longer has to reset
+#                                 first, which is why `error` and `lost`
+#                                 now hold the same rows; what still
+#                                 separates them is the view, not this
+#                                 table (live_watch_bar.py:80, and the
+#                                 event list `lost` keeps on screen).
+#   (WATCHING, "disconnect")   -- a MISMATCH, not a new feature:
+#                                 _ACTIONS[WATCHING] has offered
+#                                 `disconnect` since task 1 and
+#                                 ConnectBar's Disconnect button is live
+#                                 there, so the page's own transition()
+#                                 would have raised on that click.
+#   (CONNECTING, "cancel")     -- the same mismatch, the other way: the
+#   (WALKING, "cancel")           Cancel button is the ONLY way out of
+#   (PULLING, "cancel")           the three busy states and had a row in
+#                                 neither half. The targets are exactly
+#                                 the panels' own `_cancel_fallback`
+#                                 (live_connect_bar.py:149-152,
+#                                 live_discovery.py:120-123,
+#                                 live_snapshot.py:169-172).
+# The rule those four enforce, checked by
+# test_every_button_driven_event_is_offered_by_the_state_it_fires_from:
+# every event a state accepts that a BUTTON fires must also be in that
+# state's _ACTIONS. `ok`, `fail` and `lost` are outcomes a worker
+# reports, not buttons, and are deliberately absent from _ACTIONS.
 _TABLE: dict[tuple[LiveState, str], LiveState] = {
     (LiveState.DISCONNECTED, "connect"): LiveState.CONNECTING,
     (LiveState.CONNECTING, "ok"): LiveState.CONNECTED,
     (LiveState.CONNECTING, "fail"): LiveState.ERROR,
+    (LiveState.CONNECTING, "cancel"): LiveState.DISCONNECTED,
     (LiveState.CONNECTED, "walk"): LiveState.WALKING,
     (LiveState.CONNECTED, "pull"): LiveState.PULLING,
     (LiveState.CONNECTED, "watch"): LiveState.WATCHING,
     (LiveState.CONNECTED, "disconnect"): LiveState.DISCONNECTED,
     (LiveState.WALKING, "ok"): LiveState.CONNECTED,
     (LiveState.WALKING, "fail"): LiveState.ERROR,
+    (LiveState.WALKING, "cancel"): LiveState.CONNECTED,
     (LiveState.PULLING, "ok"): LiveState.CONNECTED,
     (LiveState.PULLING, "fail"): LiveState.ERROR,
+    (LiveState.PULLING, "cancel"): LiveState.CONNECTED,
     (LiveState.WATCHING, "stop"): LiveState.CONNECTED,
     (LiveState.WATCHING, "lost"): LiveState.LOST,
+    (LiveState.WATCHING, "disconnect"): LiveState.DISCONNECTED,
+    (LiveState.ERROR, "connect"): LiveState.CONNECTING,
     (LiveState.ERROR, "reset"): LiveState.DISCONNECTED,
     (LiveState.ERROR, "disconnect"): LiveState.DISCONNECTED,
     (LiveState.LOST, "connect"): LiveState.CONNECTING,
@@ -68,21 +105,22 @@ _TABLE: dict[tuple[LiveState, str], LiveState] = {
     (LiveState.LOST, "disconnect"): LiveState.DISCONNECTED,
 }
 
-# One row per state: which page actions its buttons enable. `walking`
-# and `pulling` refuse everything -- the busy states above forbid
-# starting a second action while one is already in flight.
+# One row per state: which page actions its buttons enable. The three
+# busy states refuse everything but `cancel` -- they forbid starting a
+# second action while one is in flight, and Cancel is the one way out of
+# them. Action names, not event names: `discover` and `rerun` are two
+# buttons firing the one `walk` event, and `export` fires no event at
+# all (it writes a file; the desk does not move).
 _ACTIONS: dict[LiveState, frozenset[str]] = {
     LiveState.DISCONNECTED: frozenset({"connect"}),
-    LiveState.CONNECTING: frozenset(),
+    LiveState.CONNECTING: frozenset({"cancel"}),
     LiveState.CONNECTED: frozenset(
         {"disconnect", "discover", "pull", "watch", "export", "rerun"}
     ),
-    LiveState.WALKING: frozenset(),
-    LiveState.PULLING: frozenset(),
+    LiveState.WALKING: frozenset({"cancel"}),
+    LiveState.PULLING: frozenset({"cancel"}),
     LiveState.WATCHING: frozenset({"stop", "disconnect", "export"}),
-    # error needs a reset back to disconnected before reconnecting --
-    # only lost (see module docstring) skips that step.
-    LiveState.ERROR: frozenset({"disconnect"}),
+    LiveState.ERROR: frozenset({"connect", "disconnect"}),
     LiveState.LOST: frozenset({"connect", "disconnect"}),
 }
 

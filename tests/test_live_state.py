@@ -19,6 +19,7 @@ ALL_EVENTS = (
     "connect",
     "ok",
     "fail",
+    "cancel",
     "disconnect",
     "reset",
     "walk",
@@ -44,6 +45,11 @@ DOCUMENTED = {
     (LiveState.PULLING, "fail"): LiveState.ERROR,
     (LiveState.WATCHING, "stop"): LiveState.CONNECTED,
     (LiveState.WATCHING, "lost"): LiveState.LOST,
+    (LiveState.WATCHING, "disconnect"): LiveState.DISCONNECTED,
+    (LiveState.CONNECTING, "cancel"): LiveState.DISCONNECTED,
+    (LiveState.WALKING, "cancel"): LiveState.CONNECTED,
+    (LiveState.PULLING, "cancel"): LiveState.CONNECTED,
+    (LiveState.ERROR, "connect"): LiveState.CONNECTING,
     (LiveState.ERROR, "reset"): LiveState.DISCONNECTED,
     (LiveState.ERROR, "disconnect"): LiveState.DISCONNECTED,
     (LiveState.LOST, "connect"): LiveState.CONNECTING,
@@ -75,22 +81,58 @@ def test_an_illegal_pair_raises_naming_the_state_and_the_event():
 
 def test_allowed_actions_is_pinned_for_every_state():
     assert allowed_actions(LiveState.DISCONNECTED) == frozenset({"connect"})
-    assert allowed_actions(LiveState.CONNECTING) == frozenset()
+    assert allowed_actions(LiveState.CONNECTING) == frozenset({"cancel"})
     assert allowed_actions(LiveState.CONNECTED) == frozenset(
         {"disconnect", "discover", "pull", "watch", "export", "rerun"}
     )
-    assert allowed_actions(LiveState.WALKING) == frozenset()
-    assert allowed_actions(LiveState.PULLING) == frozenset()
+    assert allowed_actions(LiveState.WALKING) == frozenset({"cancel"})
+    assert allowed_actions(LiveState.PULLING) == frozenset({"cancel"})
     assert allowed_actions(LiveState.WATCHING) == frozenset(
         {"stop", "disconnect", "export"}
     )
-    assert allowed_actions(LiveState.ERROR) == frozenset({"disconnect"})
+    assert allowed_actions(LiveState.ERROR) == frozenset(
+        {"connect", "disconnect"}
+    )
     assert allowed_actions(LiveState.LOST) == frozenset({"connect", "disconnect"})
 
 
-def test_lost_is_not_error_because_it_still_allows_reconnect():
-    assert transition(LiveState.LOST, "connect") is LiveState.CONNECTING
-    assert "connect" in allowed_actions(LiveState.LOST)
-    # error, by contrast, cannot re-connect straight away -- it must
-    # reset (or disconnect) back to disconnected first.
-    assert "connect" not in allowed_actions(LiveState.ERROR)
+def test_error_and_lost_both_reconnect_in_one_click():
+    """Task-13 orchestrator ruling; `error` used to need a reset first.
+
+    Two failed states offering the same way back, so what separates them
+    is no longer in this table at all -- it is the view: `lost` keeps
+    the events it already collected on screen and shows Reconnect
+    (`live_watch_bar.py:80`), `error` shows the failure line. A test
+    that asserted the difference HERE would now be asserting a
+    difference the machine does not make.
+    """
+    for state in (LiveState.LOST, LiveState.ERROR):
+        assert transition(state, "connect") is LiveState.CONNECTING
+        assert "connect" in allowed_actions(state)
+
+
+def test_every_button_driven_event_is_offered_by_the_state_it_fires_from():
+    """The two halves of the table must agree, or a page wedges.
+
+    `_ACTIONS` enables a button; `_TABLE` accepts the event that button
+    fires. Both mismatches are real bugs and both were present before
+    task 13: `watching` offered Disconnect with no row to accept it (the
+    page's `transition` would have raised on the click), and `cancel`
+    had a row in neither half although Cancel is the ONLY way out of the
+    three busy states. `ok`, `fail` and `lost` are outcomes a worker
+    reports rather than buttons, and `walk` is fired by two buttons
+    whose action names are `discover` and `rerun`, so the mapping below
+    is written out rather than assumed to be identity.
+    """
+    fired_by = {
+        "connect": "connect", "disconnect": "disconnect",
+        "stop": "stop", "watch": "watch", "cancel": "cancel",
+        "pull": "pull", "walk": "discover",
+    }
+    for (state, event), _target in DOCUMENTED.items():
+        action = fired_by.get(event)
+        if action is None:
+            continue                    # an outcome, not a button
+        assert action in allowed_actions(state), (
+            f"{state.value} accepts {event!r} but enables no button for it"
+        )

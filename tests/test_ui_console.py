@@ -137,7 +137,10 @@ def test_a_timeout_shows_one_error_line_naming_the_host(qt_app, settle):
         assert HOST in line and "0 s" in line
         assert bar.lamp.property("azStyle") == "danger"
         assert isinstance(failures[0], CallTimedOut)
-        assert not bar.connect_button.isEnabled(), "error needs a reset first"
+        # Task-13 ruling: `error` reconnects in one click, like `lost`
+        # -- and a backstop that fired is exactly when he wants to try
+        # again rather than hunt for a reset.
+        assert bar.connect_button.isEnabled(), "error reconnects in one click"
     finally:
         gate.set()
 
@@ -626,7 +629,7 @@ def test_export_writes_through_save_as_and_remembers_the_exported_path(
     import json
 
     from wing_parser.edit import pointer
-    from wing_parser.ui import live_snapshot
+    from wing_parser.ui import live_export
     from wing_parser.ui.session import Session
 
     panel = _snapshot_panel(_replaying(vu_result))
@@ -638,7 +641,7 @@ def test_export_writes_through_save_as_and_remembers_the_exported_path(
     patch = window.session.changes()[0]
 
     out = tmp_path / "exported.snap"
-    monkeypatch.setattr(live_snapshot.QFileDialog, "getSaveFileName",
+    monkeypatch.setattr(live_export.QFileDialog, "getSaveFileName",
                         lambda *args, **kwargs: (str(out), ""))
     assert panel.export_now()
 
@@ -667,7 +670,7 @@ def test_a_pulled_session_is_not_in_the_recent_menu_before_export(
 def test_the_export_dialog_suggests_a_sanitised_desk_name(
         qt_app, settle, monkeypatch, vu_result):
     """A desk named `FOH/Monitors` must not propose a path with a directory."""
-    from wing_parser.ui import live_snapshot
+    from wing_parser.ui import live_export
 
     identity = dataclasses.replace(_identity(), name="FOH/Monitors")
     panel = _snapshot_panel(_replaying(vu_result), identity=identity)
@@ -681,7 +684,7 @@ def test_the_export_dialog_suggests_a_sanitised_desk_name(
         return "", ""
 
     monkeypatch.setattr(
-        live_snapshot.QFileDialog, "getSaveFileName", _capture)
+        live_export.QFileDialog, "getSaveFileName", _capture)
     assert not panel.export_now(), "a cancelled dialog writes nothing"
     assert suggested, "the dialog was never offered a suggestion"
     assert "FOH_Monitors" in suggested[0], suggested[0]
@@ -694,23 +697,27 @@ def test_the_export_dialog_suggests_a_sanitised_desk_name(
 # then connects three signals, and neither branch was pinned. Both are now.
 
 
-def test_wiring_the_placeholder_console_page_connects_nothing(
+def test_wiring_a_page_without_the_signals_connects_nothing(
         qt_app, monkeypatch):
-    """Until task 13 the Console slot holds task 8's `EmptyState`.
+    """The no-op branch of the all-or-none contract.
 
-    `MainWindow.__init__` already calls `wire_console` on it, so the
-    window building at all is half the assertion; calling it again by
-    hand is the other half -- it must return quietly rather than raise
-    on the first missing signal.
+    Task 13 filled the Console slot with a real `ConsolePage`, so the
+    page this branch was written for -- task 8's `EmptyState` -- is no
+    longer in the window. The branch itself still has to hold: a widget
+    with none of the three signals must return quietly rather than raise
+    on the first missing one. `EmptyState` is still the widget it is
+    checked with, because that is the one this guard was measured
+    against.
     """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     from wing_parser.ui import live_wiring
+    from wing_parser.ui.console_page import ConsolePage
     from wing_parser.ui.main_window import MainWindow
     from wing_parser.ui.page_base import EmptyState
 
     window = MainWindow(None)
-    assert isinstance(window.pages["console"], EmptyState)
-    assert live_wiring.wire_console(window, window.pages["console"]) is None
+    assert isinstance(window.pages["console"], ConsolePage)
+    assert live_wiring.wire_console(window, EmptyState("x")) is None
     assert window.session is None
 
 
@@ -1145,3 +1152,346 @@ def test_the_shutdown_wait_outlasts_the_slowest_interval_the_spin_offers():
 
     assert WAIT_MS > MAX_INTERVAL * 1000, "shutdown gives up mid-sleep"
     assert WAIT_MS >= (MAX_INTERVAL + 1.0) * 1000, "and one round beyond it"
+
+
+# -- ConsolePage: the assembly, and one table driving every button ----------
+#
+# Task 13. The page owns exactly ONE `LiveState`; the four panels never
+# carry a state the page did not put there through `set_state`, and the
+# page contains no `setEnabled` of its own at all. That is the property
+# `test_every_button_matches_allowed_actions_in_every_state` exhausts --
+# eight states against every QPushButton the page really contains (the
+# set is read off `findChildren`, so a button added later and left out
+# of the map below fails this test rather than escaping it).
+#
+# Two of those buttons are NOT table-driven and are asserted against the
+# loaded scene instead: Export and Open Doctor, per the task-11
+# orchestrator ruling -- writing a file and switching page are not desk
+# actions, and gating them on `allowed_actions` greyed out Export in
+# `ERROR`, exactly when the scene in memory is the one thing worth
+# saving (`live_snapshot.py:101-118`).
+
+
+def _console_desk(**kwargs):
+    """A desk that answers the handshake, a walk and a pull.
+
+    `unresolved` is on by default so the Rerun button's OWN precondition
+    (`_has_unresolved`, `live_discovery.py:159`) is met and the state
+    table is then the only thing left deciding it.
+    """
+    from tests.fake_desk import FakeDesk
+
+    fields = dict(identity=_identity(), leaves=_leaves(3),
+                  strips={"ch": 1}, unresolved=UNRESOLVED)
+    fields.update(kwargs)
+    return FakeDesk(**fields)
+
+
+def _page(desk=None, *, transport=None, **kwargs):
+    from wing_parser.ui.console_page import ConsolePage
+
+    if transport is None:
+        transport = (_console_desk() if desk is None else desk).transport()
+    return ConsolePage(transport=transport, **kwargs)
+
+
+def _armed_page(session=None):
+    """A page whose every non-state precondition is already satisfied.
+
+    Start needs a watch list and Rerun needs unresolved families; with
+    both handed over, `allowed_actions` is the ONLY thing left that can
+    move either button, which is what the exhaustive test measures.
+    """
+    desk = _console_desk()
+    page = _page(desk)
+    watch_list = desk.transport().walk(HOST)
+    page.discovery.set_result(watch_list)
+    page.events.set_watch_list(watch_list)
+    page.set_session(session)
+    return page
+
+
+def _table_driven(page):
+    """Every button whose enabled-ness is one `allowed_actions` name."""
+    return {
+        "connect": [page.connect_bar.connect_button,
+                    page.events.bar.reconnect_button],
+        "disconnect": [page.connect_bar.disconnect_button],
+        "discover": [page.discovery.discover_button],
+        "rerun": [page.discovery.rerun_button],
+        "pull": [page.snapshot.pull_button],
+        "watch": [page.events.bar.start_button],
+        "stop": [page.events.bar.stop_button],
+        "cancel": [page.connect_bar.cancel_button,
+                   page.discovery.cancel_button,
+                   page.snapshot.cancel_button],
+    }
+
+
+def test_the_page_builds_with_no_desk_and_no_session(qt_app):
+    """No transport, no scene, no network: construction alone.
+
+    `live_controller.REAL` is the default transport and touches nothing
+    until a call is actually started, so this builds the page exactly as
+    `MainWindow` does.
+    """
+    from wing_parser.ui.console_page import ConsolePage
+    from wing_parser.ui.live_state import LiveState
+
+    page = ConsolePage()
+    assert page.state is LiveState.DISCONNECTED
+    assert page.connect_bar.connect_button.isEnabled()
+    assert not page.snapshot.pull_button.isEnabled()
+    assert not page.snapshot.export_button.isEnabled()
+    page.set_session(None)
+    assert page.snapshot.loaded_label.text() == ""
+
+
+def test_every_button_matches_allowed_actions_in_every_state(qt_app, vu_path):
+    from PySide6.QtWidgets import QPushButton
+
+    from wing_parser.ui.live_state import LiveState, allowed_actions
+    from wing_parser.ui.session import Session
+
+    for session in (None, Session.open(vu_path)):
+        page = _armed_page(session)
+        driven = _table_driven(page)
+        gated = [page.snapshot.export_button, page.snapshot.doctor_button]
+
+        covered = {id(button) for row in driven.values() for button in row}
+        covered |= {id(button) for button in gated}
+        missed = [button.text() for button in page.findChildren(QPushButton)
+                  if id(button) not in covered]
+        assert missed == [], "a button nothing in this test accounts for"
+
+        for state in LiveState:
+            page._apply_state(state)
+            actions = allowed_actions(state)
+            for action, row in driven.items():
+                for button in row:
+                    assert button.isEnabled() is (action in actions), (
+                        f"{button.text()!r} in {state.value} "
+                        f"(actions: {sorted(actions)})")
+            for button in gated:
+                assert button.isEnabled() is (session is not None), (
+                    f"{button.text()!r} is gated on the scene, not on "
+                    f"{state.value}")
+
+
+def test_an_illegal_transition_raises_rather_than_leaving_a_stale_page(qt_app):
+    """`transition` raises, and the page is untouched when it does.
+
+    A page that swallowed the error would sit in a state its own buttons
+    disagree with; one that half-applied it would be worse.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    page = _page()
+    with pytest.raises(ValueError) as excinfo:
+        page._fire("watch")
+    assert "disconnected" in str(excinfo.value)
+    assert "watch" in str(excinfo.value)
+    assert page.state is LiveState.DISCONNECTED
+    assert page.connect_bar.connect_button.isEnabled()
+    assert not page.snapshot.pull_button.isEnabled()
+
+
+def test_cancel_restores_the_buttons(qt_app, settle):
+    """Cancel is the only way out of a busy state, for the whole page.
+
+    The three busy states enable nothing else, so a Cancel the page did
+    not hear would strand every panel greyed out.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    gate = threading.Event()
+
+    def stuck(host):
+        gate.wait(timeout=5.0)
+        return _identity()
+
+    transport = dataclasses.replace(
+        _console_desk().transport(), identity=stuck)
+    page = _page(transport=transport)
+    page.connect_bar.address.setCurrentText(HOST)
+
+    page.connect_bar.connect_button.click()
+    assert page.state is LiveState.CONNECTING
+    assert not page.discovery.discover_button.isEnabled()
+    assert page.connect_bar.cancel_button.isEnabled()
+
+    page.connect_bar.cancel_button.click()
+    assert page.state is LiveState.DISCONNECTED
+    assert page.connect_bar.connect_button.isEnabled()
+    assert not page.connect_bar.cancel_button.isEnabled()
+    gate.set()
+    settle(lambda: False, limit_s=0.2)   # let the worker return and die
+
+
+def test_a_refused_start_leaves_the_page_where_it_was(qt_app):
+    """An empty address starts no call -- and moves no state.
+
+    Firing `connect` anyway would put the page in `connecting`, whose
+    action set is Cancel alone, with no call running for Cancel to end.
+    """
+    from wing_parser.ui.live_state import LiveState
+    from wing_parser.ui.texts import text
+
+    page = _page()
+    page.connect_bar.address.setCurrentText("   ")
+    page.connect_bar.connect_button.click()
+    assert page.state is LiveState.DISCONNECTED
+    assert page.connect_bar.status_label.text() == text("console.no_address")
+
+
+def test_a_connect_carries_the_host_to_every_panel(qt_app, settle):
+    from wing_parser.ui.live_state import LiveState
+
+    page = _page()
+    page.connect_bar.address.setCurrentText(HOST)
+    remembered = []
+    page.host_connected.connect(remembered.append)
+
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+    assert remembered == [HOST]
+    assert page.discovery._host == HOST
+    assert page.snapshot._host == HOST
+    assert page.events._host == HOST
+    assert page.snapshot._identity == _identity()
+
+
+def test_a_walk_arms_the_watch_and_a_failed_one_reddens_the_page(
+        qt_app, settle):
+    """Discovery's two outcomes, both reaching the page's one state."""
+    from wing_parser.ui.live_state import LiveState
+
+    page = _page()
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED
+                  and page.events._watch_list is not None)
+    assert page.events.bar.start_button.isEnabled()
+
+    def refuse(host):
+        raise OSError("no route to host")
+
+    page.discovery._transport = dataclasses.replace(
+        _console_desk().transport(), walk=refuse)
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.state is LiveState.ERROR)
+    assert page.connect_bar.lamp.property("azStyle") == "danger"
+    assert page.connect_bar.connect_button.isEnabled(), (
+        "error reconnects in one click, like lost")
+
+
+def test_the_page_re_emits_all_three_window_signals(
+        qt_app, settle, monkeypatch, tmp_path, vu_result):
+    """`wire_console`'s all-or-none contract, against the real page."""
+    from wing_parser.ui.live_state import LiveState
+
+    page = _page(transport=_replaying(vu_result))
+    window = _wired(monkeypatch, page)
+    window.switch_to("console")
+    page.snapshot.set_host(HOST)
+    page._apply_state(LiveState.CONNECTED)
+
+    page.snapshot.pull_button.click()
+    assert settle(lambda: window.session is not None), "no session arrived"
+    assert window.stack.currentWidget() is window.pages["console"], "D16"
+    assert page.state is LiveState.CONNECTED
+
+    exported = tmp_path / "pulled.snap"
+    page.snapshot.exported.emit(str(exported))
+    assert window._recent == [str(exported)]
+
+    page.snapshot.doctor_requested.emit()
+    assert window.stack.currentWidget() is window.pages["doctor"]
+
+
+def test_set_session_syncs_the_snapshot_panel(qt_app, vu_path):
+    """Orchestrator ruling: the page is a `set_session` consumer after all.
+
+    Not because the Console page needs the scene, but because a stale
+    one is worse: without this, Export on this page would write the
+    scene a pull left behind long after the window opened another file.
+    """
+    from wing_parser.ui.session import Session
+
+    page = _page()
+    session = Session.open(vu_path)
+    page.set_session(session)
+    assert page.snapshot._session is session
+    assert page.snapshot.export_button.isEnabled()
+    assert page.snapshot.doctor_button.isEnabled()
+    assert page.snapshot.loaded_label.text() != ""
+
+    page.set_session(None)
+    assert page.snapshot._session is None
+    assert not page.snapshot.export_button.isEnabled()
+    assert not page.snapshot.doctor_button.isEnabled()
+    assert page.snapshot.loaded_label.text() == ""
+
+
+def test_reconnect_from_lost_starts_a_new_handshake(qt_app, settle):
+    """Reconnect is a dead button unless the page hands it to the bar."""
+    from wing_parser.ui.live_state import LiveState
+
+    page = _page()
+    page.connect_bar.address.setCurrentText(HOST)
+    page._apply_state(LiveState.LOST)
+    assert page.events.bar.reconnect_button.isVisibleTo(page.events.bar)
+
+    page.events.bar.reconnect_button.click()
+    assert page.state is LiveState.CONNECTING
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+
+def test_disconnecting_out_of_a_watch_returns_the_page_to_disconnected(
+        qt_app):
+    """`watching` offers Disconnect, so the table has to accept it.
+
+    `_ACTIONS[WATCHING]` carried `disconnect` from task 1 while `_TABLE`
+    had no row for it: the button was live and the page's own
+    `transition` would have raised on the click.
+    """
+    from wing_parser.ui.live_state import LiveState
+
+    page = _page()
+    page._apply_state(LiveState.WATCHING)
+    assert page.connect_bar.disconnect_button.isEnabled()
+
+    page.connect_bar.disconnect_button.click()
+    assert page.state is LiveState.DISCONNECTED
+    assert page.connect_bar.connect_button.isEnabled()
+
+
+def test_the_window_offers_and_remembers_the_console_addresses(
+        qt_app, monkeypatch, tmp_path):
+    """Persisting is the window's job; the page only asks and answers.
+
+    Mirrors how `recent` is persisted (`window_state.py:36-38,90-100`) --
+    restored before first paint, remembered on a successful connect,
+    written back on close.
+    """
+    from wing_parser import config
+    from wing_parser.ui import state_store, window_state
+    from wing_parser.ui.console_page import ConsolePage
+    from wing_parser.ui.main_window import MainWindow
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    monkeypatch.setenv(config.ENV_VAR, str(tmp_path))
+    state_store.save(tmp_path, {"consoles": ["10.0.0.9"]})
+
+    window = MainWindow(None)
+    page = window.pages["console"]
+    assert isinstance(page, ConsolePage)
+    assert page.connect_bar.host() == "10.0.0.9", "most recent, offered"
+
+    page.host_connected.emit(HOST)
+    assert window._consoles == [HOST, "10.0.0.9"]
+    window_state.save_on_close(window)
+    assert state_store.load(tmp_path)["consoles"] == [HOST, "10.0.0.9"]

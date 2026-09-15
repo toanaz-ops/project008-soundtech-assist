@@ -22,6 +22,7 @@ transport default) but never `net` itself, the same rule every other
 
 from __future__ import annotations
 
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
 
 from wing_parser.ui import live_controller
@@ -40,12 +41,31 @@ class CallPanel(QWidget):
     when `CallPanel.__init__` runs).
     """
 
+    #: The exception that ended a call, untranslated. Hoisted here at
+    #: task 13 from `ConnectBar`, which had declared it alone: the page
+    #: has to leave `walking` and `pulling` on a failure exactly as it
+    #: leaves `connecting`, and without this the other two panels went
+    #: red on their own while the page sat busy with nothing running.
+    failed = Signal(object)
+
     def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
         super().__init__(parent)
         self._transport = transport or live_controller.REAL
         self._timeout = timeout
         self._state = LiveState.DISCONNECTED
         self._runner = CallRunner(self)
+
+    @property
+    def state(self) -> LiveState:
+        """The state this panel is wearing.
+
+        Read by `ConsolePage` (task 13) for one question only: did the
+        call this panel was just asked for actually START? A refused
+        start (no address, runner already busy) leaves the panel in its
+        idle state, and a page that fired the event anyway would strand
+        itself in a busy state with no call for Cancel to end.
+        """
+        return self._state
 
     def set_state(self, state: LiveState) -> None:
         """Wear `state`. Subclasses override, call `super()` first, then
@@ -69,16 +89,18 @@ class CallPanel(QWidget):
         return None
 
     def _fail(self, exc) -> None:
-        """The common tail of every failure path: state -> error.
+        """The common tail of every failure path: state -> error, said.
 
         A caller that also needs to report a line writes it first
         (a `_refused`-shaped method), then calls this; a timeout arrives
         from `ButtonRunner.on_timeout` with its line already reported
-        (`call_button.py:82-89`) and needs nothing more here. A subclass
-        with its own signal to emit (`ConnectBar.failed`) overrides this,
-        calls `super()._fail(exc)`, then emits.
+        (`call_button.py:82-89`) and needs nothing more here. The signal
+        is what the owner follows: a panel reddening its own lamp while
+        the page still believes a call is running is the failure this
+        replaced.
         """
         self.set_state(LiveState.ERROR)
+        self.failed.emit(exc)
 
     def _run_call(self, kind, function, *args, primary, cancel_button,
                    status, running, cancelled, timeout_text, busy_text,

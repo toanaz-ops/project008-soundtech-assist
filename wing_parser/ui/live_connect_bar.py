@@ -53,8 +53,7 @@ class ConnectBar(CallPanel):
     """Address, Connect/Disconnect/Cancel, lamp, identity readout."""
 
     connected = Signal(object)      # the WingIdentity the desk answered
-    failed = Signal(object)         # the exception, untranslated
-    disconnected = Signal()
+    disconnected = Signal()         # `failed` is CallPanel's, shared
 
     def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
         super().__init__(parent, transport=transport, timeout=timeout)
@@ -109,6 +108,11 @@ class ConnectBar(CallPanel):
         actions = allowed_actions(state)
         self.connect_button.setEnabled("connect" in actions)
         self.disconnect_button.setEnabled("disconnect" in actions)
+        # Cancel is table-driven too (task 13): `ButtonRunner` decides
+        # when it is SHOWN (call_button.py:59-60,70-73), the table
+        # decides when it can be pressed, and the two agree because
+        # `cancel` is allowed in exactly the busy states.
+        self.cancel_button.setEnabled("cancel" in actions)
 
     # -- connecting -------------------------------------------------------
 
@@ -162,15 +166,11 @@ class ConnectBar(CallPanel):
         self.connected.emit(identity)
 
     def _refused(self, exc) -> None:
+        """A refused handshake: its own line, then the shared red tail.
+
+        A timeout takes the other path, reaching `CallPanel._fail` from
+        `ButtonRunner.on_timeout` with its line already reported.
+        """
         self.status_label.setText(text("console.failed").format(
             host=self.host(), error=exc))
         self._fail(exc)
-
-    def _fail(self, exc) -> None:
-        """Both failure paths end here: red lamp, `failed` carrying `exc`.
-
-        `_refused` writes its own line first; a timeout arrives from
-        `ButtonRunner.on_timeout` with its line already reported.
-        """
-        super()._fail(exc)
-        self.failed.emit(exc)

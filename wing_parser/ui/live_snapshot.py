@@ -9,13 +9,15 @@ What this one adds is the only thing on the page producing a `Session`:
   reason that error exists (`live_controller.py:44-57`). A partial read
   is usable, so it loads, and `incomplete_report` becomes a *persistent*
   banner: a scene that is not the whole desk must never look complete.
-* **Export writes `Session.save_as`** (D3) -- the *patched* document
-  (`session.py:92-96` -> `_document()` at `:43-44`). The pull-time JSON
-  is kept beside it as `original`, Diff's "as pulled" baseline, and is
-  deliberately not what Export writes: that would drop every repair.
-* **No `set_session`.** `MainWindow._refresh` fans the session out to
-  every page defining one (`main_window.py:175-177`); this panel
-  produces sessions rather than consuming them.
+* **The scene it holds is the window's too** (task 13 ruling): this
+  panel produces sessions AND consumes one, because `ConsolePage`
+  forwards `MainWindow._refresh`'s fan-out (`main_window.py:175-177`)
+  -- a stale scene-loaded line beside a live Export is worse than the
+  coupling. The pulled session comes back round that loop, so
+  re-adopting the SAME object changes nothing; only a different one
+  clears the banner and `original`, facts about how this panel read the
+  desk rather than about the window's scene.
+* **Export lives in `live_export.py`** -- the `exported` signal stays.
 
 The window is reached by signal only (`live_wiring.py`) -- this module
 must not import `main_window` -- so those three signals are the contract.
@@ -25,16 +27,14 @@ from __future__ import annotations
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QFileDialog,
     QHBoxLayout,
     QLabel,
     QPushButton,
     QVBoxLayout,
 )
 
-from wing_parser.ui import live_controller
+from wing_parser.ui import live_controller, live_export
 from wing_parser.ui.live_call_panel import CallPanel
-from wing_parser.ui.live_export import export_name
 from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption, set_style
@@ -51,8 +51,7 @@ class SnapshotPanel(CallPanel):
         self._host = ""
         self._identity = None
         self._session = None
-        #: The pull-time JSON text (D3): Diff's baseline, never Export's.
-        self.original = ""
+        self.original = ""     # the pull-time JSON (D3): Diff's baseline
 
         self.pull_button = QPushButton(text("console.pull"))
         self.cancel_button = QPushButton(text("console.cancel"))
@@ -75,6 +74,7 @@ class SnapshotPanel(CallPanel):
         for button in (self.pull_button, self.cancel_button,
                        self.doctor_button, self.export_button):
             top.addWidget(button)
+        top.addStretch(1)       # natural widths, beside the caption
 
         layout = QVBoxLayout(self)
         layout.addLayout(top)
@@ -99,22 +99,34 @@ class SnapshotPanel(CallPanel):
         self._identity = identity
 
     def set_state(self, state: LiveState) -> None:
-        """Wear `state`: Pull follows the desk, the other two follow the scene.
+        """Wear `state`: Pull follows the desk, the other two the scene.
 
         Export and Open Doctor are **session-gated, not state-gated**
         (orchestrator ruling, task 11 review): writing a file and
         switching page are not desk actions, and gating Export on
-        `allowed_actions` greyed it out in `ERROR` -- i.e. after a second
-        pull failed, exactly when the scene already in memory is the one
-        thing worth saving. `live_state`'s `export` entries are left
-        alone; a table-driven test over this panel's buttons should read
-        these two as session-gated.
+        `allowed_actions` greyed it out in `ERROR` -- exactly when the
+        scene already in memory is the one thing worth saving. A
+        table-driven test over this panel's buttons reads these two as
+        session-gated.
         """
         super().set_state(state)
+        actions = allowed_actions(state)
         loaded = self._session is not None
-        self.pull_button.setEnabled("pull" in allowed_actions(state))
+        self.pull_button.setEnabled("pull" in actions)
+        self.cancel_button.setEnabled("cancel" in actions)
         self.export_button.setEnabled(loaded)
         self.doctor_button.setEnabled(loaded)
+
+    def set_session(self, session) -> None:
+        """Adopt the window's scene (task 13 ruling; module docstring)."""
+        if session is self._session:
+            return
+        self._session = session
+        self.original = ""
+        self.banner.setVisible(False)
+        self.loaded_label.setText("" if session is None else text(
+            "console.scene_loaded").format(findings=len(session.findings())))
+        self.set_state(self._state)
 
     # -- pulling ----------------------------------------------------------
 
@@ -147,23 +159,12 @@ class SnapshotPanel(CallPanel):
 
     def export_now(self) -> bool:
         """Write the patched scene where he chooses; False if nothing was."""
-        if self._session is None:
+        path, line = live_export.ask_and_save(self, self._session)
+        if line:
+            self.status_label.setText(line)
+        if path is None:
             return False
-        name, _ = QFileDialog.getSaveFileName(
-            self, text("console.export_title"),
-            export_name(self._session.path), text("menu.scene_filter"),
-        )
-        if not name:
-            return False
-        try:
-            self._session.save_as(name)
-        except OSError as exc:
-            # The session is untouched and still exportable elsewhere.
-            self.status_label.setText(
-                text("console.export_failed").format(file=name, error=exc))
-            return False
-        self.status_label.setText(text("console.exported").format(file=name))
-        self.exported.emit(name)
+        self.exported.emit(path)
         return True
 
     def _cancel_fallback(self) -> LiveState | None:
