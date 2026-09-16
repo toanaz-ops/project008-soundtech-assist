@@ -6,8 +6,9 @@ Not a promise, a scan (S8.2). Two rules, each an `ast` walk over every
 1. No import, static or dynamic, reaches `wing_parser.net.write` -- plain
    `import`/`from ... import` shapes, plus `importlib.import_module(...)`,
    `import_module(...)`, `__import__(...)` with a literal first argument
-   naming it (or `wing_parser.net` with `write` in a `fromlist`). A
-   computed name is a blind spot either way.
+   naming it (or `wing_parser.net` with `write` in a `fromlist`, or the
+   relative `".write"` against a literal `package`, which D-44 taught it
+   to resolve). A computed name is a blind spot either way.
 2. No write verb (`set`/`toggle`/`node_write`/`push`) is called on a name
    bound, in this module's own import table, from `wing_parser.net` --
    walked back through any `Attribute`/`Call` chain to its leftmost
@@ -30,6 +31,7 @@ are tracked; `client.WingClient(host).set(...)` in one expression IS caught.
 from __future__ import annotations
 
 import ast
+from importlib.util import resolve_name
 from pathlib import Path
 
 import wing_parser.ui as ui_package
@@ -88,6 +90,15 @@ def _dynamic_call_reaches_write(node: ast.Call) -> str | None:
     if not args or not isinstance(args[0], ast.Constant) or not isinstance(args[0].value, str):
         return None
     target = args[0].value
+    if target.startswith("."):      # D-44: relative, resolved like import_module does
+        pkg = args[1] if len(args) > 1 else next(
+            (kw.value for kw in node.keywords if kw.arg == "package"), None)
+        if not isinstance(pkg, ast.Constant) or not isinstance(pkg.value, str):
+            return None
+        try:
+            target = resolve_name(target, pkg.value)
+        except ImportError:         # more leading dots than the package has parts
+            return None
     if target == "wing_parser.net.write" or target.startswith("wing_parser.net.write."):
         return name
     if target != "wing_parser.net":
@@ -187,6 +198,20 @@ def test_the_scan_catches_a_planted_dynamic_import(tmp_path):
     assert len(offenders) == 2
     assert any(":2:" in o for o in offenders)
     assert any(":3:" in o for o in offenders)
+
+
+def test_the_scan_catches_a_planted_relative_dynamic_import(tmp_path):
+    """D-44: `.write` against a package is the same module, spelled shorter."""
+    planted = tmp_path / "planted_relative_import.py"
+    planted.write_text(
+        "import importlib\nimportlib.import_module('.write', 'wing_parser.net')\n"
+        "importlib.import_module('.write', package='wing_parser.net')\n",
+        encoding="utf-8",
+    )
+    offenders = find_write_imports(tmp_path)
+    assert len(offenders) == 2, offenders
+    assert any(":2:" in o for o in offenders), offenders
+    assert any(":3:" in o for o in offenders), offenders
 
 
 def test_the_scan_ignores_an_unrelated_dot_set_call(tmp_path):

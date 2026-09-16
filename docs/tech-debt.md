@@ -570,7 +570,18 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     comparing, the same way `importlib.import_module` itself does; add a
     planted-relative-import test alongside
     `test_the_scan_catches_a_planted_dynamic_import`.
-  - status: open
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 4) --
+    `_dynamic_call_reaches_write` (`tests/test_ui_live_is_read_only.py:93-101`)
+    now resolves a dot-leading target through `importlib.util.resolve_name`
+    against the literal second positional argument or the `package=`
+    keyword, and returns `None` only when that package is not a literal.
+    Pinned by `test_the_scan_catches_a_planted_relative_dynamic_import`
+    (`:203-214`), which plants both spellings and asserts 2 offenders; it
+    failed with `0 == 2` before the change. Note: the file is 225 lines,
+    past the ~200 task 14 held it to -- the enforced ceiling
+    (`tests/test_ui_house_style.py:173-184`) covers `wing_parser/ui/`
+    only, and trimming 25 lines here would have cost the S8 narrative
+    that documents the scan's rules and its remaining blind spots.
 
 - **D-45** The wheel drops a YAML the exe already carries
   - owner: machine-doable
