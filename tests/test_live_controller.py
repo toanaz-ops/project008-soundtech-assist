@@ -381,3 +381,19 @@ def test_the_suggested_name_is_a_bare_filename_with_no_directory():
         assert Path(name).name == name
         assert Path(name).parent == Path(".")
         assert not Path(name).is_absolute()
+
+
+@pytest.mark.parametrize("desk_name", ["FOH/Monitors", r"..\evil", "a:b"])
+def test_the_suggested_name_sanitises_a_desk_name_that_is_a_path(desk_name):
+    """D-43: the stem is whatever somebody typed into the desk.
+
+    `session_from_snapshot` makes this string the pulled `Session.path`,
+    and `menus.save_as` proposes its dialog from that same path -- so a
+    separator, a drive colon or a `..` reaching here reaches a Save
+    dialog as a directory nobody chose. Sanitised at the source, once.
+    """
+    name = suggested_name(dataclasses.replace(GIAQUY, name=desk_name), HOST)
+    assert Path(name).name == name
+    for bad in ("/", "\\", ":"):
+        assert bad not in name, name
+    assert name.startswith(("FOH_Monitors-", ".._evil-", "a_b-")), name

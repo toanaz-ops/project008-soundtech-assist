@@ -694,6 +694,34 @@ def test_the_export_dialog_suggests_a_sanitised_desk_name(
     assert "/" not in suggested[0] and "\\" not in suggested[0], suggested[0]
 
 
+def test_the_export_dialog_suggests_a_bare_name_for_a_file_opened_scene(
+        qt_app, monkeypatch, vu_path):
+    """I1: `set_session` gives the panel scenes that came from disk.
+
+    `console_page.set_session` syncs the window's session into
+    `SnapshotPanel`, which enables Export on any loaded scene -- so File
+    > Open > Console > Export reaches `export_name` with a real path,
+    not a pull's bare stem. Sanitising the whole string mangled the
+    directory into the filename; only the name is proposed now.
+    """
+    from wing_parser.ui import live_export
+    from wing_parser.ui.session import Session
+
+    panel = _snapshot_panel(None)
+    panel.set_session(Session.open(vu_path))
+
+    suggested = []
+
+    def _capture(parent, caption, directory, selected_filter):
+        suggested.append(directory)
+        return "", ""
+
+    monkeypatch.setattr(
+        live_export.QFileDialog, "getSaveFileName", _capture)
+    assert not panel.export_now(), "a cancelled dialog writes nothing"
+    assert suggested == ["example-Vu.snap"], suggested
+
+
 # -- the wiring itself, both halves of its contract --------------------------
 #
 # Review of task 11 (round 1): `wire_console` guards on `session_pulled` and

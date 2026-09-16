@@ -538,7 +538,19 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     supplied part only (e.g. `re.sub(r"[^\w.-]", "_", who)`) before it
     ever becomes a `Session.path`, and add a test with a desk name
     containing `/`, `\` and `..`.
-  - status: open
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 1) --
+    `suggested_name` (`wing_parser/ui/live_controller.py:169-172`) now
+    filters the stem through `re.sub(r"[^\w.\-]", "_", stem)` before it
+    becomes the `Session.path`, so `menus.save_as` can only ever derive
+    from a sanitised name. Pinned by
+    `test_the_suggested_name_sanitises_a_desk_name_that_is_a_path`
+    (`tests/test_live_controller.py:386-399`), parametrised over
+    `FOH/Monitors`, `..\evil` and `a:b`. The review also found the same
+    gap from the other side -- Export mangling a *file-opened* path --
+    and `live_export.export_name` (`live_export.py:43-49`) now proposes
+    `Path(path).name` only, pinned by
+    `test_the_export_dialog_suggests_a_bare_name_for_a_file_opened_scene`
+    (`tests/test_ui_console.py:697-722`).
 
 - **D-44** The read-only scan misses a relative dynamic import
   - owner: machine-doable

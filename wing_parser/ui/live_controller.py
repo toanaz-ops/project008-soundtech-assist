@@ -7,9 +7,8 @@ this module is the ONLY place under `wing_parser/ui/` that says `net`,
 and a test can drive the whole page against an in-memory desk
 (`tests/fake_desk.py`) with no socket anywhere (spec S7.1, S9.1).
 
-That the seam names five *read-only* calls and no others is also how
-spec S8 makes a write structurally impossible in this wave:
-`net/write.py` has no way in, because nothing here reaches for it.
+That the seam names five *read-only* calls and no others is how spec S8
+makes a write impossible in this wave: `net/write.py` has no way in.
 
 Failures pass through untouched: `query_identity`'s `TimeoutError`
 naming the host and the 2.0 s it waited (`identity.py:83`), and its
@@ -20,6 +19,7 @@ they are -- the `import_controller.read_with` precedent.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -159,17 +159,16 @@ def incomplete_report(result: SnapshotResult) -> str | None:
 def suggested_name(identity: WingIdentity | None, host: str) -> str:
     """What to call a pulled scene: `WING-GIAQUY-20260915-1432.snap`.
 
-    A **bare filename, no directory** (D4): the pull named nothing on
-    disk, and a `Session` whose `path` pointed at a real file would let a
-    plain Save overwrite something nobody chose. `menus.save_as` uses
-    this only as its dialog's suggestion (`menus.py:87-89`).
-
-    Without an identity the desk has no name to use, so the host stands
-    in -- `wing-192.168.128.28-20260915-1432.snap` -- rather than a
-    generic "untitled" that two pulls would collide on.
+    A **bare filename, no directory** (D4): a `path` naming a real file
+    would let a plain Save overwrite something nobody chose. Sanitised
+    at the source (D-43) because `menus.save_as` proposes from this same
+    path (`menus.py:87-89`) and `WingIdentity.name` is whatever somebody
+    typed into the desk -- "FOH/Monitors" would otherwise arrive as a
+    directory. Dot and dash survive: the fallback stays an address.
     """
     stamp = datetime.now().strftime("%Y%m%d-%H%M")
-    who = identity.name if identity is not None else f"wing-{host}"
+    stem = identity.name if identity is not None else f"wing-{host}"
+    who = re.sub(r"[^\w.\-]", "_", stem)
     return f"{who}-{stamp}.snap"
 
 

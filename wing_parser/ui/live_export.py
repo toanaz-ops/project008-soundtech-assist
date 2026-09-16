@@ -12,24 +12,22 @@ file really was written.
 deliberately NOT what this writes: that would drop every repair made
 since the pull.
 
-The name rule is worth a function of its own rather than a lump in the
-panel: `menus.save_as`
-proposes a filename from the same `Session.path` (`menus.py:87-93`) and
-needs the same sanitising once `live_controller.suggested_name` has a
-seam to split (deferred minor, task 11 review). A pure function over a
-path is testable with no desk, no window and no QApplication.
-
-The rule: `suggested_name` (`live_controller.py:159-173`) builds its
-stem from `WingIdentity.name` -- whatever somebody typed into the desk
--- so the perfectly ordinary console name "FOH/Monitors" would reach a
-Save dialog as a *directory* that does not exist, and the operator would
-be shown a path he cannot save to for a reason nothing on screen
-explains.
+**The name rule itself lives at its source**, `suggested_name`
+(`live_controller.py:159-172`), which sanitises the desk-supplied stem
+before it ever becomes a `Session.path` (D-43). What is left here is
+defence for the *other* kind of session this panel holds: since task 13,
+`console_page.set_session` (`console_page.py:95-104`) syncs the window's
+scene in, so a file opened from disk reaches Export with a real path on
+it -- and `export_name` proposes only its `Path.name`. Sanitising the
+whole string instead folded the directory into the name: a scene one
+level down in `user-files` was offered as the single mangled filename
+`user-files_example-Vu.snap` (final review, I1).
 """
 
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog
 
@@ -43,8 +41,12 @@ _UNSAFE = re.compile(r"[^\w.\-]")
 
 
 def export_name(path) -> str:
-    """A pulled scene's suggested filename, safe to hand a file dialog."""
-    return _UNSAFE.sub("_", str(path))
+    """A scene's suggested filename, safe to hand a file dialog.
+
+    `Path.name` first: a session opened from disk carries a directory
+    this dialog must not paste into its filename field (I1).
+    """
+    return _UNSAFE.sub("_", Path(path).name)
 
 
 def ask_and_save(parent, session) -> tuple[str | None, str]:
