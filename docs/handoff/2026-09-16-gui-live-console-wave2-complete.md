@@ -73,13 +73,13 @@ own summary as well as writing the XML — the teardown print is intermittent, n
 Seven new tests, all of them the fix list's: the sanitised desk name (3, parametrised), the
 file-opened export suggestion, the scalar-where-a-list-belongs guard, the relative dynamic import,
 and the panel that no longer keeps the as-pulled JSON.
-1573 passed / 3 skipped / 0 failed / 0 errors (1576 collected) — matches task 16's own number
-exactly, confirming nothing drifted between `f88a460` and now.
+(Before the fix dispatch, at `764609f`, the same command gave 1573 passed / 3 skipped / 0 failed /
+0 errors, 1576 collected — matching task 16's own number; the seven new tests are the whole delta.)
 
 ## 3. Done with evidence
 
 Per the SDD ledger (`progress.md`), all ranges verified against `git log --oneline ac39cfa..HEAD`
-(31 commits, matches exactly):
+(39 commits after the task-18 fix dispatch, matches exactly):
 
 | Task | Commit range | Proof (test file) |
 |---|---|---|
@@ -207,7 +207,7 @@ Run from this worktree root, snapshot after the task-18 fix dispatch:
 git log --oneline ac39cfa..HEAD | wc -l                     # 39
 git status --short                                          # clean
 git check-ignore -v packaging/wing-ui-debug.spec            # .gitignore:25:packaging/wing-ui-debug.spec
-git branch -vv | grep gui-live-console                      # ahead of origin, nothing after f88a460 pushed
+git branch -vv | grep gui-live-console                      # in sync with origin: 681aecf pushed 2026-09-16 07:33
 wc -l wing_parser/ui/live_snapshot.py wing_parser/ui/live_events_view.py wing_parser/ui/live_controller.py
                                                               # 199 200 199
 ls docs/screenshots/2026-09-16-gui-wave2/                    # 7 PNGs plus README.md
