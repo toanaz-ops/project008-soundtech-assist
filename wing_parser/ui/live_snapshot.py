@@ -15,8 +15,8 @@ What this one adds is the only thing on the page producing a `Session`:
   -- a stale scene-loaded line beside a live Export is worse than the
   coupling. The pulled session comes back round that loop, so
   re-adopting the SAME object changes nothing; only a different one
-  clears the banner and `original`, facts about how this panel read the
-  desk rather than about the window's scene.
+  clears the banner, a fact about how this panel read the desk rather
+  than about the window's scene.
 * **Export lives in `live_export.py`** -- the `exported` signal stays.
 
 The window is reached by signal only (`live_wiring.py`) -- this module
@@ -51,7 +51,6 @@ class SnapshotPanel(CallPanel):
         self._host = ""
         self._identity = None
         self._session = None
-        self.original = ""     # the pull-time JSON (D3): Diff's baseline
 
         self.pull_button = QPushButton(text("console.pull"))
         self.cancel_button = QPushButton(text("console.cancel"))
@@ -122,7 +121,6 @@ class SnapshotPanel(CallPanel):
         if session is self._session:
             return
         self._session = session
-        self.original = ""
         self.banner.setVisible(False)
         self.loaded_label.setText("" if session is None else text(
             "console.scene_loaded").format(findings=len(session.findings())))
@@ -180,10 +178,11 @@ class SnapshotPanel(CallPanel):
         if report is not None:
             self.banner.setText(
                 text("console.incomplete_banner").format(report=report))
-        session, original = live_controller.session_from_snapshot(
+        # The pull-time JSON comes back too and is dropped on purpose:
+        # nothing under `wing_parser/ui/` ever read it (final review).
+        session, _ = live_controller.session_from_snapshot(
             result, self._identity)
         self._session = session
-        self.original = original
         self.loaded_label.setText(text("console.scene_loaded").format(
             findings=len(session.findings())))
         self.set_state(LiveState.CONNECTED)

@@ -189,7 +189,7 @@ def session_from_snapshot(
     (D3): export must go through `Session.save_as`, which writes the
     patched document (`session.py:92-96` -> `_document()` at `:43-44`),
     so writing this string instead would silently drop every repair made
-    after the pull. Diff's baseline, not an export path.
+    after the pull. Only the tests keep it, to prove that difference.
     """
     text = to_snap_json(result.raw, identity)
     host = result.raw.source.removeprefix(_LIVE_SOURCE)

@@ -1696,7 +1696,23 @@ def test_the_windows_refresh_cannot_clear_the_banner_the_pull_just_raised(
     assert page.snapshot.banner.isVisibleTo(page.snapshot), (
         "the window's own _refresh hid the incomplete banner")
     assert "/mtx" in page.snapshot.banner.text()
-    assert page.snapshot.original, "and it cleared Diff's as-pulled baseline"
+
+
+def test_the_panel_does_not_keep_the_as_pulled_json(qt_app, settle, vu_result):
+    """Nothing read it, and it was a second copy of the whole scene.
+
+    `SnapshotPanel.original` was documented as "Diff's as-pulled
+    baseline", but Diff never reached for it and neither did anything
+    else under `wing_parser/ui/` -- one test assertion was its only
+    reader. Holding it cost a megabyte-scale string per pull for a
+    consumer that does not exist; export goes through
+    `Session.save_as`, which is the point D3 was really making.
+    """
+    panel = _snapshot_panel(_replaying(vu_result))
+    assert _pull_settled(panel, settle)
+    assert panel._session is not None, "the pull produced no scene"
+    assert not hasattr(panel, "original"), (
+        "the panel is holding a second copy of the scene nothing reads")
 
 
 def test_a_terminal_signal_from_a_view_that_already_left_watching_is_silent(

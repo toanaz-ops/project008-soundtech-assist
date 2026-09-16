@@ -7,10 +7,10 @@ of one responsibility; the panel keeps only the signal it emits when a
 file really was written.
 
 **Export writes `Session.save_as`** (D3) -- the *patched* document
-(`session.py:92-96` -> `_document()` at `:43-44`). The pull-time JSON
-`SnapshotPanel.original` holds is Diff's "as pulled" baseline and is
-deliberately NOT what this writes: that would drop every repair made
-since the pull.
+(`session.py:92-96` -> `_document()` at `:43-44`), never the pull-time
+JSON `session_from_snapshot` returns beside the scene: writing those
+bytes would drop every repair made since the pull. The panel does not
+even keep that string any more (final review, item 7).
 
 **The name rule itself lives at its source**, `suggested_name`
 (`live_controller.py:159-172`), which sanitises the desk-supplied stem
