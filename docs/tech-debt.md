@@ -598,7 +598,13 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     with a built wheel installed into a clean venv running `wing net
     snapshot` against `tests/fake_desk.py`. Out of this task's scope
     (task 16 was told not to touch `pyproject.toml`).
-  - status: open
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 6) --
+    `"net/data/*.yaml"` added to `pyproject.toml:32`. Measured both
+    ways, each a `pip install .` into its own fresh venv on `D:` (not
+    under `%TEMP%`, where Qt DLLs hang), then
+    `importlib.resources.files("wing_parser.net").joinpath("data/wing_jsontypes.yaml").is_file()`
+    read from `site-packages`, not the source tree: **False** from a
+    `git archive` of the commit before the change, **True** after.
 
 - **D-46** The generated debug spec is untracked but not gitignored
   - owner: machine-doable
@@ -610,7 +616,12 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     generator's own header.
   - close: add `packaging/wing-ui-debug.spec` to `.gitignore`. Out of
     this task's scope (task 16 was told not to touch `.gitignore`).
-  - status: open
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 5) --
+    added at `.gitignore:23-25`, under the existing PyInstaller block
+    and naming the generator. `git check-ignore -v
+    packaging/wing-ui-debug.spec` prints
+    `.gitignore:25:packaging/wing-ui-debug.spec`, and `git status
+    --short` no longer lists it.
 
 ---
 
