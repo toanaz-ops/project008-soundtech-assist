@@ -28,16 +28,21 @@ def normalize(state: dict) -> dict:
     """Coerce any input to the exact on-disk shape or drop the field."""
     geometry = state.get("geometry")
     page = state.get("page")
+    # A list or nothing: a hand-edited `"consoles": "192.168.1.1"` is
+    # iterable, and `or []` would have let it through as eight
+    # one-character addresses (final review, I2).
     recent = state.get("recent")
     consoles = state.get("consoles")
+    recent = recent if isinstance(recent, list) else []
+    consoles = consoles if isinstance(consoles, list) else []
     return {
         "geometry": geometry if isinstance(geometry, str) else None,
         "page": page if page in PAGE_KEYS else None,
         "recent": [
-            entry for entry in (recent or []) if isinstance(entry, str)
+            entry for entry in recent if isinstance(entry, str)
         ][:MAX_RECENT],
         "consoles": [
-            entry for entry in (consoles or []) if isinstance(entry, str)
+            entry for entry in consoles if isinstance(entry, str)
         ][:MAX_RECENT],
     }
 

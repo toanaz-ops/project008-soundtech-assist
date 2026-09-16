@@ -50,6 +50,21 @@ def test_normalize_drops_junk_and_keeps_known_shape():
     }
 
 
+def test_normalize_refuses_a_scalar_where_a_list_belongs():
+    """I2: a string is iterable, and iterating it yields characters.
+
+    A hand-edited `ui-state.json` saying `"consoles": "192.168.1.1"` was
+    read as eight one-character consoles, which `window_state`
+    faithfully pushed into the ConnectBar dropdown. The field is a list
+    or it is nothing.
+    """
+    clean = state_store.normalize(
+        {"consoles": "192.168.1.1", "recent": "D:/x.snap"}
+    )
+    assert clean["consoles"] == []
+    assert clean["recent"] == []
+
+
 def test_remember_recent_moves_to_top_and_dedupes():
     recents = state_store.remember_recent(
         ["a.snap", "b.snap", "c.snap"], "b.snap"
