@@ -623,6 +623,29 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     `.gitignore:25:packaging/wing-ui-debug.spec`, and `git status
     --short` no longer lists it.
 
+- **D-47** A `Windows fatal exception: code 0x8001010d` print during the suite
+  - owner: machine-doable (parked — nothing is broken, the cost is a misread)
+  - evidence: seen in every GUI wave-2 task run (tasks 6, 8, 9, 10, 11, 12, 14,
+    15, 16) and again at the wave's final-review fix dispatch. `faulthandler`,
+    which pytest enables by default, prints a C-stack dump for a *first-chance*
+    structured exception; `0x8001010d` is COM's
+    `RPC_E_CANTCALLOUT_ININPUTSYNCCALL`, raised and handled inside Qt when a
+    widget is polished while Windows is in an input-synchronous call. Task 14
+    traced one to `test_ui_console.py::test_an_empty_read_shows_an_error_line_and_no_session_reaches_the_window`
+    -> `main_window.py` -> `import_page.py:63`
+    (`self.step_area.addWidget(step)`, a `QStackedLayout` adopting native
+    widgets). Nothing raises in Python and the process exits 0. Two ways it
+    misleads: the dump interleaves into stdout and reads as a crash *at*
+    whichever test was printing (task 16 chased exactly this), and at
+    interpreter exit it can beat `pytest`'s own summary line to the console, so
+    `N passed` never prints on a run that fully passed.
+  - close: not a defect to fix in this repo -- record the two mitigations and
+    stop re-diagnosing it. Run with `--junitxml=<path>` (the XML is written
+    before the teardown print and carries the exact tally), or with
+    `-p no:faulthandler` to silence the dump entirely. Only reopen if the
+    exception ever becomes second-chance, i.e. a non-zero exit code.
+  - status: open (parked)
+
 ---
 
 ## Appendix — rulings preserved, not debt
