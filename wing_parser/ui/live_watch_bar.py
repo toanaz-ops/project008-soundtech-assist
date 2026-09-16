@@ -34,6 +34,7 @@ from wing_parser.ui.live_state import LiveState, allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption
 
+
 class WatchBar(QWidget):
     """Start/Stop/Reconnect, the interval spin, and the rate line."""
 
