@@ -29,7 +29,7 @@ wing-ui = "wing_parser.ui.__main__:main"
 include = ["wing_parser*"]
 
 [tool.setuptools.package-data]
-wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "net/watch/data/*.yaml", "edit/data/*.yaml"]
+wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "net/data/*.yaml", "net/watch/data/*.yaml", "edit/data/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

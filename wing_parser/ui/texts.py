@@ -1,4 +1,12 @@
-"""Every UI string lives in one place for future language switching."""
+"""Every UI string lives in one place for future language switching.
+
+The Console page's own strings live in `texts_console.py` and are
+merged in below: wave 2 pushed this file past the ~200-line ceiling
+(`test_ui_house_style.py:173`), and a page's vocabulary is the one
+seam a flat table of strings actually has.
+"""
+
+from wing_parser.ui.texts_console import CONSOLE_TEXTS
 
 TEXTS: dict[str, str] = {
     "app.title": "wing",
@@ -9,6 +17,7 @@ TEXTS: dict[str, str] = {
     "page.routing": "Routing",
     "page.diff": "Diff",
     "page.import": "Import",
+    "page.console": "Console",
     "empty.open_hint": "Open a scene file to begin.",
     "empty.open_button": "Open a scene...",
     "overview.counts": "Scene counts",
@@ -145,6 +154,7 @@ TEXTS: dict[str, str] = {
     "settings.cancelled": "Probe cancelled.",
     "settings.timeout": "No reply within {seconds} s — check the base URL.",
     "settings.busy": "A connection test is already running.",
+    **CONSOLE_TEXTS,
 }
 
 

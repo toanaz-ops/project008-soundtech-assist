@@ -22,7 +22,19 @@ from PySide6.QtCore import QObject, QTimer, QThread, Signal
 
 #: Ruled per-call budgets in seconds; a call past its budget is failed
 #: with :class:`CallTimedOut` while the UI stays responsive.
-TIMEOUTS = {"proposal": 120, "guesses": 180, "probe": 30}
+#:
+#: The first three are model calls -- HTTP to a provider. The last three
+#: are live-console reads -- UDP to a desk on the local network, so they
+#: are ruled from measured desk times, not borrowed (spec S7.2, D14):
+#: connect 5 s is a backstop over ``query_identity``'s own 2.0 s socket
+#: timeout (``identity.py:68``), walk 60 s is ~60x the measured ~1.00 s
+#: clean walk, and snapshot 90 s is 9x the measured ~10 s whole-console
+#: read. A watch has no budget at all: it ends on Stop, or when
+#: :class:`~wing_parser.ui.live_guard.RoundGuard` declares the desk lost.
+TIMEOUTS = {
+    "proposal": 120, "guesses": 180, "probe": 30,
+    "connect": 5, "walk": 60, "snapshot": 90,
+}
 
 
 class CallTimedOut(Exception):

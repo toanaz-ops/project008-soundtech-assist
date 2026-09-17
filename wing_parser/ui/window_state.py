@@ -23,6 +23,7 @@ def restore(window) -> None:
     state = state_store.load(config.knowledge_dir())
     window._recent = state["recent"]
     rebuild_recent_menu(window)
+    restore_consoles(window, state["consoles"])
     if state["geometry"]:
         window.restoreGeometry(
             QByteArray.fromHex(state["geometry"].encode("ascii"))
@@ -31,6 +32,31 @@ def restore(window) -> None:
         window.resize(1280, 760)
     if state["page"]:
         window.switch_to(state["page"])
+
+
+def restore_consoles(window, consoles) -> None:
+    """Offer the remembered console addresses, before first paint.
+
+    Read and written beside `recent` because it is the same kind of
+    fact -- where he was last working -- and kept out of the Console
+    page itself because a widget that reads the state file is a widget
+    that cannot be built in a test without one. The `hasattr` mirrors
+    `live_wiring.wire_console`: until a page offers the seam, this is a
+    no-op rather than a crash.
+    """
+    window._consoles = list(consoles)
+    page = window.pages["console"]
+    if hasattr(page, "set_consoles"):
+        page.set_consoles(window._consoles)
+
+
+def remember_console(window, host: str) -> None:
+    """Move `host` to the top; `save_on_close` is what writes it down.
+
+    `state_store.remember_console` compares plain strings rather than
+    paths (`state_store.py:76-83`): an address is not a filename.
+    """
+    window._consoles = state_store.remember_console(window._consoles, host)
 
 
 def remember_recent(window, path: str) -> None:
@@ -97,5 +123,6 @@ def save_on_close(window) -> None:
             if 0 <= row < len(state_store.PAGE_KEYS)
             else None,
             "recent": window._recent,
+            "consoles": window._consoles,
         },
     )

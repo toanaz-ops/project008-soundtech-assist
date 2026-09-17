@@ -1,8 +1,13 @@
 """The ruled keyboard map: every accelerator resolves to its action.
 
 ToanAZ ruled on 2026-08-26: Ctrl+O opens, Ctrl+Shift+S is Save As
-(never plain Ctrl+S), Ctrl+Z undoes, Ctrl+1..Ctrl+6 switch the six
-pages in PAGE_ORDER order, Esc closes a dialog and F5 re-analyses.
+(never plain Ctrl+S), Ctrl+Z undoes, Ctrl+{index} switches the pages
+in PAGE_ORDER order, Esc closes a dialog and F5 re-analyses. Six pages
+then; seven now, so the binding is Ctrl+1..Ctrl+7 -- GUI wave 2
+(2026-09-16) added Console, and `menus.build_accelerators` binds
+Ctrl+{index} over the whole of PAGE_ORDER, so the rule needed no new
+code. This module keeps its own six-page PAGE_KEYS below and does not
+re-test the seventh -- see tests/test_ui_shell.py for Ctrl+7.
 """
 
 import pytest

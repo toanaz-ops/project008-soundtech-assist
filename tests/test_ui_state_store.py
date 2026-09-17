@@ -18,14 +18,17 @@ from wing_parser.ui import state_store
 
 
 def test_save_then_load_round_trips_a_state(tmp_path):
-    state = {"geometry": "aabbcc", "page": "diff", "recent": ["x.snap"]}
+    state = {
+        "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
+        "consoles": [],
+    }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
 
 
 def test_load_without_a_file_yields_defaults(tmp_path):
     assert state_store.load(tmp_path) == {
-        "geometry": None, "page": None, "recent": [],
+        "geometry": None, "page": None, "recent": [], "consoles": [],
     }
 
 
@@ -42,7 +45,24 @@ def test_normalize_drops_junk_and_keeps_known_shape():
         "extra": True,                   # unknown key
     }
     clean = state_store.normalize(state)
-    assert clean == {"geometry": None, "page": None, "recent": ["ok.snap"]}
+    assert clean == {
+        "geometry": None, "page": None, "recent": ["ok.snap"], "consoles": [],
+    }
+
+
+def test_normalize_refuses_a_scalar_where_a_list_belongs():
+    """I2: a string is iterable, and iterating it yields characters.
+
+    A hand-edited `ui-state.json` saying `"consoles": "192.168.1.1"` was
+    read as eight one-character consoles, which `window_state`
+    faithfully pushed into the ConnectBar dropdown. The field is a list
+    or it is nothing.
+    """
+    clean = state_store.normalize(
+        {"consoles": "192.168.1.1", "recent": "D:/x.snap"}
+    )
+    assert clean["consoles"] == []
+    assert clean["recent"] == []
 
 
 def test_remember_recent_moves_to_top_and_dedupes():
@@ -63,6 +83,55 @@ def test_remember_recent_caps_the_list():
 def test_forget_recent_removes_one_entry():
     recents = state_store.forget_recent(["a.snap", "b.snap"], "a.snap")
     assert recents == ["b.snap"]
+
+
+def test_consoles_survive_a_save_and_load_round_trip(tmp_path):
+    state = {
+        "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
+        "consoles": ["192.168.1.10", "wing.local"],
+    }
+    state_store.save(tmp_path, state)
+    assert state_store.load(tmp_path) == state
+
+
+def test_a_state_file_without_consoles_degrades_to_an_empty_list(tmp_path):
+    (tmp_path / state_store.STATE_FILE).write_text(
+        json.dumps({"geometry": None, "page": None, "recent": []}),
+        encoding="utf-8",
+    )
+    assert state_store.load(tmp_path)["consoles"] == []
+
+
+def test_remember_console_moves_an_address_to_the_top_without_duplicating_it():
+    consoles = state_store.remember_console(
+        ["192.168.1.10", "192.168.1.11", "192.168.1.12"], "192.168.1.11"
+    )
+    assert consoles == ["192.168.1.11", "192.168.1.10", "192.168.1.12"]
+
+
+def test_remember_console_caps_the_list_at_max_recent():
+    seed = [f"192.168.1.{i}" for i in range(state_store.MAX_RECENT)]
+    consoles = state_store.remember_console(seed, "192.168.1.99")
+    assert consoles[0] == "192.168.1.99"
+    assert len(consoles) == state_store.MAX_RECENT
+    assert "192.168.1.7" not in consoles
+
+
+def test_remember_console_compares_plain_strings_not_paths():
+    # Path() would normalize "wing.local/" and "wing.local" to the same
+    # thing, and would treat "a/b" as a path with a parent -- addresses
+    # are opaque strings, not filesystem paths.
+    consoles = state_store.remember_console(
+        ["wing.local/", "a/b"], "wing.local"
+    )
+    assert consoles == ["wing.local", "wing.local/", "a/b"]
+
+
+def test_forget_console_removes_only_that_address():
+    consoles = state_store.forget_console(
+        ["192.168.1.10", "192.168.1.11"], "192.168.1.10"
+    )
+    assert consoles == ["192.168.1.11"]
 
 
 # -- window wiring ------------------------------------------------------

@@ -23,8 +23,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from wing_parser.ui import menus, state_store, window_state
+from wing_parser.ui import live_wiring, menus, state_store, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
+from wing_parser.ui.console_page import ConsolePage
 from wing_parser.ui.channels_page import ChannelsPage
 from wing_parser.ui.diff_page import DiffPage
 from wing_parser.ui.doctor_page import DoctorPage
@@ -45,6 +46,7 @@ PAGE_ICONS = {
     "routing": "fa5s.project-diagram",
     "diff": "fa5s.code-branch",
     "import_": "fa5s.file-import",
+    "console": "fa5s.network-wired",
 }
 
 
@@ -53,6 +55,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.session = session
         self._recent: list[str] = []
+        self._consoles: list[str] = []
         menus.build_menus(self)
         self._build_body()
         self._build_changes_dock()
@@ -71,6 +74,8 @@ class MainWindow(QMainWindow):
         self.pages["diff"] = DiffPage()
         self.pages["import_"] = ImportPage()
         self.pages["import_"].open_settings_requested.connect(self.open_settings)
+        self.pages["console"] = ConsolePage()
+        live_wiring.wire_console(self, self.pages["console"])
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:

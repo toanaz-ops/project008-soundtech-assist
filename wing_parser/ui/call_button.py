@@ -14,11 +14,20 @@ from wing_parser.ui.workers import CallTimedOut
 
 
 class ButtonRunner(QObject):
-    """Wire one CallRunner call to a primary button + Cancel + status."""
+    """Wire one CallRunner call to a primary button + Cancel + status.
+
+    `on_error` is deliberately not told about a timeout: a `CallTimedOut`
+    has its own ruled sentence and no provider message to show, so it is
+    reported and stops there. A caller whose STATE must change on one --
+    `live_connect_bar`, whose lamp would otherwise sit amber under an
+    error line -- passes `on_timeout` as well and receives the
+    `CallTimedOut` itself, after the line is reported. Optional: the
+    three model-call sites pass neither and are unaffected.
+    """
 
     def __init__(self, *, runner, primary, cancel=None, report=None,
                  running="", cancelled="", timeout_text="", busy_text="",
-                 on_error=None, parent=None) -> None:
+                 on_error=None, on_timeout=None, parent=None) -> None:
         super().__init__(parent)
         self._runner = runner
         self._primary = primary
@@ -29,6 +38,7 @@ class ButtonRunner(QObject):
         self._timeout_text = timeout_text
         self._busy_text = busy_text
         self._on_error = on_error
+        self._on_timeout = on_timeout
         self._success = None
 
     def run(self, kind, function, *args, on_success, timeout=None) -> bool:
@@ -73,6 +83,8 @@ class ButtonRunner(QObject):
         self._restore()
         if isinstance(exc, CallTimedOut):
             self._report(self._timeout_text.format(seconds=exc.seconds))
+            if self._on_timeout is not None:
+                self._on_timeout(exc)
         elif self._on_error is not None:
             self._on_error(exc)
 

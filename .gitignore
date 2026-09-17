@@ -20,6 +20,9 @@ junit.xml
 
 # PyInstaller build output; the spec in packaging/ is the source
 *.spec.bak
+# ...except this one, which packaging/make-debug-spec.py generates from
+# wing-ui.spec and whose own header says it stays UNTRACKED (D-46).
+packaging/wing-ui-debug.spec
 
 # Local secrets — the Anthropic key for the classifier fallback lives here
 .env
@@ -42,3 +45,10 @@ Thumbs.db
 
 screenshots/
 shots-test/
+dist-shots/
+
+# ...except a set deliberately attached to a PR. Those are review
+# evidence -- the only thing that shows a page actually rendered from
+# the exe -- so they have to survive on the branch. The pattern above
+# is unanchored and would otherwise swallow this directory too.
+!docs/screenshots/

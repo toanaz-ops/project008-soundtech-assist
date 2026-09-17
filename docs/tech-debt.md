@@ -277,7 +277,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     user-facing strings go through `wing_parser/ui/texts.py`.
   - close: move them into `texts.py`; add a test that scans `wing_parser/ui/` for
     quoted strings passed to `setText`/`setWindowTitle`/`QMessageBox`
-  - status: closed 2026-09-15 — `ast` scanner over `wing_parser/ui/**/*.py` (`0b5e295`, widened `63a8d6c` after review refuted the first pass) fails naming file:line. **Covers:** the ten setters (setText/setWindowTitle/setToolTip/setPlaceholderText/setTitle/setTabText/setStatusTip/setWhatsThis/addMenu/addAction), seven widget constructors (QPushButton/QLabel/QGroupBox/QAction/QMenu/QCheckBox/QRadioButton), the QMessageBox statics bare or attribute-qualified, and the QFileDialog statics' caption and filter arguments — plain literals and f-strings alike. **Cannot cover** (named in tests/test_ui_texts.py's module docstring, and the reason a clean run is not proof the rule holds): a string bound to a name first (`FILTER = "..."` reaches the call as a Name), a string built at runtime by `.format`/`%`/concatenation/`join`, and any Qt class or method not in the hand-edited lists. Eighteen strings routed through texts.py in total — eight by the first pass (`0a7eaa2`, `6be328e`, `fad8076`, `fd8f15e`) and ten more by the widened one, five of those bound to a module constant first and so found by reading, not by the test. Argued and left: `__main__.py:18` MISSING_PYSIDE (printed before Qt exists), `findings_view.py:28` ALL (a compared-against sentinel), `elide.py:23` ELLIPSIS (typography), and `overview_page.py:49` `QLabel("0")` (a digit, allowlisted by value). All four re-read from the files 2026-09-15. Pinned by `test_no_user_facing_literal_bypasses_texts_py`, `test_the_scan_would_catch_a_regression` and `test_a_module_level_constant_is_a_known_blind_spot` (tests/test_ui_texts.py).
+  - status: closed 2026-09-15 — `ast` scanner over `wing_parser/ui/**/*.py` (`0b5e295`, widened `63a8d6c` after review refuted the first pass) fails naming file:line. **Covers:** the ten setters (setText/setWindowTitle/setToolTip/setPlaceholderText/setTitle/setTabText/setStatusTip/setWhatsThis/addMenu/addAction), seven widget constructors (QPushButton/QLabel/QGroupBox/QAction/QMenu/QCheckBox/QRadioButton), the QMessageBox statics bare or attribute-qualified, and the QFileDialog statics' caption and filter arguments — plain literals and f-strings alike. **Cannot cover** (named in tests/test_ui_texts.py's module docstring, and the reason a clean run is not proof the rule holds): a string bound to a name first (`FILTER = "..."` reaches the call as a Name), a string built at runtime by `.format`/`%`/concatenation/`join`, and any Qt class or method not in the hand-edited lists. Eighteen strings routed through texts.py in total — eight by the first pass (`0a7eaa2`, `6be328e`, `fad8076`, `fd8f15e`) and ten more by the widened one, five of those bound to a module constant first and so found by reading, not by the test. Argued and left: `__main__.py:18` MISSING_PYSIDE (printed before Qt exists), `findings_view.py:28` ALL (a compared-against sentinel), `elide.py:23` ELLIPSIS (typography), and `overview_page.py:49` `QLabel("0")` (a digit, allowlisted by value). All four re-read from the files 2026-09-15. A fifth, of a different kind, argued and left 2026-09-16 (wave 2): `live_snapshot.py:195` shows an exception's own message with `setText(str(exc))` for `EmptyReadError`, whose sentence is authored at `live_controller.py:59-64` (ported from `cli/commands.py:47-62`) -- the `menus.py:82` precedent, `QMessageBox.critical(window, text("error.open"), str(exc))`, which this rule has accepted since wave 1; invisible to the scan either way, being a Call and not a Constant. Pinned by `test_no_user_facing_literal_bypasses_texts_py`, `test_the_scan_would_catch_a_regression` and `test_a_module_level_constant_is_a_known_blind_spot` (tests/test_ui_texts.py).
 
 - **D-25** Provider calls block the GUI thread with no cancel and no timeout
   - owner: machine-doable — ToanAZ ruled on 2026-08-26 that a worker, a Cancel
@@ -469,6 +469,182 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     Settings should instead offer to write `./provider.yaml` — the user manual
     has to agree with whichever is chosen.
   - status: open
+
+- **D-40** `page_base.EmptyState` is now reachable only from a test
+  - owner: machine-doable
+  - evidence: task 13 (GUI wave 2) filled the last placeholder slot --
+    `main_window.py` builds a real `ConsolePage` -- so nothing in
+    `wing_parser/` constructs `EmptyState` any more. Its only live caller
+    is `tests/test_ui_console.py::test_wiring_a_page_without_the_signals_connects_nothing`,
+    which uses it as a widget that has none of the three console signals.
+    Its two texts keys (`empty.open_hint`, `empty.open_button`) and its
+    `open_requested` signal are unused with it.
+  - close: decide between deleting `page_base.py` plus those two keys (and
+    giving that test a plain `QWidget`), and keeping it as the documented
+    placeholder for the next page that arrives over several tasks. Do not
+    half-delete: `test_ui_texts.py::test_known_keys_resolve` asserts
+    `empty.open_hint` resolves.
+  - status: open
+
+- **D-41** A live pull walks the schema twice
+  - owner: machine-doable, deferred to wave 3 (it is a `net/` change)
+  - evidence: GUI wave 2 (task 16 brief item 3). `take_snapshot` walks
+    internally (`wing_parser/net/snapshot.py:83-85`, calling `walk_schema`
+    before reading any leaf) and `build_watch_list` walks again
+    (`wing_parser/net/watch/list.py:89`) -- neither function accepts a
+    pre-computed `SchemaResult` from the other. Console page Discover then
+    Pull (or the reverse) therefore costs two walks where one would do;
+    the wave-2 design spec priced one walk at ~1 s (`docs/superpowers/specs/
+    2026-09-15-gui-live-console-wave2-design.md` D11), so this is roughly a
+    second of avoidable latency per round trip through the page, not a
+    correctness bug.
+  - close: add a `schema: SchemaResult | None = None` parameter to both
+    `take_snapshot` and `build_watch_list` that skips the internal
+    `walk_schema` call when supplied, and have `ConsolePage` pass the
+    Discovery panel's result into a later Pull (and vice versa). This
+    touches `wing_parser/net/`, which is why wave 2 did not do it (its own
+    rule: a UI consumer does not modify `net/client.py`, `codec.py` or
+    `schema.py`).
+  - status: open
+
+- **D-42** Quitting the app can wait up to ~5 s for a watch round in flight
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 12's own concern, carried forward at task
+    16. `net/watch/poller.py:121-123` computes the remaining time in the
+    round and calls a plain `sleep(remaining)` with no cancellation seam;
+    at `MAX_INTERVAL` (`wing_parser/ui/live_guard.py:37`, 5.0 s) a quit
+    requested right after a round starts waits out that sleep before the
+    `GeneratorWorker` thread can notice it has been cancelled and join.
+  - close: give `poller.watch` a cancel-aware sleep (short slices checked
+    against a `threading.Event`, or `Event.wait(remaining)` in place of
+    `sleep`), which is a `net/` change -- same wave-3 boundary as D-41.
+  - status: open
+
+- **D-43** Save As suggests an unsanitised name for a pulled scene
+  - owner: machine-doable
+  - evidence: GUI wave 2, flagged at task 4 (deferred to task 11, then
+    carried to final review). `suggested_name` (`wing_parser/ui/
+    live_controller.py:159-173`) builds a bare filename from
+    `identity.name` with no sanitisation --
+    `f"{who}-{stamp}.snap"` -- and `session_from_snapshot`
+    (`live_controller.py:195-199`) sets that string as the pulled
+    `Session.path`. `menus.save_as` (`wing_parser/ui/menus.py:88-93`)
+    then derives its dialog's suggestion from that same path
+    (`.with_name(stem + "-edited.snap")`), so any character a desk's
+    identity string carries -- a path separator, a leading dot -- reaches
+    the Save As dialog unsanitised. No desk observed so far has produced
+    one; this is a latent input-handling gap, not a reproduced failure.
+  - close: split the seam -- have `suggested_name` sanitise the desk-
+    supplied part only (e.g. `re.sub(r"[^\w.-]", "_", who)`) before it
+    ever becomes a `Session.path`, and add a test with a desk name
+    containing `/`, `\` and `..`.
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 1) --
+    `suggested_name` (`wing_parser/ui/live_controller.py:169-172`) now
+    filters the stem through `re.sub(r"[^\w.\-]", "_", stem)` before it
+    becomes the `Session.path`, so `menus.save_as` can only ever derive
+    from a sanitised name. Pinned by
+    `test_the_suggested_name_sanitises_a_desk_name_that_is_a_path`
+    (`tests/test_live_controller.py:386-399`), parametrised over
+    `FOH/Monitors`, `..\evil` and `a:b`. The review also found the same
+    gap from the other side -- Export mangling a *file-opened* path --
+    and `live_export.export_name` (`live_export.py:43-49`) now proposes
+    `Path(path).name` only, pinned by
+    `test_the_export_dialog_suggests_a_bare_name_for_a_file_opened_scene`
+    (`tests/test_ui_console.py:697-722`).
+
+- **D-44** The read-only scan misses a relative dynamic import
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 14's fix round (deferred to final review).
+    `tests/test_ui_live_is_read_only.py`'s `_dynamic_call_reaches_write`
+    (`:78-99`) recognises `import_module("wing_parser.net.write")` and
+    `import_module("wing_parser.net", fromlist=["write"])`, but never
+    reads `args[1]` or a `package=` keyword -- so the relative form
+    `importlib.import_module(".write", "wing_parser.net")` resolves to
+    the same module at runtime and is invisible to the scan (`target` at
+    `:90` is `".write"`, which matches neither branch at `:91-93`). No
+    module under `wing_parser/ui/` uses this form today; the scan's own
+    stated job is to make a future one fail loudly, and right now it
+    would not.
+  - close: in `_dynamic_call_reaches_write`, when `target` starts with a
+    dot, resolve it against `args[1]` (or the `package=` keyword) before
+    comparing, the same way `importlib.import_module` itself does; add a
+    planted-relative-import test alongside
+    `test_the_scan_catches_a_planted_dynamic_import`.
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 4) --
+    `_dynamic_call_reaches_write` (`tests/test_ui_live_is_read_only.py:93-101`)
+    now resolves a dot-leading target through `importlib.util.resolve_name`
+    against the literal second positional argument or the `package=`
+    keyword, and returns `None` only when that package is not a literal.
+    Pinned by `test_the_scan_catches_a_planted_relative_dynamic_import`
+    (`:203-214`), which plants both spellings and asserts 2 offenders; it
+    failed with `0 == 2` before the change. Note: the file is 225 lines,
+    past the ~200 task 14 held it to -- the enforced ceiling
+    (`tests/test_ui_house_style.py:173-184`) covers `wing_parser/ui/`
+    only, and trimming 25 lines here would have cost the S8 narrative
+    that documents the scan's rules and its remaining blind spots.
+
+- **D-45** The wheel drops a YAML the exe already carries
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 15 (C5), found while fixing the exe's own
+    version of this gap. `pyproject.toml:31-32`'s
+    `[tool.setuptools.package-data]` lists `net/watch/data/*.yaml` but not
+    `net/data/*.yaml`, so `pip install .` ships `watchlist.yaml` and
+    drops `wing_jsontypes.yaml` -- read by `net/jsontypes.py:28` via
+    `net/export.py:41`, needed by any `wing net snapshot`, CLI included,
+    not only the UI. `packaging/wing-ui.spec`'s DATAS list was fixed at
+    the same task (task 15) and now names both directories explicitly, so
+    only the wheel install path has the gap.
+  - close: add `"net/data/*.yaml"` to the `package-data` glob list; test
+    with a built wheel installed into a clean venv running `wing net
+    snapshot` against `tests/fake_desk.py`. Out of this task's scope
+    (task 16 was told not to touch `pyproject.toml`).
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 6) --
+    `"net/data/*.yaml"` added to `pyproject.toml:32`. Measured both
+    ways, each a `pip install .` into its own fresh venv on `D:` (not
+    under `%TEMP%`, where Qt DLLs hang), then
+    `importlib.resources.files("wing_parser.net").joinpath("data/wing_jsontypes.yaml").is_file()`
+    read from `site-packages`, not the source tree: **False** from a
+    `git archive` of the commit before the change, **True** after.
+
+- **D-46** The generated debug spec is untracked but not gitignored
+  - owner: machine-doable
+  - evidence: GUI wave 2, task 15 (C3). `packaging/make-debug-spec.py:8`
+    states "It is generated output and stays UNTRACKED -- never
+    hand-edit it", but `.gitignore:21-22` covers only `*.spec.bak`; the
+    generated `packaging/wing-ui-debug.spec` sits as `??` in `git status`
+    and would be swept into a careless `git add -A`, against the
+    generator's own header.
+  - close: add `packaging/wing-ui-debug.spec` to `.gitignore`. Out of
+    this task's scope (task 16 was told not to touch `.gitignore`).
+  - status: closed 2026-09-16 (final review of GUI wave 2, item 5) --
+    added at `.gitignore:23-25`, under the existing PyInstaller block
+    and naming the generator. `git check-ignore -v
+    packaging/wing-ui-debug.spec` prints
+    `.gitignore:25:packaging/wing-ui-debug.spec`, and `git status
+    --short` no longer lists it.
+
+- **D-47** A `Windows fatal exception: code 0x8001010d` print during the suite
+  - owner: machine-doable (parked — nothing is broken, the cost is a misread)
+  - evidence: seen in every GUI wave-2 task run (tasks 6, 8, 9, 10, 11, 12, 14,
+    15, 16) and again at the wave's final-review fix dispatch. `faulthandler`,
+    which pytest enables by default, prints a C-stack dump for a *first-chance*
+    structured exception; `0x8001010d` is COM's
+    `RPC_E_CANTCALLOUT_ININPUTSYNCCALL`, raised and handled inside Qt when a
+    widget is polished while Windows is in an input-synchronous call. Task 14
+    traced one to `test_ui_console.py::test_an_empty_read_shows_an_error_line_and_no_session_reaches_the_window`
+    -> `main_window.py` -> `import_page.py:63`
+    (`self.step_area.addWidget(step)`, a `QStackedLayout` adopting native
+    widgets). Nothing raises in Python and the process exits 0. Two ways it
+    misleads: the dump interleaves into stdout and reads as a crash *at*
+    whichever test was printing (task 16 chased exactly this), and at
+    interpreter exit it can beat `pytest`'s own summary line to the console, so
+    `N passed` never prints on a run that fully passed.
+  - close: not a defect to fix in this repo -- record the two mitigations and
+    stop re-diagnosing it. Run with `--junitxml=<path>` (the XML is written
+    before the teardown print and carries the exact tally), or with
+    `-p no:faulthandler` to silence the dump entirely. Only reopen if the
+    exception ever becomes second-chance, i.e. a non-zero exit code.
+  - status: open (parked)
 
 ---
 

@@ -1,0 +1,74 @@
+"""Writing a pulled scene to disk: what to call it, and the writing.
+
+Split out of `live_snapshot.py` at that file's 200-line ceiling -- the
+name rule at task 11, the Export action itself at task 13, when
+`set_session` arrived and the panel crossed the line again. Two halves
+of one responsibility; the panel keeps only the signal it emits when a
+file really was written.
+
+**Export writes `Session.save_as`** (D3) -- the *patched* document
+(`session.py:92-96` -> `_document()` at `:43-44`), never the pull-time
+JSON `session_from_snapshot` returns beside the scene: writing those
+bytes would drop every repair made since the pull. The panel does not
+even keep that string any more (final review, item 7).
+
+**The name rule itself lives at its source**, `suggested_name`
+(`live_controller.py:159-172`), which sanitises the desk-supplied stem
+before it ever becomes a `Session.path` (D-43). What is left here is
+defence for the *other* kind of session this panel holds: since task 13,
+`console_page.set_session` (`console_page.py:95-104`) syncs the window's
+scene in, so a file opened from disk reaches Export with a real path on
+it -- and `export_name` proposes only its `Path.name`. Sanitising the
+whole string instead folded the directory into the name: a scene one
+level down in `user-files` was offered as the single mangled filename
+`user-files_example-Vu.snap` (final review, I1).
+"""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+from PySide6.QtWidgets import QFileDialog
+
+from wing_parser.ui.texts import text
+
+#: Everything a proposed filename may NOT keep. `\w` covers the digits,
+#: letters and underscore; the class adds the dot and the dash a
+#: timestamped `.snap` name needs. A separator on either platform ("/",
+#: "\\") is outside it, which is the point.
+_UNSAFE = re.compile(r"[^\w.\-]")
+
+
+def export_name(path) -> str:
+    """A scene's suggested filename, safe to hand a file dialog.
+
+    `Path.name` first: a session opened from disk carries a directory
+    this dialog must not paste into its filename field (I1).
+    """
+    return _UNSAFE.sub("_", Path(path).name)
+
+
+def ask_and_save(parent, session) -> tuple[str | None, str]:
+    """Ask where, write there, answer `(path written, line to show)`.
+
+    `path` is None whenever nothing was written -- no scene, a cancelled
+    dialog, or a refused write -- so the caller emits its `exported`
+    signal on exactly the case that produced a file. A failed write
+    leaves `session` untouched and still exportable somewhere else,
+    which is why the OSError becomes a line rather than a raise.
+    """
+    if session is None:
+        return None, ""
+    name, _ = QFileDialog.getSaveFileName(
+        parent, text("console.export_title"),
+        export_name(session.path), text("menu.scene_filter"),
+    )
+    if not name:
+        return None, ""
+    try:
+        session.save_as(name)
+    except OSError as exc:
+        return None, text("console.export_failed").format(
+            file=name, error=exc)
+    return name, text("console.exported").format(file=name)
