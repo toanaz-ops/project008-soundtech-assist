@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 from wing_parser.advisory.models import LAYERS, SEVERITIES, Finding
 from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.findings_model import FindingsModel
+from wing_parser.ui.texts import text
 
 ALL = "all"
 
@@ -58,9 +59,9 @@ class FindingsView(QWidget):
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
 
         bar = QHBoxLayout()
-        bar.addWidget(QLabel("Severity"))
+        bar.addWidget(QLabel(text("findings.severity")))
         bar.addWidget(self._severity)
-        bar.addWidget(QLabel("Layer"))
+        bar.addWidget(QLabel(text("findings.layer")))
         bar.addWidget(self._layer)
         bar.addStretch()
         bar.addWidget(self._count)

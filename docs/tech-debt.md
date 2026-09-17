@@ -277,7 +277,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     user-facing strings go through `wing_parser/ui/texts.py`.
   - close: move them into `texts.py`; add a test that scans `wing_parser/ui/` for
     quoted strings passed to `setText`/`setWindowTitle`/`QMessageBox`
-  - status: open (narrowed 2026-08-26) — the twelve enumerated strings moved to texts.py (task 16W1 `6d131c2`); still owed: the repo-wide scanner test over setText/setWindowTitle/QMessageBox literals.
+  - status: closed 2026-09-15 — `ast` scanner over `wing_parser/ui/**/*.py` (`0b5e295`, widened `63a8d6c` after review refuted the first pass) fails naming file:line. **Covers:** the ten setters (setText/setWindowTitle/setToolTip/setPlaceholderText/setTitle/setTabText/setStatusTip/setWhatsThis/addMenu/addAction), seven widget constructors (QPushButton/QLabel/QGroupBox/QAction/QMenu/QCheckBox/QRadioButton), the QMessageBox statics bare or attribute-qualified, and the QFileDialog statics' caption and filter arguments — plain literals and f-strings alike. **Cannot cover** (named in tests/test_ui_texts.py's module docstring, and the reason a clean run is not proof the rule holds): a string bound to a name first (`FILTER = "..."` reaches the call as a Name), a string built at runtime by `.format`/`%`/concatenation/`join`, and any Qt class or method not in the hand-edited lists. Eighteen strings routed through texts.py in total — eight by the first pass (`0a7eaa2`, `6be328e`, `fad8076`, `fd8f15e`) and ten more by the widened one, five of those bound to a module constant first and so found by reading, not by the test. Argued and left: `__main__.py:18` MISSING_PYSIDE (printed before Qt exists), `findings_view.py:28` ALL (a compared-against sentinel), `elide.py:23` ELLIPSIS (typography), and `overview_page.py:49` `QLabel("0")` (a digit, allowlisted by value). All four re-read from the files 2026-09-15. Pinned by `test_no_user_facing_literal_bypasses_texts_py`, `test_the_scan_would_catch_a_regression` and `test_a_module_level_constant_is_a_known_blind_spot` (tests/test_ui_texts.py).
 
 - **D-25** Provider calls block the GUI thread with no cancel and no timeout
   - owner: machine-doable — ToanAZ ruled on 2026-08-26 that a worker, a Cancel
@@ -344,23 +344,29 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     step_rail.py/key_status.py.
   - close: extract remaining step orchestration (pick/mapping glue) into its
     own module; `.venv/Scripts/python.exe -m pytest tests/test_ui_import_page.py -q`
-  - status: open
+  - status: closed 2026-09-15 — step builders and the `finish_mapping`/`show_preview` transitions extracted to `wing_parser/ui/import_steps.py`; import_page.py 246 → 177, the new module 117, tests/test_ui_import_page.py unchanged (`be22878`), pinned by `test_no_ui_module_is_over_the_line_ceiling` (tests/test_ui_house_style.py).
 
 - **D-30** Placeholder API key reads as configured
   - owner: machine-doable
   - evidence: KeyStatusLine treats any non-empty provider.yaml as configured;
-    the repo's committed-shape placeholder value ("PASTE_KEY...") would hide
-    the unconfigured warning while the assisted path fails on first model call.
+    a local, untracked provider.yaml carrying the `PASTE_KEY_<PROVIDER>_VAO_DAY`
+    convention (or the manual's `sk-xxxxxxxx...`, docs/user-manual/04 lines 14
+    and 24) would hide the unconfigured warning while the assisted path fails
+    on the first model call. Nothing of the sort is committed: provider.yaml
+    has never been tracked (.gitignore line 28; `git log --all -- provider.yaml`
+    is empty), because it holds a key. Wording corrected 2026-09-15 — the
+    original said "the repo's committed-shape placeholder value", which reads
+    as a key file in git.
   - close: treat known placeholder prefixes as unconfigured in KeyStatusLine;
     add a test with a placeholder-bearing provider.yaml.
-  - status: open
+  - status: closed 2026-09-15 in two halves. **Placeholder rejection** (`02cadb6`): the placeholder set lives once as `provider.is_placeholder_key` / `has_usable_key`, shared by KeyStatusLine and both provider adapters — so a placeholder earns the local "no API key" message naming provider.yaml and the env var, rather than a 401 from the far end. Pinned by `test_the_paste_key_convention_is_not_a_key` (tests/test_provider_config.py). **One resolver** (`44e222d`): the first attempt gave the key line a second, nearly-identical search chain, and review found it disagreeing with the call it describes — a keyless knowledge-dir provider.yaml (Settings saved with an empty key field) stopped the hint while the model call walked on to ./provider.yaml and found a real key. The search now lives once as `provider.resolve_config(knowledge_dir)` — pin → knowledge-dir copy IF it carries a usable key → `load_config(None)` — taken by KeyStatusLine, `ImportPage._provider_factory` and the Settings dialog's Test connection. Pinned by `test_the_key_hint_and_the_model_call_read_the_same_config` (tests/test_ui_import_page.py), which asserts the built provider's key and the hint's verdict together. **Scope:** this unifies the DESKTOP app only. `wing showcontext import` still resolves with `load_config(None)` and does not read the knowledge dir — see **D-39**.
 
 - **D-31** Settings Cancel button reuses the `import.cancel` texts key
   - owner: machine-doable
   - evidence: settings_dialog.py builds its Cancel from texts["import.cancel"];
     works today, misleads the next texts.py reader.
   - close: add settings.cancel key and consume it.
-  - status: open
+  - status: closed 2026-09-15 — `settings.cancel` added to texts.py and consumed by settings_dialog.py (`b5c506d`), pinned by `test_cancel_uses_its_own_texts_key` (tests/test_ui_settings.py).
 
 - **D-32** `fonts._family_for` falls back silently when a face is missing
   - owner: machine-doable (parked — guarded elsewhere)
@@ -421,6 +427,48 @@ by the command shown. The wave-1 / wave-1b closures below were written on
   - close: add a superseding note pointing at the wave-1b plan + rulings.
   - status: closed 2026-08-26 — superseding note added to the spec in the
     final-review fix commit.
+
+- **D-39** A key saved in the desktop Settings dialog never reaches the CLI
+  - owner: machine-doable
+  - evidence: found 2026-09-15 while closing **D-30**, which unified the
+    DESKTOP config chain and made this gap visible by contrast.
+    `SettingsDialog.save()` writes `<knowledge_dir>/provider.yaml` and pins
+    `$WING_PROVIDER_CONFIG` at `settings_dialog.py:164` — but that pin lives in
+    the dialog's own process. A later `wing showcontext import` starts fresh,
+    and the wizard resolves with `make_provider(load_config(None))` at
+    `wing_parser/showcontext/ingest/wizard.py:53` (mapping proposal) and `:223`
+    (term guessing). `load_config` walks `$WING_PROVIDER_CONFIG` →
+    `./provider.yaml` → defaults; it never looks in the knowledge directory.
+    So the operator pastes a key into Settings, the app works, and the CLI
+    still prints `(no model assist: ...)`.
+    Measured, same environment, no pin, no env keys, no `./provider.yaml`:
+
+    ```
+    knowledge dir            : ...\tmp7mb7fpms\knowledge
+    UI  (resolve_config)     : 'sk-saved-from-settings'
+    CLI (load_config(None))  : ''
+    DIVERGE                  : True
+    ```
+
+    Not fixed with D-30 deliberately: the knowledge directory does not reach
+    the wizard. `commands.py:271-279` calls `run_wizard(args.sheet, output=,
+    force=, scene=, one_shot=)` — there is no `--knowledge` flag anywhere in
+    `wing_parser/cli/`, no `knowledge_dir=` keyword, and **no CLI module calls
+    `config.knowledge_dir()` at all** (every caller outside `config.py` is
+    under `wing_parser/ui/`). Making the wizard read it would be the first
+    CLI↔knowledge-dir coupling in the codebase, and the CLI's documented
+    contract (docs/user-manual/04) is `./provider.yaml` plus the env var. That
+    is a design call, not a tidy-up, so it is filed rather than smuggled into
+    a debt-closing PR.
+  - close: pass the knowledge directory into `run_wizard` and resolve both
+    sites through `provider.resolve_config(knowledge_dir)`, the same function
+    the desktop app uses; test that a key written the way
+    `SettingsDialog.save()` writes it is picked up by the wizard's provider
+    factory in a process with no `$WING_PROVIDER_CONFIG`. Decide at the same
+    time whether the CLI should honour the knowledge dir at all, or whether
+    Settings should instead offer to write `./provider.yaml` — the user manual
+    has to agree with whichever is chosen.
+  - status: open
 
 ---
 

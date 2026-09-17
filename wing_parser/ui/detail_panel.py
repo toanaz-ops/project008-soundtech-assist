@@ -23,11 +23,9 @@ from PySide6.QtWidgets import (
 
 from wing_parser.advisory.models import Finding
 from wing_parser.edit import repairs
+from wing_parser.ui.texts import text
 
-NO_REPAIR = (
-    "No one-click repair for this rule: it states a window or a count, "
-    "so no single value follows from it. Adjust it by hand on the console."
-)
+NO_REPAIR = text("detail.no_repair")
 
 
 def _wrapped(text: str = "") -> QLabel:
@@ -89,10 +87,10 @@ class DetailPanel(QWidget):
             return
 
         rule = session.rule(finding.rule_id)
-        self.title_label.setText(
-            f"{finding.rule_id} — {rule.title if rule else ''}"
-            f"   [{finding.severity} · {finding.layer}]"
-        )
+        self.title_label.setText(text("detail.title").format(
+            rule=finding.rule_id, title=rule.title if rule else "",
+            severity=finding.severity, layer=finding.layer,
+        ))
         self.message_label.setText(finding.message)
         self.rationale_label.setText(rule.rationale.strip() if rule else "")
         self.source_label.setText(rule.source.strip() if rule else "")

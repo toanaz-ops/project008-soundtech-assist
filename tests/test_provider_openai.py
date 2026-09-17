@@ -89,3 +89,18 @@ def test_missing_sdk_raises_named_extra(monkeypatch):
     with pytest.raises(MissingExtra) as excinfo:
         provider.complete_json("s", "u", SCHEMA)
     assert "llm-openai" in str(excinfo.value)
+
+
+def test_a_placeholder_key_is_refused_before_the_wire(monkeypatch):
+    """docs/tech-debt.md#d-30 -- the PASTE_KEY_... convention.
+
+    Not a shipped value: provider.yaml is untracked (.gitignore line 28).
+    This is the shape the operator's own file carries until they paste a
+    key over it. Sending it would earn a 401 whose text names nothing they
+    can act on; the local message names the file and the env var.
+    """
+    monkeypatch.setenv("NOPE_KEY", "PASTE_KEY_DEEPSEEK_VAO_DAY")
+    provider = OpenAICompatProvider(model="m", api_key_env="NOPE_KEY")
+    with pytest.raises(ProviderError) as excinfo:
+        provider.complete_json("s", "u", SCHEMA)
+    assert "no API key" in str(excinfo.value)

@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import os
 
-from wing_parser.classifier.provider import ProviderError
+from wing_parser.classifier.provider import ProviderError, is_placeholder_key
 
 EXTRA_HINT = (
     "talking to an OpenAI-compatible model needs the openai package, "
@@ -46,7 +46,9 @@ class OpenAICompatProvider:
 
     def _client(self):
         key = self.api_key or os.environ.get(self.api_key_env, "")
-        if not key:
+        # A placeholder is as useless as no key at all, and saying so
+        # here beats a 401 from the far end (docs/tech-debt.md#d-30).
+        if is_placeholder_key(key):
             raise ProviderError(
                 f"no API key: paste api_key: into provider.yaml or set "
                 f"environment variable {self.api_key_env!r}"

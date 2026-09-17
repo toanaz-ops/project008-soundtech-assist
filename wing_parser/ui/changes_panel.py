@@ -11,6 +11,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QListWidget, QPushButton, QVBoxLayout, QWidget
 
 from wing_parser.edit.journal import Patch
+from wing_parser.ui.texts import text
 
 
 class ChangesPanel(QWidget):
@@ -19,7 +20,7 @@ class ChangesPanel(QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.list = QListWidget()
-        self.undo_button = QPushButton("Undo the last change")
+        self.undo_button = QPushButton(text("changes.undo"))
         self.undo_button.clicked.connect(self.undo_requested.emit)
 
         layout = QVBoxLayout(self)

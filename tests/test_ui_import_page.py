@@ -301,6 +301,71 @@ def test_a_present_key_keeps_the_line_empty(qt_app, monkeypatch, tmp_path):
     assert page.key_status.text() == ""
 
 
+def test_the_key_hint_and_the_model_call_read_the_same_config(
+        qt_app, monkeypatch, tmp_path):
+    """The refutation that reopened D-30, pinned.
+
+    A keyless knowledge-dir provider.yaml (Settings saved with the key
+    field left empty) used to stop the key line's search while the model
+    call walked on to ./provider.yaml and found a real key. The line said
+    "no model key configured" about a machine that was configured.
+    """
+    from wing_parser import config
+    from wing_parser.classifier import provider
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text(
+        'provider: openai-compat\napi_key: ""\napi_key_env: ""\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "provider.yaml").write_text(
+        'provider: openai-compat\napi_key: "sk-real-9f3a"\n', encoding="utf-8"
+    )
+    monkeypatch.setenv(config.ENV_VAR, str(knowledge))
+    monkeypatch.delenv(provider.ENV_VAR, raising=False)
+    monkeypatch.chdir(tmp_path)
+    for env in ("ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY"):
+        monkeypatch.delenv(env, raising=False)
+    from wing_parser.ui.import_page import ImportPage
+
+    page = ImportPage()
+    # What a real call would authenticate with, built without any SDK.
+    assert page._provider_factory().api_key == "sk-real-9f3a"
+    assert page.key_status.text() == ""
+
+
+def test_a_placeholder_key_still_reads_as_missing(qt_app, monkeypatch,
+                                                  tmp_path):
+    """docs/tech-debt.md#d-30: a `PASTE_KEY...` marker is not a key.
+
+    Untracked, not shipped -- it is what the operator's own provider.yaml
+    carries before they paste a real key over it. Counting it as
+    configured hid this warning and the assisted path then died on the
+    first model call instead of here.
+    """
+    from wing_parser import config
+    from wing_parser.classifier import provider
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text(
+        "provider: openai-compat\napi_key: PASTE_KEY_DEEPSEEK_VAO_DAY\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv(config.ENV_VAR, str(knowledge))
+    monkeypatch.delenv(provider.ENV_VAR, raising=False)
+    monkeypatch.chdir(tmp_path)   # away from the repo's own ./provider.yaml
+    for env in ("ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY"):
+        monkeypatch.delenv(env, raising=False)
+    from wing_parser.ui.import_page import ImportPage
+
+    page = ImportPage()
+    assert page.key_status.text() != ""
+
+
 def test_the_key_line_rechecks_when_the_page_is_shown(qt_app, monkeypatch,
                                                       tmp_path):
     from wing_parser import config

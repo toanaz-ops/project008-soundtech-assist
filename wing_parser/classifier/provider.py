@@ -161,6 +161,70 @@ def resolve(config: ProviderConfig) -> ProviderConfig:
     )
 
 
+# Fill-me-in markers an operator's own provider.yaml is likely to carry.
+# NOTHING here is shipped: provider.yaml has never been tracked (.gitignore
+# line 28, and `git log --all -- provider.yaml` is empty), because it holds
+# a key. The two shapes are documented rather than committed --
+# docs/user-manual/04-cau-hinh-model.md lines 14 and 24 tell the operator
+# to write `api_key: sk-xxxxxxxx...`, and the local untracked file this
+# project hands people follows a `PASTE_KEY_<PROVIDER>_VAO_DAY` convention.
+# Both are non-empty, so a truthiness test calls them configured and the
+# operator only finds out at the first model call
+# (docs/tech-debt.md#d-30). Matched case-insensitively on the stripped
+# value; `<` catches the `<your key>` shape docs tend to grow.
+KEY_PLACEHOLDER_PREFIXES = ("paste", "sk-xxx", "<")
+
+
+def is_placeholder_key(value: str) -> bool:
+    """True for an empty key or one of the repo's own fill-me-in markers."""
+    candidate = value.strip().lower()
+    return not candidate or candidate.startswith(KEY_PLACEHOLDER_PREFIXES)
+
+
+def has_usable_key(config: ProviderConfig) -> bool:
+    """Could this config authenticate a call, without making one?
+
+    Mirrors `make_provider`'s own precedence -- a pasted `api_key` beats
+    `api_key_env` -- and rejects the placeholders at both sites, so a
+    half-filled provider.yaml still falls through to the env var.
+    """
+    resolved = resolve(config)
+    if not is_placeholder_key(resolved.api_key):
+        return True
+    return not is_placeholder_key(os.environ.get(resolved.api_key_env, ""))
+
+
+def resolve_config(knowledge_dir: str | Path | None = None) -> ProviderConfig:
+    """The ONE config a model call and the UI's key hint both read.
+
+    Two nearly-identical chains is how the import page came to say "no
+    model key configured" about a machine whose next call would have
+    authenticated fine, so there is one chain and both callers take it:
+
+    1. `$WING_PROVIDER_CONFIG`. The pin the Settings dialog drops the
+       moment it saves; whoever set it named that file on purpose, so a
+       pin at a missing file raises rather than being stepped over.
+    2. `<knowledge_dir>/provider.yaml`, but only when it carries a usable
+       key. That is the copy Settings writes, and it must beat the CWD
+       file -- but a keyless one (an empty key field) is a half-filled
+       form, not an instruction to stop looking.
+    3. Whatever `load_config(None)` finds: ./provider.yaml, then the
+       built-in defaults.
+
+    Step 2 is the only thing this adds to `load_config`; 1 and 3 ARE
+    `load_config(None)`, which is why the two cannot disagree on a
+    machine that has no knowledge-dir copy.
+    """
+    if knowledge_dir is None or os.environ.get(ENV_VAR):
+        return load_config(None)
+    saved = Path(knowledge_dir) / "provider.yaml"
+    if saved.exists():
+        candidate = load_config(saved)
+        if has_usable_key(candidate):
+            return candidate
+    return load_config(None)
+
+
 def make_provider(config: ProviderConfig):
     resolved = resolve(config)
     if resolved.name == "anthropic":

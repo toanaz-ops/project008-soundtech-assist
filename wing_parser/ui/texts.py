@@ -2,6 +2,7 @@
 
 TEXTS: dict[str, str] = {
     "app.title": "wing",
+    "window.title": "{app} — {file}{profile}{mark}",
     "page.doctor": "Doctor",
     "page.overview": "Overview",
     "page.channels": "Channels",
@@ -32,11 +33,20 @@ TEXTS: dict[str, str] = {
     "channels.col.muted": "Muted",
     "channels.detail_empty": "",
     "channels.title": "Channel {number}: {name}",
+    "detail.title": "{rule} — {title}   [{severity} · {layer}]",
+    "detail.no_repair": (
+        "No one-click repair for this rule: it states a window or a "
+        "count, so no single value follows from it. Adjust it by hand "
+        "on the console."
+    ),
     "routing.summary": "Routing summary",
     "routing.col.label": "Item",
     "routing.col.value": "Count",
     "routing.unclassified": "Unclassified",
     "diff.compare": "Compare with...",
+    "changes.undo": "Undo the last change",
+    "findings.severity": "Severity",
+    "findings.layer": "Layer",
     "diff.clear": "Clear",
     "diff.table": "Differences",
     "diff.col.path": "Path",
@@ -46,6 +56,8 @@ TEXTS: dict[str, str] = {
     "diff.no_session": "Open a scene first — it is the left side of the diff.",
     "diff.error": "Cannot read that file: {error}",
     "import.pick": "Pick a rundown (.xlsx)...",
+    "import.xlsx_filter": "Excel workbook (*.xlsx)",
+    "import.yaml_filter": "YAML (*.yaml);;All files (*)",
     "import.sample_pane": "What is in this workbook",
     "import.resting": (
         "Pick a rundown workbook (.xlsx) — its sheets and first rows "
@@ -84,6 +96,13 @@ TEXTS: dict[str, str] = {
     "import.cancelled": "Cancelled — nothing was applied.",
     "import.timeout": "The model did not answer within {seconds} s.",
     "import.busy": "A model request is already running — cancel it or wait.",
+    "menu.open": "&Open...",
+    "menu.open_title": "Open a WING scene",
+    "menu.save_title": "Save the edited scene",
+    "menu.scene_filter": "WING scene (*.snap);;All files (*)",
+    "menu.save_as": "Save &As...",
+    "menu.undo": "&Undo",
+    "menu.knowledge": "Where my judgements are stored...",
     "menu.settings": "&Settings...",
     "menu.reanalyse": "&Reanalyse",
     "menu.recent": "Open &Recent",
@@ -98,12 +117,14 @@ TEXTS: dict[str, str] = {
     "error.open": "Cannot open that file",
     "error.save": "Cannot save",
     "save.done": "Saved",
+    "save.body": "Wrote {file}",
     "knowledge.title": "Knowledge directory",
     "knowledge.body": (
         "Verdicts, principles and show profiles live in:\n\n{directory}\n\n"
         "feedback.jsonl holds every verdict recorded here.\n"
         "principles.yaml and shows/ are yours to edit."
     ),
+    "verdict.note": "Note (optional)",
     "settings.title": "Settings",
     "settings.provider": "Provider",
     "settings.model": "Model",
@@ -114,6 +135,7 @@ TEXTS: dict[str, str] = {
     ),
     "settings.api_key_env": "API key env var (optional)",
     "settings.save": "Save",
+    "settings.cancel": "Cancel",
     "settings.test": "Test connection",
     "settings.close": "Close",
     "settings.probe_ok": "Connection OK — {message}",

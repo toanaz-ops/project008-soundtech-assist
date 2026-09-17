@@ -1,6 +1,7 @@
 """The Import page: an assisted ingest behind four buttons.
 
-Pick -> Mapping -> Terms -> Preview & Save, stacked in `step_area`.
+Pick -> Mapping -> Terms -> Preview & Save, stacked in `step_area`;
+each step is built and advanced by `import_steps` (docs/tech-debt.md#d-29).
 Model calls (`proposal_for`, `guesses_for`) run on cancellable workers
 with ruled timeouts (task C, wave 1b) -- the page never blocks on the
 network. Every failure degrades to a status label -- no tracebacks.
@@ -21,20 +22,16 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from wing_parser.showcontext.ingest import sheet as sheet_mod
 from wing_parser.ui import import_controller as ic
+from wing_parser.ui import import_steps
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.key_status import KeyStatusLine
-from wing_parser.ui.mapping_step import MappingStep
-from wing_parser.ui.pick_step import PickStep
-from wing_parser.ui.save_step import SaveStep
 from wing_parser.ui.step_rail import StepRail
-from wing_parser.ui.terms_step import TermsStep
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
 
-FILTER = "Excel workbook (*.xlsx)"
-SAVE_FILTER = "YAML (*.yaml);;All files (*)"
+FILTER = text("import.xlsx_filter")
+SAVE_FILTER = text("import.yaml_filter")
 STEPS = ("pick", "mapping", "vocabulary", "save")
 
 
@@ -62,8 +59,7 @@ class ImportPage(QWidget):
             tuple((s, text(f"import.step.{s}")) for s in STEPS))
 
         self.step_area = QStackedLayout()
-        for step in (self._build_pick(), self._build_mapping(),
-                     self._build_terms(), self._build_save()):
+        for step in import_steps.build_steps(self):
             self.step_area.addWidget(step)
         self.step_area.currentChanged.connect(self.step_rail.set_step)
 
@@ -96,18 +92,15 @@ class ImportPage(QWidget):
         self._directory = path
 
     def _provider_factory(self):
-        from wing_parser.classifier.provider import load_config, make_provider
+        """The provider a real call uses -- `key_status` reads the same
+        resolver, and the two must never disagree (tech-debt.md#d-30)."""
+        from wing_parser import config
+        from wing_parser.classifier.provider import make_provider, resolve_config
 
-        return make_provider(load_config(None))
+        return make_provider(resolve_config(config.knowledge_dir()))
 
     def _fail(self, exc: Exception) -> None:
         self.status.setText(text("import.error").format(error=exc))
-
-    def _build_pick(self) -> QWidget:
-        self.pick_step = PickStep()
-        self.sample_pane = self.pick_step.sample_pane
-        self.pick_step.choose_button.clicked.connect(self._choose_file)
-        return self.pick_step
 
     def _choose_file(self) -> None:
         name, _ = QFileDialog.getOpenFileName(
@@ -142,53 +135,10 @@ class ImportPage(QWidget):
         self.status.setText("")
         self.step_area.setCurrentIndex(1)
 
-    def _build_mapping(self) -> QWidget:
-        self.mapping_step = MappingStep()
-        for name in ("sheet_edit", "header_row_spin", "badge",
-                     "problems_label", "manual_hint", "back_button",
-                     "next_button"):
-            setattr(self, name, getattr(self.mapping_step, name))
-
-        self.back_button.clicked.connect(
-            lambda: self.step_area.setCurrentIndex(0)
-        )
-        self.next_button.clicked.connect(self._finish_mapping)
-        return self.mapping_step
-
     def letter_edit(self, field: str):
         return self.mapping_step.letter_edit(field)
 
     header_edit = letter_edit
-
-    def _finish_mapping(self) -> None:
-        columns, headers = self.mapping_step.collect()
-        name = self.sheet_edit.text().strip() or None
-        try:
-            read, resolved = ic.read_with(
-                self._xlsx, name, self.header_row_spin.value(),
-                columns, headers,
-            )
-            result = ic.build_result(read, resolved)
-        except (OSError, ValueError, sheet_mod.MissingExtra) as exc:
-            self._fail(exc)
-            return
-        self._rows = read.rows
-        self.show_terms_step(result)
-
-    def _build_terms(self) -> QWidget:
-        self.terms_step = TermsStep(
-            self._provider_factory, self._fail,
-            runner=self._runner, report=self.status.setText,
-        )
-        self.load_guesses_button = self.terms_step.load_guesses_button
-        self.preview_button = QPushButton(text("import.preview"))
-        self.preview_button.clicked.connect(self._show_preview)
-
-        step = QWidget()
-        layout = QVBoxLayout(step)
-        layout.addWidget(self.terms_step)
-        layout.addWidget(self.preview_button)
-        return step
 
     def show_terms_step(self, result) -> None:
         """Test seam: rebuild step 3 from any BuildResult-shaped object."""
@@ -210,22 +160,6 @@ class ImportPage(QWidget):
     def term_row_state(self, term: str) -> str:
         """pending | recorded | skipped -- recorded means written."""
         return self.terms_step.term_row_state(term)
-
-    def _build_save(self) -> QWidget:
-        self.save_step = SaveStep()
-        self.preview_pane = self.save_step.preview_pane
-        self.save_step.save_button.clicked.connect(self._save_dialog)
-        return self.save_step
-
-    def _show_preview(self) -> None:
-        try:
-            self.preview_pane.setPlainText(
-                ic.preview_text(self._xlsx, self._result)
-            )
-        except (OSError, ValueError) as exc:
-            self._fail(exc)
-            return
-        self.step_area.setCurrentIndex(3)
 
     def save_as(self, path: str) -> bool:
         """Public seam: write the preview as UTF-8, minus the dialog."""

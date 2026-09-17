@@ -9,8 +9,6 @@ this page is already alive.
 
 from __future__ import annotations
 
-import os
-
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QLabel, QWidget
 
@@ -42,17 +40,22 @@ class KeyStatusLine(QLabel):
 
 
 def _key_configured() -> bool:
-    """Cheap and offline: does the effective provider config carry a key?
+    """Cheap and offline: would a model call from this page find a key?
 
-    A pasted api_key in provider.yaml wins, else its api_key_env. A
-    WING_PROVIDER_CONFIG naming a missing file counts as unconfigured,
-    not as a crash -- this line is a hint, not a gate.
+    Deliberately not its own search. `provider.resolve_config` is the
+    same function `ImportPage._provider_factory` builds the real provider
+    from, so this line cannot drift out of step with the call it is
+    describing -- which is exactly how it once warned about a configured
+    machine. A placeholder value counts as unconfigured, not as a key,
+    and a pin naming a missing file counts as unconfigured too rather
+    than as a crash: this line is a hint, not a gate.
+    See docs/tech-debt.md#d-30.
     """
+    from wing_parser import config
     from wing_parser.classifier import provider
 
     try:
-        loaded = provider.load_config(None)
-    except ValueError:
+        loaded = provider.resolve_config(config.knowledge_dir())
+    except (OSError, ValueError):
         return False
-    resolved = provider.resolve(loaded)
-    return bool(loaded.api_key) or bool(os.environ.get(resolved.api_key_env))
+    return provider.has_usable_key(loaded)
