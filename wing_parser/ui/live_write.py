@@ -11,6 +11,15 @@ only after gate 4 has re-asked `WriteGate.can_write()` and
 `ArmState.armed()` (§8.4), so "a plain call writes nothing" is a type
 error, not a convention.
 
+**Gate 4's second half is `DeskChanged`.** The confirmation names the
+desk the operator confirmed against, so `send` re-queries identity and
+refuses if the serial differs -- nothing is transmitted. A countdown can
+run for a minute (§8.4), and a DHCP lease or a swapped cable can put a
+different console on that address inside it. `write.set`'s own
+`_authorize` (`write.py:93-100`) cannot catch that: it compares against
+`WING_WRITE_ALLOW_SERIAL`, which wave 3 never sets (§8.5). The cost is
+one extra `WING?` round trip per write, which is the point.
+
 **`read` normalises before anything compares or displays.** A `,sfi` leaf
 reads back as a Python `int` (`codec.py:126-128`) and `jsontypes.py:1-13`
 gives the reason: `,sfi` covers plain integers AND WING's booleans, and the
@@ -32,6 +41,11 @@ from wing_parser.net.client import WingClient
 from wing_parser.net.codec import leaf_value
 from wing_parser.net.identity import WingIdentity, query_identity
 from wing_parser.net.write import SetResult
+
+
+class DeskChanged(RuntimeError):
+    """The desk answering now is not the one the write was confirmed
+    against. Raised by `send` BEFORE anything reaches the wire."""
 
 
 def scene_value(parts: Sequence[str], readback: Any) -> Any:
@@ -118,11 +132,25 @@ def preflight(host: str, path: str,
 def send(confirmation: WriteConfirmation,
          transport: WriteTransport = REAL) -> SetResult:
     """Write one leaf, read it back, and hand the caller `write.py`'s own
-    verdict. Always `set`, always `confirm=True` (W3)."""
+    verdict. Always `set`, always `confirm=True` (W3).
+
+    Raises `TypeError` for anything but a `WriteConfirmation`, and
+    `DeskChanged` if the desk at `confirmation.host` no longer answers
+    with the serial the confirmation was built against. Neither
+    transmits.
+    """
     if not isinstance(confirmation, WriteConfirmation):
         raise TypeError(
             "live_write.send takes a WriteConfirmation built behind gate 4, "
             f"not {type(confirmation).__name__}"
+        )
+    now = transport.identity(confirmation.host)
+    if now.serial != confirmation.identity.serial:
+        raise DeskChanged(
+            f"refusing to write to {confirmation.host}: this write was confirmed "
+            f"against {confirmation.identity.name!r} (serial "
+            f"{confirmation.identity.serial!r}), but the desk there now answers "
+            f"as {now.name!r} (serial {now.serial!r})"
         )
     return transport.set(
         confirmation.host, confirmation.address, confirmation.after,

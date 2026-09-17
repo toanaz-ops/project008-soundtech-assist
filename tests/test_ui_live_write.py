@@ -55,11 +55,10 @@ def test_preflight_returns_the_identity_and_the_desks_current_value():
     assert current is True
 
 
-def test_a_timeout_from_identity_propagates_and_nothing_is_sent():
+def test_a_timeout_from_identity_propagates_untranslated():
     desk = FakeDesk(identity=TimeoutError("no reply from 192.168.128.28"))
     with pytest.raises(TimeoutError):
         live_write.preflight(HOST, BOOL_PATH, desk.write_transport())
-    assert desk.sets == []
 
 
 # -- normalisation, one test per JSON type (§4) -------------------------
@@ -136,6 +135,40 @@ def test_send_refuses_anything_but_a_write_confirmation(bad):
     assert desk.sets == []
 
 
+def test_send_refuses_when_the_desk_serial_changed_since_preflight():
+    """Gate 4's second half: the confirmation names a desk, and `send`
+    proves the desk still answering is that one before it transmits.
+
+    Without it the operator confirms against WING-GIAQUY, a DHCP lease or
+    a swapped cable puts another console on that address, and the packet
+    lands on a stranger's mix -- `write.set`'s own `_authorize` cannot
+    catch it, because `WING_WRITE_ALLOW_SERIAL` is unset in this app.
+    """
+    import dataclasses
+
+    desk = _desk(leaves={BOOL_OSC: _sfi(BOOL_OSC, "1", 1)})
+    transport = desk.write_transport()
+    identity, _current = live_write.preflight(HOST, BOOL_PATH, transport)
+
+    desk.identity = dataclasses.replace(
+        identity, name="WING-OTHER", serial="02FEEDFACE0000")
+
+    confirmation = live_write.WriteConfirmation(
+        host=HOST, address=BOOL_OSC, after=False,
+        identity=identity, desk_before=True)
+    with pytest.raises(live_write.DeskChanged) as exc:
+        live_write.send(confirmation, transport)
+    assert "01009Y90604AAE" in str(exc.value), "the serial confirmed against"
+    assert "02FEEDFACE0000" in str(exc.value), "the serial answering now"
+    assert desk.sets == [], "nothing may reach the wire once the desk changed"
+
+
+def test_send_transmits_when_the_desk_is_still_the_confirmed_one():
+    desk = _desk(readbacks={BOOL_OSC: 1})
+    live_write.send(_confirmation(desk, BOOL_PATH, True), desk.write_transport())
+    assert desk.sets == [(BOOL_OSC, True, True)]
+
+
 def test_a_serial_mismatch_reaches_the_caller_with_its_own_text():
     from wing_parser.net.write import SerialMismatchError
 
@@ -156,7 +189,12 @@ def test_a_serial_mismatch_reaches_the_caller_with_its_own_text():
 
 
 def test_real_transport_names_the_read_only_entry_points_and_write_set():
+    # Imported HERE, never at module scope: this assertion is the one place
+    # a test needs the real write module, and `set` is the only verb it may
+    # be wired to (W4). `tests/` is outside the AST scan either way.
+    from wing_parser.net import write
     from wing_parser.net.identity import query_identity
 
     assert live_write.REAL.identity is query_identity
-    assert callable(live_write.REAL.read) and callable(live_write.REAL.set)
+    assert live_write.REAL.set is write.set
+    assert callable(live_write.REAL.read)

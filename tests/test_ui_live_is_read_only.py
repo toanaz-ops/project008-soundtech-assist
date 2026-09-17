@@ -24,11 +24,21 @@ needs an import that rule 1 already catches. Pinned by
 `test_write_verbs_are_not_client_methods`, not just assumed.
 
 Wave 3 (W4, design §8.4) turns this into an **allow-list of one**:
-`wing_parser/ui/live_write.py` is the single door to the write path, so
-rule 1 is waived for it and rule 2 is waived there for the one verb
-`set`. `toggle`, `node_write` and `push` stay offences in every file,
-that one included, which `test_the_allow_listed_module_names_set_and_nothing_else`
-pins with a scan wider than rule 2's -- an attribute REFERENCE, not only
+`wing_parser/ui/live_write.py` is the single door to the write path.
+The allow-list is `path.name` EQUALITY against `ALLOWED_WRITE_MODULES`,
+never a substring or suffix of the offender line -- `bus_live_write.py`
+ends with the allow-listed name and must still be reported.
+
+Rule 1 is **narrowed** there, not waived: an allow-listed file may bind
+the write MODULE (`import wing_parser.net.write`, `from wing_parser.net
+import write`), whose verbs are then attribute access that rule 2 sees,
+or take `ALLOWED_WRITE_IMPORTS` off it by name. `from
+wing_parser.net.write import push` stays an offence, because a bare
+`push(host, ...)` contains no attribute access for rule 2 to find.
+Rule 2 therefore also tracks names bound to a verb that way, and
+`toggle`, `node_write` and `push` stay offences in every file, that one
+included -- which `test_the_allow_listed_module_names_set_and_nothing_else`
+pins with a scan wider than rule 2's: an attribute REFERENCE, not only
 a call, because `live_write.py` hands `write.set` to a dataclass field.
 
 Blind spot shared with `test_ui_texts.py`: a local variable assigned from
@@ -49,10 +59,11 @@ UI_ROOT = Path(ui_package.__file__).resolve().parent
 WRITE_VERBS = {"set", "toggle", "node_write", "push"}
 
 #: W4/§8.4: exactly one `ui/` module may reach `wing_parser.net.write`, and
-#: it exists in order to call ONE verb there. Keyed on `path.name` so the
-#: scan behaves identically in `UI_ROOT` and in a `tmp_path`. Adding a
-#: second entry re-opens the blast radius this file exists to bound --
-#: that is a spec change, not a fix.
+#: it exists in order to call ONE verb there. Matched by `path.name`
+#: EQUALITY -- never `name in offender_line`, which would exempt
+#: `bus_live_write.py` too -- so the scan behaves identically in `UI_ROOT`
+#: and in a `tmp_path`. Adding a second entry re-opens the blast radius
+#: this file exists to bound -- that is a spec change, not a fix.
 ALLOWED_WRITE_MODULES = frozenset({"live_write.py"})
 
 #: The one verb the allow-listed module may use. `toggle` sends `,i -1` and
@@ -61,6 +72,14 @@ ALLOWED_WRITE_MODULES = frozenset({"live_write.py"})
 #: break F1's one-leaf-per-transmission at the transport. Offences
 #: everywhere, that module included.
 ALLOWED_VERB = "set"
+
+#: What the allow-listed file may take off `wing_parser.net.write` BY NAME.
+#: The verb, plus the result and error types it must name to hand
+#: `write.py`'s own verdict back to its caller instead of re-deriving it.
+#: Anything else -- above all another verb -- is an offence there too: a
+#: bare `push(host, ...)` is a write with no attribute access anywhere in
+#: the file, which is exactly the shape a waived rule 1 would hide.
+ALLOWED_WRITE_IMPORTS = frozenset({ALLOWED_VERB, "SetResult", "SerialMismatchError"})
 
 
 def _py_files(root: Path):
@@ -134,13 +153,49 @@ def _dynamic_call_reaches_write(node: ast.Call) -> str | None:
     return name if ok else None
 
 
-def find_write_imports(root: Path) -> list[str]:
-    """Rule 1: every static or dynamic import reaching `wing_parser.net.write`."""
+def _allowed_write_import(node: ast.stmt) -> bool:
+    """True only for the narrow shapes the allow-listed file may use.
+
+    Binding the write MODULE is fine -- every verb on it is then an
+    attribute access, which rule 2 reads. Binding a NAME off it is fine
+    only for `ALLOWED_WRITE_IMPORTS`. A dynamic import is never allowed,
+    here or anywhere: this function is not consulted for one.
+    """
+    if isinstance(node, ast.Import):
+        return all(
+            a.name == "wing_parser.net.write"
+            for a in node.names
+            if a.name.startswith("wing_parser.net.write")
+        )
+    if isinstance(node, ast.ImportFrom):
+        module = node.module or ""
+        if module == "wing_parser.net":
+            return True         # `from wing_parser.net import write` -- the module
+        if module == "wing_parser.net.write":
+            return all(a.name in ALLOWED_WRITE_IMPORTS for a in node.names)
+    return False
+
+
+def find_write_imports(root: Path, *, skip_allowed: bool = False) -> list[str]:
+    """Rule 1: every static or dynamic import reaching `wing_parser.net.write`.
+
+    `skip_allowed` does not skip the allow-listed file, it NARROWS the
+    rule there to `_allowed_write_import` -- see this module's docstring
+    for why waiving it wholesale would hide a bare-name verb call.
+    """
     offenders = []
     for path in _py_files(root):
+        narrowed = skip_allowed and path.name in ALLOWED_WRITE_MODULES
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)) and _import_reaches_write(node):
+                if narrowed:
+                    if not _allowed_write_import(node):
+                        offenders.append(
+                            f"{path}:{node.lineno}: imports a name off the write path "
+                            f"outside {sorted(ALLOWED_WRITE_IMPORTS)}"
+                        )
+                    continue
                 offenders.append(f"{path}:{node.lineno}: imports the write path (wing_parser.net.write)")
             elif isinstance(node, ast.Call):
                 name = _dynamic_call_reaches_write(node)
@@ -163,32 +218,32 @@ def _base_name(node):
     return None
 
 
-def find_write_verb_calls(root: Path) -> list[str]:
-    """Rule 2: a write-verb call whose base name is bound from `wing_parser.net`."""
-    offenders = []
-    for path in _py_files(root):
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        net_bound = _net_bound_names(tree)
-        for node in ast.walk(tree):
-            if (not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute)
-                    or node.func.attr not in WRITE_VERBS):
-                continue
-            base = _base_name(node.func.value)
-            if base in net_bound:
-                offenders.append(
-                    f"{path}:{node.lineno}: calls .{node.func.attr}(...) on {base!r} (bound from {net_bound[base]})"
-                )
-    return sorted(offenders)
+def _verb_bound_names(tree: ast.Module) -> dict[str, str]:
+    """Local names bound to a write VERB by `from wing_parser.net.write
+    import <verb>`.
+
+    Without this table a bare `push(host, {})` is invisible to both verb
+    scans, which read `ast.Attribute`. Rule 1 catches the import itself
+    everywhere -- including, now, inside the allow-listed file -- but a
+    second lock on the call site costs four lines.
+    """
+    bound: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom) or (node.module or "") != "wing_parser.net.write":
+            continue
+        for a in node.names:
+            if a.name in WRITE_VERBS:
+                bound[a.asname or a.name] = f"wing_parser.net.write.{a.name}"
+    return bound
 
 
-def find_write_verb_uses(root: Path, *, skip_allowed: bool = False) -> list[str]:
-    """Every ATTRIBUTE access of a write verb on a `wing_parser.net` binding.
+def find_write_verb_calls(root: Path, *, skip_allowed: bool = False) -> list[str]:
+    """Rule 2: a write-verb call on a `wing_parser.net` binding, or on a
+    bare name imported from the write module.
 
-    Wider than `find_write_verb_calls` on purpose: `live_write.py` hands
-    `write.set` to a frozen dataclass field rather than calling it inline,
-    and a reference is exactly as reachable as a call. `skip_allowed`
-    leaves the allow-listed module out, for the assertion that checks it
-    separately by verb.
+    `skip_allowed` leaves the allow-listed file out entirely -- it is
+    checked instead, and more strictly, by `find_write_verb_uses` against
+    `ALLOWED_VERB`.
     """
     offenders = []
     for path in _py_files(root):
@@ -196,24 +251,57 @@ def find_write_verb_uses(root: Path, *, skip_allowed: bool = False) -> list[str]
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         net_bound = _net_bound_names(tree)
+        verb_bound = _verb_bound_names(tree)
         for node in ast.walk(tree):
-            if not isinstance(node, ast.Attribute) or node.attr not in WRITE_VERBS:
+            if not isinstance(node, ast.Call):
                 continue
-            base = _base_name(node.value)
-            if base in net_bound:
+            func = node.func
+            if isinstance(func, ast.Attribute) and func.attr in WRITE_VERBS:
+                base = _base_name(func.value)
+                if base in net_bound:
+                    offenders.append(
+                        f"{path}:{node.lineno}: calls .{func.attr}(...) on {base!r} (bound from {net_bound[base]})"
+                    )
+            elif isinstance(func, ast.Name) and func.id in verb_bound:
                 offenders.append(
-                    f"{path}:{node.lineno}: names .{node.attr} on {base!r} "
-                    f"(bound from {net_bound[base]})"
+                    f"{path}:{node.lineno}: calls .{verb_bound[func.id].rsplit('.', 1)[1]}(...) "
+                    f"as bare {func.id!r} (bound from {verb_bound[func.id]})"
+                )
+    return sorted(offenders)
+
+
+def find_write_verb_uses(root: Path) -> list[str]:
+    """Every REFERENCE to a write verb, attribute or bare name.
+
+    Wider than `find_write_verb_calls` on purpose: `live_write.py` hands
+    `write.set` to a frozen dataclass field rather than calling it inline,
+    and a reference is exactly as reachable as a call. Walks every file it
+    is handed, the allow-listed one included -- the allow-list is about
+    WHICH verb (`ALLOWED_VERB`), not about being scanned.
+    """
+    offenders = []
+    for path in _py_files(root):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        net_bound = _net_bound_names(tree)
+        verb_bound = _verb_bound_names(tree)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Attribute) and node.attr in WRITE_VERBS:
+                base = _base_name(node.value)
+                if base in net_bound:
+                    offenders.append(
+                        f"{path}:{node.lineno}: names .{node.attr} on {base!r} "
+                        f"(bound from {net_bound[base]})"
+                    )
+            elif isinstance(node, ast.Name) and node.id in verb_bound:
+                offenders.append(
+                    f"{path}:{node.lineno}: names .{verb_bound[node.id].rsplit('.', 1)[1]} "
+                    f"as bare {node.id!r} (bound from {verb_bound[node.id]})"
                 )
     return sorted(offenders)
 
 
 def test_only_the_allow_listed_module_imports_the_write_path():
-    offenders = [
-        o for o in find_write_imports(UI_ROOT)
-        if Path(o.split(":")[0] + ":" + o.split(":")[1]).name not in ALLOWED_WRITE_MODULES
-        and not any(f"{name}:" in o for name in ALLOWED_WRITE_MODULES)
-    ]
+    offenders = find_write_imports(UI_ROOT, skip_allowed=True)
     assert offenders == [], (
         "the write path must not be importable from ui/ outside "
         f"{sorted(ALLOWED_WRITE_MODULES)}:\n  " + "\n  ".join(offenders)
@@ -221,10 +309,7 @@ def test_only_the_allow_listed_module_imports_the_write_path():
 
 
 def test_no_other_ui_module_calls_a_write_verb_on_a_net_binding():
-    offenders = [
-        o for o in find_write_verb_calls(UI_ROOT)
-        if not any(f"{name}:" in o for name in ALLOWED_WRITE_MODULES)
-    ]
+    offenders = find_write_verb_calls(UI_ROOT, skip_allowed=True)
     assert offenders == [], "no write verb may be called on a net-bound name:\n  " + "\n  ".join(offenders)
 
 
@@ -251,6 +336,77 @@ def test_the_scan_still_catches_a_planted_push_in_an_allow_listed_name(tmp_path)
     )
     offenders = find_write_verb_uses(tmp_path)
     assert len(offenders) == 1 and ":4:" in offenders[0] and "push" in offenders[0]
+
+
+def test_a_look_alike_module_name_is_not_allow_listed(tmp_path):
+    """`bus_live_write.py` ENDS with the allow-listed name.
+
+    The allow-list is `path.name` equality, not a substring or a suffix:
+    a filter spelled `"live_write.py" in offender` exempts every module
+    whose name merely ends that way, and the one door becomes a family
+    of them. Both rules are checked, because both do their own skipping.
+    """
+    ui = tmp_path / "ui"
+    ui.mkdir()
+    (ui / "bus_live_write.py").write_text(
+        "from wing_parser.net import write\n\ndef go(host):\n"
+        "    return write.set(host, '/bus/1/fdr', -6.0, confirm=True)\n",
+        encoding="utf-8",
+    )
+    imports = find_write_imports(tmp_path, skip_allowed=True)
+    assert len(imports) == 1 and "bus_live_write.py" in imports[0], imports
+    calls = find_write_verb_calls(tmp_path, skip_allowed=True)
+    assert len(calls) == 1 and "bus_live_write.py" in calls[0], calls
+
+
+def test_the_allow_listed_file_may_not_import_a_verb_by_bare_name(tmp_path):
+    """Rule 1 is NOT waived wholesale for the allow-listed file.
+
+    `from wing_parser.net.write import push` then `push(host, ...)` is a
+    write with no attribute access anywhere in the file, so a waived
+    rule 1 plus a verb scan that only reads `ast.Attribute` would see
+    nothing at all. The import is an offence, and so is the bare call.
+    """
+    planted = tmp_path / "live_write.py"
+    planted.write_text(
+        "from wing_parser.net.write import push\n\ndef go(host):\n"
+        "    return push(host, {}, confirm=True)\n",
+        encoding="utf-8",
+    )
+    imports = find_write_imports(tmp_path, skip_allowed=True)
+    assert len(imports) == 1 and ":1:" in imports[0], imports
+    uses = find_write_verb_uses(tmp_path)
+    assert len(uses) == 1 and ":4:" in uses[0] and "push" in uses[0], uses
+    calls = find_write_verb_calls(tmp_path)
+    assert len(calls) == 1 and ":4:" in calls[0] and "push" in calls[0], calls
+
+
+def test_the_allow_listed_file_may_not_import_toggle_at_all(tmp_path):
+    """Importing the name is the offence -- it need not be called yet."""
+    planted = tmp_path / "live_write.py"
+    planted.write_text(
+        "from wing_parser.net.write import SetResult, toggle\n",
+        encoding="utf-8",
+    )
+    offenders = find_write_imports(tmp_path, skip_allowed=True)
+    assert len(offenders) == 1 and ":1:" in offenders[0], offenders
+
+
+def test_the_allow_listed_file_may_still_use_its_three_import_shapes(tmp_path):
+    """The other half: the allow-list must still ALLOW what it is for.
+
+    `SetResult` and `SerialMismatchError` are types, not verbs -- naming
+    them is how `live_write` hands `write.py`'s own verdict back to a
+    caller without re-implementing it.
+    """
+    planted = tmp_path / "live_write.py"
+    planted.write_text(
+        "import wing_parser.net.write as write\n"
+        "from wing_parser.net import jsontypes, write as _w\n"
+        "from wing_parser.net.write import SetResult, SerialMismatchError, set\n",
+        encoding="utf-8",
+    )
+    assert find_write_imports(tmp_path, skip_allowed=True) == []
 
 
 def test_write_verbs_are_not_client_methods():
