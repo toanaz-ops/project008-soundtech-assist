@@ -5,9 +5,9 @@ worktree: D:/DEV CAVE EP3/PROJECT008-SOUNDTECH-ASSIST/.claude/worktrees/feat-gui
 feature: GUI wave 2 - live console page (read-only)
 phase: GUI2
 status: wip
-next: merge PR #1 then PR #2, #3, #4 on GitHub; then real-desk acceptance §9.3
+next: real-desk acceptance §9.3 against WING-GIAQUY and ToanAZ review of the 15 ASSUMED decisions
 decisions_pending: 15
-date: 2026-09-16
+date: 2026-09-17
 ---
 
 # GUI wave 2 — live console page, task 17 handoff
@@ -26,16 +26,15 @@ date: 2026-09-16
   `origin/feat/gui-live-console-wave2`.
 - `git status --short` is clean. `packaging/wing-ui-debug.spec` is generated output and is now
   gitignored (D-46 closed), so it no longer sits there waiting for a careless `git add -A`.
-- Pull requests, from `gh pr list --state all` (all four OPEN):
-  | PR | Title | Base from Head |
+- Pull requests — **all four merged into `main`** on 2026-09-17 (confirmed via
+  `gh pr list --state merged`):
+  | PR | Title | Merge commit |
   |---|---|---|
-  | [#1](https://github.com/toanaz-ops/project008-soundtech-assist/pull/1) | fix(ui): close wave-1b leftovers D-24, D-29, D-30, D-31 | `main` from `fix/ui-debt-wave1b-leftovers` |
-  | [#2](https://github.com/toanaz-ops/project008-soundtech-assist/pull/2) | chore(ci): GitHub Actions test workflow | `fix/ui-debt-wave1b-leftovers` from `chore/github-workflow` |
-  | [#3](https://github.com/toanaz-ops/project008-soundtech-assist/pull/3) | docs: GUI wave 2 design spec + implementation plan | `main` from `docs/gui-live-console-wave2-plan` |
-  | [#4](https://github.com/toanaz-ops/project008-soundtech-assist/pull/4) | feat(ui): GUI wave 2 — live console page (read-only) | `fix/ui-debt-wave1b-leftovers` from `feat/gui-live-console-wave2` |
-  Stacking: PR #1 is the root (targets `main`); PR #2 and PR #4 both target PR #1's branch, so PR #1
-  must merge first or their diffs keep including PR #1's commits. PR #3 (the design doc) targets
-  `main` directly and is independent of the stack.
+  | [#1](https://github.com/toanaz-ops/project008-soundtech-assist/pull/1) | fix(ui): close wave-1b leftovers D-24, D-29, D-30, D-31 | `bedad80` |
+  | [#2](https://github.com/toanaz-ops/project008-soundtech-assist/pull/2) | chore(ci): GitHub Actions test workflow | `00949c4` |
+  | [#3](https://github.com/toanaz-ops/project008-soundtech-assist/pull/3) | docs: GUI wave 2 design spec + implementation plan | `56d5114` |
+  | [#4](https://github.com/toanaz-ops/project008-soundtech-assist/pull/4) | feat(ui): GUI wave 2 — live console page (read-only) | `dcf897a` |
+  `main` is now at `dcf897a`. CI on PR #4's merge was green: 1580 passed / 3 skipped.
 - Spec: `docs/superpowers/specs/2026-09-15-gui-live-console-wave2-design.md` (incl. `## Deviations
   recorded 2026-09-16` — read this before trusting the body above it literally).
 - Plan: `docs/superpowers/plans/2026-09-15-gui-live-console-wave2.md`.
@@ -211,7 +210,7 @@ git branch -vv | grep gui-live-console                      # in sync with origi
 wc -l wing_parser/ui/live_snapshot.py wing_parser/ui/live_events_view.py wing_parser/ui/live_controller.py
                                                               # 199 200 199
 ls docs/screenshots/2026-09-16-gui-wave2/                    # 7 PNGs plus README.md
-gh pr list --state all                                       # #1 #2 #3 #4, all OPEN
+gh pr list --state merged --limit 10                         # #1 #2 #3 #4, all merged into main
 ```
 
 The task-18 fix list and what each item changed are in

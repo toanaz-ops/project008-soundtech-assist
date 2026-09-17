@@ -57,7 +57,7 @@ counts and the whole channel list at a glance; **Channels** and
 **Routing** give the classified detail; **Diff** compares the loaded
 scene against a second one, with a magnitude bar per changed value;
 **Import** walks an Excel running order through the G2a/G2b wizard;
-**Console** (`feat/gui-live-console-wave2`, not yet merged) talks to a
+**Console** talks to a
 live desk read-only — Connect, Discover its schema, Pull the whole
 scene with Export to `.snap` and Open Doctor, and start a live Watch
 with events in a table. No write path is reachable from the UI in this
