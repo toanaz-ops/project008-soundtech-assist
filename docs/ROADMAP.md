@@ -1,8 +1,8 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-09-16, GUI wave 2 (live console page) on branch
-`feat/gui-live-console-wave2` (PR #4, stacked on PR #1) — **not yet merged**,
-measured at `e8e3de1`: **1573 passed / 3 skipped**
+**Last updated:** 2026-09-17, GUI wave 2 (live console page) **merged into
+`main`** via PR #1–#4 (`bedad80`, `00949c4`, `56d5114`, `dcf897a`) —
+measured at `dcf897a`: **1580 passed / 3 skipped**
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -76,7 +76,7 @@ subsystem; each handoff records what it measured and what it left open.
 | G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | **1271** |
 | GUI 1 | **Desktop GUI parity** | The six-page sidebar app — Doctor, Overview, Channels, Routing, Diff, and the G2a/G2b Import wizard — replacing the doctor-only window: every page backed by the same query/advisory layer as the CLI, all user-facing strings through `texts.py`. Tasks 0–13 of the wave-1 plan. | **1342** (1 skipped) |
 | GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
-| GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; not yet merged (PR #4). | **1573** (3 skipped), measured at `e8e3de1` |
+| GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; merged into `main` 2026-09-17 via PR #1–#4 (`dcf897a`). | **1580** (3 skipped), measured at `dcf897a` |
 
 ### Where each one's paperwork lives
 

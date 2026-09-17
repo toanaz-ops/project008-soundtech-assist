@@ -89,3 +89,7 @@ Còn treo: nghiệm thu §9.3 trên console thật (WING-GIAQUY, ToanAZ chưa nh
 ảnh từ exe); 3 câu hỏi mở (alert cho watch? có wave 3 ghi không?
 auto-connect lúc khởi động?); loạt ruling ASSUMED chờ ToanAZ duyệt lại —
 xem ROADMAP §5 mục 8 và `docs/handoff/2026-09-16-gui-live-console-wave2-complete.md`.
+**(Cập nhật 2026-09-17: đã merge `dcf897a` — PR #1–#4 (`bedad80`, `00949c4`,
+`56d5114`, `dcf897a`) tất cả đã merge vào `main` qua GitHub, CI xanh
+1580 passed / 3 skipped. Nghiệm thu §9.3 trên console thật và 15 ruling
+ASSUMED vẫn còn treo, chờ ToanAZ.)**

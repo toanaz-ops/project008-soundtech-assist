@@ -111,3 +111,9 @@ Một task chỉ được gọi là xong khi có đủ:
   CLI-only (xem `CLAUDE.md`).
 
 Merge là việc của ToanAZ. Agent dừng lại ở bước "PR xanh, mời anh xem".
+
+## Ghi nhận 2026-09-17
+
+- Bốn PR đầu tiên (#1–#4, GUI wave 2) đi hết quy trình này, merge vào `main` tại `dcf897a`.
+- Bài học 1: đổi base của PR KHÔNG tự kích CI lại — phải push một commit rỗng (`git commit --allow-empty`) để trigger.
+- Bài học 2: một PR xếp chồng (stacked) mà base của nó vừa merge thì cần `git merge origin/main` cục bộ trước khi push tiếp — nhất là khi hai PR cùng sửa `memory/MEMORY.md` (dễ conflict).
