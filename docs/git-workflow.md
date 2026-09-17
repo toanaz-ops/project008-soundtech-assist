@@ -117,3 +117,11 @@ Merge là việc của ToanAZ. Agent dừng lại ở bước "PR xanh, mời an
 - Bốn PR đầu tiên (#1–#4, GUI wave 2) đi hết quy trình này, merge vào `main` tại `dcf897a`.
 - Bài học 1: đổi base của PR KHÔNG tự kích CI lại — phải push một commit rỗng (`git commit --allow-empty`) để trigger.
 - Bài học 2: một PR xếp chồng (stacked) mà base của nó vừa merge thì cần `git merge origin/main` cục bộ trước khi push tiếp — nhất là khi hai PR cùng sửa `memory/MEMORY.md` (dễ conflict).
+
+## Branch protection cho `main`
+
+Cấu hình nằm ở `.github/branch-protection.json` (bắt buộc PR + check `test`, cấm force-push và xóa nhánh). Áp dụng (một lần, hoặc sau khi sửa file):
+
+```bash
+gh api -X PUT repos/toanaz-ops/project008-soundtech-assist/branches/main/protection --input .github/branch-protection.json
+```
