@@ -143,6 +143,7 @@ TEXTS: dict[str, str] = {
         "Paste your own key — it stays in provider.yaml on this machine."
     ),
     "settings.api_key_env": "API key env var (optional)",
+    "settings.apply_delay": "Default apply delay (s)",
     "settings.save": "Save",
     "settings.cancel": "Cancel",
     "settings.test": "Test connection",

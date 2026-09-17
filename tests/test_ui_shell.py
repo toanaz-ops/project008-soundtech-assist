@@ -62,3 +62,21 @@ def test_open_session_fans_out_to_every_page(window, vu_path, monkeypatch):
 
 def test_doctor_widgets_still_reachable(window):
     assert window.findings_view is window.pages["doctor"].findings_view
+
+
+def test_the_apply_delay_survives_closing_the_window(qt_app, tmp_path, monkeypatch):
+    from wing_parser import config
+    from wing_parser.ui import state_store
+    from wing_parser.ui.main_window import MainWindow
+
+    monkeypatch.setenv(config.ENV_VAR, str(tmp_path))
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+
+    window = MainWindow(None)
+    window._apply_delay = 17
+    window.close()
+
+    assert state_store.load(tmp_path)["apply_delay"] == 17, (
+        "save_on_close rebuilds the saved dict from an explicit literal -- "
+        "a key missing there is erased on every quit"
+    )

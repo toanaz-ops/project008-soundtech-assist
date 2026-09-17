@@ -20,7 +20,7 @@ from wing_parser.ui import state_store
 def test_save_then_load_round_trips_a_state(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
-        "consoles": [],
+        "consoles": [], "apply_delay": 5,
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -29,6 +29,7 @@ def test_save_then_load_round_trips_a_state(tmp_path):
 def test_load_without_a_file_yields_defaults(tmp_path):
     assert state_store.load(tmp_path) == {
         "geometry": None, "page": None, "recent": [], "consoles": [],
+        "apply_delay": 5,
     }
 
 
@@ -47,6 +48,7 @@ def test_normalize_drops_junk_and_keeps_known_shape():
     clean = state_store.normalize(state)
     assert clean == {
         "geometry": None, "page": None, "recent": ["ok.snap"], "consoles": [],
+        "apply_delay": 5,
     }
 
 
@@ -88,7 +90,7 @@ def test_forget_recent_removes_one_entry():
 def test_consoles_survive_a_save_and_load_round_trip(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
-        "consoles": ["192.168.1.10", "wing.local"],
+        "consoles": ["192.168.1.10", "wing.local"], "apply_delay": 5,
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -132,6 +134,35 @@ def test_forget_console_removes_only_that_address():
         ["192.168.1.10", "192.168.1.11"], "192.168.1.10"
     )
     assert consoles == ["192.168.1.11"]
+
+
+# -- apply delay (F6) -----------------------------------------------------
+
+
+def test_apply_delay_round_trips_through_save_and_load(tmp_path):
+    state_store.save(tmp_path, {
+        "geometry": None, "page": None, "recent": [], "consoles": [],
+        "apply_delay": 12,
+    })
+    assert state_store.load(tmp_path)["apply_delay"] == 12
+
+
+def test_apply_delay_is_in_defaults_and_defaults_to_five():
+    assert state_store.DEFAULTS["apply_delay"] == 5
+
+
+def test_a_state_file_without_apply_delay_degrades_to_the_default(tmp_path):
+    (tmp_path / state_store.STATE_FILE).write_text(
+        json.dumps({"recent": [], "consoles": []}), encoding="utf-8")
+    assert state_store.load(tmp_path)["apply_delay"] == 5
+
+
+@pytest.mark.parametrize("stored,expected", [
+    (0, 3), (2, 3), (3, 3), (60, 60), (999, 60),
+    ("five", 5), (None, 5), (True, 5), ([], 5),
+])
+def test_a_hand_edited_apply_delay_normalises_inside_three_to_sixty(stored, expected):
+    assert state_store.normalize({"apply_delay": stored})["apply_delay"] == expected
 
 
 # -- window wiring ------------------------------------------------------

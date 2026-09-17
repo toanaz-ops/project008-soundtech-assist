@@ -24,6 +24,7 @@ def restore(window) -> None:
     window._recent = state["recent"]
     rebuild_recent_menu(window)
     restore_consoles(window, state["consoles"])
+    window._apply_delay = state["apply_delay"]
     if state["geometry"]:
         window.restoreGeometry(
             QByteArray.fromHex(state["geometry"].encode("ascii"))
@@ -124,5 +125,7 @@ def save_on_close(window) -> None:
             else None,
             "recent": window._recent,
             "consoles": window._consoles,
+            "apply_delay": getattr(window, "_apply_delay",
+                                   state_store.DEFAULTS["apply_delay"]),
         },
     )
