@@ -135,12 +135,12 @@ def test_the_delay_row_offers_three_to_sixty(qt_app, knowledge):
 
 
 def test_saving_the_dialog_puts_the_delay_on_the_window(qt_app, knowledge):
+    from PySide6.QtWidgets import QWidget
+
     from wing_parser.ui.settings_dialog import SettingsDialog
 
-    class _Window:
-        _apply_delay = 5
-
-    window = _Window()
+    window = QWidget()
+    window._apply_delay = 5
     dlg = SettingsDialog(window)
     dlg.delay_spin.setValue(20)
     dlg._save_and_close()

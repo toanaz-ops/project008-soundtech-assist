@@ -24,7 +24,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSpinBox,
     QVBoxLayout,
-    QWidget,
 )
 
 from wing_parser import config
@@ -38,11 +37,7 @@ from wing_parser.ui.workers import CallRunner
 
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, *, probe=None) -> None:
-        # `parent` also names the window whose _apply_delay this reads
-        # and writes; QDialog rejects a non-QWidget, so only real ones
-        # go up to Qt.
-        super().__init__(parent if isinstance(parent, QWidget) else None)
-        self._window = parent
+        super().__init__(parent)
         self._probe = probe or provider.ping
         self.setWindowTitle(text("settings.title"))
         self.setMinimumWidth(460)
@@ -193,8 +188,9 @@ class SettingsDialog(QDialog):
         return shown
 
     def _save_and_close(self) -> None:
-        if self._window is not None:
+        window = self.parent()
+        if window is not None:
             # F6: UI state (ui-state.json via window_state), not provider.yaml.
-            self._window._apply_delay = self.delay_spin.value()
+            window._apply_delay = self.delay_spin.value()
         if self.save():
             self.accept()
