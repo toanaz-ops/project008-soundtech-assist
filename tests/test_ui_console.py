@@ -1742,3 +1742,160 @@ def test_a_terminal_signal_from_a_view_that_already_left_watching_is_silent(
     assert heard == [], "a view that did not move asked its page to move"
     assert view._state is LiveState.CONNECTED
     assert not view.is_watching()
+
+
+# -- the write gate (spec §8.1, §8.4, W1, W10) --------------------------
+
+
+def _job(gate, address, after, on_result, on_error=None):
+    from wing_parser.ui import live_wiring
+    from wing_parser.ui.live_write import WriteConfirmation
+
+    return live_wiring.WriteJob(
+        confirmation=WriteConfirmation(
+            host=HOST, address=address, after=after,
+            identity=_identity(), desk_before=None),
+        on_result=on_result,
+        on_error=on_error or (lambda exc: None),
+    )
+
+
+def _gate_page(qt_app, desk=None):
+    """A real ConsolePage over a FakeDesk, plus the gate live_wiring builds.
+
+    Two deliberate departures from the task brief's draft of this helper,
+    both forced by code the brief predates:
+
+    * the gate's `timeout` is **2**, not 0. `CallRunner.start` reads
+      `timeout` as the budget itself (`workers.py:112-117`), so 0 means
+      "time out on the next event-loop pass" -- which is exactly what
+      `test_a_timeout_shows_one_error_line_naming_the_host` uses it for.
+      At 0 no write here could ever succeed. The timer is stopped by the
+      first terminal path (`workers.py:167`), so 2 is a ceiling nothing
+      waits for, not a delay.
+    * the window is a real `QWidget`, not a plain Python class: the gate
+      is parented to it and `QObject` rejects a non-`QObject` parent.
+      Same ruling as `test_saving_the_dialog_puts_the_delay_on_the_window`
+      (commit 0584548) -- production must not bend to a test double, and
+      PySide6 widgets accept arbitrary instance attributes.
+    """
+    from PySide6.QtWidgets import QWidget
+
+    from tests.fake_desk import FakeDesk
+    from wing_parser.ui import live_wiring
+    from wing_parser.ui.console_page import ConsolePage
+
+    desk = FakeDesk(identity=_identity()) if desk is None else desk
+    page = ConsolePage(transport=desk.transport(), timeout=0)
+
+    window = QWidget()
+    gate = live_wiring.install_write_gate(
+        window, page, transport=desk.write_transport(), timeout=2)
+    return window, page, gate, desk
+
+
+def test_the_write_gate_starts_closed(qt_app):
+    _w, _p, gate, _d = _gate_page(qt_app)
+    assert gate.can_write() is False and gate.ready() is False
+
+
+def test_the_gate_opens_in_connected_and_watching_and_in_no_other_state(qt_app):
+    from wing_parser.ui.live_state import LiveState
+
+    _w, page, gate, _d = _gate_page(qt_app)
+    open_in = set()
+    for state in LiveState:
+        page._apply_state(state)
+        if gate.can_write():
+            open_in.add(state)
+    assert open_in == {LiveState.CONNECTED, LiveState.WATCHING}
+
+
+def test_ready_needs_the_gate_open_and_the_arm_state_armed(qt_app):
+    from wing_parser.ui.live_state import LiveState
+
+    _w, page, gate, _d = _gate_page(qt_app)
+    page._apply_state(LiveState.CONNECTED)
+    assert gate.ready() is False, "open but unarmed is not ready"
+    gate.arm.arm(_identity())
+    assert gate.ready() is True
+
+
+@pytest.mark.parametrize("dropout", ["disconnected", "failed", "lost"])
+def test_every_dropout_disarms_and_announces(qt_app, dropout):
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.live_state import LiveState
+
+    _w, page, gate, _d = _gate_page(qt_app)
+    page._apply_state(LiveState.CONNECTED)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+    heard = []
+    gate.changed.connect(lambda: heard.append(True))
+
+    if dropout == "disconnected":
+        page.connect_bar.disconnected.emit()
+    elif dropout == "failed":
+        page.connect_bar.failed.emit(OSError("gone"))
+    else:
+        page.events.lost.emit(OSError("desk lost"))
+
+    assert gate.arm.armed() is False
+    assert gate.arm.level is ApplyLevel.MANUAL
+    assert heard, "the selector must be told, or it shows a level that is gone"
+
+
+def test_two_immediate_submissions_never_overlap_on_the_wire(qt_app, settle):
+    from wing_parser.ui.live_state import LiveState
+
+    _w, page, gate, desk = _gate_page(qt_app)
+    page._apply_state(LiveState.CONNECTED)
+    gate.arm.arm(_identity())
+    results = []
+    for value in ("PRE", "POST"):
+        gate.submit(_job(gate, "/ch/1/send/8/mode", value, results.append))
+
+    assert settle(lambda: len(results) == 2)
+    assert [call[0:2] for call in desk.sets] == [
+        ("/ch/1/send/8/mode", "PRE"), ("/ch/1/send/8/mode", "POST")]
+
+
+def test_a_closed_gate_never_reaches_the_transport(qt_app, settle):
+    """Gate 4's late re-check: the state can go LOST under a countdown."""
+    from wing_parser.ui import live_wiring
+    from wing_parser.ui.live_state import LiveState
+
+    _w, page, gate, desk = _gate_page(qt_app)
+    page._apply_state(LiveState.CONNECTED)
+    gate.arm.arm(_identity())
+    page._apply_state(LiveState.LOST)
+    errors = []
+    gate.submit(_job(gate, "/ch/1/fdr", -6.0, lambda r: None, errors.append))
+
+    assert settle(lambda: errors)
+    assert desk.sets == []
+    assert isinstance(errors[0], live_wiring.GateClosed)
+
+
+def test_an_unarmed_gate_never_reaches_the_transport(qt_app, settle):
+    from wing_parser.ui.live_state import LiveState
+
+    _w, page, gate, desk = _gate_page(qt_app)
+    page._apply_state(LiveState.CONNECTED)
+    errors = []
+    gate.submit(_job(gate, "/ch/1/fdr", -6.0, lambda r: None, errors.append))
+    assert settle(lambda: errors)
+    assert desk.sets == []
+
+
+def test_the_gate_publishes_itself_on_the_window(qt_app):
+    window, _p, gate, _d = _gate_page(qt_app)
+    assert window.write_gate is gate
+
+
+def test_the_console_page_gained_no_signal_for_this(qt_app):
+    """W7: `console_page.py` is at 199 of the 200-line ceiling. The gate
+    reads `page.state` and listens to the panels' OWN signals."""
+    from wing_parser.ui.console_page import ConsolePage
+
+    assert not hasattr(ConsolePage, "state_changed")
