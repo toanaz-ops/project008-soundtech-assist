@@ -18,6 +18,17 @@ api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxx
 
 > File này đã nằm trong `.gitignore` — key **không bao giờ** vào git.
 
+Key dán qua **Tools ▸ Settings** của app desktop được ghi vào một
+`provider.yaml` **trong thư mục knowledge** — mặc định `%USERPROFILE%\.config\wing-skill`
+khi chạy bản `.exe`, hoặc thư mục mà `WING_KNOWLEDGE_DIR` trỏ tới nếu anh đặt
+biến đó. Cả app lẫn lệnh `wing showcontext import` đều đọc bản này, nên dán một
+lần là cả hai cùng có key.
+
+Khi cả hai file cùng tồn tại: bản trong thư mục knowledge **thắng** file ở gốc
+dự án — nhưng chỉ khi nó thật sự có key dùng được (ô key để trống thì bỏ qua,
+đi tiếp xuống file gốc). Và `WING_PROVIDER_CONFIG` thắng tất cả: đã trỏ vào file
+nào thì đọc đúng file đó.
+
 ## Cách 2 — biến môi trường (khi không muốn key nằm file)
 
 ```bash

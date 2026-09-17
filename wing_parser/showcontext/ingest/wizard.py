@@ -22,13 +22,13 @@ def _ask(prompt: str, default: str, input_fn) -> str:
     return answer or default
 
 
-def _propose_or_none(xlsx, print_fn):
+def _propose_or_none(xlsx, print_fn, knowledge_dir=None):
     """One assist attempt; any provider-shaped failure is one line.
 
-    ValueError joins ProviderError because load_config raises it for
-    a named config file that is missing or malformed -- the same
-    hand-edited-file situation the rest of this CLI turns into an error
-    line, and exactly what the one-line contract promises. OSError and
+    ValueError joins ProviderError because resolve_config raises it for
+    a named config file that is pinned but missing or malformed -- the
+    same hand-edited-file situation the rest of this CLI turns into an
+    error line, and exactly what the one-line contract promises. OSError and
     zipfile.BadZipFile cover sampling a workbook that vanished or is not
     an xlsx at all, which happens before the provider is ever called.
     """
@@ -37,8 +37,8 @@ def _propose_or_none(xlsx, print_fn):
     from wing_parser.classifier.llm import kill_switch_on
     from wing_parser.classifier.provider import (
         ProviderError,
-        load_config,
         make_provider,
+        resolve_config,
     )
     from wing_parser.showcontext.ingest.suggest import propose_mapping
 
@@ -50,7 +50,7 @@ def _propose_or_none(xlsx, print_fn):
         return None
 
     try:
-        provider = make_provider(load_config(None))
+        provider = make_provider(resolve_config(knowledge_dir))
         return propose_mapping(xlsx, provider)
     except (ProviderError, ValueError, OSError, zipfile.BadZipFile) as exc:
         print_fn(f"(no model assist: {exc} -- continuing manually)")
@@ -58,7 +58,7 @@ def _propose_or_none(xlsx, print_fn):
 
 
 def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
-               force=False, scene=None, one_shot=False):
+               force=False, scene=None, one_shot=False, knowledge_dir=None):
     source = Path(xlsx)
     if not source.exists():
         print_fn(f"error: {source} does not exist.")
@@ -71,7 +71,7 @@ def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
         )
         return 1
 
-    proposal = _propose_or_none(xlsx, print_fn)
+    proposal = _propose_or_none(xlsx, print_fn, knowledge_dir)
     if proposal is not None and proposal.problems:
         # Spec section 4: a proposal the checker could not verify is shown
         # marked, BEFORE its values become any question's default.
@@ -133,7 +133,7 @@ def run_wizard(xlsx, *, input_fn=input, print_fn=print, output=None,
         return _finish(
             xlsx, read, resolved,
             output=output, force=force, scene=scene, print_fn=print_fn,
-            input_fn=input_fn,
+            input_fn=input_fn, knowledge_dir=knowledge_dir,
         )
     except (EOFError, StopIteration):
         print_fn("input closed -- import stopped")
@@ -170,7 +170,7 @@ def _context_for(terms, rows) -> dict[str, list[str]]:
 
 
 def _finish(xlsx, read, resolved, *, output, force, scene, print_fn,
-            input_fn=input):
+            input_fn=input, knowledge_dir=None):
     # Mirrors commands.showcontext_import from vocabulary onward; kept here
     # so the wizard owns one flow instead of shelling back through argparse.
     from wing_parser.classifier import cache
@@ -216,11 +216,11 @@ def _finish(xlsx, read, resolved, *, output, force, scene, print_fn,
                 "-- unresolved terms stay as comments)"
             )
             return 0
-        from wing_parser.classifier.provider import load_config, make_provider
+        from wing_parser.classifier.provider import make_provider, resolve_config
 
         guess.offer_terms(
             terms, _context_for(terms, read.rows),
-            provider_factory=lambda: make_provider(load_config(None)),
+            provider_factory=lambda: make_provider(resolve_config(knowledge_dir)),
             input_fn=input_fn, print_fn=print_fn,
         )
     return 0

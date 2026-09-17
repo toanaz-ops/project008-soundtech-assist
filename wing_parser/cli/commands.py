@@ -268,6 +268,7 @@ def showcontext_import(args) -> int:
         )
         return 2
     if args.mapping is None:
+        from wing_parser import config
         from wing_parser.showcontext.ingest.wizard import run_wizard
 
         return run_wizard(
@@ -276,6 +277,7 @@ def showcontext_import(args) -> int:
             force=args.force,
             scene=args.scene,
             one_shot=bool(getattr(args, "one_shot", False)),
+            knowledge_dir=config.knowledge_dir(),
         )
 
     from wing_parser.classifier import cache
