@@ -442,3 +442,157 @@ def test_wizard_refuses_to_overwrite_output_without_force(tmp_path, monkeypatch)
     assert code == 1
     assert out.read_text(encoding="utf-8") == "keep me\n"
     assert not asked  # refused before a single question was asked
+
+
+# --- D-39: a key saved in the desktop Settings dialog must reach the CLI ---
+
+SAVED_BY_SETTINGS = (
+    "provider: openai-compat\n"
+    "model: deepseek-chat\n"
+    "base_url: https://api.deepseek.com\n"
+    "api_key_env: DEEPSEEK_API_KEY\n"
+    "api_key: sk-saved-from-settings\n"
+)
+
+
+def _recording_factory(monkeypatch, provider):
+    """Swap make_provider for one that records every config handed to it."""
+    built = []
+
+    def record(config):
+        built.append(config)
+        return provider
+
+    monkeypatch.setattr(
+        "wing_parser.classifier.provider.make_provider", record
+    )
+    return built
+
+
+def _no_key_environment(monkeypatch, tmp_path):
+    """No pin, no ./provider.yaml, no provider env keys -- the operator's
+    machine right after they pasted the key into Tools > Settings."""
+    monkeypatch.delenv("WING_PROVIDER_CONFIG", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+    assert not (tmp_path / "provider.yaml").exists()
+
+
+def test_the_wizard_reads_the_key_settings_saved_in_the_knowledge_dir(
+    tmp_path, monkeypatch
+):
+    """D-39: the copy `SettingsDialog.save()` writes is what the wizard's
+    provider factory builds with, in a process that never saw the dialog's
+    `$WING_PROVIDER_CONFIG` pin. The mapping-proposal site; the term-guess
+    site is pinned by the test below."""
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text(
+        SAVED_BY_SETTINGS, encoding="utf-8"
+    )
+    _no_key_environment(monkeypatch, tmp_path)
+    built = _recording_factory(monkeypatch, VivoProvider())
+
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda *a, **k: "",
+        print_fn=lambda *a, **k: None,
+        output=str(tmp_path / "vivo.yaml"),
+        force=False,
+        scene=None,
+        one_shot=True,
+        knowledge_dir=knowledge,
+    )
+    assert code == 0
+    assert [config.api_key for config in built] == ["sk-saved-from-settings"]
+
+
+def test_without_a_knowledge_dir_the_wizard_still_resolves_the_old_way(
+    tmp_path, monkeypatch
+):
+    """The default stays `load_config(None)`: a knowledge-dir copy that was
+    never passed in must not be found by some ambient lookup."""
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text(
+        SAVED_BY_SETTINGS, encoding="utf-8"
+    )
+    _no_key_environment(monkeypatch, tmp_path)
+    built = _recording_factory(monkeypatch, VivoProvider())
+
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda *a, **k: "",
+        print_fn=lambda *a, **k: None,
+        output=str(tmp_path / "vivo.yaml"),
+        force=False,
+        scene=None,
+        one_shot=True,
+    )
+    assert code == 0
+    assert [config.api_key for config in built] == [""]
+
+
+def test_the_term_guess_reads_the_same_saved_key(tmp_path, monkeypatch):
+    """The wizard's second model site -- `guess.offer_terms`' provider
+    factory -- takes the knowledge dir too, so the two cannot disagree
+    inside one run. Modelled on the J2 wiring test above; the answer is
+    'n', so no classifier.yaml is touched."""
+    from openpyxl import Workbook
+
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text(
+        SAVED_BY_SETTINGS, encoding="utf-8"
+    )
+    _no_key_environment(monkeypatch, tmp_path)
+    built = _recording_factory(monkeypatch, BothProvider())
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Rundown"
+    ws.append(["No", "Nội dung", "On stage"])
+    ws.append([1, "Đón khách", "tốp múa"])
+    xlsx = tmp_path / "run.xlsx"
+    wb.save(xlsx)
+
+    asked = []
+
+    def answers(prompt):
+        asked.append(prompt)
+        return "n" if prompt.startswith("Record") else ""
+
+    code = run_wizard(
+        str(xlsx),
+        input_fn=answers,
+        print_fn=lambda *a, **k: None,
+        output=str(tmp_path / "out.yaml"),
+        force=False,
+        scene=None,
+        one_shot=False,
+        knowledge_dir=knowledge,
+    )
+    assert code == 0
+    # Both sites ran: the mapping proposal, then the term guess.
+    assert [p for p in asked if p.startswith("Record")]
+    assert len(built) == 2
+    assert {config.api_key for config in built} == {"sk-saved-from-settings"}
+
+
+def test_cli_passes_the_knowledge_dir_to_the_wizard(tmp_path, monkeypatch):
+    """Wiring check, modelled on the --one-shot one above: `showcontext
+    import` resolves the knowledge directory and hands it to run_wizard."""
+    seen = {}
+
+    def fake_wizard(xlsx, **kwargs):
+        seen.update(kwargs, xlsx=xlsx)
+        return 0
+
+    monkeypatch.setattr(
+        "wing_parser.showcontext.ingest.wizard.run_wizard", fake_wizard
+    )
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    code = main(["showcontext", "import", VIVO, "--one-shot"])
+    assert code == 0
+    assert seen["knowledge_dir"] == Path(tmp_path)

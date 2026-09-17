@@ -468,7 +468,26 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     time whether the CLI should honour the knowledge dir at all, or whether
     Settings should instead offer to write `./provider.yaml` — the user manual
     has to agree with whichever is chosen.
-  - status: open
+  - status: closed 2026-09-17 (this PR) — **decision: the CLI honours the
+    knowledge directory; Settings does NOT write `./provider.yaml`.** One
+    resolver serves both surfaces, so the desktop app and `wing showcontext
+    import` can no longer disagree about which key exists.
+    `showcontext_import` resolves `config.knowledge_dir()` and passes it as
+    `run_wizard(..., knowledge_dir=)` (the first CLI↔knowledge-dir coupling in
+    the codebase, taken deliberately); both wizard model sites —
+    `_propose_or_none` for the mapping proposal and the term-guess
+    `provider_factory` — build through `provider.resolve_config(knowledge_dir)`,
+    the same chain the desktop takes (pin → knowledge-dir copy IF it carries a
+    usable key → `load_config(None)`). `knowledge_dir` defaults to `None`, and
+    `resolve_config(None)` IS `load_config(None)`, so every direct caller keeps
+    its old behaviour. Pinned by
+    `test_the_wizard_reads_the_key_settings_saved_in_the_knowledge_dir`
+    (mapping proposal), `test_the_term_guess_reads_the_same_saved_key` (the
+    second site, and that one run builds both from the same config),
+    `test_without_a_knowledge_dir_the_wizard_still_resolves_the_old_way` (the
+    default is unchanged) and `test_cli_passes_the_knowledge_dir_to_the_wizard`
+    (the wiring) — all in tests/test_ingest_wizard.py.
+    `docs/user-manual/04-cau-hinh-model.md` §Cách 1 now states the same order.
 
 - **D-40** `page_base.EmptyState` is now reachable only from a test
   - owner: machine-doable
