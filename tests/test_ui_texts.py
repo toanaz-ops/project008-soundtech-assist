@@ -238,3 +238,84 @@ def test_a_module_level_constant_is_a_known_blind_spot():
             if isinstance(node, ast.Call) and _callee_name(node)
             for v, _ in _literal_arguments(node) if v not in ALLOWED_LITERALS]
     assert seen == []
+
+
+# -- wave 3: console.write.* strings (Task 7) --------------------------------
+
+WRITE_KEYS = (
+    "console.write.arm_title", "console.write.reading", "console.write.desk",
+    "console.write.identity_failed", "console.write.latch", "console.write.latch_why",
+    "console.write.name_prompt", "console.write.name_wrong", "console.write.arm",
+    "console.write.armed", "console.write.refused",
+    "console.write.level", "console.write.manual", "console.write.delayed",
+    "console.write.immediate",
+    "console.write.send", "console.write.blocked", "console.write.sending",
+    "console.write.gate_closed",
+    "console.write.delay_title", "console.write.address", "console.write.countdown",
+    "console.write.desk_value", "console.write.file_value", "console.write.after",
+    "console.write.mismatch", "console.write.no_read",
+    "console.write.apply_now", "console.write.extend", "console.write.cancel",
+    "console.write.cancelled",
+    "console.write.sent", "console.write.clamped", "console.write.no_reply",
+    "console.write.sent_heading", "console.write.revert", "console.write.revert_all",
+    "console.write.revert_stop", "console.write.reverting", "console.write.reverted",
+    "console.write.revert_stopped", "console.write.revert_cancelled",
+)
+
+
+def test_every_write_key_resolves():
+    from wing_parser.ui.texts import text
+
+    for key in WRITE_KEYS:
+        assert text(key), key
+
+
+def test_the_latch_reads_as_not_running_a_show():
+    """F4 and the spec header: a TICKED box meaning "danger" reads backwards
+    at 2 a.m., and every other checkbox in this app means "yes, do this"."""
+    from wing_parser.ui.texts import text
+
+    assert "NOT running a show" in text("console.write.latch")
+    assert "never during a show" in text("console.write.latch_why")
+
+
+def test_the_three_outcome_badges_say_three_different_things():
+    from wing_parser.ui.texts import text
+
+    sent = text("console.write.sent").format(readback="PRE")
+    clamped = text("console.write.clamped").format(readback=10.0, after=12.0)
+    silent = text("console.write.no_reply").format(address="/ch/1/fdr")
+    assert len({sent, clamped, silent}) == 3
+    assert "may or may not have landed" in silent
+    assert "clamped" in clamped
+
+
+def test_cancelled_speaks_only_about_the_scene_edit():
+    """S2.3: Cancel drops the transmission; Undo drops the file side."""
+    from wing_parser.ui.texts import text
+
+    assert "Undo" in text("console.write.cancelled")
+    assert "The desk keeps" in text("console.write.revert_cancelled")
+
+
+def test_every_write_placeholder_is_filled_by_someone():
+    """A `{name}` nobody formats prints as a literal brace at a venue."""
+    import string
+    from wing_parser.ui.texts_write import WRITE_TEXTS
+
+    allowed = {
+        "name", "model", "serial", "host", "error", "address", "seconds",
+        "remaining", "value", "desk", "file", "after", "readback", "done", "total",
+    }
+    for key, value in WRITE_TEXTS.items():
+        fields = {f for _, f, _, _ in string.Formatter().parse(value) if f}
+        assert fields <= allowed, f"{key} names {fields - allowed}"
+
+
+def test_no_write_key_collides_with_an_existing_one():
+    from wing_parser.ui.texts import TEXTS
+    from wing_parser.ui.texts_console import CONSOLE_TEXTS
+    from wing_parser.ui.texts_write import WRITE_TEXTS
+
+    assert set(CONSOLE_TEXTS) & set(WRITE_TEXTS) == set()
+    assert set(WRITE_TEXTS) <= set(TEXTS)
