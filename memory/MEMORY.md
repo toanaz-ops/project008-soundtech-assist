@@ -68,6 +68,16 @@ trang nào xong nếu ToanAZ chưa nhìn ảnh từ exe. Còn mở: D-24 scanner
 D-29 import_page 246 dòng, D-30 placeholder-key, D-31 settings.cancel key,
 live DeepSeek smoke trong app. Nợ: docs/tech-debt.md.
 
+## 2026-09-15 — Chuyển sang quy trình GitHub-oriented
+
+Repo GitHub `toanaz-ops/project008-soundtech-assist` tạo 2026-08-23 nhưng mãi
+2026-09-15 mới nhận push đầu tiên: ba tuần toàn bộ công việc nằm trong `main`
+local (337 commit, 149 theo first-parent), không ai nhìn thấy, không CI, không
+chỗ review. Từ nay: nhánh → push → PR → CI xanh (check tên `test`,
+`.github/workflows/ci.yml`, windows-latest + Python 3.12) → ToanAZ merge trên
+GitHub → `git pull --ff-only`. Luật và lệnh: `docs/git-workflow.md`.
+Extra `mcp` cố ý KHÔNG cài trong CI — suite có test chỉ chạy khi `mcp` vắng.
+
 ## 2026-09-16 — GUI wave 2: trang Console (read-only) trên nhánh, chờ merge
 
 Trang thứ 7 trong wing-ui: Connect (`net identity`), Discover (dò schema),

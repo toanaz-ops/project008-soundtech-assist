@@ -921,6 +921,12 @@ worth tuning against your own usage.
 python -m pytest
 ```
 
+## Development
+
+`main` only ever changes through a pull request merged on GitHub, and
+every task gets its own branch and worktree. The rules and the exact
+commands are in [docs/git-workflow.md](docs/git-workflow.md).
+
 ## Spec
 
 The full design — architecture, the `.snap` format, the classifier,

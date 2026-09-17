@@ -25,3 +25,9 @@ without explicit confirmation.
 
 Command and output pasted; docs/spec updated if behaviour changed; commit with
 explicit paths.
+
+## Git: GitHub-oriented
+
+`main` chỉ đổi qua PR đã merge trên GitHub; không commit thẳng vào main local.
+Mỗi task một nhánh trong worktree riêng, CI (check `test`) phải xanh, người bấm
+Merge là ToanAZ. Chi tiết và lệnh cụ thể: `docs/git-workflow.md`.
