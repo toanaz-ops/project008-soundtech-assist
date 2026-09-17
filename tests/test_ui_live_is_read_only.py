@@ -23,6 +23,14 @@ only real write through this seam, `write.node_write(client, ...)`,
 needs an import that rule 1 already catches. Pinned by
 `test_write_verbs_are_not_client_methods`, not just assumed.
 
+Wave 3 (W4, design §8.4) turns this into an **allow-list of one**:
+`wing_parser/ui/live_write.py` is the single door to the write path, so
+rule 1 is waived for it and rule 2 is waived there for the one verb
+`set`. `toggle`, `node_write` and `push` stay offences in every file,
+that one included, which `test_the_allow_listed_module_names_set_and_nothing_else`
+pins with a scan wider than rule 2's -- an attribute REFERENCE, not only
+a call, because `live_write.py` hands `write.set` to a dataclass field.
+
 Blind spot shared with `test_ui_texts.py`: a local variable assigned from
 a net-bound call (`wc = client.WingClient(host)` then `wc.set(...)`) is
 invisible to rule 2 -- only names bound directly by an `Import`/`ImportFrom`
@@ -39,6 +47,20 @@ import wing_parser.ui as ui_package
 UI_ROOT = Path(ui_package.__file__).resolve().parent
 
 WRITE_VERBS = {"set", "toggle", "node_write", "push"}
+
+#: W4/§8.4: exactly one `ui/` module may reach `wing_parser.net.write`, and
+#: it exists in order to call ONE verb there. Keyed on `path.name` so the
+#: scan behaves identically in `UI_ROOT` and in a `tmp_path`. Adding a
+#: second entry re-opens the blast radius this file exists to bound --
+#: that is a spec change, not a fix.
+ALLOWED_WRITE_MODULES = frozenset({"live_write.py"})
+
+#: The one verb the allow-listed module may use. `toggle` sends `,i -1` and
+#: flips whatever the desk holds NOW (`write.py:139-142`), so its outcome
+#: is not the `after` the countdown showed; `node_write` and `push` both
+#: break F1's one-leaf-per-transmission at the transport. Offences
+#: everywhere, that module included.
+ALLOWED_VERB = "set"
 
 
 def _py_files(root: Path):
@@ -159,14 +181,76 @@ def find_write_verb_calls(root: Path) -> list[str]:
     return sorted(offenders)
 
 
-def test_no_ui_module_imports_the_write_path():
-    offenders = find_write_imports(UI_ROOT)
-    assert offenders == [], "the write path must not be importable from ui/:\n  " + "\n  ".join(offenders)
+def find_write_verb_uses(root: Path, *, skip_allowed: bool = False) -> list[str]:
+    """Every ATTRIBUTE access of a write verb on a `wing_parser.net` binding.
+
+    Wider than `find_write_verb_calls` on purpose: `live_write.py` hands
+    `write.set` to a frozen dataclass field rather than calling it inline,
+    and a reference is exactly as reachable as a call. `skip_allowed`
+    leaves the allow-listed module out, for the assertion that checks it
+    separately by verb.
+    """
+    offenders = []
+    for path in _py_files(root):
+        if skip_allowed and path.name in ALLOWED_WRITE_MODULES:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        net_bound = _net_bound_names(tree)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Attribute) or node.attr not in WRITE_VERBS:
+                continue
+            base = _base_name(node.value)
+            if base in net_bound:
+                offenders.append(
+                    f"{path}:{node.lineno}: names .{node.attr} on {base!r} "
+                    f"(bound from {net_bound[base]})"
+                )
+    return sorted(offenders)
 
 
-def test_no_ui_module_calls_a_write_verb_on_a_net_binding():
-    offenders = find_write_verb_calls(UI_ROOT)
+def test_only_the_allow_listed_module_imports_the_write_path():
+    offenders = [
+        o for o in find_write_imports(UI_ROOT)
+        if Path(o.split(":")[0] + ":" + o.split(":")[1]).name not in ALLOWED_WRITE_MODULES
+        and not any(f"{name}:" in o for name in ALLOWED_WRITE_MODULES)
+    ]
+    assert offenders == [], (
+        "the write path must not be importable from ui/ outside "
+        f"{sorted(ALLOWED_WRITE_MODULES)}:\n  " + "\n  ".join(offenders)
+    )
+
+
+def test_no_other_ui_module_calls_a_write_verb_on_a_net_binding():
+    offenders = [
+        o for o in find_write_verb_calls(UI_ROOT)
+        if not any(f"{name}:" in o for name in ALLOWED_WRITE_MODULES)
+    ]
     assert offenders == [], "no write verb may be called on a net-bound name:\n  " + "\n  ".join(offenders)
+
+
+def test_the_allow_listed_module_names_set_and_nothing_else():
+    """Assertion 1 of §8.4, and the reason the allow-list is not a hole."""
+    used = find_write_verb_uses(UI_ROOT)
+    verbs = {o.rsplit(": names .", 1)[1].split(" ")[0] for o in used}
+    assert verbs <= {ALLOWED_VERB}, (
+        f"only .{ALLOWED_VERB} may be named on a net binding anywhere under ui/:\n  "
+        + "\n  ".join(used)
+    )
+    assert any("live_write.py" in o for o in used), (
+        "live_write.py exists in order to name write.set -- this assertion "
+        "has gone vacuous"
+    )
+
+
+def test_the_scan_still_catches_a_planted_push_in_an_allow_listed_name(tmp_path):
+    planted = tmp_path / "live_write.py"
+    planted.write_text(
+        "from wing_parser.net import write\n\ndef go(host, leaves):\n"
+        "    return write.push(host, leaves, confirm=True)\n",
+        encoding="utf-8",
+    )
+    offenders = find_write_verb_uses(tmp_path)
+    assert len(offenders) == 1 and ":4:" in offenders[0] and "push" in offenders[0]
 
 
 def test_write_verbs_are_not_client_methods():
