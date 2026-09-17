@@ -25,7 +25,7 @@ from typing import Any
 
 from wing_parser.cli import render_net
 from wing_parser.core.loader import load_raw
-from wing_parser.net import write
+from wing_parser.net import address, write
 from wing_parser.net.client import OSC_PORT, WingClient
 from wing_parser.net.codec import leaf_value
 from wing_parser.net.identity import IDENTITY_PORT, query_identity
@@ -58,22 +58,23 @@ def _parse_value(text: str) -> Any:
     return text
 
 
-def _flatten(tree: dict, prefix: str, leaves: dict[str, Any]) -> None:
+def _flatten(tree: dict, segments: tuple[str, ...], leaves: dict[str, Any]) -> None:
     for key, value in tree.items():
-        address = f"{prefix}/{key}"
+        path = (*segments, key)
         if isinstance(value, dict):
-            _flatten(value, address, leaves)
+            _flatten(value, path, leaves)
         else:
-            leaves[address] = value
+            leaves[address.join_segments(path)] = value
 
 
 def _leaves_from_raw(raw) -> dict[str, Any]:
     """Flatten a RawScene's ae/ce trees into OSC leaf addresses -- the
-    exact inverse of net/snapshot.py's `_place` (design doc S2.2). Only
-    `wing net push` needs a flat address -> value view."""
+    exact inverse of net/snapshot.py's `_place` (design doc S2.2), sharing
+    `net/address.py`'s join so `wing net push` and the UI's `osc_address`
+    cannot drift. Only `wing net push` needs a flat address -> value view."""
     leaves: dict[str, Any] = {}
-    _flatten(raw.ae, "", leaves)
-    _flatten(raw.ce, "/$ctl", leaves)
+    _flatten(raw.ae, (), leaves)
+    _flatten(raw.ce, ("$ctl",), leaves)
     return leaves
 
 
