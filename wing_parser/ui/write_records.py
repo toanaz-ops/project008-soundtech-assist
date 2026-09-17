@@ -122,11 +122,18 @@ def revert_confirmation(record: SentWrite, identity: WingIdentity) -> WriteConfi
     file-side record of what the operator decided and Undo remains
     available separately; silently dropping a patch because a desk write
     was reverted would conflate the two doors this wave keeps apart.
+
+    `desk_before` here is what the desk holds NOW, per the original send's
+    read-back -- `record.result.readback`, which after a clamp differs from
+    `record.written`. When that send got no reply at all (`readback is
+    None`), there is nothing truer to fall back on than `record.written`,
+    the best knowledge this app has of what the desk holds.
     """
+    readback = record.result.readback
     return WriteConfirmation(
         host=identity.ip,
         address=record.address,
         after=record.desk_before,
         identity=identity,
-        desk_before=record.result.readback,
+        desk_before=record.written if readback is None else readback,
     )

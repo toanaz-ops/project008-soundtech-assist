@@ -248,18 +248,29 @@ def test_a_silent_desk_leaves_the_scene_exactly_as_repair_set_it():
 
 
 def test_revert_carries_the_desk_before_captured_at_send_time():
-    """Proven with a desk value that DIFFERS from the journal's `before`:
-    somebody moved the desk after the pull, and the revert must go back to
-    what the desk held, not to what the file remembered."""
+    """Proven with a clamp-shaped send: the operator commanded `written`
+    ("PRE"), the desk answered a different value ("GRP"), and the revert's
+    `desk_before` must be the desk's real answer, not the value the operator
+    asked for -- `after` separately carries the pre-flight desk value back."""
     record = live_write.SentWrite(
         address="/ch/1/send/8/mode", path="ae_data.ch.1.send.8.mode",
-        desk_before="GRP", written="PRE", result=_result("PRE", "PRE", True))
+        desk_before="SUB", written="PRE", result=_result("PRE", "GRP", False))
     confirmation = live_write.revert_confirmation(record, _identity())
     assert isinstance(confirmation, live_write.WriteConfirmation)
-    assert confirmation.after == "GRP"
+    assert confirmation.after == record.desk_before
     assert confirmation.address == "/ch/1/send/8/mode"
     assert confirmation.host == HOST
-    assert confirmation.desk_before == "PRE", "the value the desk holds now"
+    assert confirmation.desk_before == "GRP", "the desk's real answer, not `written`"
+
+
+def test_revert_falls_back_to_written_when_the_send_got_no_reply():
+    """No reply at all (`readback is None`) leaves nothing truer to revert
+    to than what this app itself sent -- `record.written`."""
+    record = live_write.SentWrite(
+        address="/ch/1/send/8/mode", path="ae_data.ch.1.send.8.mode",
+        desk_before="GRP", written="PRE", result=_result("PRE", None, False))
+    confirmation = live_write.revert_confirmation(record, _identity())
+    assert confirmation.desk_before == record.written == "PRE"
 
 
 # -- split ruling: write_records.py must not reach wing_parser.net.write ---

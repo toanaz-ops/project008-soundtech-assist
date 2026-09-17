@@ -56,6 +56,7 @@ from wing_parser.ui.write_records import (
     settle_scene,
 )
 
+
 class DeskChanged(RuntimeError):
     """The desk answering now is not the one the write was confirmed
     against. Raised by `send` BEFORE anything reaches the wire."""
