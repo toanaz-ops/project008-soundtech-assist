@@ -9,6 +9,8 @@ as the nonsense "the desk holds 0, the scene file expected False".
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from tests.fake_desk import FakeDesk
@@ -198,3 +200,90 @@ def test_real_transport_names_the_read_only_entry_points_and_write_set():
     assert live_write.REAL.identity is query_identity
     assert live_write.REAL.set is write.set
     assert callable(live_write.REAL.read)
+
+
+# -- F8: the three outcomes, one test each ------------------------------
+
+
+def _result(after, readback, matched):
+    from wing_parser.net.write import SetResult
+    return SetResult("/ch/1/in/set/inv", after, str(after), False, readback, matched)
+
+
+def test_a_matched_write_puts_after_in_the_scene_not_the_read_back_int():
+    """`_values_match` calls `bool(1) == True` a match (`write.py:84-85`).
+    Storing the `1` would quietly retype the document being edited."""
+    result = _result(True, 1, True)
+    assert live_write.outcome(result) is live_write.Outcome.SENT
+    value = live_write.settle_scene(["ch", "1", "in", "set", "inv"], True, result)
+    assert value is True
+
+
+def test_a_matched_silence_write_puts_after_in_the_scene_not_the_sentinel():
+    """-999.0 and -144.0 are both "at or below the sentinel", so
+    `_values_match` calls them equal (`write.py:88-89`) -- and writing the
+    -144.0 back would move a number the operator never asked to move."""
+    result = _result(-999.0, -144.0, True)
+    assert live_write.settle_scene(["ch", "1", "fdr"], -999.0, result) == -999.0
+
+
+def test_a_clamp_rewrites_the_scene_to_what_the_desk_really_holds():
+    result = _result(12.0, 10.0, False)
+    assert live_write.outcome(result) is live_write.Outcome.CLAMPED
+    assert live_write.settle_scene(["ch", "1", "fdr"], 12.0, result) == 10.0
+
+
+def test_a_clamped_boolean_leaf_is_coerced_on_the_way_into_the_scene():
+    result = _result(True, 0, False)
+    assert live_write.settle_scene(["ch", "1", "in", "set", "inv"], True, result) is False
+
+
+def test_a_silent_desk_leaves_the_scene_exactly_as_repair_set_it():
+    result = _result(True, None, False)
+    assert live_write.outcome(result) is live_write.Outcome.NO_REPLY
+    assert live_write.settle_scene(["ch", "1", "in", "set", "inv"], True, result) is None
+
+
+# -- revert_confirmation (W13) ------------------------------------------
+
+
+def test_revert_carries_the_desk_before_captured_at_send_time():
+    """Proven with a desk value that DIFFERS from the journal's `before`:
+    somebody moved the desk after the pull, and the revert must go back to
+    what the desk held, not to what the file remembered."""
+    record = live_write.SentWrite(
+        address="/ch/1/send/8/mode", path="ae_data.ch.1.send.8.mode",
+        desk_before="GRP", written="PRE", result=_result("PRE", "PRE", True))
+    confirmation = live_write.revert_confirmation(record, _identity())
+    assert isinstance(confirmation, live_write.WriteConfirmation)
+    assert confirmation.after == "GRP"
+    assert confirmation.address == "/ch/1/send/8/mode"
+    assert confirmation.host == HOST
+    assert confirmation.desk_before == "PRE", "the value the desk holds now"
+
+
+# -- split ruling: write_records.py must not reach wing_parser.net.write ---
+
+
+def test_write_records_does_not_import_the_write_path():
+    """§8.4's allow-list of one names `live_write.py`; `write_records.py`
+    (F8/W13's home after the split) is not it, so it must never bind
+    `wing_parser.net.write` -- `outcome`/`settle_scene` duck-type `SetResult`
+    (`.matched`/`.readback`) instead of importing its type."""
+    import ast
+
+    from wing_parser.ui import write_records
+
+    source = Path(write_records.__file__).read_text(encoding="utf-8")
+    tree = ast.parse(source, filename=write_records.__file__)
+    offenders = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            offenders += [a.name for a in node.names if "wing_parser.net.write" in a.name]
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if module == "wing_parser.net.write" or module.startswith("wing_parser.net.write."):
+                offenders.append(module)
+            elif module == "wing_parser.net" and any(a.name == "write" for a in node.names):
+                offenders.append(f"{module}.write")
+    assert offenders == [], f"write_records.py must not import the write path: {offenders}"
