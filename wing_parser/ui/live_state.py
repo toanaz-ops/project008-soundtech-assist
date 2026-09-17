@@ -110,16 +110,17 @@ _TABLE: dict[tuple[LiveState, str], LiveState] = {
 # second action while one is in flight, and Cancel is the one way out of
 # them. Action names, not event names: `discover` and `rerun` are two
 # buttons firing the one `walk` event, and `export` fires no event at
-# all (it writes a file; the desk does not move).
+# all (it writes a file; the desk does not move). `write` joins `export`
+# as an action with no event -- a send does not move the connection.
 _ACTIONS: dict[LiveState, frozenset[str]] = {
     LiveState.DISCONNECTED: frozenset({"connect"}),
     LiveState.CONNECTING: frozenset({"cancel"}),
     LiveState.CONNECTED: frozenset(
-        {"disconnect", "discover", "pull", "watch", "export", "rerun"}
+        {"disconnect", "discover", "pull", "watch", "export", "rerun", "write"}
     ),
     LiveState.WALKING: frozenset({"cancel"}),
     LiveState.PULLING: frozenset({"cancel"}),
-    LiveState.WATCHING: frozenset({"stop", "disconnect", "export"}),
+    LiveState.WATCHING: frozenset({"stop", "disconnect", "export", "write"}),
     LiveState.ERROR: frozenset({"connect", "disconnect"}),
     LiveState.LOST: frozenset({"connect", "disconnect"}),
 }
