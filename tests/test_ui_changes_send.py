@@ -150,13 +150,13 @@ def _window(qt_app, vu_path):
 
 
 def test_a_matched_write_leaves_the_scene_where_repair_put_it(qt_app, vu_path):
-    from wing_parser.ui import write_router
+    from wing_parser.ui import write_apply
 
     window = _window(qt_app, vu_path)
     patch = window.session.record_value(PATH, "PRE", label="x", because="G8")
     before_len = len(window.session.changes())
 
-    write_router.apply_result(window, patch, _record("PRE", True))
+    write_apply.apply_result(window, patch, _record("PRE", True))
 
     assert len(window.session.changes()) == before_len, (
         "matched -> the leaf already holds `after`; no second patch")
@@ -164,12 +164,12 @@ def test_a_matched_write_leaves_the_scene_where_repair_put_it(qt_app, vu_path):
 
 def test_a_clamp_rewrites_the_scene_so_the_finding_reflects_the_desk(qt_app, vu_path):
     from wing_parser.edit import pointer
-    from wing_parser.ui import write_router
+    from wing_parser.ui import write_apply
 
     window = _window(qt_app, vu_path)
     patch = window.session.record_value(PATH, "PRE", label="x", because="G8")
 
-    write_router.apply_result(window, patch, _record("GRP", False))
+    write_apply.apply_result(window, patch, _record("GRP", False))
 
     assert pointer.read(window.session._document(), PATH) == "GRP"
     assert window.refreshed >= 1
@@ -177,13 +177,13 @@ def test_a_clamp_rewrites_the_scene_so_the_finding_reflects_the_desk(qt_app, vu_
 
 def test_a_silent_desk_leaves_the_scene_exactly_as_repair_set_it(qt_app, vu_path):
     from wing_parser.edit import pointer
-    from wing_parser.ui import write_router
+    from wing_parser.ui import write_apply
 
     window = _window(qt_app, vu_path)
     patch = window.session.record_value(PATH, "PRE", label="x", because="G8")
     before_len = len(window.session.changes())
 
-    write_router.apply_result(window, patch, _record(None, False))
+    write_apply.apply_result(window, patch, _record(None, False))
 
     assert pointer.read(window.session._document(), PATH) == "PRE"
     assert len(window.session.changes()) == before_len
@@ -375,7 +375,16 @@ def test_stop_ends_the_run_between_parameters_and_leaves_the_rest(qt_app, settle
 
 def test_a_run_disables_the_doctor_controls_and_stop_re_enables_them(qt_app, vu_path):
     """W14: a run that changed level halfway would send some parameters
-    through a countdown and others instantly, from one click."""
+    through a countdown and others instantly, from one click.
+
+    IMMEDIATE (review round 1, item 4): at the default MANUAL level a
+    single-row `revert_all()` opens a `DelayedWriteDialog` that this test
+    then never closes -- an unclosed `Qt.ApplicationModal` dialog left
+    over for the rest of the session. Nothing this test asserts needs the
+    countdown; IMMEDIATE keeps it out of the picture entirely.
+    """
+    from wing_parser.ui.apply_level import ApplyLevel
+
     desk = FakeDesk(identity=_identity())
     window = _window(qt_app, vu_path)
     ledger = _ledger(qt_app, desk, window,
@@ -384,6 +393,7 @@ def test_a_run_disables_the_doctor_controls_and_stop_re_enables_them(qt_app, vu_
     ledger.run_started.connect(lambda: heard.append("started"))
     ledger.run_finished.connect(lambda: heard.append("finished"))
     ledger._gate.arm.arm(_identity())
+    ledger._gate.arm.level = ApplyLevel.IMMEDIATE
 
     ledger.revert_all()
     assert heard[0] == "started"
@@ -431,3 +441,106 @@ def test_the_dock_stays_visible_with_a_clean_session_and_a_ledger(qt_app, tmp_pa
     window._refresh()
     assert window.session.dirty is False
     assert window._changes_dock.isVisible() or window.changes_panel.has_ledger()
+
+
+# -- end-to-end through the REAL window, not the direct-construction ----
+# -- helpers above (review round 1, items 1-2) ---------------------------
+
+
+def _live_window(desk, monkeypatch, vu_path):
+    """A real `MainWindow`, wired the way the app actually wires it --
+    `MainWindow.__init__` -> `live_wiring.install_write_gate` -- over a
+    `FakeDesk` instead of a socket, with a real loaded `Session` (a
+    revert's `apply_revert` needs `window.session.record_value`, exactly
+    as a real one always has one before anything can reach the ledger).
+
+    `live_write.REAL` is monkeypatched *before* construction because
+    `MainWindow.__init__` builds its `WriteGate` itself
+    (`live_wiring.install_write_gate(self, self.pages["console"])`, no
+    `transport=` to pass in from here): `WriteGate.__init__` falls back to
+    `transport or live_write.REAL`, so patching the module-level default
+    is the only seam that reaches the gate `window.write_gate` ends up
+    holding -- and so the seam that proves item 1's `attach_window` fix,
+    since the ledger's Revert path is what actually calls `gate.transport`.
+    """
+    from wing_parser.ui import live_write
+    from wing_parser.ui.live_state import LiveState
+    from wing_parser.ui.main_window import MainWindow
+    from wing_parser.ui.session import Session
+
+    monkeypatch.setattr(live_write, "REAL", desk.write_transport())
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    window = MainWindow(None)
+    window.session = Session.open(vu_path)
+    window.pages["console"]._apply_state(LiveState.CONNECTED)   # GATE 1
+    return window
+
+
+def test_revert_all_through_the_real_window_reaches_the_desk_and_gates_doctor(
+        qt_app, settle, monkeypatch, vu_path):
+    """Review round 1, item 2: the chain `install_write_gate` actually
+    builds -- real `DoctorPage`, real `ChangesPanel`, one `WriteGate` --
+    not `_gate`/`_ledger`'s direct construction. Before item 1's fix this
+    raised `AttributeError` inside `_revert_one`/`_next`: the ledger's
+    `_gate`/`_window` were never set on a real window."""
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={f"/ch/{n}/fdr": OscMessage(f"/ch/{n}/fdr", "sff",
+                                                       ("-6.0", 0.0, -6.0))
+                            for n in (1, 2)},
+                    readbacks={f"/ch/{n}/fdr": -12.0 for n in (1, 2)})
+    window = _live_window(desk, monkeypatch, vu_path)
+    gate = window.write_gate
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+
+    doctor = window.pages["doctor"]
+    ledger = window.changes_panel.ledger
+    for n in (1, 2):
+        ledger.add(_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0))
+
+    ledger.revert_all_button.click()
+
+    # W14, wired by `install_write_gate` itself (not asserted by any
+    # direct-construction test): the Doctor selector and Arm go dead the
+    # instant the run starts, synchronously, before either write lands.
+    assert doctor.level_box.isEnabled() is False
+    assert doctor.arm_button.isEnabled() is False
+    assert settle(lambda: "1/2" in ledger.progress_label.text()), (
+        "the second write must not start until the first is under way")
+
+    assert settle(lambda: len(desk.sets) == 2, limit_s=5.0)
+    assert [c[0] for c in desk.sets] == ["/ch/2/fdr", "/ch/1/fdr"], (
+        "reverse order -- last written, first undone")
+
+    assert settle(lambda: doctor.level_box.isEnabled())
+    assert doctor.arm_button.isEnabled() is True
+
+
+def test_stop_button_through_the_real_window_leaves_the_remainder_and_regates_doctor(
+        qt_app, settle, monkeypatch, vu_path):
+    """The Stop half of item 2, driven through the real `stop_button` --
+    not `ledger.stop()` called directly -- over the same real wiring."""
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity())
+    window = _live_window(desk, monkeypatch, vu_path)
+    gate = window.write_gate
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+
+    doctor = window.pages["doctor"]
+    ledger = window.changes_panel.ledger
+    for n in range(1, 4):
+        ledger.add(_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0))
+
+    ledger.revert_all_button.click()
+    settle(lambda: desk.sets)
+    ledger.stop_button.click()
+
+    settled = len(desk.sets)
+    assert settle(lambda: len(desk.sets) <= settled + 1)
+    assert len(desk.sets) < 3, "Stop left the remainder untouched"
+    assert doctor.level_box.isEnabled() is True
+    assert doctor.arm_button.isEnabled() is True

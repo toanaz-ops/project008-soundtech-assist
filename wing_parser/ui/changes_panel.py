@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.edit.journal import Patch
-from wing_parser.ui import write_router
+from wing_parser.ui import write_apply
 from wing_parser.ui.changes_ledger import SentLedger
 from wing_parser.ui.changes_send import SendRow
 from wing_parser.ui.texts import text
@@ -66,7 +66,7 @@ class ChangesPanel(QWidget):
 
     def record_sent(self, patch, record) -> None:
         """One result: the badge, the scene (F8) and one ledger row."""
-        write_router.apply_result(self._window, patch, record)
+        write_apply.apply_result(self._window, patch, record)
         self.ledger.add(record)
         self._badge(patch, record)
 

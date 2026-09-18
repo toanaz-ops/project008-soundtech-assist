@@ -94,6 +94,8 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
     changes = getattr(window, "changes_panel", None)
     if changes is not None:
         changes.attach_gate(gate)          # task 12 gives ChangesPanel this
+        if hasattr(changes, "attach_window"):
+            changes.attach_window(window)  # task 13: the ledger needs it too
     doctor = getattr(window, "pages", {}).get("doctor")
     if doctor is not None and hasattr(doctor, "attach_gate"):
         doctor.attach_gate(gate)

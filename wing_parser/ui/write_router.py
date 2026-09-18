@@ -1,4 +1,4 @@
-"""What happens to a repair between the click and the ledger row (F3, F8).
+"""What happens to a repair between the click and the ledger row (F3).
 
 Three levels, one entry point. Manual stops here -- the journal row's own
 Send button resumes it (`route_repair`/`send_manually` share `_countdown`),
@@ -8,8 +8,11 @@ the desk once (`ImmediateWrite`, on its own `CallRunner`, W5), then writes;
 that read is what the ledger's desk-before comes from, and without it
 Revert would have nothing to write back.
 
-`apply_result` closes F8: matched needs no second patch, a clamp rewrites
-the scene leaf to what the desk actually holds, a silent desk is left alone.
+What a result then does to the SCENE (F8's `apply_result`, W13's
+`apply_revert`) lives in `write_apply.py`, not here (review round 1, item
+3): this module was at 182 of task 11's ruled 160-line budget, and that
+half is a separate concern -- routing decides when/how a packet goes out,
+`write_apply` decides what the scene looks like once one has.
 
 Imports `WriteJob`/`GateClosed` from `write_gate.py` directly, not from
 `live_wiring` (which re-exports them): `live_wiring.install_write_gate`
@@ -21,10 +24,9 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject
 
-from wing_parser.net.address import leaf_parts, osc_address
+from wing_parser.net.address import osc_address
 from wing_parser.ui import live_write
 from wing_parser.ui.apply_level import ApplyLevel
-from wing_parser.ui.texts import text
 from wing_parser.ui.write_arm_dialog import arm_now
 from wing_parser.ui.write_delay_dialog import DelayedWriteDialog
 from wing_parser.ui.write_gate import GateClosed, WriteJob
@@ -126,44 +128,6 @@ def send_manually(gate, patch, delay, parent=None, *, transport=None,
     return _countdown(gate, patch, patch.after, delay, parent,
                       transport=transport, timeout=timeout,
                       on_sent=on_sent, on_error=on_error)
-
-
-def apply_result(window, patch, record) -> None:
-    """F8: matched -> nothing (leaf already holds `after`). Clamp -> a
-    second patch to `scene_value(parts, readback)`. No reply -> nothing."""
-    from wing_parser.ui.changes_send import badge_text
-
-    value = live_write.settle_scene(
-        leaf_parts(patch.path), patch.after, record.result)
-    if value is None or value == patch.after:
-        return
-    window.session.record_value(
-        patch.path, value,
-        label=badge_text(record), because=patch.because)
-    window._refresh()
-
-
-def apply_revert(window, record) -> None:
-    """W13: move the leaf back to what the desk now holds, coerced through
-    `scene_value` exactly as F8 does -- so Doctor re-derives and the finding
-    REAPPEARS. The honest outcome: the desk really is back in the state the
-    rule objects to. `record.written` is this revert's OWN target (the
-    original ledger row's `desk_before`, captured at send time) -- not
-    `record.desk_before`, which is what the desk held right before THIS
-    write went out and plays the same role `patch.after` plays in
-    `apply_result` above. The original `Patch` is left alone; Undo is still
-    the file-side door, and silently dropping a patch because a desk write
-    was reverted would conflate the two."""
-    value = live_write.settle_scene(
-        leaf_parts(record.path), record.written, record.result)
-    if value is None:
-        return
-    window.session.record_value(
-        record.path, value,
-        label=text("console.write.reverted").format(
-            readback=record.result.readback),
-        because="revert")
-    window._refresh()
 
 
 def _countdown(gate, patch, after, delay, parent, *, transport, timeout,

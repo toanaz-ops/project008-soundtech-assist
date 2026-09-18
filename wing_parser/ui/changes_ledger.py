@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QPushButton, QVBoxLayout, QWidget,
 )
 
-from wing_parser.ui import write_router
+from wing_parser.ui import write_apply, write_router
 from wing_parser.ui.apply_level import RevertQueue
 from wing_parser.ui.changes_send import badge_text
 from wing_parser.ui.texts import text
@@ -150,10 +150,17 @@ class SentLedger(QWidget):
             self._reverted(_patch, record)
         self._next()
 
-    def _reverted(self, patch, record) -> None:
-        """W13: the scene goes back too, so the finding reappears."""
-        if patch is not None:
-            write_router.apply_revert(self._window, record)
+    def _reverted(self, _patch, record) -> None:
+        """W13: the scene goes back too, so the finding reappears.
+
+        `_patch` (the internal revert `Patch` `route_revert` built) is
+        unused here: `_reverted` is only ever reached through `on_sent`,
+        which `ImmediateWrite`/the countdown call solely on a completed
+        write -- never with a `None` patch. The error path
+        (`_step_done(None, None)`) skips calling this at all, since it
+        guards on `record is not None` before reaching here. A patch-is-None
+        branch would be dead code pretending to be a safety check."""
+        write_apply.apply_revert(self._window, record)
         self.reverted.emit(record, record.result)
 
     def _end_run(self) -> None:

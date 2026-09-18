@@ -75,6 +75,14 @@ def test_install_write_gate_wires_the_real_changes_panel(window, vu_path):
 
     assert window.changes_panel._gate is window.write_gate
 
+    # Task 13: the ledger's Revert path needs the SAME gate and window --
+    # `install_write_gate` used to call `attach_gate` only, so a real
+    # MainWindow's `SentLedger._gate`/`_window` stayed `None` and Revert /
+    # Revert all raised `AttributeError` outside the direct-construction
+    # test helpers, which always call `attach_window` themselves.
+    assert window.changes_panel.ledger._gate is window.write_gate
+    assert window.changes_panel.ledger._window is window
+
     window.session = Session.open(vu_path)
     window.session.record_value(
         "ae_data.ch.1.send.8.mode", "PRE", label="x", because="G8")
