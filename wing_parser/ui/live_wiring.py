@@ -105,4 +105,9 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
                 gate, patch, getattr(window, "_apply_delay", 5), window,
                 on_sent=lambda p, record: changes.record_sent(p, record),
                 on_error=lambda exc: changes.report_write_error(exc)))
+        if changes is not None:
+            changes.ledger.run_started.connect(
+                lambda: doctor.set_controls_enabled(False))
+            changes.ledger.run_finished.connect(
+                lambda: doctor.set_controls_enabled(True))
     return gate

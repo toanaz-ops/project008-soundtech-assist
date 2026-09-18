@@ -24,6 +24,7 @@ from PySide6.QtCore import QObject
 from wing_parser.net.address import leaf_parts, osc_address
 from wing_parser.ui import live_write
 from wing_parser.ui.apply_level import ApplyLevel
+from wing_parser.ui.texts import text
 from wing_parser.ui.write_arm_dialog import arm_now
 from wing_parser.ui.write_delay_dialog import DelayedWriteDialog
 from wing_parser.ui.write_gate import GateClosed, WriteJob
@@ -139,6 +140,29 @@ def apply_result(window, patch, record) -> None:
     window.session.record_value(
         patch.path, value,
         label=badge_text(record), because=patch.because)
+    window._refresh()
+
+
+def apply_revert(window, record) -> None:
+    """W13: move the leaf back to what the desk now holds, coerced through
+    `scene_value` exactly as F8 does -- so Doctor re-derives and the finding
+    REAPPEARS. The honest outcome: the desk really is back in the state the
+    rule objects to. `record.written` is this revert's OWN target (the
+    original ledger row's `desk_before`, captured at send time) -- not
+    `record.desk_before`, which is what the desk held right before THIS
+    write went out and plays the same role `patch.after` plays in
+    `apply_result` above. The original `Patch` is left alone; Undo is still
+    the file-side door, and silently dropping a patch because a desk write
+    was reverted would conflate the two."""
+    value = live_write.settle_scene(
+        leaf_parts(record.path), record.written, record.result)
+    if value is None:
+        return
+    window.session.record_value(
+        record.path, value,
+        label=text("console.write.reverted").format(
+            readback=record.result.readback),
+        because="revert")
     window._refresh()
 
 

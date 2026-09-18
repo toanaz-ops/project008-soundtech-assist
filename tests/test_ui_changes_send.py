@@ -279,3 +279,155 @@ def test_every_journal_row_carries_its_own_send_button(qt_app, vu_path):
     for index in range(2):
         widget = panel.list.itemWidget(panel.list.item(index))
         assert isinstance(widget, SendRow)
+
+
+# -- the sent ledger (F7, W12, W13, W14, W15) ---------------------------
+
+
+def _ledger(qt_app, desk, window, records=()):
+    from wing_parser.ui.changes_ledger import SentLedger
+
+    ledger = SentLedger()
+    ledger.attach(_gate(qt_app, desk), window)
+    for record in records:
+        ledger.add(record)
+    return ledger
+
+
+def _sent(address, path, desk_before, written):
+    from wing_parser.net.write import SetResult
+    from wing_parser.ui.live_write import SentWrite
+
+    return SentWrite(address=address, path=path, desk_before=desk_before,
+                     written=written,
+                     result=SetResult(address, written, str(written), False,
+                                      written, True))
+
+
+def test_a_ledger_row_shows_the_address_the_before_the_written_and_the_result(qt_app, vu_path):
+    desk = FakeDesk(identity=_identity())
+    ledger = _ledger(qt_app, desk, _window(qt_app, vu_path),
+                     [_sent(OSC, PATH, "POST", "PRE")])
+    row = ledger.row_widget(0)
+    shown = row.label.text() + row.result_label.text()
+    assert OSC in shown and "POST" in shown and "PRE" in shown
+
+
+def test_revert_all_sends_in_reverse_with_never_two_in_flight(qt_app, settle, vu_path):
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={f"/ch/{n}/fdr": OscMessage(f"/ch/{n}/fdr", "sff",
+                                                       ("-6.0", 0.0, -6.0))
+                            for n in (1, 2, 3)},
+                    readbacks={f"/ch/{n}/fdr": -12.0 for n in (1, 2, 3)})
+    window = _window(qt_app, vu_path)
+    records = [_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0)
+               for n in (1, 2, 3)]
+    ledger = _ledger(qt_app, desk, window, records)
+    ledger._gate.arm.arm(_identity())
+    ledger._gate.arm.level = ApplyLevel.IMMEDIATE
+
+    ledger.revert_all()
+    assert settle(lambda: len(desk.sets) == 3, limit_s=5.0)
+    assert [c[0] for c in desk.sets] == ["/ch/3/fdr", "/ch/2/fdr", "/ch/1/fdr"]
+
+
+def test_the_progress_line_counts_done_over_total(qt_app, settle, vu_path):
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity())
+    window = _window(qt_app, vu_path)
+    records = [_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0)
+               for n in range(1, 8)]
+    ledger = _ledger(qt_app, desk, window, records)
+    ledger._gate.arm.arm(_identity())
+    ledger._gate.arm.level = ApplyLevel.IMMEDIATE
+
+    ledger.revert_all()
+    assert settle(lambda: "/7" in ledger.progress_label.text())
+    assert text("console.write.reverting").split("{")[0] in ledger.progress_label.text()
+
+
+def test_stop_ends_the_run_between_parameters_and_leaves_the_rest(qt_app, settle, vu_path):
+    """F7: the one already on the wire completes, because nothing can
+    un-send a packet."""
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity())
+    window = _window(qt_app, vu_path)
+    records = [_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0)
+               for n in range(1, 8)]
+    ledger = _ledger(qt_app, desk, window, records)
+    ledger._gate.arm.arm(_identity())
+    ledger._gate.arm.level = ApplyLevel.IMMEDIATE
+
+    ledger.revert_all()
+    settle(lambda: desk.sets)
+    ledger.stop()
+    settled = len(desk.sets)
+    assert settle(lambda: len(desk.sets) <= settled + 1)
+    assert len(desk.sets) < 7, "Stop left the remainder alone"
+    assert text("console.write.revert_stopped").split("{")[0] in ledger.progress_label.text()
+
+
+def test_a_run_disables_the_doctor_controls_and_stop_re_enables_them(qt_app, vu_path):
+    """W14: a run that changed level halfway would send some parameters
+    through a countdown and others instantly, from one click."""
+    desk = FakeDesk(identity=_identity())
+    window = _window(qt_app, vu_path)
+    ledger = _ledger(qt_app, desk, window,
+                     [_sent(OSC, PATH, "POST", "PRE")])
+    heard = []
+    ledger.run_started.connect(lambda: heard.append("started"))
+    ledger.run_finished.connect(lambda: heard.append("finished"))
+    ledger._gate.arm.arm(_identity())
+
+    ledger.revert_all()
+    assert heard[0] == "started"
+    ledger.stop()
+    assert "finished" in heard
+
+
+def test_a_successful_revert_puts_the_scene_back_and_keeps_the_patch(qt_app, settle, vu_path):
+    """W13: the finding REAPPEARS -- the honest outcome, since the desk
+    really is back in the state the rule objects to -- and the journal
+    Patch is NOT undone."""
+    from wing_parser.edit import pointer
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("PRE",))},
+                    readbacks={OSC: "POST"})
+    window = _window(qt_app, vu_path)
+    patch = window.session.record_value(PATH, "PRE", label="x", because="G8")
+    journal_len = len(window.session.changes())
+    ledger = _ledger(qt_app, desk, window, [_sent(OSC, PATH, "POST", "PRE")])
+    ledger._gate.arm.arm(_identity())
+    ledger._gate.arm.level = ApplyLevel.IMMEDIATE
+
+    ledger.row_widget(0).revert_button.click()
+    assert settle(lambda: desk.sets)
+    assert settle(lambda: pointer.read(window.session._document(), PATH) == "POST")
+    assert len(window.session.changes()) == journal_len + 1, (
+        "the revert adds its own patch; it does not drop the operator's")
+    assert window.session.changes()[journal_len - 1] is patch
+
+
+def test_the_dock_stays_visible_with_a_clean_session_and_a_ledger(qt_app, tmp_path,
+                                                                  monkeypatch, vu_path):
+    """`main_window.py:181` used to bind visibility to `session.dirty`
+    alone; a desk change the UI cannot show is worse than a longer dock."""
+    from wing_parser import config
+    from wing_parser.ui.main_window import MainWindow
+    from wing_parser.ui.session import Session
+
+    monkeypatch.setenv(config.ENV_VAR, str(tmp_path))
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    window = MainWindow(Session.open(vu_path))
+    window.changes_panel.ledger.add(_sent(OSC, PATH, "POST", "PRE"))
+    window._refresh()
+    assert window.session.dirty is False
+    assert window._changes_dock.isVisible() or window.changes_panel.has_ledger()

@@ -78,6 +78,7 @@ WRITE_TEXTS: dict[str, str] = {
 
     # -- the sent ledger (F7, W12) ---------------------------------------
     "console.write.sent_heading": "Sent to console",
+    "console.write.ledger_row": "{address}: {desk!r} → {after!r}",
     "console.write.revert": "Revert",
     "console.write.revert_all": "Revert all",
     "console.write.revert_stop": "Stop",
