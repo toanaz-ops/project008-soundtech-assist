@@ -9,6 +9,7 @@ between rounds.
 
 from __future__ import annotations
 
+import threading
 import time
 from typing import Callable, Iterable, Iterator, Sequence
 
@@ -61,6 +62,20 @@ def sample(client: WingClient, addresses: Sequence[str]) -> dict[str, object]:
     return values
 
 
+def _pace(remaining: float, cancel: "threading.Event | None", sleep: Callable[[float], None]) -> bool:
+    """Wait out the round's remainder; False when a cancel cut it short.
+
+    D-42: `Event.wait(remaining)` returns as soon as the event is set, so a
+    quit no longer has to outlast a whole interval. Without a `cancel` the
+    injected `sleep` is used exactly as before -- every existing caller and
+    every existing test keeps its behaviour.
+    """
+    if cancel is None:
+        sleep(remaining)
+        return True
+    return not cancel.wait(remaining)
+
+
 def watch(
     client: WingClient,
     watch_list: WatchList,
@@ -70,6 +85,7 @@ def watch(
     max_rounds: int | None = None,
     clock: Callable[[], float] = time.monotonic,
     sleep: Callable[[float], None] = time.sleep,
+    cancel: "threading.Event | None" = None,
 ) -> Iterator[Change]:
     """Yield a Change for every difference between consecutive rounds.
 
@@ -78,6 +94,11 @@ def watch(
     twice per round plus once per change, so how much simulated time a
     run consumes depends on the data, and a wall-clock bound would make
     a test's round count data-dependent too.
+
+    `cancel` (D-42) lets a caller's pace wait see a quit: omitted, the
+    round's remainder is slept out exactly as before; supplied, the wait
+    is cut short the moment the event is set, so a Stop no longer has to
+    outlast a whole interval.
     """
     addresses = list(watch_list.addresses)
     strips = sorted({split_address(a)[0] for a in addresses})
@@ -119,5 +140,5 @@ def watch(
         previous.update(current)
 
         remaining = interval - (clock() - round_started)
-        if remaining > 0:
-            sleep(remaining)
+        if remaining > 0 and not _pace(remaining, cancel, sleep):
+            return

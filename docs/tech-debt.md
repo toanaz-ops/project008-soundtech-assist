@@ -546,7 +546,16 @@ by the command shown. The wave-1 / wave-1b closures below were written on
   - close: give `poller.watch` a cancel-aware sleep (short slices checked
     against a `threading.Event`, or `Event.wait(remaining)` in place of
     `sleep`), which is a `net/` change -- same wave-3 boundary as D-41.
-  - status: open
+  - status: closed (task 15b, this commit) -- `poller.watch` takes
+    a keyword-only `cancel: threading.Event | None = None`; its pace step
+    (`_pace`) calls `cancel.wait(remaining)` when one is supplied, which
+    returns the moment the event is set, instead of the plain `sleep`
+    that had no cancellation seam. Default (omitted) behaviour is
+    unchanged and pinned by test. `wing_parser/ui/live_watch_session.py`
+    now passes `self.cancel` through; `WAIT_MS` is left at
+    `(MAX_INTERVAL + 1.0) * 1000` deliberately -- shrinking it needs its
+    own measurement against a real desk, and a generous bound is not a
+    bug.
 
 - **D-43** Save As suggests an unsanitised name for a pulled scene
   - owner: machine-doable

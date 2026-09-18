@@ -3,6 +3,8 @@ rounds, so the loop's behaviour is examined without timing flakiness."""
 
 from __future__ import annotations
 
+import threading
+
 from wing_parser.net.client import BatchResult
 from wing_parser.net.codec import OscMessage
 from wing_parser.net.watch.list import WatchList
@@ -131,3 +133,104 @@ def test_the_change_carries_the_strips_name():
     )
     changes = _run(client, _list("/ch/1/$fdr"), 2)
     assert changes[0].label == "Kick In"
+
+
+def _raising_sleep(_seconds: float) -> None:
+    raise AssertionError("sleep must not be called when a cancel is supplied")
+
+
+def _slow_clock():
+    """A real interval (1.0 s) with a clock that advances a tiny amount
+    per call -- `remaining` stays positive, so the loop's pace step is
+    actually exercised rather than skipped (unlike interval=0.0 above)."""
+    state = {"now": 0.0}
+
+    def clock() -> float:
+        state["now"] += 0.01
+        return state["now"]
+
+    return clock
+
+
+def test_a_set_cancel_event_cuts_the_pace_wait_short():
+    """D-42: `Event.wait(remaining)` returns as soon as the event is set,
+    so a quit no longer has to outlast a whole interval."""
+    client = StubClient([{"/ch/1/$fdr": _fdr(-7.9)}])
+    cancel = threading.Event()
+    cancel.set()
+
+    changes = list(
+        watch(
+            client,
+            _list("/ch/1/$fdr"),
+            interval=1.0,
+            clock=_slow_clock(),
+            sleep=_raising_sleep,
+            cancel=cancel,
+        )
+    )
+
+    assert changes == []
+
+
+def test_the_injected_sleep_is_still_used_when_no_cancel_is_given():
+    """Without a `cancel` the injected `sleep` is used exactly as before
+    -- every existing caller and every existing test keeps its
+    behaviour."""
+    client = StubClient([{"/ch/1/$fdr": _fdr(-7.9)}])
+    calls = []
+
+    list(
+        watch(
+            client,
+            _list("/ch/1/$fdr"),
+            interval=1.0,
+            max_rounds=2,
+            clock=_slow_clock(),
+            sleep=lambda seconds: calls.append(seconds),
+        )
+    )
+
+    assert len(calls) == 2
+
+
+def test_a_cancel_set_mid_run_ends_the_loop_at_the_next_pace():
+    """The cancel arrives while a round is in flight (set from inside the
+    client's own reply, standing in for another thread calling `.set()`
+    mid-round); the loop ends at the very next pace check rather than
+    running the round it would otherwise have started."""
+    client = StubClient(
+        [
+            {"/ch/1/$fdr": _fdr(-144.0)},
+            {"/ch/1/$fdr": _fdr(-7.9)},
+            {"/ch/1/$fdr": _fdr(-7.9)},
+        ]
+    )
+    cancel = threading.Event()
+    real_get_many = client.get_many
+
+    def _get_many_then_maybe_cancel(addresses, **kwargs):
+        result = real_get_many(addresses, **kwargs)
+        if client.calls >= 2:
+            cancel.set()
+        return result
+
+    client.get_many = _get_many_then_maybe_cancel
+
+    changes = list(
+        watch(
+            client,
+            _list("/ch/1/$fdr"),
+            interval=1.0,
+            clock=_slow_clock(),
+            sleep=_raising_sleep,
+            cancel=cancel,
+        )
+    )
+
+    assert len(changes) == 1
+    assert changes[0].before == -144.0
+    assert changes[0].after == -7.9
+    # Only the initial sample plus round 1's sample happened -- round 2
+    # never started.
+    assert client.calls == 2

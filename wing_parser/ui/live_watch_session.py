@@ -41,13 +41,15 @@ from wing_parser.ui.live_guard import MAX_INTERVAL, RoundGuard
 
 #: How long `finish` waits for a round to end, in milliseconds --
 #: DERIVED from the slowest interval the panel offers, not picked. A
-#: cancel is seen before the next `get_many` but not during the pace
-#: sleep: `poller.watch` sleeps `remaining` without consulting anything
-#: (`poller.py:121-123`), so a watch at `MAX_INTERVAL` still owes a
-#: whole interval after Stop. 2000 ms -- the first number here -- was
-#: therefore SHORTER than one round at interval 5 and returned False
-#: with the thread alive. The real cure is a cancel the poller's own
-#: sleep can see, which is `net/watch/poller.py`, out of scope this wave.
+#: cancel is seen before the next `get_many`, and now (D-42) the pace
+#: sleep sees it too: `poller.watch`'s `_pace` waits on `self.cancel`
+#: itself (`poller.py:121-123`), so the wait after Stop covers only the
+#: round already in flight, not a whole extra interval on top of it.
+#: 2000 ms -- the first number tried here -- was SHORTER than one round
+#: at interval 5 and returned False with the thread alive; the bound
+#: below is left generous rather than retuned, since shrinking it needs
+#: its own measurement against a real desk (see D-42 in
+#: docs/tech-debt.md).
 WAIT_MS = int((MAX_INTERVAL + 1.0) * 1000)
 
 
@@ -89,7 +91,7 @@ class WatchSession:
                     client, host, self.cancel,
                     on_round=self.worker.report_progress)
                 yield from transport.watch(
-                    guard, watch_list, interval=interval)
+                    guard, watch_list, interval=interval, cancel=self.cancel)
 
         # **No Qt parent**, deliberately. `GeneratorWorker.start` keeps
         # every started worker in a module list and prunes it by calling
@@ -155,11 +157,13 @@ class WatchSession:
 
         The only blocking call in this module, and it blocks the GUI
         thread on purpose: the caller is quitting, and the alternative is
-        the destroyed-while-running abort above. **The bound is honest,
-        not generous**: the guard raises before the next `get_many`, but
-        the poller's pace sleep sees no cancel, so the wait must cover a
-        whole interval plus the round in flight -- which is what
-        `WAIT_MS` derives. False means the thread outlived even that.
+        the destroyed-while-running abort above. **The bound stays
+        generous rather than shrunk** (D-42): the guard raises before the
+        next `get_many`, and the pace sleep now sees the cancel too, so
+        in practice the wait covers only the round in flight -- but
+        `WAIT_MS` is left sized for a whole interval plus that round,
+        since shrinking it needs its own measurement against a real desk.
+        False means the thread outlived even that.
         """
         self.abandon()
         return self.worker.wait(wait_ms)
