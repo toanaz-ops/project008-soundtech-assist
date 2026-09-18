@@ -181,3 +181,210 @@ def test_rejecting_mid_read_cancels_the_runner_and_ignores_the_late_reply(
     assert dlg.status_label.text() == before
     assert dlg.arm_button.isEnabled() is False
     assert gate.arm.armed() is False
+
+
+# -- Delayed (F5, §8.4, W11, W12) ---------------------------------------
+
+PATH = "ae_data.ch.1.send.8.mode"
+OSC = "/ch/1/send/8/mode"
+BOOL_PATH = "ae_data.ch.1.in.set.inv"
+BOOL_OSC = "/ch/1/in/set/inv"
+
+
+def _patch(path=PATH, before="POST", after="PRE"):
+    from wing_parser.edit.journal import Patch
+    return Patch(path=path, before=before, after=after, because="G8:ch.1.send.8",
+                 label="Set the send to PRE (ch.1.send.8)")
+
+
+def _delay_dialog(qt_app, *, desk=None, seconds=5, patch=None, armed=True, **kwargs):
+    from wing_parser.ui.write_delay_dialog import DelayedWriteDialog
+
+    desk = desk or FakeDesk(identity=_identity(),
+                            leaves={OSC: OscMessage(OSC, "s", ("POST",))},
+                            readbacks={OSC: "PRE"})
+    gate = _gate(qt_app, desk)
+    if armed:
+        gate.arm.arm(_identity())
+    dlg = DelayedWriteDialog(gate, patch or _patch(), seconds,
+                             transport=desk.write_transport(), timeout=2, **kwargs)
+    return dlg, gate, desk
+
+
+def test_the_countdown_starts_at_the_settings_value(qt_app):
+    dlg, _g, _d = _delay_dialog(qt_app, seconds=9)
+    assert dlg.remaining == 9
+    assert "9" in dlg.countdown_label.text()
+
+
+def test_plus_five_adds_to_the_remainder_repeatably_with_no_ceiling(qt_app):
+    """F5: an operator who needs a minute presses it twelve times, and that
+    is a legitimate answer."""
+    dlg, _g, _d = _delay_dialog(qt_app, seconds=5)
+    for expected in (10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65):
+        dlg.extend_button.click()
+        assert dlg.remaining == expected
+
+
+def test_the_dialog_shows_the_desk_value_the_file_value_and_the_new_one(qt_app, settle):
+    dlg, _g, _d = _delay_dialog(qt_app)
+    assert settle(lambda: "POST" in dlg.desk_label.text())
+    assert "POST" in dlg.file_label.text()
+    assert "PRE" in dlg.after_label.text()
+    assert OSC in dlg.address_label.text()
+
+
+def test_the_mismatch_line_appears_only_when_the_desk_moved(qt_app, settle):
+    quiet, _g, _d = _delay_dialog(qt_app)
+    assert settle(lambda: "POST" in quiet.desk_label.text())
+    assert quiet.mismatch_label.text() == ""
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("GRP",))},
+                    readbacks={OSC: "PRE"})
+    moved, _g2, _d2 = _delay_dialog(qt_app, desk=desk)
+    assert settle(lambda: moved.mismatch_label.text())
+    assert "GRP" in moved.mismatch_label.text()
+    assert "POST" in moved.mismatch_label.text()
+
+
+def test_a_bool_leaf_reads_true_and_false_never_one_and_zero(qt_app, settle):
+    """§4's normalisation, seen where it actually misleads an operator: an
+    unnormalised read shows "the desk holds 0, the scene file expected
+    False" and a mismatch warning that is not one."""
+    desk = FakeDesk(identity=_identity(),
+                    leaves={BOOL_OSC: OscMessage(BOOL_OSC, "sfi", ("1", 0.0, 1))},
+                    readbacks={BOOL_OSC: 0})
+    dlg, _g, _d = _delay_dialog(
+        qt_app, desk=desk,
+        patch=_patch(path=BOOL_PATH, before=True, after=False))
+    assert settle(lambda: dlg.desk_label.text() != "")
+    assert "True" in dlg.desk_label.text()
+    assert dlg.mismatch_label.text() == "", "True == True is not a mismatch"
+
+
+def test_a_desk_that_lacks_the_address_says_so_instead_of_guessing(qt_app, settle):
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(), leaves={})
+    dlg, _g, _d = _delay_dialog(qt_app, desk=desk)
+    assert settle(lambda: dlg.desk_label.text() == text("console.write.no_read"))
+
+
+def test_apply_now_sends_at_once(qt_app, settle):
+    dlg, _g, desk = _delay_dialog(qt_app)
+    settle(lambda: dlg.desk_label.text() != "")
+    results = []
+    dlg.applied.connect(results.append)
+    dlg.apply_button.click()
+    assert settle(lambda: results)
+    assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
+
+
+def test_expiry_is_an_apply(qt_app, settle):
+    """F5, stated flatly: a dialog that quietly dropped the write on timeout
+    would leave the desk and the scene disagreeing with nobody told."""
+    dlg, _g, desk = _delay_dialog(qt_app, seconds=3)
+    settle(lambda: dlg.desk_label.text() != "")
+    results = []
+    dlg.applied.connect(results.append)
+    for _ in range(3):
+        dlg._tick()
+    assert settle(lambda: results)
+    assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
+
+
+def test_cancel_sends_nothing_and_leaves_the_journal_patch_alone(qt_app, settle):
+    from wing_parser.ui.texts import text
+
+    dlg, _g, desk = _delay_dialog(qt_app)
+    settle(lambda: dlg.desk_label.text() != "")
+    heard = []
+    dlg.cancelled.connect(lambda: heard.append(True))
+    dlg.cancel_button.click()
+    assert desk.sets == []
+    assert heard
+    assert dlg.status_label.text() == text("console.write.cancelled")
+    assert "Undo" in text("console.write.cancelled")
+
+
+def test_gate_four_refuses_a_countdown_that_outlived_its_connection(qt_app, settle):
+    """§8.4: a countdown can run a minute and the desk can go LOST under it."""
+    from wing_parser.ui.live_state import LiveState
+    from wing_parser.ui.texts import text
+
+    dlg, gate, desk = _delay_dialog(qt_app, seconds=1)
+    settle(lambda: dlg.desk_label.text() != "")
+    failures = []
+    dlg.failed.connect(failures.append)
+    gate._page.state = LiveState.LOST          # the desk went away underneath
+    dlg._tick()
+    assert settle(lambda: failures)
+    assert desk.sets == []
+    assert dlg.status_label.text() == text("console.write.gate_closed")
+
+
+def test_disarming_under_a_countdown_refuses_it_too(qt_app, settle):
+    dlg, gate, desk = _delay_dialog(qt_app, seconds=1)
+    settle(lambda: dlg.desk_label.text() != "")
+    failures = []
+    dlg.failed.connect(failures.append)
+    gate.arm.disarm()
+    dlg._tick()
+    assert settle(lambda: failures)
+    assert desk.sets == []
+
+
+def test_the_delay_dialog_is_application_modal(qt_app):
+    from PySide6.QtCore import Qt
+
+    dlg, _g, _d = _delay_dialog(qt_app)
+    assert dlg.windowModality() == Qt.WindowModality.ApplicationModal
+
+
+def _record(desk_before="POST"):
+    from wing_parser.net.write import SetResult
+    from wing_parser.ui.live_write import SentWrite
+
+    return SentWrite(address=OSC, path=PATH, desk_before=desk_before,
+                     written="PRE",
+                     result=SetResult(OSC, "PRE", "PRE", False, "PRE", True))
+
+
+def test_a_revert_countdowns_cancel_stops_the_whole_run(qt_app, settle):
+    """W12: not "skip this one" -- a seven-row revert would need seven
+    deliberate cancels to abandon, the opposite of what Cancel promises."""
+    from wing_parser.ui.texts import text
+
+    dlg, _g, desk = _delay_dialog(qt_app, revert_record=_record())
+    settle(lambda: dlg.desk_label.text() != "")
+    heard = []
+    dlg.cancelled.connect(lambda: heard.append(True))
+    dlg.cancel_button.click()
+    assert heard and desk.sets == []
+    assert dlg.status_label.text() == text("console.write.revert_cancelled")
+
+
+def test_a_revert_countdown_writes_the_desk_before_value(qt_app, settle):
+    dlg, _g, desk = _delay_dialog(qt_app, revert_record=_record(desk_before="GRP"))
+    settle(lambda: dlg.desk_label.text() != "")
+    dlg.apply_button.click()
+    assert settle(lambda: desk.sets)
+    assert desk.sets[0][0:2] == (OSC, "GRP")
+
+
+def test_rejecting_mid_read_cancels_the_delay_runner_and_stops_the_countdown(
+        qt_app, settle):
+    """Mirrors the arm dialog's own guard: Esc/X while the pre-flight read
+    is still in flight must settle the runner AND stop the QTimer right
+    then, so neither a late reply nor a late tick can touch a dismissed
+    dialog."""
+    dlg, gate, _d = _delay_dialog(qt_app)
+    before = dlg.desk_label.text()
+
+    dlg.reject()
+
+    settle(lambda: False, limit_s=0.3)
+    assert dlg.desk_label.text() == before
+    assert dlg._timer.isActive() is False
+    assert gate.arm.armed() is True, "reject() must not touch the gate itself"
