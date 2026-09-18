@@ -718,7 +718,12 @@ same loss that made D1-D18 a rescue job.
   - close: add a `## Deviations recorded 2026-09-18` block to the spec, the
     way the wave-2 spec carries one, listing the four modules and the ruling
     that produced each; `ls wing_parser/ui/write_*.py`
-  - status: open
+  - status: open, and **two more deviations joined it at task 16**, both
+    recorded in `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §12
+    rather than in the spec: `revert_confirmation` (spec §, plan lines
+    1247/1399) was **deleted** in favour of `write_records.desk_now`, and the
+    W4 allow-list is keyed on the path **relative to the scan root**, not on
+    `path.name` (plan line 70/971/996). The block should list six, not four.
 
 - **D-49** `SentWrite` carries both spellings of the same leaf
   - owner: deliberate-no -- recorded so the duplication is not mistaken for
@@ -748,7 +753,13 @@ same loss that made D1-D18 a rescue job.
   - close: split the pre-flight read (`_read_desk` / `_no_read`) or the
     terminal-state handling out of the dialog before the next change to it;
     `wc -l wing_parser/ui/write_delay_dialog.py`
-  - status: open
+  - status: open -- and the prediction came true at task 16. Fixing the
+    undismissable modal (review IMPORTANT 2) needed one more line in
+    `_apply`; it was paid for by moving the "somebody moved the desk" line
+    out to `write_records.mismatch_line` and tightening three docstrings,
+    not by dropping a guard. The file is back at exactly **200**.
+    `changes_ledger.py` went 169 -> **198** in the same round. The next
+    change to either pays this debt first.
 
 - **D-51** Two of the three result badges have no glyph in the shipped font
   - owner: machine-doable
@@ -768,7 +779,20 @@ same loss that made D1-D18 a rescue job.
     and replacing them with characters IBM Plex Sans carries; then re-run
     `dist-shots/shoot_write_surfaces.py` and look at the badges. Do not close
     it on the font check alone -- the point is what the operator sees.
-  - status: open
+  - status: closed 2026-09-18 (task 16, review MINOR 6) -- the second
+    option. `wing_parser/ui/texts_write.py` now uses **U+2713 `✓`**, plain
+    **`!`** and **U+00D7 `×`**, all three of which the vendored faces carry;
+    the countdown's mismatch line loses U+26A0 for the same reason. The words
+    on each badge are unchanged. Pinned two ways in `tests/test_ui_texts.py`:
+    `test_no_write_string_uses_a_glyph_the_vendored_font_lacks` fails if
+    U+26A0 or U+2717 reappears ANYWHERE in `WRITE_TEXTS`, and
+    `test_each_badge_still_carries_a_mark_of_its_own` fails if a swap
+    flattens three outcomes into one shape. `grep -n "26a0\|2717"
+    wing_parser/ui/texts_write.py` returns nothing.
+    **Caveat, deliberately recorded:** the screenshots were NOT regenerated,
+    so `06-delayed-mismatch.png` and `07-changes-dock-badges.png` still show
+    the old marks. The strings are fixed; the look-at-it gate is not, and the
+    handoff §5 says so.
 
 - **D-52** Wave-3 minors deferred during implementation
   - owner: mixed; rescued here because
@@ -796,10 +820,17 @@ same loss that made D1-D18 a rescue job.
     7. The step-5 red-mutation demo was skipped for the classifier (task 9).
     8. `+5 s` is inert while the countdown is held at zero awaiting the
        pre-flight read, and a gate-closed path leaves buttons
-       enabled-but-inert (task 10).
+       enabled-but-inert (task 10). **Second half fixed 2026-09-18 (task 16,
+       review IMPORTANT 2):** a gate-closed path now CLOSES the dialog, so
+       there are no enabled-but-inert buttons left to be stuck behind. The
+       `+5 s`-at-zero half is untouched.
     9. `ImmediateWrite` submits `desk_before=None` on a failed pre-flight
        (task 11; plan-mandated), and `_LevelBox` raises on a non-`ApplyLevel`
-       string.
+       string. **Half-answered 2026-09-18 (task 16, review CRITICAL 1):** the
+       submit is still plan-mandated and unchanged, but the ledger row it
+       produces can no longer be reverted -- the button is disabled with a
+       tooltip, `revert_all` steps over it, and `route_revert` raises
+       `ValueError`. Reverting one used to put `,s "None"` on the wire.
     10. The end-to-end revert-all test asserts order but not strictly "the
         second did not start before the first settled" (task 13);
         serialisation is proven by a separate base-round mutation test.
@@ -827,7 +858,14 @@ same loss that made D1-D18 a rescue job.
     and at the head of `wing_parser/edit/data/repairs.yaml`, naming the
     `typetag="i"` path and the test an int descriptor must ship with;
     `grep -n "typetag" wing_parser/edit/repairs.py wing_parser/edit/data/repairs.yaml`
-  - status: open
+  - status: closed 2026-09-18 (task 16, review MINOR 9) -- both places, as
+    the close criterion asked. The YAML header carries the full statement
+    (why the default `typetag=None` path can select the wrong enum entry
+    silently, and that the read-back compares the same re-expression so it
+    agrees with itself); `repairs.py` carries the short form beside `KINDS`
+    and points at the YAML. Verified with the grep above: four hits in the
+    YAML, two in `repairs.py`. Nothing shipped changes -- every `to:` is
+    still a string or a bool.
 
 - **D-54** `dist-reports/` is untracked but not gitignored
   - owner: machine-doable
