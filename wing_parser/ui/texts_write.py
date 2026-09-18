@@ -25,6 +25,7 @@ WRITE_TEXTS: dict[str, str] = {
     ),
     "console.write.name_prompt": "Type this console's name to confirm:",
     "console.write.name_wrong": "That is not this console's name.",
+    "console.write.name_pending": "Waiting for the console's name…",
     "console.write.arm": "Arm",
     "console.write.armed": "Armed: {name}",
     "console.write.refused": "Refused: {error}",

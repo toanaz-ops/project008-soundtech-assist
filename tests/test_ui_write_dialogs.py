@@ -100,6 +100,23 @@ def test_a_near_miss_name_is_refused_and_said_so(qt_app, settle, typed):
     assert dlg.name_hint.text() == text("console.write.name_wrong")
 
 
+def test_typing_the_name_before_identity_arrives_shows_pending_not_wrong(qt_app, settle):
+    """Review fix round 1, #1: the read has not settled yet, so a typed
+    name -- even the RIGHT one -- must not be judged wrong for lack of
+    anything to compare it against."""
+    from wing_parser.ui.texts import text
+
+    dlg, _g, _d = _arm_dialog(qt_app)
+    dlg.latch.setChecked(True)
+    dlg.name_edit.setText(NAME)
+    assert dlg.name_hint.text() == text("console.write.name_pending")
+    assert dlg.arm_button.isEnabled() is False
+
+    assert settle(lambda: NAME in dlg.status_label.text())
+    assert dlg.name_hint.text() == ""
+    assert dlg.arm_button.isEnabled() is True
+
+
 def test_the_dialog_shows_the_serial_it_just_re_queried(qt_app, settle):
     dlg, _g, _d = _arm_dialog(qt_app)
     assert settle(lambda: "01009Y90604AAE" in dlg.status_label.text())
@@ -145,3 +162,22 @@ def test_the_arm_dialog_is_application_modal(qt_app):
 
     dlg, _g, _d = _arm_dialog(qt_app)
     assert dlg.windowModality() == Qt.WindowModality.ApplicationModal
+
+
+def test_rejecting_mid_read_cancels_the_runner_and_ignores_the_late_reply(
+        qt_app, settle):
+    """Review fix round 1, #2: Cancel/Esc/X while the pre-flight read is
+    still in flight must settle the runner right then, so a reply that was
+    already on its way across the thread boundary cannot re-enable
+    anything on a dialog the operator just dismissed."""
+    dlg, gate, _d = _arm_dialog(qt_app)
+    before = dlg.status_label.text()
+
+    dlg.reject()
+
+    # Pump the event loop a while: if the late identity reply were still
+    # going to land, this is where it would.
+    settle(lambda: False, limit_s=0.3)
+    assert dlg.status_label.text() == before
+    assert dlg.arm_button.isEnabled() is False
+    assert gate.arm.armed() is False

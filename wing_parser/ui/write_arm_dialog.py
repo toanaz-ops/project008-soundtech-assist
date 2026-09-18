@@ -13,6 +13,12 @@ UNTICKED. Wave 2's sketch had it the other way round -- "this desk is in a
 show", default on -- and a ticked box meaning "danger" reads backwards at
 2 a.m., when every other checkbox in this app means "yes, do this".
 
+While the identity read is still in flight, the typed name cannot yet be
+judged right or wrong -- there is nothing to compare it against. The hint
+shows `console.write.name_pending` instead of `.name_wrong` until the read
+settles (review fix round 1, item 1); judging it early would tell an
+operator who typed correctly that they had typed the wrong thing.
+
 **Its own `CallRunner`, not the Console page's** (W5). W1 allows writing
 while the page is WATCHING, the page's runner is then legitimately busy,
 and `CallRunner.start` returns False when it is (`workers.py:112-113`) --
@@ -40,6 +46,7 @@ class ArmWriteDialog(QDialog):
         self._gate = gate
         self._transport = transport or live_write.REAL
         self._identity = None
+        self._identity_pending = True
         self.setWindowTitle(text("console.write.arm_title"))
         self.setWindowModality(Qt.WindowModality.ApplicationModal)     # W11
 
@@ -83,6 +90,7 @@ class ArmWriteDialog(QDialog):
 
     def _identified(self, identity) -> None:
         self._identity = identity
+        self._identity_pending = False
         self.status_label.setText(text("console.write.desk").format(
             name=identity.name, model=identity.model, serial=identity.serial))
         self._refresh()
@@ -94,12 +102,20 @@ class ArmWriteDialog(QDialog):
         self.status_label.setText(text("console.write.identity_failed").format(
             host=self._gate.host(), error=exc))
         self._identity = None
+        self._identity_pending = False
         self._refresh()
 
     # -- the three conditions ----------------------------------------------
 
     def _refresh(self) -> None:
         typed = self.name_edit.text()
+        if self._identity_pending:
+            # Nothing to judge the typed name against yet -- a correct
+            # guess must not be told it is wrong (review fix round 1, #1).
+            self.name_hint.setText(
+                text("console.write.name_pending") if typed else "")
+            self.arm_button.setEnabled(False)
+            return
         matches = self._identity is not None and typed == self._identity.name
         self.name_hint.setText(
             "" if matches or not typed else text("console.write.name_wrong"))
@@ -112,6 +128,20 @@ class ArmWriteDialog(QDialog):
         self._gate.changed.emit()
         self.armed.emit(self._identity)
         self.accept()
+
+    def reject(self) -> None:
+        """Cancel/Esc/X: settle the pre-flight runner before anything else.
+
+        `CallRunner.cancel()` marks the in-flight call settled RIGHT NOW,
+        from the UI's side -- a late `finished`/`failed` signal that was
+        already queued across the thread boundary is then a no-op, because
+        `CallRunner._settle` refuses to fire a callback twice (review fix
+        round 1, #2). Without this, closing the dialog mid-read could still
+        run `_identified`/`_identity_failed` on a widget the operator just
+        dismissed.
+        """
+        self._runner.cancel()
+        super().reject()
 
 
 def arm_now(gate, parent=None, **kwargs) -> bool:
