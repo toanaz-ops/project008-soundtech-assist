@@ -260,6 +260,8 @@ WRITE_KEYS = (
     "console.write.sent_heading", "console.write.revert", "console.write.revert_all",
     "console.write.revert_stop", "console.write.reverting", "console.write.reverted",
     "console.write.revert_stopped", "console.write.revert_cancelled",
+    "console.write.revert_unknown", "console.write.revert_skipped",
+    "console.write.revert_failed",
 )
 
 
@@ -306,6 +308,7 @@ def test_every_write_placeholder_is_filled_by_someone():
     allowed = {
         "name", "model", "serial", "host", "error", "address", "seconds",
         "remaining", "value", "desk", "file", "after", "readback", "done", "total",
+        "skipped",
     }
     for key, value in WRITE_TEXTS.items():
         fields = {f for _, f, _, _ in string.Formatter().parse(value) if f}

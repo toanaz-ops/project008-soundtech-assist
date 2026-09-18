@@ -244,33 +244,28 @@ def test_a_silent_desk_leaves_the_scene_exactly_as_repair_set_it():
     assert live_write.settle_scene(["ch", "1", "in", "set", "inv"], True, result) is None
 
 
-# -- revert_confirmation (W13) ------------------------------------------
+# -- desk_now (W13) -----------------------------------------------------
 
 
-def test_revert_carries_the_desk_before_captured_at_send_time():
+def test_desk_now_is_the_read_back_the_send_actually_got():
     """Proven with a clamp-shaped send: the operator commanded `written`
-    ("PRE"), the desk answered a different value ("GRP"), and the revert's
-    `desk_before` must be the desk's real answer, not the value the operator
-    asked for -- `after` separately carries the pre-flight desk value back."""
+    ("PRE") and the desk answered a different value ("GRP"), so what the
+    desk holds now is the desk's own answer, not the value asked for."""
     record = live_write.SentWrite(
         address="/ch/1/send/8/mode", path="ae_data.ch.1.send.8.mode",
         desk_before="SUB", written="PRE", result=_result("PRE", "GRP", False))
-    confirmation = live_write.revert_confirmation(record, _identity())
-    assert isinstance(confirmation, live_write.WriteConfirmation)
-    assert confirmation.after == record.desk_before
-    assert confirmation.address == "/ch/1/send/8/mode"
-    assert confirmation.host == HOST
-    assert confirmation.desk_before == "GRP", "the desk's real answer, not `written`"
+    assert live_write.desk_now(record) == "GRP"
 
 
-def test_revert_falls_back_to_written_when_the_send_got_no_reply():
-    """No reply at all (`readback is None`) leaves nothing truer to revert
-    to than what this app itself sent -- `record.written`."""
+def test_desk_now_falls_back_to_written_when_the_send_got_no_reply():
+    """No reply at all (`readback is None`) leaves nothing truer than what
+    this app itself sent -- `record.written`. One rule, one helper: both
+    `write_router.route_revert`'s countdown line and anything else that
+    needs "what does the desk hold now" read it from here."""
     record = live_write.SentWrite(
         address="/ch/1/send/8/mode", path="ae_data.ch.1.send.8.mode",
         desk_before="GRP", written="PRE", result=_result("PRE", None, False))
-    confirmation = live_write.revert_confirmation(record, _identity())
-    assert confirmation.desk_before == record.written == "PRE"
+    assert live_write.desk_now(record) == "PRE"
 
 
 # -- split ruling: write_records.py must not reach wing_parser.net.write ---

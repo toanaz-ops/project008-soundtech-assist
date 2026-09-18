@@ -28,7 +28,7 @@ set a JSON bool, so an unnormalised read hands the countdown `0` against a
 journal `before` of `False` -- a spurious mismatch, shown as the nonsense
 "the desk holds 0, the scene file expected False".
 
-**F8/W13 (`Outcome`, `outcome`, `settle_scene`, `revert_confirmation`) and
+**F8/W13 (`Outcome`, `outcome`, `settle_scene`, `desk_now`) and
 their two record types (`WriteConfirmation`, `SentWrite`) live in
 `wing_parser.ui.write_records`**, which may not import `wing_parser.net.write`
 itself (this file is the only one that may) -- re-exported here so
@@ -51,9 +51,9 @@ from wing_parser.ui.write_records import (
     SentWrite,
     WriteConfirmation,
     confirmation_for,
+    desk_now,
     outcome,
     plan_write,
-    revert_confirmation,
     scene_value,
     settle_scene,
 )

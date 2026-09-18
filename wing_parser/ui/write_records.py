@@ -136,25 +136,18 @@ def confirmation_for(host: str, address: str, after: Any, identity: WingIdentity
                               identity=identity, desk_before=desk_before)
 
 
-def revert_confirmation(record: SentWrite, identity: WingIdentity) -> WriteConfirmation:
-    """W13: write the DESK-BEFORE value back, through gate 4 like any other.
+def desk_now(record: SentWrite) -> Any:
+    """W13: what the desk holds NOW, per the original send's read-back.
 
-    The journal `Patch` is deliberately NOT undone. The journal is the
-    file-side record of what the operator decided and Undo remains
-    available separately; silently dropping a patch because a desk write
-    was reverted would conflate the two doors this wave keeps apart.
+    After a clamp that differs from `record.written`; when the send got no
+    reply at all (`readback is None`) there is nothing truer to fall back
+    on than `record.written`, the best knowledge this app has. ONE rule,
+    read from here by everything that needs it -- `write_router.route_revert`
+    builds a revert `Patch` whose `before` is this, and a second copy of
+    the rule is how the countdown came to show "expected: None".
 
-    `desk_before` here is what the desk holds NOW, per the original send's
-    read-back -- `record.result.readback`, which after a clamp differs from
-    `record.written`. When that send got no reply at all (`readback is
-    None`), there is nothing truer to fall back on than `record.written`,
-    the best knowledge this app has of what the desk holds.
+    `record.result` is a `wing_parser.net.write.SetResult`, duck-typed
+    (`.readback`) for the reason in this module's docstring.
     """
     readback = record.result.readback
-    return WriteConfirmation(
-        host=identity.ip,
-        address=record.address,
-        after=record.desk_before,
-        identity=identity,
-        desk_before=record.written if readback is None else readback,
-    )
+    return record.written if readback is None else readback

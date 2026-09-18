@@ -90,4 +90,14 @@ WRITE_TEXTS: dict[str, str] = {
     "console.write.revert_cancelled": (
         "Not reverted. The desk keeps the written value."
     ),
+    "console.write.revert_unknown": (
+        "The desk never said what it held before, so there is nothing to "
+        "put back."
+    ),
+    "console.write.revert_skipped": (
+        "Skipped {skipped} the desk never described."
+    ),
+    "console.write.revert_failed": (
+        "The revert run stopped: {error}. The rest were left as they are."
+    ),
 }

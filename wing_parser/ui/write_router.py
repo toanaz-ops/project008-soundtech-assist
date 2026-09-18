@@ -102,12 +102,24 @@ def route_repair(gate, patch, delay, parent=None, *, transport=None, timeout=Non
 def route_revert(gate, record, delay, parent=None, *, transport=None, timeout=None,
                  on_sent=None, on_error=None, on_cancelled=None):
     """F7: write a ledger row's desk-before value back, at the CURRENT
-    level -- Manual reverts through the countdown too, never silently."""
+    level -- Manual reverts through the countdown too, never silently.
+
+    Raises `ValueError` for a record the desk never described
+    (`desk_before is None`, a pre-flight read that failed or went
+    unanswered): its "revert" would re-express `None` through `write.set`'s
+    default typetag and put `,s "None"` on the wire. `LedgerRow` disables
+    the button and `SentLedger.revert_all` skips such a row; this is the
+    belt behind those braces.
+    """
     from wing_parser.edit.journal import Patch
 
+    if record.desk_before is None:
+        raise ValueError(
+            f"refusing to revert {record.address}: the desk never said what "
+            "it held before this write, so there is nothing to put back")
     if not arm_now(gate, parent, transport=transport, timeout=timeout):
         return None
-    patch = Patch(path=record.path, before=record.result.readback,
+    patch = Patch(path=record.path, before=live_write.desk_now(record),
                   after=record.desk_before, because="revert", label="Revert")
     if gate.arm.level is ApplyLevel.IMMEDIATE:
         ImmediateWrite(gate, patch, record.desk_before, transport=transport,

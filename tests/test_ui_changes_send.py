@@ -544,3 +544,91 @@ def test_stop_button_through_the_real_window_leaves_the_remainder_and_regates_do
     assert len(desk.sets) < 3, "Stop left the remainder untouched"
     assert doctor.level_box.isEnabled() is True
     assert doctor.arm_button.isEnabled() is True
+
+
+# -- review round 2, CRITICAL 1: a row the desk never described ----------
+
+
+def test_a_row_the_desk_never_described_cannot_be_reverted(qt_app, vu_path):
+    """A failed or unanswered pre-flight read leaves `desk_before=None`
+    (`write_router.ImmediateWrite._write`, `DelayedWriteDialog.desk_before`).
+    Reverting one used to reach `plan_write` with `after=None` and put the
+    literal string `"None"` on the wire as `,s "None"`. The row says so and
+    refuses instead."""
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity())
+    ledger = _ledger(qt_app, desk, _window(qt_app, vu_path),
+                     [_sent(OSC, PATH, None, "PRE")])
+    row = ledger.row_widget(0)
+
+    assert row.revert_button.isEnabled() is False
+    assert row.revert_button.toolTip() == text("console.write.revert_unknown")
+    assert ledger.row_widget(0).record.desk_before is None
+
+
+def test_revert_all_skips_the_row_the_desk_never_described(qt_app, settle, vu_path):
+    """Reverse order, so the unknown row is reached FIRST: the run must
+    step over it and still revert the other, and say how many it skipped."""
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={f"/ch/{n}/fdr": OscMessage(f"/ch/{n}/fdr", "sff",
+                                                       ("-6.0", 0.0, -6.0))
+                            for n in (1, 2)},
+                    readbacks={f"/ch/{n}/fdr": -12.0 for n in (1, 2)})
+    window = _window(qt_app, vu_path)
+    records = [_sent("/ch/1/fdr", "ae_data.ch.1.fdr", -12.0, -6.0),
+               _sent("/ch/2/fdr", "ae_data.ch.2.fdr", None, -6.0)]
+    ledger = _ledger(qt_app, desk, window, records)
+    ledger._gate.arm.arm(_identity())
+    ledger._gate.arm.level = ApplyLevel.IMMEDIATE
+
+    ledger.revert_all()
+    assert settle(lambda: len(desk.sets) == 1, limit_s=5.0)
+    settle(lambda: False, limit_s=0.3)
+    assert [c[0] for c in desk.sets] == ["/ch/1/fdr"], (
+        "the unknown row must never reach the wire")
+    assert text("console.write.revert_skipped").split("{")[0] in (
+        ledger.progress_label.text())
+
+
+def test_a_gate_that_closes_mid_run_stops_it_instead_of_advancing(
+        qt_app, settle, vu_path):
+    """IMPORTANT 3: the error callback used to call `_step_done(None, None)`,
+    which advances. Every remaining row then needs the same dead connection
+    -- in Delayed that is one modal countdown stacked per row, all of them
+    doomed. The run ends, once, and the line names what ended it."""
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.live_state import LiveState
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={f"/ch/{n}/fdr": OscMessage(f"/ch/{n}/fdr", "sff",
+                                                       ("-6.0", 0.0, -6.0))
+                            for n in (1, 2)},
+                    readbacks={f"/ch/{n}/fdr": -12.0 for n in (1, 2)})
+    window = _window(qt_app, vu_path)
+    ledger = _ledger(qt_app, desk, window,
+                     [_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0)
+                      for n in (1, 2)])
+    gate = ledger._gate
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+    finished = []
+    ledger.run_finished.connect(lambda: finished.append(True))
+    # GATE 1 shuts the moment the first revert lands, as a dropped desk does.
+    ledger.reverted.connect(
+        lambda *_a: setattr(gate._page, "state", LiveState.LOST))
+
+    ledger.revert_all()
+    assert settle(lambda: finished)
+    settle(lambda: False, limit_s=0.3)
+
+    assert [c[0] for c in desk.sets] == ["/ch/2/fdr"], (
+        "the second row must never reach the wire on a dead connection")
+    assert finished == [True], "run_finished exactly once"
+    assert ledger._queue is None
+    assert text("console.write.revert_failed").split("{")[0] in (
+        ledger.progress_label.text())

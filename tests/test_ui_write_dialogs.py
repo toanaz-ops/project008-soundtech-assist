@@ -530,3 +530,57 @@ def test_an_unarmed_route_opens_the_arm_dialog_first(qt_app, monkeypatch):
         gate, _patch(), 5, transport=desk.write_transport(), timeout=2) is None
     assert calls == [gate], "no write path may skip gate 2"
     assert desk.sets == []
+
+
+# -- review round 2, CRITICAL 1 / IMPORTANT 5: reverting a no-answer row --
+
+
+def _ledger_record(desk_before="POST", readback="PRE", written="PRE"):
+    from wing_parser.net.write import SetResult
+    from wing_parser.ui.live_write import SentWrite
+
+    return SentWrite(address=OSC, path=PATH, desk_before=desk_before,
+                     written=written,
+                     result=SetResult(OSC, written, str(written), False,
+                                      readback, readback == written))
+
+
+def test_route_revert_refuses_a_record_the_desk_never_described(qt_app):
+    """Belt and braces behind the disabled button: `after=None` would be
+    re-expressed as the literal string "None" by `write.set`'s default
+    typetag, so routing refuses before gate 2 is even asked."""
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity())
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+
+    with pytest.raises(ValueError):
+        write_router.route_revert(gate, _ledger_record(desk_before=None), 5,
+                                  transport=desk.write_transport(), timeout=2)
+    assert desk.sets == []
+
+
+def test_a_revert_countdown_shows_what_the_desk_holds_now_not_none(qt_app, settle):
+    """IMPORTANT 5: `route_revert` used to build its own `Patch` with
+    `before=record.result.readback` and no fallback, so a clamped-or-silent
+    send made the countdown read "The scene file expected: None". The
+    fallback `write_records.desk_now` states is the one rule now."""
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("PRE",))},
+                    readbacks={OSC: "POST"})
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.DELAYED
+
+    dialog = write_router.route_revert(
+        gate, _ledger_record(desk_before="POST", readback=None), 5,
+        transport=desk.write_transport(), timeout=2)
+    assert "None" not in dialog.file_label.text()
+    assert "PRE" in dialog.file_label.text(), "the value this app last sent"
+    dialog.reject()

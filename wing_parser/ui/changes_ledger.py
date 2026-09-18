@@ -13,8 +13,13 @@ the previous read-back returns, because `RevertQueue.next()` is called from
 the previous one's terminal callback and every write goes through the
 gate's single `WriteQueue` underneath that (W10, §7.2).
 
+**A row the desk never described cannot be put back**: `desk_before is
+None` (a pre-flight read that failed or went unanswered) disables that
+row's button and leaves it out of a run, counted and reported.
+
 **Stop ends the run between parameters**; the one already on the wire
-completes, because nothing can un-send a packet. In Delayed the way out is
+completes, because nothing can un-send a packet. An error ends it too
+(`_step_failed`) rather than advancing into it. In Delayed the way out is
 the countdown's own Cancel (W12, W15) -- a Stop button behind a modal
 dialog is not reachable at all.
 """
@@ -43,6 +48,9 @@ class LedgerRow(QWidget):
             after=record.written))
         self.result_label = QLabel(badge_text(record))
         self.revert_button = QPushButton(text("console.write.revert"))
+        if record.desk_before is None:          # a failed/unanswered pre-flight
+            self.revert_button.setEnabled(False)
+            self.revert_button.setToolTip(text("console.write.revert_unknown"))
         self.revert_button.clicked.connect(
             lambda: self.revert_requested.emit(self.record))
         layout = QHBoxLayout(self)
@@ -63,6 +71,7 @@ class SentLedger(QWidget):
         self._gate = None
         self._window = None
         self._queue: RevertQueue | None = None
+        self._skipped = 0
         self.list = QListWidget()
         self.progress_label = QLabel("")
         self.revert_all_button = QPushButton(text("console.write.revert_all"))
@@ -111,10 +120,15 @@ class SentLedger(QWidget):
             on_sent=self._reverted)
 
     def revert_all(self) -> None:
-        """F7: reverse order, sequential, one parameter per transmission."""
+        """F7: reverse order, sequential, one parameter per transmission.
+
+        A row the desk never described (`desk_before is None`) is left OUT
+        of the run and counted: `route_revert` refuses one outright."""
         if self._queue is not None:
             return
-        self._queue = RevertQueue(self._records)
+        can = [r for r in self._records if r.desk_before is not None]
+        self._skipped = len(self._records) - len(can)
+        self._queue = RevertQueue(can)
         self.stop_button.setEnabled(True)
         self.run_started.emit()                      # W14
         self._next()
@@ -142,7 +156,7 @@ class SentLedger(QWidget):
             self._gate, record, getattr(self._window, "_apply_delay", 5),
             self.window(), transport=self._gate.transport,
             on_sent=self._step_done,
-            on_error=lambda _exc: self._step_done(None, None),
+            on_error=self._step_failed,
             on_cancelled=self.stop)                  # W12: Cancel stops the run
 
     def _step_done(self, _patch, record) -> None:
@@ -150,20 +164,35 @@ class SentLedger(QWidget):
             self._reverted(_patch, record)
         self._next()
 
+    def _step_failed(self, exc) -> None:
+        """A `GateClosed` (or anything else) ENDS the run, it does not
+        advance it: the connection is the same one every remaining row
+        needs, so carrying on stacks one modal countdown per row against a
+        desk that is already gone. `run_finished` is emitted exactly once,
+        by `_end_run`, and the line names what stopped it."""
+        if self._queue is None:
+            return
+        self._queue.stop()
+        self.progress_label.setText(
+            text("console.write.revert_failed").format(error=exc))
+        self._end_run()
+
     def _reverted(self, _patch, record) -> None:
         """W13: the scene goes back too, so the finding reappears.
 
         `_patch` (the internal revert `Patch` `route_revert` built) is
-        unused here: `_reverted` is only ever reached through `on_sent`,
-        which `ImmediateWrite`/the countdown call solely on a completed
-        write -- never with a `None` patch. The error path
-        (`_step_done(None, None)`) skips calling this at all, since it
-        guards on `record is not None` before reaching here. A patch-is-None
-        branch would be dead code pretending to be a safety check."""
+        unused: `on_sent` fires only on a COMPLETED write, never with a
+        `None` patch, and the error path is `_step_failed`, which never
+        comes through here at all."""
         write_apply.apply_revert(self._window, record)
         self.reverted.emit(record, record.result)
 
     def _end_run(self) -> None:
+        if self._skipped:
+            self.progress_label.setText(" ".join((
+                self.progress_label.text(),
+                text("console.write.revert_skipped").format(
+                    skipped=self._skipped))).strip())
         self._queue = None
         self.stop_button.setEnabled(False)
         self.run_finished.emit()                     # W14
