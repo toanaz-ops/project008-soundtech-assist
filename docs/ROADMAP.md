@@ -33,9 +33,10 @@ live console ┘        (showcontext/ attaches a cue sheet alongside)
    net/                (net/watch/ polls a live desk for changes)
                        (showcontext/ingest/ builds a cue sheet from a spreadsheet)
    edit/ + ui/         (desktop app: seven-page wing-ui over doctor/analyze/
-                        channels/routing/diff/import/console (live desk,
-                        read-only); packaging/wing-ui builds a standalone
-                        .exe)
+                        channels/routing/diff/import/console (live desk:
+                        read, plus a one-parameter-at-a-time write from a
+                        Doctor repair); packaging/wing-ui builds a
+                        standalone .exe)
 ```
 
 ## 2. Standing constraints that shape every decision below
@@ -76,7 +77,8 @@ subsystem; each handoff records what it measured and what it left open.
 | G2b | **Assisted ingest (model half)** | Provider layer (Anthropic + OpenAI-compatible/DeepSeek), mapping proposer with workbook-checked validation, interactive wizard with `--one-shot`, vocabulary guessing on explicit yes. | **1271** |
 | GUI 1 | **Desktop GUI parity** | The six-page sidebar app — Doctor, Overview, Channels, Routing, Diff, and the G2a/G2b Import wizard — replacing the doctor-only window: every page backed by the same query/advisory layer as the CLI, all user-facing strings through `texts.py`. Tasks 0–13 of the wave-1 plan. | **1342** (1 skipped) |
 | GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
-| GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; merged into `main` 2026-09-17 via PR #1–#4 (`dcf897a`). | **1580** (3 skipped), measured at `dcf897a` |
+| GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). *(That last clause described wave 2 and stopped being true on 2026-09-18: GUI 3 below opens one door, `wing_parser/ui/live_write.py`, and the same test now enforces an allow-list of that one module instead of a blanket ban. The Console page itself is still read-only — the write is reached from Doctor.)* Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; merged into `main` 2026-09-17 via PR #1–#4 (`dcf897a`). | **1580** (3 skipped), measured at `dcf897a` |
+| GUI 3 | **Write to a live console** | The Doctor page's **Repair** button can now reach the desk, one OSC leaf per transmission: three apply levels (Manual / Delayed / Immediate) behind a per-connection arming step, a countdown with Apply now / +5 s / Cancel (expiry applies), read-back reporting that moves the scene three different ways (sent / clamped / no reply), and a session ledger with per-row Revert and a sequential reverse-order Revert all. `net set/toggle/push/get` stay CLI-only, deliberately; the read-only AST scan became an **allow-list of one module** (`tests/test_ui_live_is_read_only.py`). Tasks 1-15 of the wave-3 plan, plus D-41 (partial) and D-42. **Not merged — on `feat/gui-write-wave3`, real-desk acceptance pending.** | **1761** (3 skipped), measured at `f56813c` |
 
 ### Where each one's paperwork lives
 
@@ -94,6 +96,7 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 1 | `2026-08-25-gui-parity-design.md` | `2026-08-25-gui-parity-wave1.md` | `2026-08-26-gui-house-style-complete.md` (covers both waves) |
 | GUI 1b | `2026-08-25-gui-parity-design.md` §house-style + the wave-1b plan's own bindings | `2026-08-26-gui-house-style-wave1b.md` | `2026-08-26-gui-house-style-complete.md` |
 | GUI 2 | `2026-09-15-gui-live-console-wave2-design.md` | `2026-09-15-gui-live-console-wave2.md` | `2026-09-16-gui-live-console-wave2-complete.md` |
+| GUI 3 | `2026-09-17-gui-write-wave3-design.md` | `2026-09-17-gui-write-wave3.md` | `2026-09-18-gui-write-wave3-complete.md` |
 
 Specs are in `docs/superpowers/specs/`, plans in `docs/superpowers/plans/`,
 handoffs in `docs/handoff/`.
@@ -139,7 +142,12 @@ Each gets its own **brainstorm → spec → plan → implementation** cycle. Inv
 ### G2b — assisted ingest's model half (done)
 
 The sequenced execution order for everything below lives in
-`docs/superpowers/plans/2026-08-23-next-steps.md`.
+`docs/superpowers/plans/2026-08-23-next-steps.md`. **That file is now
+history, not a plan:** all three of its steps landed (G2b, the live-watch
+acceptance, the GUI). Since it was written the GUI has run three cycles of
+its own — waves 1/1b, 2 and 3, each on its own spec in §3's paperwork table
+— and **wave 4 is not scoped yet**: what it should contain is one of the
+questions waiting on ToanAZ in §5.9.
 
 G2a deliberately contained **no model call**. It reads a spreadsheet through a
 mapping file ToanAZ writes by hand, and resolves Vietnamese performer terms
@@ -231,6 +239,36 @@ supply. **Do not guess them.**
    `docs/handoff/2026-09-16-gui-live-console-wave2-complete.md` (Task 17). Also
    pending his review: §9.3's acceptance steps against the real desk
    (WING-GIAQUY), and the exe's Console page screenshot.
+
+9. **GUI wave 3 writes to a live desk, and nothing in it has been seen by
+   ToanAZ or by a real console.** This is the first wave whose failure mode
+   is a wrong value at a venue rather than a wrong report on a screen, so
+   the review list is longer than wave 2's. Three things are open:
+   1. **Three design questions that change what gets built** (spec §11):
+      may Immediate be used while `WATCHING`, or only when merely
+      `CONNECTED`? In Delayed, should Revert all use one countdown for the
+      whole batch instead of one per parameter? Should arm state survive a
+      reconnect to the *same serial*?
+   2. **Fifteen `W…` rulings the orchestrator made for him** — W1 (write
+      allowed in `CONNECTED` and `WATCHING`), W2 (`osc_address`, with
+      `ce_data`/`$ctl` refused), W3 (always `set`, never `toggle`), W3b
+      (int-typed leaves are a known future risk), W4 (an AST allow-list of
+      one module), W5 (per-dialog `CallRunner` for pre-flight reads), W7
+      (`console.write.*` texts, 200-line ceilings), W8 (one new persisted
+      key, `apply_delay`), W9 (D-41/D-42 ride along), W10 (one write runner,
+      one packet on the wire), W11 (both dialogs application-modal), W12
+      (Cancel inside a Revert-all stops the whole run), W13 (a revert moves
+      the scene back, so the finding reappears; the journal patch is NOT
+      undone), W14 (no level change mid-run), W15 (a Delayed run is stopped
+      by the countdown's Cancel). Each is listed with what changes if he
+      overturns it in the spec's §5 table.
+   3. **Spec §9.3's acceptance list against the real desk** (WING-GIAQUY,
+      `192.168.128.28`, WING-Edit connected throughout) — none of it run,
+      because it needs the console. Plus the screenshots: wave 1's gate says
+      no surface is done until ToanAZ has looked at them.
+   Full list with evidence, plus the seven rulings made during
+   implementation that are not in the spec:
+   `docs/handoff/2026-09-18-gui-write-wave3-complete.md`.
 
 ## 6. Waiting on hardware — NOTHING
 

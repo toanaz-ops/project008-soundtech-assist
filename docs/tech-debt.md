@@ -681,7 +681,166 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     before the teardown print and carries the exact tally), or with
     `-p no:faulthandler` to silence the dump entirely. Only reopen if the
     exception ever becomes second-chance, i.e. a non-zero exit code.
+  - correction 2026-09-18 (GUI wave 3, task 14): **the two mitigations are
+    not interchangeable.** Measured twice at `f56813c`: a plain
+    `python -m pytest -q` printed the faulthandler dump AND lost the summary
+    line; the same run with `-p no:faulthandler` silenced the dump but
+    **still printed no `N passed` line** and still exited 0. So
+    `-p no:faulthandler` fixes only the interleaved-dump half of the
+    problem. **`--junitxml` is the only reliable way to read the tally** --
+    the XML at that commit carried `tests="1764" failures="0" errors="0"
+    skipped="3"`, i.e. 1761 passed / 3 skipped, which is the number the
+    wave-3 ROADMAP row and handoff quote.
   - status: open (parked)
+
+---
+
+## Opened by GUI wave 3 (write to a live console), 2026-09-18
+
+Numbering continues from D-47. Each was verified by the command shown, on
+branch `feat/gui-write-wave3` at `f56813c`, unless marked *(inherited)*.
+
+D-48 to D-51 and D-53 are what the wave itself earned. D-52 rescues the
+deferred minors out of `.superpowers/`, which `.gitignore` excludes -- the
+same loss that made D1-D18 a rescue job.
+
+- **D-48** The spec's section 4 module table is four modules short of what shipped
+  - owner: machine-doable (a spec addendum, not a code change)
+  - evidence: `docs/superpowers/specs/2026-09-17-gui-write-wave3-design.md`
+    section 4 lists ten new modules. Fourteen landed: the table's ten plus
+    `wing_parser/ui/write_router.py` (146 lines), `write_gate.py` (132),
+    `write_records.py` (160) and `write_apply.py` (54). Three of the four
+    are ceiling splits the plan did not foresee and the SDD ledger records
+    as rulings (`.superpowers/sdd/2026-09-17-gui-write-wave3/progress.md`,
+    tasks 4, 11 and 13); `write_router.py` is the routing layer section 4
+    folded into prose. A reader who trusts that table will look for
+    `route_repair` in `live_write.py` and not find it.
+  - close: add a `## Deviations recorded 2026-09-18` block to the spec, the
+    way the wave-2 spec carries one, listing the four modules and the ruling
+    that produced each; `ls wing_parser/ui/write_*.py`
+  - status: open
+
+- **D-49** `SentWrite` carries both spellings of the same leaf
+  - owner: deliberate-no -- recorded so the duplication is not mistaken for
+    an oversight
+  - evidence: `wing_parser/ui/write_records.py:49-50` holds `address`
+    (`/ch/1/send/8/mode`) and `path` (`ae_data.ch.1.send.8.mode`) for one
+    leaf. Revert needs the dotted path back -- to build a `Patch` and to
+    reach `jsontypes` -- and this project has **no inverse of
+    `osc_address`** (`wing_parser/net/address.py`). Carrying the value
+    cannot drift; deriving it would be a second mapper to keep in step with
+    `snapshot.py:_place` (W2).
+  - close: n/a unless a `path_from_address` is ever written, at which point
+    it needs the `$ctl` re-prefix rule and a test per shape, and this field
+    can go
+  - status: open (deliberate)
+
+- **D-50** `write_delay_dialog.py` is at exactly the 200-line ceiling
+  - owner: machine-doable
+  - evidence: `wc -l wing_parser/ui/write_delay_dialog.py` gives **200**, and
+    `tests/test_ui_house_style.py:170` sets `CEILING = 200` -- so the next
+    line added to that file fails the suite. It is the wave's tightest file.
+    The wave-3 plan expected `live_wiring.py` to be the tight one; Task 11's
+    escape hatch split `write_gate.py` out of it and it now sits at 115, so
+    the pressure moved rather than went away. `console_page.py`,
+    `live_controller.py` and `live_snapshot.py` remain at 199 each --
+    pre-existing, and the reason D-41's UI half is still open.
+  - close: split the pre-flight read (`_read_desk` / `_no_read`) or the
+    terminal-state handling out of the dialog before the next change to it;
+    `wc -l wing_parser/ui/write_delay_dialog.py`
+  - status: open
+
+- **D-51** Two of the three result badges have no glyph in the shipped font
+  - owner: machine-doable
+  - evidence: seen in the task-14 screenshot `07-changes-dock-badges.png`
+    and then measured. With the app's own theme applied,
+    `QRawFont.fromFont(label.font()).supportsCharacter(...)` on the vendored
+    **IBM Plex Sans** returns `True` for U+2713, U+00B7, U+2026 and U+2192,
+    but **`False` for U+26A0 (the clamped badge's warning sign) and U+2717
+    (the no-reply badge's cross)** -- the two characters
+    `wing_parser/ui/texts_write.py:70-77` puts on those badges. In the grab,
+    U+26A0 came back from a Windows fallback font while **U+2717 rendered as
+    a replacement box**. The no-reply badge is the most dangerous of the
+    three (the desk did not answer; the packet may or may not have landed)
+    and it is the one that renders as tofu. Fallback coverage is per-machine,
+    so a venue laptop may show it differently again.
+  - close: decide between vendoring a symbol face for those two codepoints
+    and replacing them with characters IBM Plex Sans carries; then re-run
+    `dist-shots/shoot_write_surfaces.py` and look at the badges. Do not close
+    it on the font check alone -- the point is what the operator sees.
+  - status: open
+
+- **D-52** Wave-3 minors deferred during implementation
+  - owner: mixed; rescued here because
+    `.superpowers/sdd/2026-09-17-gui-write-wave3/progress.md` is gitignored
+    and one `git worktree remove` deletes it
+  - evidence: that ledger's own lines, one per task. *(inherited -- recorded
+    by the implementing agents and, except where marked, not independently
+    re-verified here.)*
+    1. `net/address.py`'s error text hardcodes `"ae_data"` beside `{ROOT}`
+       (task 1).
+    2. `RevertQueue.next` pops index 0 of a list, O(n) (task 2) --
+       `wing_parser/ui/apply_level.py:76`. Re-verified by reading.
+    3. `live_write.REAL._read` has no unit test (task 3); it must therefore
+       be on the section 9.3 real-desk acceptance list.
+    4. ~~`tests/test_live_state.py:70` re-imports `pytest` inside a
+       function (task 5).~~ **Not reproducible 2026-09-18:**
+       `grep -n "import pytest" tests/test_live_state.py` returns one hit,
+       at module level (`:14`), and no function-level import anywhere in the
+       file. Either it was cleaned up in a later fix round or the ledger line
+       was wrong. Nothing to do.
+    5. An unreachable requeue branch in `WriteGate._start` (task 8) --
+       `wing_parser/ui/write_gate.py:120-125`. Re-verified by reading.
+    6. `tests/test_ui_state_store.py`'s geometry test fails **only** under
+       `QT_QPA_PLATFORM=offscreen` (task 8, pre-existing).
+    7. The step-5 red-mutation demo was skipped for the classifier (task 9).
+    8. `+5 s` is inert while the countdown is held at zero awaiting the
+       pre-flight read, and a gate-closed path leaves buttons
+       enabled-but-inert (task 10).
+    9. `ImmediateWrite` submits `desk_before=None` on a failed pre-flight
+       (task 11; plan-mandated), and `_LevelBox` raises on a non-`ApplyLevel`
+       string.
+    10. The end-to-end revert-all test asserts order but not strictly "the
+        second did not start before the first settled" (task 13);
+        serialisation is proven by a separate base-round mutation test.
+  - close: triage as its own pass -- several are one-line fixes, and (6) is a
+    real blind spot in how this suite is run. Read the source lines out of
+    `.superpowers/sdd/2026-09-17-gui-write-wave3/progress.md` while that file
+    still exists.
+  - status: open
+
+- **D-53** W3b's warning never reached `repairs.yaml`
+  - owner: machine-doable
+  - evidence: the spec states it in the present tense -- W3b says *"a comment
+    says so in `repairs.yaml` beside the `KINDS` tuple it mirrors
+    (`repairs.py:30`)"* -- and it does not.
+    `git diff --stat main..HEAD -- wing_parser/edit/` is **empty**, so the
+    whole `edit/` package is untouched by this wave, and
+    `grep -n "typetag" wing_parser/edit/data/repairs.yaml` finds nothing.
+    What the missing comment was to warn about is real and unchanged: every
+    `to:` in the eleven descriptors is a string or a bool today, and the
+    first **int-valued** one would go out as a display string through
+    `write.set`'s default `typetag=None` (`wing_parser/net/write.py:125-137`)
+    and could select the wrong enum entry silently, because the read-back
+    compares the same re-expression (`write.py:82-91`).
+  - close: add the comment beside `KINDS` in `wing_parser/edit/repairs.py:30`
+    and at the head of `wing_parser/edit/data/repairs.yaml`, naming the
+    `typetag="i"` path and the test an int descriptor must ship with;
+    `grep -n "typetag" wing_parser/edit/repairs.py wing_parser/edit/data/repairs.yaml`
+  - status: open
+
+- **D-54** `dist-reports/` is untracked but not gitignored
+  - owner: machine-doable
+  - evidence: GUI wave 3, task 14. Task 1 of this wave wrote its JUnit XML
+    to `dist-reports/suite.xml` (`.superpowers/sdd/2026-09-17-gui-write-wave3/
+    task-1-report.md`, step 4) and the directory now holds `probe.xml` and
+    `suite.xml`. `.gitignore` covers `dist/`, `junit.xml` and `/*.junit.xml`
+    but not `dist-reports/`, so it sits as `??` in `git status --short` on a
+    branch whose only other change is docs -- exactly the shape D-46 had
+    before it was closed, and exactly what a careless `git add -A` sweeps up.
+  - close: add `dist-reports/` to `.gitignore` beside the other build
+    output; `git check-ignore -v dist-reports/suite.xml`
+  - status: open
 
 ---
 
