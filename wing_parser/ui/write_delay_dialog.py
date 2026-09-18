@@ -1,25 +1,24 @@
 """Gate 3 (§8.3): the countdown an operator can watch, extend or cancel.
 
-**Expiry is an apply** (F5). The screen is a chance to stop, not a
-confirmation to give: the operator has already decided by clicking Repair,
-and a dialog that quietly dropped the write on timeout would leave the desk
-and the scene disagreeing with nobody told.
+**Expiry is an apply** (F5) -- once the pre-flight read has landed. Apply
+(button or expiry) needs a real desk value to send against: it starts
+disabled, expiry HOLDS at 0 until `_read_desk` lands, and a failed read
+disables it for good -- silently dropping the write would leave desk and
+scene disagreeing with nobody told; applying blind would be worse.
 
-**Cancel leaves the scene edit in place.** The Repair already happened, the
-journal holds the `Patch`, Doctor already re-derived; Cancel drops only the
-transmission, and Undo in the Changes panel drops the file side
-(`ui/session.py:71-75`). Different doors, and `console.write.cancelled` says so.
+**Cancel leaves the scene edit in place** -- Undo (`ui/session.py:71-75`)
+is the other door, for the file side; `console.write.cancelled` says so.
 
-**Gate 4 re-checks at the last moment** (§8.4). This countdown can run for a
-minute -- `+5 s` is unbounded -- and `RoundGuard` can declare the desk lost
-underneath it in under a second (`live_guard.py:44-52`). So Apply now and
-expiry both re-ask `WriteGate.ready()` immediately before the confirmation
-is built.
+**Gate 4 re-checks at the last moment** (§8.4): `RoundGuard` can declare
+the desk lost mid-countdown (`live_guard.py:44-52`), so Apply now and
+expiry both re-ask `WriteGate.ready()` before the confirmation is built.
 
-The countdown is a `QTimer` on the GUI thread: it counts seconds and
-touches no socket, so `+5 s` cannot block the window. The PRE-FLIGHT read
-runs on this dialog's OWN `CallRunner` (W5), never the Console page's,
-because that one is legitimately busy during a watch.
+**A write on the wire cannot be un-sent**: `reject()` (Esc/X) is a no-op
+and every button stays disabled from `_apply`'s submit until
+`_done`/`_failed` reports the outcome.
+
+A `QTimer` counts seconds on the GUI thread, no socket. The pre-flight
+read runs on this dialog's OWN `CallRunner` (W5), never the busy Console page's.
 """
 
 from __future__ import annotations
@@ -29,7 +28,6 @@ from PySide6.QtWidgets import (
     QDialog, QHBoxLayout, QLabel, QProgressBar, QPushButton, QVBoxLayout,
 )
 
-from wing_parser.net.address import osc_address
 from wing_parser.ui import live_write
 from wing_parser.ui.live_wiring import GateClosed, WriteJob
 from wing_parser.ui.texts import text
@@ -50,29 +48,21 @@ class DelayedWriteDialog(QDialog):
         self._patch = patch
         self._record = revert_record
         self._transport = transport or live_write.REAL
-        self._address = osc_address(patch.path)
-        self._after = revert_record.desk_before if revert_record else patch.after
-        #: The pre-flight read, NORMALISED -- kept as a value (the ledger
-        #: records it), not scraped back off the label, which loses type.
-        self.desk_before = None
-        self._settled = False
-        self.remaining = int(seconds)
-        self._total = int(seconds)
+        self._address, self._after = live_write.plan_write(patch, revert_record)
+        self.desk_before = None     #: the pre-flight read, NORMALISED (kept as a value)
+        self._settled = self._sent = self._expired = False
+        self.remaining = self._total = int(seconds)
 
         self.setWindowTitle(text("console.write.delay_title").format(seconds=seconds))
         self.setWindowModality(Qt.WindowModality.ApplicationModal)     # W11
 
-        self.address_label = QLabel(
-            text("console.write.address").format(address=self._address))
+        self.address_label = QLabel(text("console.write.address").format(address=self._address))
         self.desk_label = QLabel("")
-        self.file_label = QLabel(
-            text("console.write.file_value").format(value=patch.before))
-        self.after_label = QLabel(
-            text("console.write.after").format(value=self._after))
+        self.file_label = QLabel(text("console.write.file_value").format(value=patch.before))
+        self.after_label = QLabel(text("console.write.after").format(value=self._after))
         self.mismatch_label = QLabel("")
         self.mismatch_label.setWordWrap(True)
-        self.countdown_label = QLabel(
-            text("console.write.countdown").format(remaining=self.remaining))
+        self.countdown_label = QLabel(text("console.write.countdown").format(remaining=self.remaining))
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
         self.bar = QProgressBar()
@@ -80,6 +70,7 @@ class DelayedWriteDialog(QDialog):
         self.bar.setValue(self.remaining)
 
         self.apply_button = QPushButton(text("console.write.apply_now"))
+        self.apply_button.setEnabled(False)              # needs a landed read
         self.extend_button = QPushButton(text("console.write.extend"))
         self.cancel_button = QPushButton(text("console.write.cancel"))
 
@@ -109,33 +100,40 @@ class DelayedWriteDialog(QDialog):
         self._timer.timeout.connect(self._tick)
         self._timer.start(1000)
 
-    # -- the pre-flight read ------------------------------------------------
-
+    # -- the pre-flight read --------------------------------------------
     def _read_desk(self, value) -> None:
         if value is None:
             self._no_read()
             return
         self.desk_before = value
-        self.desk_label.setText(
-            text("console.write.desk_value").format(value=value))
+        self.desk_label.setText(text("console.write.desk_value").format(value=value))
         if value != self._patch.before:
-            # Somebody moved the desk after the scene was pulled -- the
-            # operator's call, not the app's; both values go on screen.
-            self.mismatch_label.setText(text("console.write.mismatch").format(
-                desk=value, file=self._patch.before))
+            # Somebody moved the desk -- the operator's call, not the app's.
+            self.mismatch_label.setText(
+                text("console.write.mismatch").format(desk=value, file=self._patch.before))
+        self.apply_button.setEnabled(True)
+        if self._expired:
+            self._apply()                  # F5: the countdown was waiting
 
     def _no_read(self) -> None:
         self.desk_label.setText(text("console.write.no_read"))
+        self.apply_button.setEnabled(False)
+        self._timer.stop()
 
-    # -- the countdown -------------------------------------------------------
-
+    # -- the countdown ----------------------------------------------------
     def _tick(self) -> None:
         self.remaining -= 1
         self.bar.setValue(max(self.remaining, 0))
         self.countdown_label.setText(text("console.write.countdown").format(
             remaining=max(self.remaining, 0)))
-        if self.remaining <= 0:
+        if self.remaining > 0:
+            return
+        self._timer.stop()
+        if self.apply_button.isEnabled():
             self._apply()                  # F5: expiry IS an apply
+        else:
+            self._expired = True           # hold at 0 until the read lands
+            self.status_label.setText(text("console.write.reading"))
 
     def _extend(self) -> None:
         """Adds five to whatever remains, any number of times, no ceiling."""
@@ -146,10 +144,9 @@ class DelayedWriteDialog(QDialog):
         self.countdown_label.setText(
             text("console.write.countdown").format(remaining=self.remaining))
 
-    # -- the three ways out ---------------------------------------------------
-
+    # -- the three ways out -----------------------------------------------
     def _apply(self) -> None:
-        if self._settled:
+        if self._settled or not self.apply_button.isEnabled():
             return
         self._settled = True
         self._timer.stop()
@@ -157,29 +154,31 @@ class DelayedWriteDialog(QDialog):
             self.status_label.setText(text("console.write.gate_closed"))
             self.failed.emit(GateClosed(text("console.write.gate_closed")))
             return
-        self.status_label.setText(
-            text("console.write.sending").format(address=self._address))
+        self.status_label.setText(text("console.write.sending").format(address=self._address))
+        self._sent = True
+        for button in (self.apply_button, self.extend_button, self.cancel_button):
+            button.setEnabled(False)
         self._gate.submit(WriteJob(
-            live_write.WriteConfirmation(
-                host=self._gate.host(), address=self._address,
-                after=self._after, identity=self._gate.arm.identity,
-                desk_before=self.desk_before,
-            ),
+            live_write.confirmation_for(
+                self._gate.host(), self._address, self._after,
+                self._gate.arm.identity, self.desk_before),
             self._done, self._failed,
         ))
 
     def _done(self, result) -> None:
+        self._sent = False
         self.applied.emit(result)
         self.accept()
 
     def _failed(self, exc) -> None:
+        self._sent = False
+        self.cancel_button.setEnabled(True)
         self.status_label.setText(text("console.write.refused").format(error=exc))
         self.failed.emit(exc)
 
     def _cancel(self) -> None:
-        """W12: inside a revert run this stops the WHOLE run, exactly as the
-        ledger's Stop does. W15: in Delayed this IS the way out -- a Stop
-        button behind a modal dialog is not reachable at all."""
+        """W12: stops the WHOLE revert run. W15: Delayed's only way out,
+        since a Stop button behind a modal dialog is not reachable."""
         if self._settled:
             return
         self._settled = True
@@ -191,10 +190,11 @@ class DelayedWriteDialog(QDialog):
         self.reject()
 
     def reject(self) -> None:
-        """Esc/X-close mirrors `ArmWriteDialog.reject`: settle the
-        pre-flight runner and stop the countdown right now, so a late read
-        or tick cannot touch a dismissed dialog. Unconditional -- `_cancel`
-        also routes here, after already doing its own settling."""
+        """Esc/X: refused outright while `_sent` (a packet on the wire
+        cannot be un-sent); otherwise settles the pre-flight runner and
+        stops the countdown, mirroring `ArmWriteDialog.reject`."""
+        if self._sent:
+            return
         self._timer.stop()
         self._runner.cancel()
         super().reject()

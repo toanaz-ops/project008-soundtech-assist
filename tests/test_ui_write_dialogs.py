@@ -388,3 +388,64 @@ def test_rejecting_mid_read_cancels_the_delay_runner_and_stops_the_countdown(
     assert dlg.desk_label.text() == before
     assert dlg._timer.isActive() is False
     assert gate.arm.armed() is True, "reject() must not touch the gate itself"
+
+
+# -- Fix round 1: Apply gated on the pre-flight read, dismissal locked --
+
+def test_apply_is_disabled_and_inert_before_the_read_lands(qt_app):
+    """CRITICAL: a click before the pre-flight read has landed must send
+    nothing -- Apply has no real desk value to build a confirmation from
+    yet."""
+    dlg, _g, desk = _delay_dialog(qt_app)
+    assert dlg.apply_button.isEnabled() is False
+    dlg.apply_button.click()
+    assert desk.sets == []
+
+
+def test_expiry_holds_at_zero_until_a_pending_read_lands(qt_app, settle):
+    """CRITICAL: the countdown can beat the read to zero -- expiry must
+    hold, not apply blind, and fire the moment the read actually lands."""
+    dlg, _g, desk = _delay_dialog(qt_app, seconds=1)
+    results = []
+    dlg.applied.connect(results.append)
+    dlg._tick()                       # reaches 0 before the read lands
+    assert desk.sets == []
+    assert dlg.apply_button.isEnabled() is False
+    assert settle(lambda: results)
+    assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
+
+
+def test_a_failed_pre_flight_read_never_applies(qt_app, settle):
+    """CRITICAL: a desk that never answers the pre-flight read must leave
+    Apply dead for this dialog's life -- expiry included."""
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(), leaves={})   # no answer for OSC
+    dlg, _g, _d = _delay_dialog(qt_app, desk=desk, seconds=1)
+    assert settle(lambda: dlg.desk_label.text() == text("console.write.no_read"))
+    assert dlg.apply_button.isEnabled() is False
+    results = []
+    dlg.applied.connect(results.append)
+    dlg._tick()                       # expiry after a failed read
+    settle(lambda: False, limit_s=0.3)
+    assert results == []
+    assert desk.sets == []
+    assert dlg.apply_button.isEnabled() is False
+
+
+def test_a_submitted_write_cannot_be_dismissed_until_the_result_lands(qt_app, settle):
+    """IMPORTANT: a packet on the wire cannot be un-sent -- Escape/X while
+    the result is outstanding must be a no-op, not a silent abandon."""
+    dlg, _g, desk = _delay_dialog(qt_app)
+    settle(lambda: dlg.apply_button.isEnabled())
+    applied = []
+    dlg.applied.connect(applied.append)
+    rejected = []
+    dlg.rejected.connect(lambda: rejected.append(True))
+
+    dlg.apply_button.click()
+    dlg.reject()                      # Escape while the write is outstanding
+
+    assert rejected == [], "a packet on the wire cannot be un-sent"
+    assert settle(lambda: applied)
+    assert len(applied) == 1

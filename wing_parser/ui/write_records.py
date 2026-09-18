@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from wing_parser.net.address import osc_address
 from wing_parser.net.identity import WingIdentity
 from wing_parser.net.jsontypes import is_boolean_shape
 
@@ -113,6 +114,26 @@ def settle_scene(parts: Sequence[str], after: Any, result: Any) -> Any | None:
     if result.readback is None:
         return None
     return scene_value(parts, result.readback)
+
+
+def plan_write(patch: Any, revert_record: SentWrite | None) -> tuple[str, Any]:
+    """The address and the value a write dialog will send (§2.3, W12/W13):
+    `revert_record`'s captured desk-before when reverting, else the
+    patch's own `after`. `patch` is a `wing_parser.edit.journal.Patch`,
+    typed `Any` for the reason in this module's docstring.
+    """
+    address = osc_address(patch.path)
+    after = revert_record.desk_before if revert_record is not None else patch.after
+    return address, after
+
+
+def confirmation_for(host: str, address: str, after: Any, identity: WingIdentity,
+                      desk_before: Any | None) -> WriteConfirmation:
+    """One place gate 4's token is assembled, so every caller (the
+    countdown, and eventually Manual/Immediate) passes the same five
+    names in the same order rather than repeating the dataclass call."""
+    return WriteConfirmation(host=host, address=address, after=after,
+                              identity=identity, desk_before=desk_before)
 
 
 def revert_confirmation(record: SentWrite, identity: WingIdentity) -> WriteConfirmation:
