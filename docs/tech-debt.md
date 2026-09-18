@@ -524,7 +524,16 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     touches `wing_parser/net/`, which is why wave 2 did not do it (its own
     rule: a UI consumer does not modify `net/client.py`, `codec.py` or
     `schema.py`).
-  - status: open
+  - status: partially closed (task 15a) -- the `net/` seam now exists:
+    `take_snapshot` and `build_watch_list` both accept a keyword-only
+    `schema: SchemaResult | None = None` and skip their internal
+    `walk_schema` call when one is supplied; default (omitted) behaviour
+    is unchanged and pinned by test. **The UI has not adopted it** --
+    `console_page.py` (199), `live_controller.py` (199) and
+    `live_snapshot.py` (199) are all at the ceiling wave 3 forbids growing,
+    so passing Discover's schema into a later Pull needs a file split
+    first. Not marked closed -- the second of the two walks is still
+    being paid at a venue.
 
 - **D-42** Quitting the app can wait up to ~5 s for a watch round in flight
   - owner: machine-doable

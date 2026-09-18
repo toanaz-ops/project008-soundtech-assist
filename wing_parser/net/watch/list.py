@@ -24,7 +24,7 @@ from pathlib import Path
 import yaml
 
 from wing_parser.net.client import OSC_PORT, WingClient
-from wing_parser.net.schema import walk_schema
+from wing_parser.net.schema import SchemaResult, walk_schema
 
 _DATA = Path(__file__).resolve().parent / "data" / "watchlist.yaml"
 
@@ -70,12 +70,18 @@ def build_watch_list(
     port: int = OSC_PORT,
     client: WingClient | None = None,
     keys: dict[str, tuple[str, ...]] | None = None,
+    schema: SchemaResult | None = None,
     **walk_kwargs,
 ) -> WatchList:
     """Walk the console, then emit one address per (strip, key) pair.
 
     Fresh every call, like `walk_schema` itself: the tree's shape depends
     on live values, so a cached list would miss what a loaded desk holds.
+
+    D-41: a caller that has just walked (the Console page's Discover)
+    hands that result in via `schema` rather than paying for a second
+    walk. The default is unchanged -- omitting `schema` walks exactly as
+    before.
     """
     wanted = load_watch_keys() if keys is None else keys
 
@@ -86,7 +92,8 @@ def build_watch_list(
             f"family; expected one of {', '.join(FAMILIES)}"
         )
 
-    schema = walk_schema(host, port=port, client=client, **walk_kwargs)
+    if schema is None:
+        schema = walk_schema(host, port=port, client=client, **walk_kwargs)
 
     present: dict[str, set[int]] = {}
     for address in schema.leaves:
