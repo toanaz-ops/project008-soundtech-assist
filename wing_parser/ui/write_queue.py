@@ -9,7 +9,9 @@ Qt-free, so the ordering rule is covered by plain pytest. The `start`
 callback is what actually launches a write (the `WriteGate`'s single
 `CallRunner`, `live_wiring.py`), and every terminal path of that call --
 success, failure, timeout, cancel -- must call `settle()` exactly once, or
-the queue stalls with a phantom write in flight.
+the queue stalls with a phantom write in flight. A `start` that RAISES is the
+one stall this module defends against itself (`_pump`): the error propagates,
+the slot does not.
 """
 
 from __future__ import annotations
@@ -51,4 +53,17 @@ class WriteQueue:
         if self._in_flight is not None or not self._pending:
             return
         self._in_flight = self._pending.popleft()
-        self._start(self._in_flight)
+        try:
+            self._start(self._in_flight)
+        except BaseException:
+            # The slot is claimed BEFORE `start` runs, so a `start` that
+            # raises would otherwise leave it held by a write that never
+            # went out -- and `settle()` is only ever called from a
+            # terminal callback of that write, which now never fires. Every
+            # later write would queue behind a phantom forever: at a venue,
+            # a Send button that quietly stops working. Released here, not
+            # swallowed: a caller whose `start` is broken must still hear
+            # it, and the items behind this one keep their order and go out
+            # on the next `enqueue`/`settle`.
+            self._in_flight = None
+            raise

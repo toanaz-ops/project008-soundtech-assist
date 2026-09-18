@@ -1821,28 +1821,57 @@ def test_ready_needs_the_gate_open_and_the_arm_state_armed(qt_app):
     assert gate.ready() is True
 
 
-@pytest.mark.parametrize("dropout", ["disconnected", "failed", "lost"])
+#: Every dropout the gate listens for, with the state its event is LEGAL in
+#: (`live_state._TABLE`) and the state the page lands in. Fired from anywhere
+#: else, `ConsolePage._fire` raises inside its own Qt slot: PySide6 prints the
+#: traceback, carries on to the next slot and `emit()` returns normally, so the
+#: gate's assertions would still hold -- on two tracebacks of stderr noise per
+#: run, and with the page left in a state the app could never be in. Code
+#: review, round 1. `fail` is legal only in the three busy states, which is
+#: exactly where each panel's own call runs, and all three are reachable while
+#: armed: arm in CONNECTED, then click Connect/Discover/Pull.
+_DROPOUTS = {
+    # name:          (emitter attr,   payload,  fired from,    lands in)
+    "disconnected":  ("connect_bar",  None,     "CONNECTED",   "DISCONNECTED"),
+    "connect_failed": ("connect_bar", "gone",   "CONNECTING",  "ERROR"),
+    "walk_failed":   ("discovery",    "gone",   "WALKING",     "ERROR"),
+    "pull_failed":   ("snapshot",     "gone",   "PULLING",     "ERROR"),
+    "lost":          ("events",       "desk lost", "WATCHING", "LOST"),
+}
+
+
+@pytest.mark.parametrize("dropout", sorted(_DROPOUTS))
 def test_every_dropout_disarms_and_announces(qt_app, dropout):
+    """W1/F4: `CallPanel.failed` is shared, so all three panels are driven.
+
+    `test_the_gate_publishes_itself_on_the_window` proves the gate is on the
+    window; this proves the gate's three dropout sources are all wired, which
+    is what the Immediate level rests on -- the selector must fall back to
+    Manual the moment the connection goes, or it names a level that is gone.
+    """
     from wing_parser.ui.apply_level import ApplyLevel
     from wing_parser.ui.live_state import LiveState
 
+    panel_name, payload, fired_from, lands_in = _DROPOUTS[dropout]
     _w, page, gate, _d = _gate_page(qt_app)
-    page._apply_state(LiveState.CONNECTED)
+    page._apply_state(LiveState.CONNECTED)      # the gate is open here
     gate.arm.arm(_identity())
     gate.arm.level = ApplyLevel.IMMEDIATE
+    page._apply_state(LiveState[fired_from])    # ...and the call is running
     heard = []
     gate.changed.connect(lambda: heard.append(True))
 
-    if dropout == "disconnected":
-        page.connect_bar.disconnected.emit()
-    elif dropout == "failed":
-        page.connect_bar.failed.emit(OSError("gone"))
-    else:
-        page.events.lost.emit(OSError("desk lost"))
+    panel = getattr(page, panel_name)
+    signal = panel.disconnected if payload is None else (
+        panel.lost if dropout == "lost" else panel.failed)
+    signal.emit() if payload is None else signal.emit(OSError(payload))
 
     assert gate.arm.armed() is False
     assert gate.arm.level is ApplyLevel.MANUAL
     assert heard, "the selector must be told, or it shows a level that is gone"
+    assert page.state is LiveState[lands_in], (
+        "the page refused the transition, so this fired from a state "
+        "`live_state._TABLE` does not document")
 
 
 def test_two_immediate_submissions_never_overlap_on_the_wire(qt_app, settle):

@@ -6,6 +6,8 @@ whole reason these three classes are not methods on a widget.
 """
 from __future__ import annotations
 
+import pytest
+
 from wing_parser.ui.apply_level import ApplyLevel, ArmState, RevertQueue
 from wing_parser.ui.write_queue import WriteQueue
 
@@ -125,3 +127,55 @@ def test_clear_drops_what_has_not_gone_out_and_keeps_the_one_in_flight():
     queue.clear()
     assert queue.pending == ()
     assert queue.in_flight == "one", "nothing can un-send a packet already on the wire"
+
+
+def test_a_start_that_raises_does_not_wedge_the_queue_behind_a_phantom():
+    """Code review, round 1. `_pump` claims the in-flight slot BEFORE it
+    calls `start`, so a `start` that raises used to leave the slot held by
+    a write that never went out -- and `settle()` is only ever called from
+    a terminal callback that now never runs. Every later write would queue
+    behind it forever, which at a venue is a Send button that silently
+    stops working with no error anywhere.
+
+    The queue does not SWALLOW the error -- a caller whose `start` is
+    broken must hear about it -- it only guarantees the slot is free
+    afterwards, so the next enqueue still goes out.
+    """
+    started = []
+
+    def start(item):
+        started.append(item)
+        if item == "one":
+            raise RuntimeError("the wire refused before anything left")
+
+    queue = WriteQueue(start)
+    with pytest.raises(RuntimeError):
+        queue.enqueue("one")
+
+    assert queue.in_flight is None, "a phantom in-flight write wedges the queue"
+    queue.enqueue("two")
+    assert started == ["one", "two"], "the second write never got the wire"
+    assert queue.in_flight == "two"
+
+
+def test_a_start_that_raises_still_releases_the_queue_from_settle():
+    """The same hole on the other entry point: `settle()` pumps too, so the
+    raise can come from the NEXT item rather than the first."""
+    started = []
+
+    def start(item):
+        started.append(item)
+        if item == "two":
+            raise RuntimeError("the second one refused")
+
+    queue = WriteQueue(start)
+    queue.enqueue("one")
+    queue.enqueue("two")
+    queue.enqueue("three")
+    with pytest.raises(RuntimeError):
+        queue.settle()
+
+    assert queue.in_flight is None
+    assert queue.pending == ("three",), "three must still be waiting its turn"
+    queue.settle()
+    assert started == ["one", "two", "three"]
