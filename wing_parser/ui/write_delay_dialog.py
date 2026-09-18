@@ -3,8 +3,7 @@
 **Expiry is an apply** (F5) -- once the pre-flight read has landed. Apply
 (button or expiry) needs a real desk value to send against: it starts
 disabled, expiry HOLDS at 0 until `_read_desk` lands, and a failed read
-disables it for good -- silently dropping the write would leave desk and
-scene disagreeing with nobody told; applying blind would be worse.
+disables it for good -- dropping it silently, or applying blind, is worse.
 
 **Cancel leaves the scene edit in place** -- Undo (`ui/session.py:71-75`)
 is the other door, for the file side; `console.write.cancelled` says so.
@@ -13,12 +12,13 @@ is the other door, for the file side; `console.write.cancelled` says so.
 the desk lost mid-countdown (`live_guard.py:44-52`), so Apply now and
 expiry both re-ask `WriteGate.ready()` before the confirmation is built.
 
-**A write on the wire cannot be un-sent**: `reject()` (Esc/X) is a no-op
-and every button stays disabled from `_apply`'s submit until
-`_done`/`_failed` reports the outcome.
-
-A `QTimer` counts seconds on the GUI thread, no socket. The pre-flight
-read runs on this dialog's OWN `CallRunner` (W5), never the busy Console page's.
+**A write on the wire cannot be un-sent**: `reject()` and `_cancel` are
+no-ops while `_sent`, and every button stays disabled from `_apply`'s submit
+until `_done`/`_failed` reports the outcome. Every OTHER ending CLOSES this
+dialog -- gate 4 refusing, and a refused write -- because it is
+application-modal: one that settles without closing takes the app with it.
+A `QTimer` counts seconds on the GUI thread, no socket; the pre-flight read
+runs on this dialog's OWN `CallRunner` (W5), never the busy Console page's.
 """
 
 from __future__ import annotations
@@ -29,9 +29,9 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.ui import live_write
-from wing_parser.ui.live_wiring import GateClosed, WriteJob
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
+from wing_parser.ui.write_gate import GateClosed, WriteJob
 
 EXTEND_SECONDS = 5
 
@@ -107,10 +107,8 @@ class DelayedWriteDialog(QDialog):
             return
         self.desk_before = value
         self.desk_label.setText(text("console.write.desk_value").format(value=value))
-        if value != self._patch.before:
-            # Somebody moved the desk -- the operator's call, not the app's.
-            self.mismatch_label.setText(
-                text("console.write.mismatch").format(desk=value, file=self._patch.before))
+        self.mismatch_label.setText(
+            live_write.mismatch_line(value, self._patch.before))
         self.apply_button.setEnabled(True)
         if self._expired:
             self._apply()                  # F5: the countdown was waiting
@@ -153,6 +151,7 @@ class DelayedWriteDialog(QDialog):
         if not self._gate.ready():                       # GATE 4 (§8.4)
             self.status_label.setText(text("console.write.gate_closed"))
             self.failed.emit(GateClosed(text("console.write.gate_closed")))
+            self.reject()
             return
         self.status_label.setText(text("console.write.sending").format(address=self._address))
         self._sent = True
@@ -172,14 +171,16 @@ class DelayedWriteDialog(QDialog):
 
     def _failed(self, exc) -> None:
         self._sent = False
-        self.cancel_button.setEnabled(True)
         self.status_label.setText(text("console.write.refused").format(error=exc))
         self.failed.emit(exc)
+        self.reject()
 
     def _cancel(self) -> None:
         """W12: stops the WHOLE revert run. W15: Delayed's only way out,
-        since a Stop button behind a modal dialog is not reachable."""
-        if self._settled:
+        since a Stop button behind a modal dialog is not reachable. Gated
+        on `_sent`, NOT `_settled`: a countdown that settled without
+        transmitting (gate 4 refused it) must still be closable."""
+        if self._sent:
             return
         self._settled = True
         self._timer.stop()
@@ -190,9 +191,8 @@ class DelayedWriteDialog(QDialog):
         self.reject()
 
     def reject(self) -> None:
-        """Esc/X: refused outright while `_sent` (a packet on the wire
-        cannot be un-sent); otherwise settles the pre-flight runner and
-        stops the countdown, mirroring `ArmWriteDialog.reject`."""
+        """Esc/X: refused outright while `_sent` (a packet on the wire cannot
+        be un-sent); else settles the runner and stops the countdown."""
         if self._sent:
             return
         self._timer.stop()

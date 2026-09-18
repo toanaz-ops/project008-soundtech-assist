@@ -584,3 +584,75 @@ def test_a_revert_countdown_shows_what_the_desk_holds_now_not_none(qt_app, settl
     assert "None" not in dialog.file_label.text()
     assert "PRE" in dialog.file_label.text(), "the value this app last sent"
     dialog.reject()
+
+
+# -- review round 2, IMPORTANT 2: a refusal must let go of the screen ----
+
+
+def test_a_gate_four_refusal_closes_the_countdown(qt_app, settle):
+    """`_apply`'s gate-4 branch set `_settled` and emitted `failed` but
+    never closed, and `_cancel` returned early on `_settled`: Cancel,
+    Apply and Escape were all dead on an APPLICATION-MODAL dialog, so the
+    whole app was unreachable behind a countdown that could do nothing."""
+    from PySide6.QtWidgets import QDialog
+
+    from wing_parser.ui.live_state import LiveState
+
+    dlg, gate, desk = _delay_dialog(qt_app, seconds=1)
+    settle(lambda: dlg.apply_button.isEnabled())
+    failures, rejected = [], []
+    dlg.failed.connect(failures.append)
+    dlg.rejected.connect(lambda: rejected.append(True))
+    gate._page.state = LiveState.LOST          # the desk went away underneath
+
+    dlg._tick()                                # expiry -> gate 4 refuses
+
+    assert settle(lambda: failures)
+    assert len(failures) == 1, "exactly one failure per settled dialog"
+    assert rejected == [True]
+    assert dlg.result() == QDialog.DialogCode.Rejected
+    assert desk.sets == []
+
+
+def test_a_refused_write_closes_the_countdown_too(qt_app, settle):
+    """The other half: `_failed`, reached when the write itself is refused.
+    `DeskChanged` -- a different console answering at that address by the
+    time Apply lands -- is the refusal §8.4 exists for, and it left the
+    same modal dialog stuck with every button dead."""
+    from PySide6.QtWidgets import QDialog
+
+    dlg, _g, desk = _delay_dialog(qt_app)
+    assert settle(lambda: dlg.apply_button.isEnabled())
+    failures, rejected = [], []
+    dlg.failed.connect(failures.append)
+    dlg.rejected.connect(lambda: rejected.append(True))
+    # A DIFFERENT desk now answers at that address (gate 4's second half).
+    desk.identity = WingIdentity(ip=HOST, name="WING-OTHER", model="wing-rack",
+                                 serial="99999Z00000ZZZ", firmware="3.1")
+
+    dlg.apply_button.click()
+
+    assert settle(lambda: failures)
+    assert rejected == [True], "a refusal must not wedge a modal dialog"
+    assert dlg.result() == QDialog.DialogCode.Rejected
+    assert desk.sets == [], "DeskChanged is raised BEFORE anything transmits"
+
+
+def test_cancel_is_inert_only_while_a_packet_is_actually_on_the_wire(qt_app, settle):
+    """`_cancel` gates on `_sent`, not `_settled`: a packet on the wire
+    cannot be un-sent, but a countdown that merely SETTLED (refused before
+    anything left) must still be closable."""
+    dlg, _g, desk = _delay_dialog(qt_app)
+    settle(lambda: dlg.apply_button.isEnabled())
+    heard = []
+    dlg.cancelled.connect(lambda: heard.append(True))
+
+    dlg._sent = True                       # as `_apply` leaves it mid-write
+    dlg.cancel_button.click()
+    assert heard == [], "Cancel cannot un-send a packet already on the wire"
+
+    dlg._sent = False
+    dlg._settled = True                    # refused, but nothing transmitted
+    dlg.cancel_button.click()
+    assert heard == [True]
+    assert desk.sets == []

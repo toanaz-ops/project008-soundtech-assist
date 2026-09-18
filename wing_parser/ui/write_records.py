@@ -17,6 +17,7 @@ from typing import Any
 from wing_parser.net.address import osc_address
 from wing_parser.net.identity import WingIdentity
 from wing_parser.net.jsontypes import is_boolean_shape
+from wing_parser.ui.texts import text
 
 
 @dataclass(frozen=True)
@@ -151,3 +152,17 @@ def desk_now(record: SentWrite) -> Any:
     """
     readback = record.result.readback
     return record.written if readback is None else readback
+
+
+def mismatch_line(desk: Any, file_value: Any) -> str:
+    """The countdown's "somebody moved the desk" line, or `""` when nobody
+    did. Whether to apply over it is the operator's call, not the app's,
+    so this states the disagreement and decides nothing.
+
+    Here rather than in `write_delay_dialog.py`, which is at its ruled
+    200-line ceiling: comparing what the desk holds against what the FILE
+    held is the same question `SentWrite.desk_before` exists to answer.
+    """
+    if desk == file_value:
+        return ""
+    return text("console.write.mismatch").format(desk=desk, file=file_value)
