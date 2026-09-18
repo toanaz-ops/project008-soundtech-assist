@@ -50,7 +50,7 @@ def _doctor(qt_app, desk=None, state=None):
     page = _Page()
     page.state = state or LiveState.CONNECTED
     page.connect_bar = _Bar()
-    gate = WriteGate(page, transport=desk.write_transport(), timeout=0)
+    gate = WriteGate(page, transport=desk.write_transport(), timeout=2)
     doctor = DoctorPage()
     doctor.attach_gate(gate)
     return doctor, gate, desk
@@ -174,3 +174,21 @@ def test_a_repair_that_does_nothing_announces_nothing(qt_app):
     doctor.send_requested.connect(seen.append)
     doctor.detail_panel._repair()          # no finding, no session
     assert seen == []
+
+
+def test_arm_from_the_doctor_page_uses_the_gates_own_transport(qt_app, monkeypatch):
+    """MINOR 7: this was the one `arm_now` call site in the app that passed
+    no `transport=`, so `ArmWriteDialog` fell back to `live_write.REAL` and
+    a fake gate's Arm button would have opened a real socket."""
+    from wing_parser.ui import doctor_page
+
+    doctor, gate, _desk = _doctor(qt_app)
+    seen = {}
+    monkeypatch.setattr(doctor_page, "arm_now",
+                        lambda g, parent=None, **kw: seen.update(gate=g, **kw) or True)
+
+    doctor.arm_button.click()
+
+    assert seen["gate"] is gate
+    assert seen["transport"] is gate.transport
+    assert gate.transport is not None

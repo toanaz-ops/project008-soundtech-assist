@@ -292,6 +292,36 @@ def test_the_three_outcome_badges_say_three_different_things():
     assert "clamped" in clamped
 
 
+#: D-51, measured with `QRawFont.fromFont(label.font()).supportsCharacter`
+#: against the app's own theme: the vendored IBM Plex faces carry U+2713,
+#: U+00B7, U+2026, U+2192 and U+00D7, but NOT U+26A0 (warning sign) or
+#: U+2717 (ballot X). On the task-14 screenshot U+26A0 came back from a
+#: Windows fallback and U+2717 rendered as a replacement box -- on the
+#: NO-REPLY badge, the most dangerous of the three. Fallback coverage is
+#: per-machine, so a venue laptop may show it differently again.
+UNVENDORED_GLYPHS = ("⚠", "✗")
+
+
+def test_no_write_string_uses_a_glyph_the_vendored_font_lacks():
+    from wing_parser.ui.texts_write import WRITE_TEXTS
+
+    offenders = sorted(key for key, value in WRITE_TEXTS.items()
+                       if any(glyph in value for glyph in UNVENDORED_GLYPHS))
+    assert offenders == [], (
+        "these strings render as tofu or a per-machine fallback: " + str(offenders))
+
+
+def test_each_badge_still_carries_a_mark_of_its_own():
+    """Replacing a glyph must not quietly flatten three outcomes into one
+    shape -- the words stay, and so does a distinct leading mark."""
+    from wing_parser.ui.texts import text
+
+    assert "✓" in text("console.write.sent")
+    assert text("console.write.clamped").startswith("!")
+    assert text("console.write.no_reply").startswith("×")
+    assert "✓" in text("console.write.reverted")
+
+
 def test_cancelled_speaks_only_about_the_scene_edit():
     """S2.3: Cancel drops the transmission; Undo drops the file side."""
     from wing_parser.ui.texts import text

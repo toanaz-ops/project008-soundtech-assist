@@ -43,11 +43,15 @@ class WriteQueue:
         self._in_flight = None
         self._pump()
 
-    def clear(self) -> None:
-        """Drop everything not yet sent. The in-flight one is NOT dropped:
-        its datagram may already have left the socket, and the ledger has
-        to hear how it ended."""
+    def clear(self) -> tuple[Any, ...]:
+        """Drop everything not yet sent and HAND IT BACK, so the caller can
+        tell each one how it ended -- a queued write whose callbacks never
+        run leaves whatever was waiting on it waiting forever. The
+        in-flight one is NOT dropped: its datagram may already have left
+        the socket, and the ledger has to hear how it ended."""
+        dropped = tuple(self._pending)
         self._pending.clear()
+        return dropped
 
     def _pump(self) -> None:
         if self._in_flight is not None or not self._pending:

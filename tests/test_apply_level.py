@@ -124,7 +124,8 @@ def test_clear_drops_what_has_not_gone_out_and_keeps_the_one_in_flight():
     queue = WriteQueue(started.append)
     queue.enqueue("one")
     queue.enqueue("two")
-    queue.clear()
+    assert queue.clear() == ("two",), (
+        "the caller has to be able to tell each dropped write how it ended")
     assert queue.pending == ()
     assert queue.in_flight == "one", "nothing can un-send a packet already on the wire"
 

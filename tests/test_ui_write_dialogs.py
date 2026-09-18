@@ -656,3 +656,43 @@ def test_cancel_is_inert_only_while_a_packet_is_actually_on_the_wire(qt_app, set
     dlg.cancel_button.click()
     assert heard == [True]
     assert desk.sets == []
+
+
+# -- review round 2, MINOR 8: what a closing gate owes its queue ---------
+
+
+def test_closing_the_gate_tells_every_queued_write_it_will_never_go(qt_app):
+    """`WriteQueue.clear()` existed and was never called, so a DISCONNECTED
+    / LOST / ERROR left queued jobs in the deque with neither callback ever
+    run: a Revert-all step whose `on_sent`/`on_error` never fires leaves the
+    run's progress line frozen at the row that died.
+
+    The queue's own `start` is replaced here so nothing ever settles -- the
+    ordering rule itself is `test_apply_level.py`'s job, and a real write
+    would race this test's second `submit`."""
+    from wing_parser.ui.write_gate import GateClosed, WriteJob
+    from wing_parser.ui.write_queue import WriteQueue
+
+    desk = FakeDesk(identity=_identity())
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate._queue = WriteQueue(lambda job: None)
+
+    heard = []
+    in_flight = WriteJob("first", lambda r: heard.append(("ok", r)),
+                         lambda e: heard.append(("err", "first", e)))
+    queued = WriteJob("second", lambda r: heard.append(("ok", r)),
+                      lambda e: heard.append(("err", "second", e)))
+    gate.submit(in_flight)
+    gate.submit(queued)
+    assert gate._queue.pending == (queued,)
+
+    gate.close()
+
+    assert len(heard) == 1, "only the write that never left is answered"
+    kind, which, exc = heard[0]
+    assert (kind, which) == ("err", "second")
+    assert isinstance(exc, GateClosed)
+    assert gate._queue.pending == ()
+    assert gate._queue.in_flight is in_flight, "nothing can un-send a packet"
+    assert desk.sets == []

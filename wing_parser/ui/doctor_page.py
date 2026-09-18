@@ -123,7 +123,7 @@ class DoctorPage(QWidget):
         gate.changed.connect(self._follow_gate)
         self.level_box.currentIndexChanged.connect(self._level_picked)
         self.arm_button.clicked.connect(
-            lambda: arm_now(gate, self.window()))
+            lambda: arm_now(gate, self.window(), transport=gate.transport))
         self._follow_gate()
 
     def _follow_gate(self) -> None:

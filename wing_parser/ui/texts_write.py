@@ -7,6 +7,11 @@ read as a sibling of those while meaning something else entirely.
 Every string an operator can see while a packet is about to leave is here,
 so the whole vocabulary of the dangerous half of this app is one file a
 reviewer can read end to end.
+
+**Marks are limited to what the VENDORED font carries** (D-51): U+2713
+`✓`, U+00D7 `×` and plain `!`. IBM Plex Sans has no U+26A0 or U+2717, so
+those two came back from a per-machine Windows fallback -- or, on the
+no-reply badge, as a replacement box. `tests/test_ui_texts.py` pins it.
 """
 
 from __future__ import annotations
@@ -52,7 +57,7 @@ WRITE_TEXTS: dict[str, str] = {
     "console.write.file_value": "The scene file expected: {value}",
     "console.write.after": "It will become: {value}",
     "console.write.mismatch": (
-        "⚠ The desk holds {desk}, the scene file expected {file}. "
+        "! The desk holds {desk}, the scene file expected {file}. "
         "Applying replaces the desk's value."
     ),
     "console.write.no_read": (
@@ -68,11 +73,11 @@ WRITE_TEXTS: dict[str, str] = {
     # -- the three outcomes (F8) -----------------------------------------
     "console.write.sent": "sent ✓ the desk holds {readback}",
     "console.write.clamped": (
-        "⚠ the desk holds {readback}, not {after} — the console "
+        "! the desk holds {readback}, not {after} — the console "
         "clamped it."
     ),
     "console.write.no_reply": (
-        "✗ {address}: the desk did not answer. It may or may not have "
+        "× {address}: the desk did not answer. It may or may not have "
         "landed."
     ),
 

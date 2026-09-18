@@ -100,8 +100,16 @@ class WriteGate(QObject):
         self._queue.enqueue(job)
 
     def close(self) -> None:
-        """Every DISCONNECTED / LOST / ERROR lands here (F4)."""
+        """Every DISCONNECTED / LOST / ERROR lands here (F4).
+
+        Queued writes are dropped and TOLD: the connection every one of
+        them needs is gone, `_start` would refuse them one by one anyway,
+        and a job whose callbacks never run freezes whatever was waiting
+        on it -- a Revert-all run stalls on the row that died. The
+        in-flight one is left alone; nothing can un-send a packet."""
         self.arm.disarm()
+        for job in self._queue.clear():
+            job.on_error(GateClosed(text("console.write.gate_closed")))
         self.changed.emit()
 
     def _start(self, job: WriteJob) -> None:
