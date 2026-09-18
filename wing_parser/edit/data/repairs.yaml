@@ -15,6 +15,17 @@
 #
 # Placeholders are filled from the finding's own target: "ch.1.send.8"
 # supplies {ch: "1", send: "8"}, "ch.16" supplies {ch: "16"}.
+#
+# W3b -- EVERY `to:` below is a string or a bool, and that is load-bearing.
+# An INT-typed `to:` (a schema index, e.g. selecting an enum entry by
+# position) must NOT ship until it goes out through the `,i` typetag path:
+# `write.set`'s default `typetag=None` (wing_parser/net/write.py:125-137)
+# re-expresses the value as a DISPLAY STRING, which can select the wrong
+# enum entry silently -- and the read-back compares that same
+# re-expression (write.py:82-91), so it agrees with itself and reports a
+# clean write. The first int descriptor needs `typetag="i"` plumbed from
+# here to `write.set`, and a test that asserts the packet's typetag, before
+# it may be added. See `KINDS` in ../repairs.py and docs/tech-debt.md D-53.
 repairs:
   - rule: G8
     kind: set

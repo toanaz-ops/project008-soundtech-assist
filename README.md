@@ -58,10 +58,15 @@ counts and the whole channel list at a glance; **Channels** and
 scene against a second one, with a magnitude bar per changed value;
 **Import** walks an Excel running order through the G2a/G2b wizard;
 **Console** talks to a
-live desk read-only — Connect, Discover its schema, Pull the whole
-scene with Export to `.snap` and Open Doctor, and start a live Watch
-with events in a table. No write path is reachable from the UI in this
-wave; see [docs/user-manual/03-console-truc-tiep.md](docs/user-manual/03-console-truc-tiep.md).
+live desk — Connect, Discover its schema, Pull the whole scene with
+Export to `.snap` and Open Doctor, and start a live Watch with events
+in a table. The Console page itself reads only; **writing is reached
+from Doctor**, where **Repair** can send one OSC leaf to the desk once
+the connection has been armed, at one of three apply levels (Manual /
+Delayed / Immediate), with a countdown, a read-back badge and a
+session ledger you can revert row by row. `net set` / `toggle` / `push`
+/ `get` stay CLI-only, deliberately. Both halves are in
+[docs/user-manual/03-console-truc-tiep.md](docs/user-manual/03-console-truc-tiep.md).
 
 Model assist is opt-in per machine: **Tools ▸ Settings** takes your own
 provider key (it is stored locally, masked on screen), offers a real

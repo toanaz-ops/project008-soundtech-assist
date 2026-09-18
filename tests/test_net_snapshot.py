@@ -12,9 +12,10 @@ from __future__ import annotations
 
 import pytest
 
+import wing_parser.net.snapshot as snapshot_module
 from tests.fake_wing import FakeWing
 from wing_parser.net.codec import encode
-from wing_parser.net.schema import AE_ROOTS
+from wing_parser.net.schema import AE_ROOTS, SchemaResult
 from wing_parser.net.snapshot import SnapshotResult, take_snapshot
 from wing_parser.query.scene import WingScene
 
@@ -150,4 +151,53 @@ def test_unresolved_nodes_and_leaves_are_reported_not_silently_dropped():
     assert "/ch/1/probeleaf" in result.unresolved_leaves
     # A leaf that never resolved must never appear with a fabricated value.
     assert "probeleaf" not in result.raw.ae["ch"]["1"]
+    assert result.raw.ae["ch"]["1"]["fdr"] == pytest.approx(-6.0)
+
+
+def test_take_snapshot_with_a_supplied_schema_does_not_walk_again(monkeypatch):
+    """D-41: a caller that already walked (Console page's Discover) hands
+    that SchemaResult in rather than paying for a second walk."""
+
+    def _must_not_walk(*args, **kwargs):
+        raise AssertionError("walk_schema must not be called when schema is supplied")
+
+    monkeypatch.setattr(snapshot_module, "walk_schema", _must_not_walk)
+
+    supplied = SchemaResult(
+        leaves={"/ch/1/fdr": "fader", "/$ctl/cfg/on": "int"},
+        unresolved_nodes=("/ch/2",),
+    )
+
+    with FakeWing() as fake:
+        # Only the leaf-value endpoints are registered -- no schema query
+        # pair at all -- so a code path that still called walk_schema
+        # would get no reply and time out rather than silently pass.
+        fake.register(encode("/ch/1/fdr"), _value_rx("/ch/1/fdr", "sff", ("-6.0", 0.5, -6.0)))
+        fake.register(encode("/$ctl/cfg/on"), _value_rx("/$ctl/cfg/on", "sfi", ("1", 1.0, 1)))
+        host, port = fake.osc_address
+        result = take_snapshot(host, port, schema=supplied, **FAST)
+
+    assert isinstance(result, SnapshotResult)
+    # The supplied schema's own unresolved_nodes reach the result untouched.
+    assert result.unresolved_nodes == ("/ch/2",)
+    assert result.raw.ae["ch"]["1"]["fdr"] == pytest.approx(-6.0)
+    assert result.raw.ce["cfg"]["on"] == 1
+
+
+def test_take_snapshot_without_a_schema_still_walks_exactly_once(monkeypatch):
+    real_walk_schema = snapshot_module.walk_schema
+    calls = []
+
+    def _counting_walk_schema(*args, **kwargs):
+        calls.append((args, kwargs))
+        return real_walk_schema(*args, **kwargs)
+
+    monkeypatch.setattr(snapshot_module, "walk_schema", _counting_walk_schema)
+
+    with FakeWing() as fake:
+        _register_minimal_tree(fake)
+        host, port = fake.osc_address
+        result = take_snapshot(host, port, **FAST)
+
+    assert len(calls) == 1
     assert result.raw.ae["ch"]["1"]["fdr"] == pytest.approx(-6.0)

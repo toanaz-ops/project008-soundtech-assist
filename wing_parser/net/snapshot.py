@@ -31,7 +31,7 @@ from wing_parser.net.client import (
     WingClient,
 )
 from wing_parser.net.codec import leaf_value
-from wing_parser.net.schema import walk_schema
+from wing_parser.net.schema import SchemaResult, walk_schema
 
 # A console never authors a .snap at all -- WING-Edit does, and the `type`
 # id tracks WING-Edit's own version, not the desk's firmware. Measured
@@ -72,6 +72,8 @@ def take_snapshot(
     batch_size: int = DEFAULT_BATCH_SIZE,
     retry_rounds: int = DEFAULT_RETRY_ROUNDS,
     idle_timeout: float = DEFAULT_IDLE_TIMEOUT,
+    *,
+    schema: SchemaResult | None = None,
 ) -> SnapshotResult:
     """Walk the current shape, read every leaf, and assemble a RawScene.
 
@@ -79,10 +81,16 @@ def take_snapshot(
     whatever parameters the loaded desk currently exposes. Unresolved
     nodes and leaves are reported, never dropped -- a caller that wants a
     complete scene must be able to tell "empty" apart from "incomplete".
+
+    D-41: a caller that has just walked (the Console page's Discover)
+    hands that result in rather than paying for a second walk. Fresh
+    shape every call still holds -- the freshness is now the CALLER's
+    to judge, and the default is unchanged.
     """
-    schema = walk_schema(
-        host, port, batch_size=batch_size, retry_rounds=retry_rounds, idle_timeout=idle_timeout
-    )
+    if schema is None:
+        schema = walk_schema(
+            host, port, batch_size=batch_size, retry_rounds=retry_rounds, idle_timeout=idle_timeout
+        )
 
     with WingClient(host, port, idle_timeout=idle_timeout) as client:
         batch = client.get_many(list(schema.leaves), batch_size=batch_size, retry_rounds=retry_rounds)

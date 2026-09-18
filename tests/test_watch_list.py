@@ -7,8 +7,10 @@ from __future__ import annotations
 
 import pytest
 
+import wing_parser.net.watch.list as list_module
 from tests.fake_wing import FakeWing
 from wing_parser.net.codec import encode
+from wing_parser.net.schema import SchemaResult
 from wing_parser.net.watch.list import build_watch_list, load_watch_keys
 
 FAST = dict(batch_size=200, retry_rounds=1, idle_timeout=0.03)
@@ -115,3 +117,43 @@ def test_a_family_named_in_config_but_absent_from_the_address_map_is_refused():
         host, port = fake.osc_address
         with pytest.raises(ValueError, match="chn"):
             build_watch_list(host, port=port, keys={"chn": ("$fdr",)}, **FAST)
+
+
+def test_build_watch_list_with_a_supplied_schema_does_not_walk_again(monkeypatch):
+    """D-41: a caller that already walked (Console page's Discover) hands
+    that SchemaResult in rather than paying for a second walk."""
+
+    def _must_not_walk(*args, **kwargs):
+        raise AssertionError("walk_schema must not be called when schema is supplied")
+
+    monkeypatch.setattr(list_module, "walk_schema", _must_not_walk)
+
+    supplied = SchemaResult(
+        leaves={"/ch/1/fdr": "fader", "/ch/1/$fdr": "fader", "/bus/1/$fdr": "fader"},
+        unresolved_nodes=(),
+    )
+
+    result = build_watch_list(
+        "127.0.0.1", port=1, keys={"ch": ("$fdr",), "bus": ("$fdr",)}, schema=supplied
+    )
+
+    assert result.addresses == ("/ch/1/$fdr", "/bus/1/$fdr")
+    assert result.strips == {"ch": 1, "bus": 1}
+
+
+def test_the_supplied_schemas_unresolved_nodes_reach_the_watch_list(monkeypatch):
+    def _must_not_walk(*args, **kwargs):
+        raise AssertionError("walk_schema must not be called when schema is supplied")
+
+    monkeypatch.setattr(list_module, "walk_schema", _must_not_walk)
+
+    supplied = SchemaResult(
+        leaves={"/ch/1/$fdr": "fader"},
+        unresolved_nodes=("/main/1",),
+    )
+
+    result = build_watch_list(
+        "127.0.0.1", port=1, keys={"ch": ("$fdr",)}, schema=supplied
+    )
+
+    assert result.unresolved == ("/main/1",)

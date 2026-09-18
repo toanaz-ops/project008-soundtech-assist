@@ -122,6 +122,31 @@ def test_confirmed_set_sends_the_display_string_and_verifies_readback():
     assert result.matched is True
 
 
+def test_confirmed_set_of_a_string_sends_a_bare_s_payload():
+    address = "/ch/1/send/8/mode"
+    with FakeWing() as fake:
+        fake.register(encode(address, "s", ("PRE",)), None)     # sec 2.1: no echo
+        fake.register(encode(address), _s(address, "PRE"))
+        host, osc_port, identity_port = _addrs(fake)
+        result = write.set(host, address, "PRE", osc_port=osc_port,
+                           identity_port=identity_port, confirm=True, **_FAST)
+    assert result.sent == "PRE" and result.readback == "PRE" and result.matched
+
+
+def test_confirmed_set_of_a_bool_sends_the_one_zero_display_string():
+    """`_format_value` checks `bool` FIRST, because bool is an int subclass
+    (`write.py:74-75`) -- so True goes out as `,s "1"`, never `,i 1`."""
+    address = "/ch/1/in/set/inv"
+    with FakeWing() as fake:
+        fake.register(encode(address, "s", ("1",)), None)
+        fake.register(encode(address), _sfi(address, "1", 1))
+        host, osc_port, identity_port = _addrs(fake)
+        result = write.set(host, address, True, osc_port=osc_port,
+                           identity_port=identity_port, confirm=True, **_FAST)
+    assert result.sent == "1"
+    assert result.matched, "_values_match calls bool(1) == True a match (write.py:84-85)"
+
+
 def test_confirmed_set_honours_an_explicit_typetag_override():
     # design doc sec 2.6: /ch/40/fdr ,f -6.0 is one of the three confirmed
     # working wire forms.

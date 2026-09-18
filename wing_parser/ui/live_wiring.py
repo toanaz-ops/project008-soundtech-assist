@@ -16,6 +16,14 @@ place he was working in, where staying costs one click on Open Doctor.
 from __future__ import annotations
 
 from wing_parser.ui import window_state
+from wing_parser.ui.write_gate import GateClosed, WriteGate, WriteJob  # noqa: F401 -- re-export (Task 11 escape hatch)
+
+# Imported AFTER the re-export above, not before: `write_router` pulls in
+# `write_delay_dialog`, which does `from wing_parser.ui.live_wiring import
+# GateClosed, WriteJob` -- those names must already be bound in this
+# module's namespace by the time that import runs, or it is a circular
+# ImportError on a partially-initialised module.
+from wing_parser.ui import write_router
 
 
 def adopt_pulled_session(window, session) -> None:
@@ -67,3 +75,41 @@ def wire_console(window, page) -> None:
     if hasattr(page, "host_connected"):
         page.host_connected.connect(
             lambda host: window_state.remember_console(window, host))
+
+
+def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGate:
+    """Build the gate, publish it on the window, wire every dropout to it.
+
+    The three sources are the page's EXISTING signals: `console_page.py` is
+    at 199 of the 200-line ceiling and may not grow a state signal (W7),
+    and these are exactly the transitions into DISCONNECTED, ERROR and LOST
+    (`console_page.py:117-138`).
+    """
+    gate = WriteGate(page, transport=transport, timeout=timeout, parent=window)
+    window.write_gate = gate
+    page.connect_bar.disconnected.connect(gate.close)
+    page.events.lost.connect(lambda _exc: gate.close())
+    for panel in (page.connect_bar, page.discovery, page.snapshot):
+        panel.failed.connect(lambda _exc: gate.close())
+    changes = getattr(window, "changes_panel", None)
+    if changes is not None:
+        changes.attach_gate(gate)          # task 12 gives ChangesPanel this
+        if hasattr(changes, "attach_window"):
+            changes.attach_window(window)  # task 13: the ledger needs it too
+    doctor = getattr(window, "pages", {}).get("doctor")
+    if doctor is not None and hasattr(doctor, "attach_gate"):
+        doctor.attach_gate(gate)
+        # Guarded until task 12 lands `record_sent`/`report_write_error` on
+        # ChangesPanel -- `hasattr(None, ...)` is also False, so this stays
+        # a no-op for as long as `changes` above does too.
+        if hasattr(changes, "record_sent"):
+            doctor.send_requested.connect(lambda patch: write_router.route_repair(
+                gate, patch, getattr(window, "_apply_delay", 5), window,
+                on_sent=lambda p, record: changes.record_sent(p, record),
+                on_error=lambda exc: changes.report_write_error(exc)))
+        if changes is not None:
+            changes.ledger.run_started.connect(
+                lambda: doctor.set_controls_enabled(False))
+            changes.ledger.run_finished.connect(
+                lambda: doctor.set_controls_enabled(True))
+    return gate

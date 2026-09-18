@@ -26,6 +26,11 @@ from wing_parser.net.snapshot import SNAPSHOT_TYPE_ID, SnapshotResult, _place
 from wing_parser.net.watch import poller
 from wing_parser.net.watch.list import WatchList
 
+#: How a test scripts "the desk never answered the read-back" for one
+#: address: `readbacks={addr: _ABSENT}`. A plain `None` cannot say it,
+#: because a missing key already means "answered with what was sent".
+_ABSENT = object()
+
 
 class _FakeClient:
     """Stands in for `net.client.WingClient` against one `FakeDesk`."""
@@ -100,6 +105,10 @@ class FakeDesk:
                  address unresolved, no fallback to `leaves`), and a list that runs
                  out repeats its last entry forever
     calls      : list[tuple[str, int]]      -- ("get_many", len(addresses)), in order
+    sets       : list[tuple[str, Any, bool]] -- (address, value, confirm), in order
+    readbacks  : dict[str, Any]             -- address -> what the desk answers a
+                 read-back with; a missing key means "what was sent", and the
+                 sentinel `_ABSENT` means the desk did not answer at all
     """
 
     def __init__(
@@ -109,6 +118,7 @@ class FakeDesk:
         unresolved: tuple[str, ...] = (),
         strips: dict[str, int] | None = None,
         rounds: list[dict[str, object]] | None = None,
+        readbacks: dict[str, Any] | None = None,
     ) -> None:
         self.identity = identity
         self.leaves: dict[str, OscMessage] = dict(leaves) if leaves else {}
@@ -116,6 +126,8 @@ class FakeDesk:
         self.strips: dict[str, int] = dict(strips) if strips else {}
         self.rounds: list[dict[str, object]] = list(rounds) if rounds else []
         self.calls: list[tuple[str, int]] = []
+        self.sets: list[tuple[str, Any, bool]] = []
+        self.readbacks: dict[str, Any] = dict(readbacks) if readbacks else {}
 
     def transport(self):
         """The `live_controller.Transport` wrapping this desk.
@@ -135,6 +147,44 @@ class FakeDesk:
             # through `client()` above.
             watch=poller.watch,
         )
+
+    def write_transport(self):
+        """The `live_write.WriteTransport` wrapping this desk. No socket.
+
+        `set` records the call in `sets` and answers a REAL
+        `net.write.SetResult`, built by `write.py`'s own `_format_value`
+        and `_values_match` (`write.py:70-91`) -- so the read-back
+        arithmetic under test is `write.py`'s, not a double's idea of it.
+        What the desk then reports on a fresh read is scripted through
+        `readbacks` / `leaves`, not derived: re-encoding an arbitrary
+        value back into an `OscMessage` would be a second, untested copy
+        of the wire rules.
+        """
+        from wing_parser.net.write import SetResult, _format_value, _values_match
+        from wing_parser.ui import live_write
+
+        def _identity(host: str):
+            if isinstance(self.identity, Exception):
+                raise self.identity
+            return self.identity
+
+        def _read(host: str, path: str):
+            from wing_parser.net.address import leaf_parts, osc_address
+
+            message = self.leaves.get(osc_address(path))
+            if message is None:
+                return None
+            return live_write.scene_value(leaf_parts(path), leaf_value(message)[0])
+
+        def _set(host: str, osc: str, value, *, confirm: bool = False, **_kw):
+            self.sets.append((osc, value, confirm))
+            readback = self.readbacks.get(osc, value)
+            if readback is _ABSENT:
+                readback = None
+            matched = readback is not None and _values_match(value, readback)
+            return SetResult(osc, value, _format_value(value), False, readback, matched)
+
+        return live_write.WriteTransport(identity=_identity, read=_read, set=_set)
 
     def client(self, host: str | None = None) -> _FakeClient:
         return _FakeClient(self)

@@ -11,7 +11,6 @@ default is `provider.ping`, run on a cancellable worker under the ruled
 
 from __future__ import annotations
 
-import io
 import os
 
 from PySide6.QtWidgets import (
@@ -23,29 +22,17 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSpinBox,
     QVBoxLayout,
 )
 
 from wing_parser import config
 from wing_parser.classifier import provider
+from wing_parser.ui import state_store
 from wing_parser.ui.call_button import ButtonRunner
+from wing_parser.ui.settings_io import dump_yaml, mask
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
-
-MASK = "•" * 4
-
-
-def _mask(key: str) -> str:
-    return MASK + key[-4:] if key else ""
-
-
-def _dump_yaml(doc: dict) -> str:
-    from ruamel.yaml import YAML
-
-    engine = YAML()
-    stream = io.StringIO()
-    engine.dump(doc, stream)
-    return stream.getvalue()
 
 
 class SettingsDialog(QDialog):
@@ -59,7 +46,7 @@ class SettingsDialog(QDialog):
         # The masked text shown for the loaded key doubles as an
         # unchanged-marker: saving it re-writes the real key untouched,
         # while anything the operator types replaces it.
-        self._loaded_mask = _mask(cfg.api_key)
+        self._loaded_mask = mask(cfg.api_key)
         self._loaded_key = cfg.api_key
 
         self.name_box = QComboBox()
@@ -71,6 +58,11 @@ class SettingsDialog(QDialog):
         self.key_edit.setEchoMode(QLineEdit.EchoMode.Password)
         self.key_edit.setPlaceholderText(text("settings.key_placeholder"))
         self.env_edit = QLineEdit(cfg.api_key_env)
+        self.delay_spin = QSpinBox()
+        self.delay_spin.setRange(state_store.MIN_APPLY_DELAY,
+                                 state_store.MAX_APPLY_DELAY)
+        self.delay_spin.setValue(getattr(parent, "_apply_delay",
+                                         state_store.DEFAULTS["apply_delay"]))
 
         form = QFormLayout()
         form.addRow(text("settings.provider"), self.name_box)
@@ -78,6 +70,7 @@ class SettingsDialog(QDialog):
         form.addRow(text("settings.base_url"), self.base_url_edit)
         form.addRow(text("settings.api_key"), self.key_edit)
         form.addRow(text("settings.api_key_env"), self.env_edit)
+        form.addRow(text("settings.apply_delay"), self.delay_spin)
 
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
@@ -151,7 +144,7 @@ class SettingsDialog(QDialog):
         previous = os.environ.get(provider.ENV_VAR)
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(_dump_yaml(doc), encoding="utf-8")
+            path.write_text(dump_yaml(doc), encoding="utf-8")
         except OSError as exc:
             os.environ.pop(provider.ENV_VAR, None)
             if previous is not None:
@@ -195,5 +188,9 @@ class SettingsDialog(QDialog):
         return shown
 
     def _save_and_close(self) -> None:
+        window = self.parent()
+        if window is not None:
+            # F6: UI state (ui-state.json via window_state), not provider.yaml.
+            window._apply_delay = self.delay_spin.value()
         if self.save():
             self.accept()

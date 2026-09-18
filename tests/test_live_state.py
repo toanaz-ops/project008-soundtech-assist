@@ -83,12 +83,12 @@ def test_allowed_actions_is_pinned_for_every_state():
     assert allowed_actions(LiveState.DISCONNECTED) == frozenset({"connect"})
     assert allowed_actions(LiveState.CONNECTING) == frozenset({"cancel"})
     assert allowed_actions(LiveState.CONNECTED) == frozenset(
-        {"disconnect", "discover", "pull", "watch", "export", "rerun"}
+        {"disconnect", "discover", "pull", "watch", "export", "rerun", "write"}
     )
     assert allowed_actions(LiveState.WALKING) == frozenset({"cancel"})
     assert allowed_actions(LiveState.PULLING) == frozenset({"cancel"})
     assert allowed_actions(LiveState.WATCHING) == frozenset(
-        {"stop", "disconnect", "export"}
+        {"stop", "disconnect", "export", "write"}
     )
     assert allowed_actions(LiveState.ERROR) == frozenset(
         {"connect", "disconnect"}
@@ -136,3 +136,18 @@ def test_every_button_driven_event_is_offered_by_the_state_it_fires_from():
         assert action in allowed_actions(state), (
             f"{state.value} accepts {event!r} but enables no button for it"
         )
+
+
+def test_write_is_offered_in_exactly_two_states():
+    """W1: every level, Immediate included. The three busy states, `error`,
+    `lost` and `disconnected` never offer it -- gate 1 (§8.1)."""
+    offering = {s for s in LiveState if "write" in allowed_actions(s)}
+    assert offering == {LiveState.CONNECTED, LiveState.WATCHING}
+
+
+def test_write_is_an_action_and_not_an_event():
+    """A send does not move the connection state machine, exactly as
+    `export` does not (`live_state.py:111-113`)."""
+    for state in (LiveState.CONNECTED, LiveState.WATCHING):
+        with pytest.raises(ValueError):
+            transition(state, "write")

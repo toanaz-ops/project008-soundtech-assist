@@ -122,7 +122,17 @@ def test_timeouts_table_carries_the_ruled_numbers():
     assert TIMEOUTS == {
         "proposal": 120, "guesses": 180, "probe": 30,
         "connect": 5, "walk": 60, "snapshot": 90,
+        "write": 10,
     }
+
+
+def test_the_write_budget_covers_a_confirmed_set_two_and_a_half_times_over():
+    """Spec §7.1: `write.set(confirm=True)` has three deadlined steps --
+    `_authorize`'s `query_identity` (2.0 s, `write.py:93-94`), a
+    fire-and-forget datagram that waits for nothing (`:102-110`), and one
+    read-back `request` (2.0 s, `:119-121`). ~4 s worst case."""
+    assert TIMEOUTS["write"] == 10
+    assert TIMEOUTS["write"] > 2 * 4.0
 
 
 def test_runner_timeout_fails_the_call_with_a_distinct_error(qt_app, runner):

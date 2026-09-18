@@ -44,6 +44,11 @@ def _boxed(title: str, label: QLabel) -> QGroupBox:
 
 class DetailPanel(QWidget):
     repaired = Signal()
+    #: The journal Patch a successful repair just appended, for the write
+    #: router (F3). Emitted AFTER `repaired`, so Doctor has already
+    #: re-derived and the Changes dock already holds the row the countdown
+    #: is about to talk about.
+    send_requested = Signal(object)
 
     def __init__(self) -> None:
         super().__init__()
@@ -123,5 +128,7 @@ class DetailPanel(QWidget):
     def _repair(self) -> None:
         if self._finding is None or self._session is None:
             return
-        if self._session.repair(self._finding):
-            self.repaired.emit()
+        if not self._session.repair(self._finding):
+            return
+        self.repaired.emit()
+        self.send_requested.emit(self._session.changes()[-1])

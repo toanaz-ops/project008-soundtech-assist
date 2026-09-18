@@ -117,3 +117,29 @@ def test_the_session_never_imports_qt():
     result = subprocess.run([sys.executable, "-c", code],
                             capture_output=True, text=True, check=True)
     assert result.stdout.strip() == "[]"
+
+
+def test_record_value_appends_a_patch_and_re_derives(vu_path):
+    """F8's clamp path and W13's revert both move a leaf outside `repair`."""
+    from wing_parser.ui.session import Session
+
+    session = Session.open(vu_path)
+    path = "ae_data.ch.1.send.8.mode"
+    before = session._document()["ae_data"]["ch"]["1"]["send"]["8"]["mode"]
+
+    patch = session.record_value(path, "PRE", label="Console clamped", because="G8")
+
+    assert patch.before == before and patch.after == "PRE"
+    assert session.changes()[-1] is patch
+    assert session._document()["ae_data"]["ch"]["1"]["send"]["8"]["mode"] == "PRE"
+    assert session.dirty
+
+
+def test_record_value_is_undone_like_any_other_patch(vu_path):
+    from wing_parser.ui.session import Session
+
+    session = Session.open(vu_path)
+    before = session._document()["ae_data"]["ch"]["1"]["send"]["8"]["mode"]
+    session.record_value("ae_data.ch.1.send.8.mode", "PRE", label="x", because="G8")
+    assert session.undo()
+    assert session._document()["ae_data"]["ch"]["1"]["send"]["8"]["mode"] == before

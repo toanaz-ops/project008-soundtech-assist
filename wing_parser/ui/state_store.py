@@ -21,7 +21,14 @@ MAX_RECENT = 8
 PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_",
              "console")
 
-DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": []}
+#: F6: the countdown a Delayed apply opens at. Clamped rather than
+#: rejected -- a hand-edited 0 or 999 is a typo, not a reason to lose the
+#: rest of the file.
+MIN_APPLY_DELAY = 3
+MAX_APPLY_DELAY = 60
+
+DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": [],
+                  "apply_delay": 5}
 
 
 def normalize(state: dict) -> dict:
@@ -35,6 +42,11 @@ def normalize(state: dict) -> dict:
     consoles = state.get("consoles")
     recent = recent if isinstance(recent, list) else []
     consoles = consoles if isinstance(consoles, list) else []
+    # `bool` is an int subclass, and True is not a number of seconds.
+    delay = state.get("apply_delay")
+    if isinstance(delay, bool) or not isinstance(delay, int):
+        delay = DEFAULTS["apply_delay"]
+    delay = min(max(delay, MIN_APPLY_DELAY), MAX_APPLY_DELAY)
     return {
         "geometry": geometry if isinstance(geometry, str) else None,
         "page": page if page in PAGE_KEYS else None,
@@ -44,6 +56,7 @@ def normalize(state: dict) -> dict:
         "consoles": [
             entry for entry in consoles if isinstance(entry, str)
         ][:MAX_RECENT],
+        "apply_delay": delay,
     }
 
 

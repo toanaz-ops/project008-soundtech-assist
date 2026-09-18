@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
         menus.build_menus(self)
         self._build_body()
         self._build_changes_dock()
+        live_wiring.install_write_gate(self, self.pages["console"])
         menus.build_accelerators(self)
         window_state.restore(self)
         self._refresh()
@@ -178,7 +179,8 @@ class MainWindow(QMainWindow):
                 page.set_session(self.session)
 
         self.changes_panel.set_changes(self.session.changes() if loaded else ())
-        self._changes_dock.setVisible(loaded and self.session.dirty)
+        self._changes_dock.setVisible(
+            loaded and (self.session.dirty or self.changes_panel.has_ledger()))
 
         if not loaded:
             self.setWindowTitle(text("app.title"))

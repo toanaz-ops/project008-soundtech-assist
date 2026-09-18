@@ -123,3 +123,34 @@ def test_cancel_uses_its_own_texts_key(qt_app, knowledge):
     assert "settings.cancel" in TEXTS
     dialog = SettingsDialog()
     assert dialog.cancel_button.text() == text("settings.cancel")
+
+
+def test_the_delay_row_offers_three_to_sixty(qt_app, knowledge):
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    dlg = SettingsDialog()
+    assert dlg.delay_spin.minimum() == 3
+    assert dlg.delay_spin.maximum() == 60
+    assert dlg.delay_spin.value() == 5
+
+
+def test_saving_the_dialog_puts_the_delay_on_the_window(qt_app, knowledge):
+    from PySide6.QtWidgets import QWidget
+
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    window = QWidget()
+    window._apply_delay = 5
+    dlg = SettingsDialog(window)
+    dlg.delay_spin.setValue(20)
+    dlg._save_and_close()
+    assert window._apply_delay == 20
+
+
+def test_settings_io_holds_the_mask_and_the_dumper(qt_app):
+    """The split that made room for the row; both call sites still work."""
+    from wing_parser.ui import settings_io
+
+    assert settings_io.mask("sk-test-1234").endswith("1234")
+    assert settings_io.mask("") == ""
+    assert "provider: anthropic" in settings_io.dump_yaml({"provider": "anthropic"})

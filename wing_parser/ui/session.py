@@ -18,9 +18,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from typing import Any
+
 from wing_parser.advisory.models import Finding, Rule
 from wing_parser.core.loader import parse_raw
-from wing_parser.edit import repairs, writer
+from wing_parser.edit import pointer, repairs, writer
 from wing_parser.edit.journal import EditJournal, Patch
 from wing_parser.query.scene import WingScene
 
@@ -94,3 +96,24 @@ class Session:
         commit, and the operator may save more than one variant from
         the same set of edits."""
         writer.write_snap(self._document(), path)
+
+    def record_value(self, path: str, value: Any, *, label: str, because: str) -> Patch:
+        """Move one leaf outside the repair table, and re-derive.
+
+        The journal is the only door into the document -- `_document()` is
+        `writer.applied(original, journal)` (`:43-44`) -- so a console
+        clamp (F8) and a successful revert (W13) both land here. `before`
+        is read from the CURRENTLY PATCHED document, exactly as `repair`
+        does (`:64`), so a second move of the same key records what was
+        actually there when the operator looked at it.
+        """
+        patch = Patch(
+            path=path,
+            before=pointer.read(self._document(), path),
+            after=value,
+            because=because,
+            label=label,
+        )
+        self._journal.append(patch)
+        self._derive()
+        return patch

@@ -44,7 +44,8 @@ chạy đủ, chỉ thiếu phần "đề xuất hộ".
 Ngoài CLI, dự án có app desktop: `wing-ui user-files\example-Vu.snap`.
 Sidebar bảy trang — **Doctor** (tư vấn), **Overview** (tổng quan),
 **Channels**, **Routing**, **Diff** (so sánh hai scene), **Import**
-(wizard đưa Excel vào), **Console** (kết nối console thật, chỉ đọc; xem
+(wizard đưa Excel vào), **Console** (kết nối console thật để đọc — còn ghi thì đi
+từ nút Repair bên Doctor; xem
 [03-console-truc-tiep.md](03-console-truc-tiep.md)) — cùng trang
 **Settings** (dán API key riêng, nút Test connection). Mô tả đầy đủ
 (verdict, repair, journal, đóng gói `.exe`) nằm ở mục

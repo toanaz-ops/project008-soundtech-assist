@@ -27,6 +27,12 @@ from wing_parser.advisory.models import Finding
 from wing_parser.edit import pointer
 from wing_parser.edit.journal import Patch
 
+#: W3b: every descriptor's `to:` is a string or a bool today. An INT-typed
+#: one (a schema index) needs the `,i` typetag path through `write.set`
+#: (`net/write.py:125-137`) and a test asserting the packet's typetag before
+#: it may ship -- the default re-expresses it as a display string and the
+#: read-back compares the same re-expression, so a wrong enum entry reports
+#: a clean write. Stated in full at the head of `data/repairs.yaml`.
 KINDS: tuple[str, ...] = ("set", "toggle")
 _DATA = Path(__file__).resolve().parent / "data" / "repairs.yaml"
 

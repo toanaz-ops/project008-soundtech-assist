@@ -34,7 +34,9 @@ Hệ quả thiết kế — áp dụng cho MỌI tính năng mới:
    2026-08-26 wave 1 đưa import/analyze/channel/routing/diff lên UI;
    2026-09-16 wave 2 đưa phần ĐỌC của `net` lên UI (trang Console).
    Chỉ còn `net set/toggle/push/get` là CLI-only, cố ý — xem mục dưới
-   cùng.)**
+   cùng.) (Cập nhật 2026-09-18: wave 3 đưa phần GHI lên UI — nhưng KHÔNG
+   phải bốn lệnh đó. Đường ghi duy nhất là nút Repair bên Doctor, một lá
+   OSC mỗi lần; `net set/toggle/push/get` vẫn CLI-only, vẫn cố ý.)**
 
 ## 2026-08-24 — G2b merged
 
@@ -93,3 +95,35 @@ xem ROADMAP §5 mục 8 và `docs/handoff/2026-09-16-gui-live-console-wave2-comp
 `56d5114`, `dcf897a`) tất cả đã merge vào `main` qua GitHub, CI xanh
 1580 passed / 3 skipped. Nghiệm thu §9.3 trên console thật và 15 ruling
 ASSUMED vẫn còn treo, chờ ToanAZ.)**
+
+## 2026-09-18 — GUI wave 3: UI ghi được ra console thật, trên nhánh, chờ merge
+
+Nút **Repair** bên Doctor giờ gửi được ra desk — **một lá OSC mỗi lần**,
+không `push`, không gộp. Ba mức **Manual / Delayed / Immediate** sau một
+bước **Arm** một lần cho mỗi kết nối (hỏi lại identity tươi, tick ô "desk
+KHÔNG chạy show", gõ đúng tên desk); đồng hồ đếm ngược có **Apply now /
++5 s / Cancel**, **hết giờ là gửi**; đọc lại xong ra **ba** huy hiệu ✓ / ⚠
+/ ✗ và mỗi cái đổi scene một kiểu khác nhau; sổ **Sent to console** có
+Revert từng dòng và **Revert all** đi ngược thứ tự, tuần tự, có Stop.
+Năm cổng chặn, trong đó `live_write.send` hỏi lại serial ngay trước khi
+gửi (`DeskChanged`). Test `test_ui_live_is_read_only.py` **không còn cấm
+tiệt** — nó thành **allow-list đúng một module**, `ui/live_write.py`; luật
+cấm verb (`toggle`/`push`/`node_write`) vẫn chạy trên cả file được
+allow-list. Suite **1761 passed / 3 skipped** @ `f56813c` (đọc bằng
+`--junitxml`, xem D-47), nhánh `feat/gui-write-wave3`, **CHƯA merge, chưa
+có PR**. Exe đã build lại và còn sống; ảnh chụp đủ bảy trang + tám bề mặt
+ghi, **ToanAZ chưa nhìn** — cửa chặn của wave 1.
+
+Còn treo: nghiệm thu §9.3 trên console thật (WING-GIAQUY, chưa chạy dòng
+nào); **3 câu hỏi mở** (Immediate lúc đang WATCHING? một đồng hồ chung cho
+cả lô Revert-all? arm có sống qua reconnect cùng serial?); **15 ruling W
+ASSUMED** chờ ToanAZ lật; và **C1**: venv build cố ý KHÔNG cài
+`anthropic`/`openai`, nên nút Test connection trong Settings chưa thử
+được từ exe — chờ ToanAZ quyết. Nợ mới D-48..D-53 (trong đó **D-51**: font
+vendored thiếu glyph ✗ nên huy hiệu "desk không trả lời" hiện ra ô vuông).
+Chi tiết: `docs/handoff/2026-09-18-gui-write-wave3-complete.md`.
+
+**Bẫy đã dính và phải nhớ:** editable install trong `.venv` trỏ về
+**checkout chính**, không trỏ vào worktree — build exe từ worktree mà
+không `pip install -e` lại thì đóng gói nhầm code cũ, im lặng. Kiểm bằng
+`build/wing-ui/Analysis-00.toc`.

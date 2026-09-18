@@ -31,9 +31,17 @@ from PySide6.QtCore import QObject, QTimer, QThread, Signal
 #: clean walk, and snapshot 90 s is 9x the measured ~10 s whole-console
 #: read. A watch has no budget at all: it ends on Stop, or when
 #: :class:`~wing_parser.ui.live_guard.RoundGuard` declares the desk lost.
+#:
+#: write 10 s covers three deadlined steps inside ``write.set(confirm=True)``
+#: (spec §7.1): ``_authorize``'s ``query_identity`` (2.0 s), a fire-and-forget
+#: datagram that waits for nothing, and one read-back ``request`` (2.0 s) --
+#: ~4 s worst case, so 10 s is ~2.5× that, enough for a busy show network
+#: without letting a dead desk hold a dialog open. Pre-flight reads reuse
+#: ``"connect"`` = 5 s and add no entry.
 TIMEOUTS = {
     "proposal": 120, "guesses": 180, "probe": 30,
     "connect": 5, "walk": 60, "snapshot": 90,
+    "write": 10,
 }
 
 

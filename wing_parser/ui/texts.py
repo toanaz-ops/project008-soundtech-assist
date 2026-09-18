@@ -7,6 +7,7 @@ seam a flat table of strings actually has.
 """
 
 from wing_parser.ui.texts_console import CONSOLE_TEXTS
+from wing_parser.ui.texts_write import WRITE_TEXTS
 
 TEXTS: dict[str, str] = {
     "app.title": "wing",
@@ -54,6 +55,7 @@ TEXTS: dict[str, str] = {
     "routing.unclassified": "Unclassified",
     "diff.compare": "Compare with...",
     "changes.undo": "Undo the last change",
+    "changes.row": "{label}  —  {path}: {before!r} → {after!r}",
     "findings.severity": "Severity",
     "findings.layer": "Layer",
     "diff.clear": "Clear",
@@ -143,6 +145,7 @@ TEXTS: dict[str, str] = {
         "Paste your own key — it stays in provider.yaml on this machine."
     ),
     "settings.api_key_env": "API key env var (optional)",
+    "settings.apply_delay": "Default apply delay (s)",
     "settings.save": "Save",
     "settings.cancel": "Cancel",
     "settings.test": "Test connection",
@@ -155,6 +158,7 @@ TEXTS: dict[str, str] = {
     "settings.timeout": "No reply within {seconds} s — check the base URL.",
     "settings.busy": "A connection test is already running.",
     **CONSOLE_TEXTS,
+    **WRITE_TEXTS,
 }
 
 
