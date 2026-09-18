@@ -41,7 +41,7 @@ def _gate(qt_app, desk, state=None):
     page = _Page()
     page.state = state or LiveState.CONNECTED
     page.connect_bar = _Bar()
-    return WriteGate(page, transport=desk.write_transport(), timeout=0)
+    return WriteGate(page, transport=desk.write_transport(), timeout=2)
 
 
 def _row(qt_app, gate, patch=None):
@@ -228,6 +228,40 @@ def test_undo_removes_the_journal_row_and_leaves_the_ledger_row(qt_app, vu_path)
     assert panel.list.count() == 0
     assert len(panel.ledger.records()) == 1
     assert panel.ledger.row_widget(0).revert_button.isEnabled() is True
+
+
+def test_clicking_send_end_to_end_reaches_the_ledger_and_the_scene(qt_app, settle, vu_path):
+    """Driven through the button, not by calling `record_sent` directly:
+    armed gate, click Send, the countdown opens, click Apply now, and the
+    result reaches `ChangesPanel.record_sent` -- the ledger, the badge and
+    F8's scene correction all follow from the click alone."""
+    from wing_parser.edit import pointer
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("POST",))})
+    window = _window(qt_app, vu_path)
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    panel = _panel(qt_app, gate, window)
+    window.session.record_value(PATH, "PRE", label="x", because="G8")
+    panel.set_changes(window.session.changes())
+
+    row = panel.list.itemWidget(panel.list.item(0))
+    opened = []
+    row.dialog_opened.connect(opened.append)
+    row.send_button.click()
+
+    assert opened
+    dialog = opened[0]
+    assert settle(lambda: dialog.apply_button.isEnabled())
+    dialog.apply_button.click()
+
+    assert settle(lambda: panel.has_ledger())
+    assert len(panel.ledger.records()) == 1
+    assert text("console.write.sent").split("{")[0].strip() in row.badge.text()
+    assert pointer.read(window.session._document(), PATH) == "PRE", (
+        "F8 matched -> the leaf already holds `after`; no second patch needed")
 
 
 def test_every_journal_row_carries_its_own_send_button(qt_app, vu_path):

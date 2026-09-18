@@ -36,6 +36,8 @@ def badge_text(record) -> str:
 class SendRow(QWidget):
     send_requested = Signal(object)     # the Patch this row carries
     dialog_opened = Signal(object)      # the countdown, for tests and for focus
+    sent = Signal(object, object)       # (Patch, SentWrite) -- a completed send
+    send_error = Signal(object)         # the exception -- gate 4 closing, DeskChanged, ...
 
     def __init__(self, patch, gate, delay=5, parent=None) -> None:
         super().__init__(parent)
@@ -47,7 +49,6 @@ class SendRow(QWidget):
             before=patch.before, after=patch.after))
         self.badge = QLabel("")
         self.send_button = QPushButton(text("console.write.send"))
-        self.send_button.setToolTip(text("console.write.blocked"))
         self.send_button.clicked.connect(self._send)
 
         layout = QHBoxLayout(self)
@@ -63,8 +64,9 @@ class SendRow(QWidget):
         No gate yet (a panel built and populated before `attach_gate`,
         as the direct-construction tests in `test_ui_widgets.py` do)
         reads exactly like a closed one: nothing can be sent."""
-        self.send_button.setEnabled(
-            self._gate is not None and self._gate.can_write())
+        enabled = self._gate is not None and self._gate.can_write()
+        self.send_button.setEnabled(enabled)
+        self.send_button.setToolTip("" if enabled else text("console.write.blocked"))
 
     def set_badge(self, record) -> None:
         self.badge.setText(badge_text(record))
@@ -73,9 +75,15 @@ class SendRow(QWidget):
         self.send_requested.emit(self.patch)
         dialog = write_router.send_manually(
             self._gate, self.patch, self._delay, self.window(),
-            transport=self._gate.transport, on_sent=self._sent)
+            transport=self._gate.transport,
+            on_sent=self._sent, on_error=self.send_error.emit)
         if dialog is not None:
             self.dialog_opened.emit(dialog)
 
     def _sent(self, patch, record) -> None:
+        """The result reaches the row's badge AND announces itself
+        (`sent`) so `ChangesPanel.set_changes` can wire it to
+        `record_sent` -- F8's scene correction and the ledger row, not
+        just what this row shows."""
         self.set_badge(record)
+        self.sent.emit(patch, record)

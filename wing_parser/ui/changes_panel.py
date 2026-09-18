@@ -99,6 +99,8 @@ class ChangesPanel(QWidget):
             item = QListWidgetItem()
             row = SendRow(patch, self._gate,
                           getattr(self._window, "_apply_delay", 5))
+            row.sent.connect(self.record_sent)
+            row.send_error.connect(self.report_write_error)
             item.setSizeHint(row.sizeHint())
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
