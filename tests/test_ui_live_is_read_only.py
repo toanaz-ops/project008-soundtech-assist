@@ -9,12 +9,16 @@ Not a promise, a scan (S8.2). Two rules, each an `ast` walk over every
    naming it (or `wing_parser.net` with `write` in a `fromlist`, or the
    relative `".write"` against a literal `package`, which D-44 taught it
    to resolve). A computed name is a blind spot either way.
-2. No write verb (`set`/`toggle`/`node_write`/`push`) is called on a name
-   bound, in this module's own import table, from `wing_parser.net` --
-   walked back through any `Attribute`/`Call` chain to its leftmost
-   `Name`. Not bare-name matching: `self.cancel.set()`
-   (`live_watch_session.py:143`) and `self._cancelled.set()`
-   (`workers.py:69`), both `threading.Event`, end at `self`, unbound.
+2. No write verb (`set`/`toggle`/`node_write`/`push`) is REACHED through
+   `wing_parser.net`. The import table binds anything under `wing_parser`
+   -- the top package and `wing_parser.net` included -- and `_net_target`
+   rebuilds the dotted path an `Attribute` chain spells before deciding, so
+   `from wing_parser import net` then `net.write.push(...)`, and a bare
+   `import wing_parser` then `wing_parser.net.write.push(...)`, are both
+   offences while `wing_parser.config.set(...)` is not. Not bare-name
+   matching either: `self.cancel.set()` (`live_watch_session.py:143`) and
+   `self._cancelled.set()` (`workers.py:69`), both `threading.Event`, end
+   at `self`, unbound.
 
 `Transport.client(host)` (used at `live_watch_session.py:87`) returns a
 bare `WingClient`; rule 2 need not name it, since the four verbs are
@@ -25,9 +29,11 @@ needs an import that rule 1 already catches. Pinned by
 
 Wave 3 (W4, design §8.4) turns this into an **allow-list of one**:
 `wing_parser/ui/live_write.py` is the single door to the write path.
-The allow-list is `path.name` EQUALITY against `ALLOWED_WRITE_MODULES`,
-never a substring or suffix of the offender line -- `bus_live_write.py`
-ends with the allow-listed name and must still be reported.
+The allow-list is the path RELATIVE TO THE SCAN ROOT, matched against
+`ALLOWED_WRITE_MODULES`: never `path.name`, which would hand the same
+rights to any `ui/<sub>/live_write.py`, and never a substring or suffix of
+the offender line -- `bus_live_write.py` ends with the allow-listed name
+and must still be reported.
 
 Rule 1 is **narrowed** there, not waived: an allow-listed file may bind
 the write MODULE (`import wing_parser.net.write`, `from wing_parser.net
@@ -45,6 +51,14 @@ Blind spot shared with `test_ui_texts.py`: a local variable assigned from
 a net-bound call (`wc = client.WingClient(host)` then `wc.set(...)`) is
 invisible to rule 2 -- only names bound directly by an `Import`/`ImportFrom`
 are tracked; `client.WingClient(host).set(...)` in one expression IS caught.
+
+Second blind spot, by construction: a verb reached WITHOUT naming it,
+`getattr(write, "push")(host, ...)`. Both scans read `ast.Attribute` and
+`ast.Name`, and `"push"` there is a string constant, so neither sees it.
+Rule 1 still catches the import that binds `write` in any file but the
+allow-listed one, which is the lock that matters; inside `live_write.py`
+it would pass. Closing it means matching `getattr` with a literal second
+argument, which is a scan change, not a fix to make in passing.
 """
 from __future__ import annotations
 
@@ -58,13 +72,21 @@ UI_ROOT = Path(ui_package.__file__).resolve().parent
 
 WRITE_VERBS = {"set", "toggle", "node_write", "push"}
 
+_NET = "wing_parser.net"
+
 #: W4/§8.4: exactly one `ui/` module may reach `wing_parser.net.write`, and
-#: it exists in order to call ONE verb there. Matched by `path.name`
-#: EQUALITY -- never `name in offender_line`, which would exempt
-#: `bus_live_write.py` too -- so the scan behaves identically in `UI_ROOT`
-#: and in a `tmp_path`. Adding a second entry re-opens the blast radius
-#: this file exists to bound -- that is a spec change, not a fix.
-ALLOWED_WRITE_MODULES = frozenset({"live_write.py"})
+#: it exists in order to call ONE verb there. Matched on the path RELATIVE
+#: TO THE SCAN ROOT -- never `path.name`, which hands the same rights to
+#: any `ui/<sub>/live_write.py` somebody adds, and never
+#: `name in offender_line`, which would exempt `bus_live_write.py` too --
+#: so the scan behaves identically in `UI_ROOT` and in a `tmp_path`.
+#: Adding a second entry re-opens the blast radius this file exists to
+#: bound -- that is a spec change, not a fix.
+ALLOWED_WRITE_MODULES = frozenset({Path("live_write.py")})
+
+
+def _is_allowed(path: Path, root: Path) -> bool:
+    return path.relative_to(root) in ALLOWED_WRITE_MODULES
 
 #: The one verb the allow-listed module may use. `toggle` sends `,i -1` and
 #: flips whatever the desk holds NOW (`write.py:139-142`), so its outcome
@@ -89,16 +111,27 @@ def _py_files(root: Path):
 
 
 def _net_bound_names(tree: ast.Module) -> dict[str, str]:
-    """Local names bound from `wing_parser.net` (Import/ImportFrom only)."""
+    """Local name -> the dotted module it names, for anything under
+    `wing_parser` (Import/ImportFrom only).
+
+    `wing_parser` and `wing_parser.net` are bound too, not just things
+    under `wing_parser.net`: `from wing_parser import net` binds `net` off
+    the PACKAGE, and `import wing_parser` binds only the top name, so a
+    table keyed on "the import path starts with wing_parser.net" held
+    nothing for either and `net.write.push(...)` walked straight past both
+    rules. `_net_target` decides what is actually a net reach.
+    """
     bound: dict[str, str] = {}
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for a in node.names:
-                if a.name == "wing_parser.net" or a.name.startswith("wing_parser.net."):
-                    bound[a.asname or a.name.split(".")[0]] = a.name
+                if a.name == "wing_parser" or a.name.startswith("wing_parser."):
+                    # `import a.b` binds the TOP package unless aliased.
+                    bound[a.asname or a.name.split(".")[0]] = (
+                        a.name if a.asname else a.name.split(".")[0])
         elif isinstance(node, ast.ImportFrom):
             module = node.module or ""
-            if module == "wing_parser.net" or module.startswith("wing_parser.net."):
+            if module == "wing_parser" or module.startswith("wing_parser."):
                 for a in node.names:
                     bound[a.asname or a.name] = f"{module}.{a.name}"
     return bound
@@ -185,7 +218,7 @@ def find_write_imports(root: Path, *, skip_allowed: bool = False) -> list[str]:
     """
     offenders = []
     for path in _py_files(root):
-        narrowed = skip_allowed and path.name in ALLOWED_WRITE_MODULES
+        narrowed = skip_allowed and _is_allowed(path, root)
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)) and _import_reaches_write(node):
@@ -204,14 +237,35 @@ def find_write_imports(root: Path, *, skip_allowed: bool = False) -> list[str]:
     return sorted(offenders)
 
 
-def _base_name(node):
-    """Walk an Attribute/Call chain down to its leftmost Name, or None."""
+def _net_target(node, bound: dict[str, str]) -> str | None:
+    """The `wing_parser.net...` module a verb is reached THROUGH, else None.
+
+    Walks an Attribute/Call chain down to its leftmost `Name` and rebuilds
+    the dotted path the attributes spell, resolving the leftmost name
+    through `bound`: `net.write` under `from wing_parser import net`, and
+    `wing_parser.net.write` under a bare `import wing_parser`, both land on
+    `wing_parser.net.write`. `wing_parser.config.set(...)` lands on
+    `wing_parser.config` and is no offence -- a scan that cried wolf there
+    would be turned off.
+
+    A `Call` in the chain (`client.WingClient(host).set(...)`) breaks the
+    dotted rebuild but NOT the match: the leftmost binding alone decides,
+    which is what this function did before it could resolve chains.
+    """
+    parts: list[str] = []
+    through_call = False
     while node is not None:
         if isinstance(node, ast.Name):
-            return node.id
+            if node.id not in bound:
+                return None
+            dotted = bound[node.id] if through_call else ".".join(
+                [bound[node.id], *reversed(parts)])
+            return dotted if dotted == _NET or dotted.startswith(_NET + ".") else None
         if isinstance(node, ast.Attribute):
+            parts.append(node.attr)
             node = node.value
         elif isinstance(node, ast.Call):
+            through_call = True
             node = node.func
         else:
             return None
@@ -247,7 +301,7 @@ def find_write_verb_calls(root: Path, *, skip_allowed: bool = False) -> list[str
     """
     offenders = []
     for path in _py_files(root):
-        if skip_allowed and path.name in ALLOWED_WRITE_MODULES:
+        if skip_allowed and _is_allowed(path, root):
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         net_bound = _net_bound_names(tree)
@@ -257,10 +311,10 @@ def find_write_verb_calls(root: Path, *, skip_allowed: bool = False) -> list[str
                 continue
             func = node.func
             if isinstance(func, ast.Attribute) and func.attr in WRITE_VERBS:
-                base = _base_name(func.value)
-                if base in net_bound:
+                target = _net_target(func.value, net_bound)
+                if target:
                     offenders.append(
-                        f"{path}:{node.lineno}: calls .{func.attr}(...) on {base!r} (bound from {net_bound[base]})"
+                        f"{path}:{node.lineno}: calls .{func.attr}(...) on {target!r}"
                     )
             elif isinstance(func, ast.Name) and func.id in verb_bound:
                 offenders.append(
@@ -286,11 +340,10 @@ def find_write_verb_uses(root: Path) -> list[str]:
         verb_bound = _verb_bound_names(tree)
         for node in ast.walk(tree):
             if isinstance(node, ast.Attribute) and node.attr in WRITE_VERBS:
-                base = _base_name(node.value)
-                if base in net_bound:
+                target = _net_target(node.value, net_bound)
+                if target:
                     offenders.append(
-                        f"{path}:{node.lineno}: names .{node.attr} on {base!r} "
-                        f"(bound from {net_bound[base]})"
+                        f"{path}:{node.lineno}: names .{node.attr} on {target!r}"
                     )
             elif isinstance(node, ast.Name) and node.id in verb_bound:
                 offenders.append(
@@ -463,3 +516,80 @@ def test_the_scan_ignores_an_unrelated_dot_set_call(tmp_path):
         encoding="utf-8",
     )
     assert find_write_verb_calls(tmp_path) == []
+
+
+# -- review round 2, IMPORTANT 4: the three shapes rule 2 used to miss ----
+
+
+def test_the_scan_catches_a_verb_reached_through_a_from_wing_parser_import(tmp_path):
+    """`from wing_parser import net` binds `net` off the `wing_parser`
+    PACKAGE, not off `wing_parser.net`, so the old table -- which keyed on
+    an import path starting `wing_parser.net` -- held nothing at all and
+    `net.write.push(...)` passed both rules untouched."""
+    planted = tmp_path / "sneaky.py"
+    planted.write_text(
+        "from wing_parser import net\n\ndef go(host, leaves):\n"
+        "    return net.write.push(host, leaves, confirm=True)\n",
+        encoding="utf-8",
+    )
+    calls = find_write_verb_calls(tmp_path)
+    assert len(calls) == 1 and ":4:" in calls[0] and "push" in calls[0], calls
+    uses = find_write_verb_uses(tmp_path)
+    assert len(uses) == 1 and "push" in uses[0], uses
+
+
+def test_the_scan_catches_a_verb_reached_through_a_bare_import_wing_parser(tmp_path):
+    """`import wing_parser` binds only the top package -- the old table
+    ignored it, so the fully-spelled `wing_parser.net.write.push(...)` was
+    invisible."""
+    planted = tmp_path / "sneaky_top.py"
+    planted.write_text(
+        "import wing_parser\n\ndef go(host, leaves):\n"
+        "    return wing_parser.net.write.push(host, leaves, confirm=True)\n",
+        encoding="utf-8",
+    )
+    calls = find_write_verb_calls(tmp_path)
+    assert len(calls) == 1 and ":4:" in calls[0] and "push" in calls[0], calls
+
+
+def test_a_non_net_attribute_chain_off_the_same_binding_is_not_an_offence(tmp_path):
+    """The other half: binding `wing_parser` must not make every `.set(...)`
+    under it an offence. `wing_parser.config.set(...)` goes nowhere near
+    the write path, and a scan that cried wolf would be turned off."""
+    planted = tmp_path / "innocent.py"
+    planted.write_text(
+        "import wing_parser\n\ndef go():\n"
+        "    return wing_parser.config.set('k', 'v')\n",
+        encoding="utf-8",
+    )
+    assert find_write_verb_calls(tmp_path) == []
+    assert find_write_verb_uses(tmp_path) == []
+
+
+def test_a_nested_module_may_not_inherit_the_allow_list_by_its_name(tmp_path):
+    """The allow-list is the TOP-LEVEL `ui/live_write.py`, keyed on the
+    path relative to the scan root -- not on `path.name`, which would hand
+    write rights to any `ui/<anything>/live_write.py` somebody added."""
+    nested = tmp_path / "sub"
+    nested.mkdir()
+    (nested / "live_write.py").write_text(
+        "from wing_parser.net import write\n\ndef go(host):\n"
+        "    return write.set(host, '/ch/1/fdr', -6.0, confirm=True)\n",
+        encoding="utf-8",
+    )
+    imports = find_write_imports(tmp_path, skip_allowed=True)
+    assert len(imports) == 1 and "sub" in imports[0], imports
+    calls = find_write_verb_calls(tmp_path, skip_allowed=True)
+    assert len(calls) == 1 and "sub" in calls[0], calls
+
+
+def test_the_top_level_allow_listed_file_is_still_allow_listed(tmp_path):
+    """The other half of the path rule: `live_write.py` at the scan root
+    keeps its narrowed rule 1 and its exemption from rule 2."""
+    (tmp_path / "live_write.py").write_text(
+        "from wing_parser.net import write\n\ndef go(host):\n"
+        "    return write.set(host, '/ch/1/fdr', -6.0, confirm=True)\n",
+        encoding="utf-8",
+    )
+    assert find_write_imports(tmp_path, skip_allowed=True) == []
+    assert find_write_verb_calls(tmp_path, skip_allowed=True) == []
