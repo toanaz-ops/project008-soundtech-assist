@@ -5,7 +5,7 @@ worktree: D:/DEV CAVE EP3/PROJECT008-SOUNDTECH-ASSIST/.claude/worktrees/pull-lat
 feature: GUI wave 3 - per-parameter write to a live WING console
 phase: GUI3
 status: wip
-next: PR #8 open (https://github.com/toanaz-ops/project008-soundtech-assist/pull/8), CI pending; ToanAZ: look at the 16 screenshots, run 9.3 on WING-GIAQUY, rule on 19 decisions, then Merge
+next: PR #8 open (https://github.com/toanaz-ops/project008-soundtech-assist/pull/8), CI green (run 35340086326, test 2m54s); ToanAZ: look at the 16 screenshots, run 9.3 on WING-GIAQUY, rule on 19 decisions, then Merge
 decisions_pending: 19
 date: 2026-09-18
 updated: 2026-09-18 (task 16 whole-branch review + its fixes)
