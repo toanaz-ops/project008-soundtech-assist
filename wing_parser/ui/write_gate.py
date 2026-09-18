@@ -86,6 +86,14 @@ class WriteGate(QObject):
     def host(self) -> str:
         return self._page.connect_bar.host()
 
+    @property
+    def transport(self):
+        """The transport this gate was built with (REAL in production, a
+        `FakeDesk`'s in tests) -- so a caller building its OWN dialog
+        (`changes_send.SendRow`) reaches the same desk the gate does,
+        rather than defaulting past it to `live_write.REAL`."""
+        return self._transport
+
     # -- the one wire -------------------------------------------------------
 
     def submit(self, job: WriteJob) -> None:

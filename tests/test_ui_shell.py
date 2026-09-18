@@ -64,6 +64,27 @@ def test_doctor_widgets_still_reachable(window):
     assert window.findings_view is window.pages["doctor"].findings_view
 
 
+def test_install_write_gate_wires_the_real_changes_panel(window, vu_path):
+    """Controller ruling (Task 12): `install_write_gate` used to run inside
+    `_build_body`, BEFORE `_build_changes_dock` created `self.changes_panel`
+    -- its wiring landed on nothing. Moved to run right after the dock is
+    built, both the panel and a populated journal row see the SAME gate
+    the window publishes as `write_gate`."""
+    from wing_parser.ui.changes_send import SendRow
+    from wing_parser.ui.session import Session
+
+    assert window.changes_panel._gate is window.write_gate
+
+    window.session = Session.open(vu_path)
+    window.session.record_value(
+        "ae_data.ch.1.send.8.mode", "PRE", label="x", because="G8")
+    window._refresh()
+
+    row = window.changes_panel.list.itemWidget(window.changes_panel.list.item(0))
+    assert isinstance(row, SendRow)
+    assert row._gate is window.write_gate
+
+
 def test_the_apply_delay_survives_closing_the_window(qt_app, tmp_path, monkeypatch):
     from wing_parser import config
     from wing_parser.ui import state_store

@@ -55,6 +55,7 @@ TEXTS: dict[str, str] = {
     "routing.unclassified": "Unclassified",
     "diff.compare": "Compare with...",
     "changes.undo": "Undo the last change",
+    "changes.row": "{label}  —  {path}: {before!r} → {after!r}",
     "findings.severity": "Severity",
     "findings.layer": "Layer",
     "diff.clear": "Clear",

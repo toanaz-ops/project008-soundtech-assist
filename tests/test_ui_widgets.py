@@ -214,6 +214,9 @@ def test_the_whole_verdict_bar_wakes_only_with_a_selection(qt_app, session):
 
 
 def test_the_changes_panel_lists_one_row_per_patch(qt_app, session):
+    """Wave 3 (S2.2): each row is a `SendRow` widget with its own Send
+    button, not plain item text -- `test_ui_changes_send.py` covers that
+    row in depth; this only pins the count and what it names."""
     from wing_parser.ui.changes_panel import ChangesPanel
 
     session.repair(a_finding(session, "G8"))
@@ -221,7 +224,7 @@ def test_the_changes_panel_lists_one_row_per_patch(qt_app, session):
     panel.set_changes(session.changes())
 
     assert panel.list.count() == 1
-    row = panel.list.item(0).text()
+    row = panel.list.itemWidget(panel.list.item(0)).label.text()
     assert "POST" in row and "PRE" in row
 
 

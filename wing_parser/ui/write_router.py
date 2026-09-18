@@ -1,20 +1,15 @@
-"""What happens to a repair between the click and the ledger row (F3).
+"""What happens to a repair between the click and the ledger row (F3, F8).
 
 Three levels, one entry point. Manual stops here -- the journal row's own
-Send button resumes it, and that button opens the countdown too, so Manual
-has one control that always means the same thing. Delayed opens the
-countdown. Immediate reads the desk once, then writes.
+Send button resumes it (`route_repair`/`send_manually` share `_countdown`),
+and that button opens the countdown too, so Manual has one control that
+always means the same thing. Delayed opens the countdown. Immediate reads
+the desk once (`ImmediateWrite`, on its own `CallRunner`, W5), then writes;
+that read is what the ledger's desk-before comes from, and without it
+Revert would have nothing to write back.
 
-**Immediate still reads first.** The ledger records the desk-live value
-captured BEFORE the write (F7), and without it Revert would have nothing to
-write back. That read runs on `ImmediateWrite`'s own `CallRunner` (W5), the
-same rule the two dialogs follow, because the Console page's runner is
-legitimately busy during a watch (`workers.py:112-113`).
-
-A module of its own because nowhere else would take it: `main_window.py`
-gets four lines this whole wave, `console_page.py` and `live_controller.py`
-may not grow at all (W7), `changes_send.py` is budgeted at 120 for the Send
-button and its badges, and `live_wiring.py` already carries the gate.
+`apply_result` closes F8: matched needs no second patch, a clamp rewrites
+the scene leaf to what the desk actually holds, a silent desk is left alone.
 
 Imports `WriteJob`/`GateClosed` from `write_gate.py` directly, not from
 `live_wiring` (which re-exports them): `live_wiring.install_write_gate`
@@ -26,7 +21,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject
 
-from wing_parser.net.address import osc_address
+from wing_parser.net.address import leaf_parts, osc_address
 from wing_parser.ui import live_write
 from wing_parser.ui.apply_level import ApplyLevel
 from wing_parser.ui.write_arm_dialog import arm_now
@@ -42,13 +37,8 @@ def _record(path, desk_before, written, result) -> live_write.SentWrite:
 
 
 class ImmediateWrite(QObject):
-    """Read the desk once, then write. No dialog -- that is the trade F3
-    buys, and exactly why Immediate cannot be reached without arming and
-    why the selector falls back to Manual the moment the connection drops.
-
-    Keeps itself referenced through its `CallRunner` parent chain until the
-    write settles; the caller does not have to hold it.
-    """
+    """Read the desk once, then write; no dialog (F3). Stays referenced
+    through its `CallRunner` parent chain until the write settles."""
 
     def __init__(self, gate, patch, after, *, transport=None, timeout=None,
                  on_sent=None, on_error=None, parent=None) -> None:
@@ -89,10 +79,8 @@ class ImmediateWrite(QObject):
 
 def route_repair(gate, patch, delay, parent=None, *, transport=None, timeout=None,
                  on_sent=None, on_error=None):
-    """Apply `patch` to the desk at the gate's CURRENT level (F3).
-
-    Returns the `DelayedWriteDialog` when one was opened, else `None`.
-    """
+    """Apply `patch` at the gate's CURRENT level (F3); returns the
+    `DelayedWriteDialog` when one was opened, else `None`."""
     level = gate.arm.level
     if level is ApplyLevel.MANUAL:
         return None                    # the journal row's Send resumes it
@@ -110,10 +98,8 @@ def route_repair(gate, patch, delay, parent=None, *, transport=None, timeout=Non
 
 def route_revert(gate, record, delay, parent=None, *, transport=None, timeout=None,
                  on_sent=None, on_error=None, on_cancelled=None):
-    """F7: write a ledger row's captured desk-before value back, through the
-    CURRENT level -- Immediate at once, Delayed and Manual via the
-    countdown. Manual reverts through the countdown too, so a revert is
-    never a silent packet."""
+    """F7: write a ledger row's desk-before value back, at the CURRENT
+    level -- Manual reverts through the countdown too, never silently."""
     from wing_parser.edit.journal import Patch
 
     if not arm_now(gate, parent, transport=transport, timeout=timeout):
@@ -129,6 +115,31 @@ def route_revert(gate, record, delay, parent=None, *, transport=None, timeout=No
                       transport=transport, timeout=timeout, on_sent=on_sent,
                       on_error=on_error, on_cancelled=on_cancelled,
                       revert_record=record)
+
+
+def send_manually(gate, patch, delay, parent=None, *, transport=None,
+                  timeout=None, on_sent=None, on_error=None):
+    """Manual's own Send: arm if needed, then ALWAYS the countdown (§2.2)."""
+    if not arm_now(gate, parent, transport=transport, timeout=timeout):
+        return None
+    return _countdown(gate, patch, patch.after, delay, parent,
+                      transport=transport, timeout=timeout,
+                      on_sent=on_sent, on_error=on_error)
+
+
+def apply_result(window, patch, record) -> None:
+    """F8: matched -> nothing (leaf already holds `after`). Clamp -> a
+    second patch to `scene_value(parts, readback)`. No reply -> nothing."""
+    from wing_parser.ui.changes_send import badge_text
+
+    value = live_write.settle_scene(
+        leaf_parts(patch.path), patch.after, record.result)
+    if value is None or value == patch.after:
+        return
+    window.session.record_value(
+        patch.path, value,
+        label=badge_text(record), because=patch.because)
+    window._refresh()
 
 
 def _countdown(gate, patch, after, delay, parent, *, transport, timeout,

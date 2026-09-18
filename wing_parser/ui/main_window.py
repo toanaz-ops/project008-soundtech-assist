@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
         menus.build_menus(self)
         self._build_body()
         self._build_changes_dock()
+        live_wiring.install_write_gate(self, self.pages["console"])
         menus.build_accelerators(self)
         window_state.restore(self)
         self._refresh()
@@ -76,7 +77,6 @@ class MainWindow(QMainWindow):
         self.pages["import_"].open_settings_requested.connect(self.open_settings)
         self.pages["console"] = ConsolePage()
         live_wiring.wire_console(self, self.pages["console"])
-        live_wiring.install_write_gate(self, self.pages["console"])
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:
