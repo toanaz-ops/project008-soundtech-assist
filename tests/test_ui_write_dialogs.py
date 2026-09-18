@@ -449,3 +449,84 @@ def test_a_submitted_write_cannot_be_dismissed_until_the_result_lands(qt_app, se
     assert rejected == [], "a packet on the wire cannot be un-sent"
     assert settle(lambda: applied)
     assert len(applied) == 1
+
+
+# -- routing, one test per level (F3) -----------------------------------
+
+
+def test_manual_sends_nothing_and_opens_nothing(qt_app):
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("POST",))})
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.MANUAL
+
+    dialog = write_router.route_repair(
+        gate, _patch(), 5, transport=desk.write_transport(), timeout=2)
+    assert dialog is None
+    assert desk.sets == []
+
+
+def test_delayed_opens_the_countdown_and_sends_nothing_yet(qt_app):
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.write_delay_dialog import DelayedWriteDialog
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("POST",))},
+                    readbacks={OSC: "PRE"})
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.DELAYED
+
+    dialog = write_router.route_repair(
+        gate, _patch(), 9, transport=desk.write_transport(), timeout=2)
+    assert isinstance(dialog, DelayedWriteDialog)
+    assert dialog.remaining == 9
+    assert desk.sets == []
+    dialog.reject()
+
+
+def test_immediate_produces_exactly_one_set_and_no_dialog(qt_app, settle):
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("POST",))},
+                    readbacks={OSC: "PRE"})
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+    sent = []
+
+    dialog = write_router.route_repair(
+        gate, _patch(), 5, transport=desk.write_transport(), timeout=2,
+        on_sent=lambda patch, record: sent.append(record))
+
+    assert dialog is None
+    assert settle(lambda: sent)
+    assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
+    assert sent[0].desk_before == "POST", "the ledger records what the desk held"
+    assert sent[0].written == "PRE"
+
+
+def test_an_unarmed_route_opens_the_arm_dialog_first(qt_app, monkeypatch):
+    """§2.2: Manual's Send and a Delayed repair both enter through arm_now."""
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("POST",))})
+    gate = _gate(qt_app, desk)
+    gate.arm.level = ApplyLevel.DELAYED         # selected but NOT armed
+    calls = []
+    monkeypatch.setattr(write_router, "arm_now",
+                        lambda g, parent=None, **kw: calls.append(g) or False)
+
+    assert write_router.route_repair(
+        gate, _patch(), 5, transport=desk.write_transport(), timeout=2) is None
+    assert calls == [gate], "no write path may skip gate 2"
+    assert desk.sets == []

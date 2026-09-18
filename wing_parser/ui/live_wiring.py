@@ -18,6 +18,13 @@ from __future__ import annotations
 from wing_parser.ui import window_state
 from wing_parser.ui.write_gate import GateClosed, WriteGate, WriteJob  # noqa: F401 -- re-export (Task 11 escape hatch)
 
+# Imported AFTER the re-export above, not before: `write_router` pulls in
+# `write_delay_dialog`, which does `from wing_parser.ui.live_wiring import
+# GateClosed, WriteJob` -- those names must already be bound in this
+# module's namespace by the time that import runs, or it is a circular
+# ImportError on a partially-initialised module.
+from wing_parser.ui import write_router
+
 
 def adopt_pulled_session(window, session) -> None:
     """Everything a freshly *pulled* scene needs, minus the page switch.
@@ -87,4 +94,15 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
     changes = getattr(window, "changes_panel", None)
     if changes is not None:
         changes.attach_gate(gate)          # task 12 gives ChangesPanel this
+    doctor = getattr(window, "pages", {}).get("doctor")
+    if doctor is not None and hasattr(doctor, "attach_gate"):
+        doctor.attach_gate(gate)
+        # Guarded until task 12 lands `record_sent`/`report_write_error` on
+        # ChangesPanel -- `hasattr(None, ...)` is also False, so this stays
+        # a no-op for as long as `changes` above does too.
+        if hasattr(changes, "record_sent"):
+            doctor.send_requested.connect(lambda patch: write_router.route_repair(
+                gate, patch, getattr(window, "_apply_delay", 5), window,
+                on_sent=lambda p, record: changes.record_sent(p, record),
+                on_error=lambda exc: changes.report_write_error(exc)))
     return gate
