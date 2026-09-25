@@ -952,6 +952,20 @@ same loss that made D1-D18 a rescue job.
     block. Verified: `git check-ignore -v dist-reports/suite.xml` prints
     `.gitignore:23:dist-reports/`.
 
+- **D-55** ChangesPanel row text overlaps its result badge
+  - owner: machine-doable
+  - evidence: `dist-shots/07-changes-dock-badges.png`, a screenshot from the
+    2026-09-25 exe rebuild (`main` at `3c2cda9`). In the ChangesPanel rows
+    the change description text overlaps the result badge -- e.g.
+    `'POST' -> 'PR` runs into `sent ✓ the desk holds PRE`, and both are cut
+    off. Rows are built in `wing_parser/ui/changes_send.py` and
+    `wing_parser/ui/changes_panel.py`.
+  - close: give the badge its own column (or elide the description) so the
+    two never share horizontal space regardless of text length; verify by
+    regenerating `dist-shots/07-changes-dock-badges.png` and confirming the
+    overlap is gone.
+  - status: open
+
 ---
 
 ## Appendix — rulings preserved, not debt

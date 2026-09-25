@@ -269,9 +269,12 @@ the answer noted inline.
   **shall bundle both model SDKs**, `anthropic` (extra `llm`) and `openai`
   (extra `llm-openai`), so Settings ▸ Test connection and Import's AI assist
   work from the exe. The build venv installs `.[ui,ingest,llm,llm-openai]`
-  (`mcp` stays excluded, as it already was). **The release exe has not been
-  rebuilt with these extras yet** — the one in `dist\wing-ui.exe` as of this
-  writing still predates the decision.
+  (`mcp` stays excluded, as it already was). **Update 2026-09-25: the
+  release exe was rebuilt** from `main` (`3c2cda9`, after PR #9 merged)
+  with these extras — `dist\wing-ui.exe`, 71,034,002 bytes, alive after
+  8 s. Gap: Settings ▸ Test connection is still not exercised from the
+  frozen exe (the SDK imports are lazy in `provider.py`), pending ToanAZ
+  with a real key.
 - **§6.4, the seven implementation rulings:** all approved as written; no
   changes requested.
 - **§9.3, real-desk acceptance:** still not run. Scheduled as its own session
@@ -575,6 +578,11 @@ it may ship.
 - **MINOR 10** (the ledger line reference) was the controller's own file.
 - **The screenshots were not regenerated** and the exe was not rebuilt. D-51 is
   closed on the strings; the gate is still what ToanAZ sees.
+  **Update 2026-09-25:** screenshots regenerated and the exe rebuilt from
+  `main` (`3c2cda9`, PR #9 merged) with the C1 extras. The regenerated
+  `07-changes-dock-badges.png` surfaced a new, unrelated overlap between a
+  row's description text and its result badge — filed as
+  `docs/tech-debt.md#d-55`, not closed here.
 - **§9.3 against a real desk is still unrun.** Nothing here changes that, and
   step 6a above is a new item for it.
 - **Nobody has refuted these fixes.** A fresh pair of eyes on the four commits is

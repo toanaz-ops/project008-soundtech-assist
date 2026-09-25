@@ -144,17 +144,35 @@ handoff §6 đã cập nhật "FIXED (ToanAZ 2026-09-25)". **C1**: exe phát hà
 PHẢI có cả hai SDK model (`anthropic` qua extra `llm`, `openai` qua extra
 `llm-openai`) để Settings ▸ Test connection và Import AI assist chạy được
 từ exe — dòng cài giờ là `.[ui,ingest,llm,llm-openai]` (`mcp` vẫn cố ý loại
-trừ); exe hiện tại CHƯA build lại với các extra này. **Wave 4** (chưa scope,
+trừ); exe phát hành **đã build lại** từ `main` (`3c2cda9`) ngày 2026-09-25
+với các extra này (71.034.002 bytes, còn sống sau 8s) — gap còn lại: nút
+Test connection trong Settings chưa thử qua bản exe đóng gói (SDK import
+lazy trong `provider.py`), chờ ToanAZ dùng key thật. **Wave 4** (chưa scope,
 chờ brainstorm): (a) sổ ghi bền qua nhiều phiên + xuất báo cáo sau show (sẽ
 lật ngược W8), (b) import cue sheet tốt hơn (seed từ vựng §5.2, live
 DeepSeek smoke trong app), (c) advisory mã hoá gu mix riêng của ToanAZ.
 Nghiệm thu §9.3 trên console thật **vẫn chưa chạy** — runbook mới:
 `docs/acceptance/2026-09-wave3-desk-acceptance.md`.
 
-Nhánh `fix/wave3-debt-cleanup` (chưa merge vào `main`) đóng nợ: **D-54**
-(dist-reports/ vào .gitignore), **D-50** (tách `write_delay_dialog.py` lấy
-lại headroom thật, 200→179 dòng), **D-41** (Console page dùng chung một lần
-walk schema giữa Discover/Pull qua `SchemaCache` mới) đã đóng đầy đủ; D-52
-mục 1/2/5/8 đóng (thông báo lỗi dùng `{ROOT}`, `RevertQueue` dùng deque,
-nhánh chết ở `WriteGate._start` thay bằng `RuntimeError`, `+5s` tại 0 giây
-tiếp tục đếm thay vì đứng im). Suite **1785 passed / 3 skipped** @ `59b033e`.
+Nhánh `fix/wave3-debt-cleanup` (nay **đã merge vào `main` qua PR #9**,
+`3c2cda9`, CI `test` xanh) đóng nợ: **D-54** (dist-reports/ vào .gitignore),
+**D-50** (tách `write_delay_dialog.py` lấy lại headroom thật, 200→179 dòng),
+**D-41** (Console page dùng chung một lần walk schema giữa Discover/Pull
+qua `SchemaCache` mới) đã đóng đầy đủ; D-52 mục 1/2/5/8 đóng (thông báo lỗi
+dùng `{ROOT}`, `RevertQueue` dùng deque, nhánh chết ở `WriteGate._start`
+thay bằng `RuntimeError`, `+5s` tại 0 giây tiếp tục đếm thay vì đứng im).
+Một vòng review mới trong PR #9 bắt được D-41 v1 sai (C1: schema chưa đi
+hết mà vẫn cache; I1: `SchemaCache.set()` chạy trên worker thread; I2:
+`FakeDesk` bỏ qua `schema=`; M1: `+5s` sau pre-flight fail) — đã sửa hết
+(`5aabe0e`, `c331b20`). Suite cuối tại lúc merge: **1790 passed / 3 skipped**.
+
+## 2026-09-25 — Luật CI: làm theo PROJECT004
+
+ToanAZ: "nếu CI gặp lỗi hãy dùng cách của PROJECT004". Quy tắc từ
+`docs/git-github-oriented.md` §CI của P004: (1) lỗi do MÔI TRƯỜNG CI (suite
+cần secret / file gitignore / optional extra không cài trong CI) → skip RÕ
+RÀNG, không skip âm thầm — mỗi suite bị skip in một dòng dạng
+`SKIP (ci): <name> — <lý do>` và liệt kê trong một registry có tên; (2) lỗi
+THẬT → sửa trên cùng nhánh, không được skip. P008 đã cố ý không cài `mcp`
+trong CI từ trước và có suite chỉ chạy khi `mcp` vắng mặt — luật mới không
+đổi điều đó.

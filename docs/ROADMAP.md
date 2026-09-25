@@ -1,13 +1,17 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-09-25, GUI wave 3 decisions resolved. GUI wave 2 (live
-console page) **merged into `main`** via PR #1–#4 (`bedad80`, `00949c4`,
-`56d5114`, `dcf897a`) — measured at `dcf897a`: **1580 passed / 3 skipped**.
-GUI wave 3 (write to a live console) **merged into `main`** via PR #8
-(`68c0982`) — measured at merge: **1761 passed / 3 skipped**. Its debt
-cleanup (D-41, D-50, D-54, four `D-52` minors) is on branch
-`fix/wave3-debt-cleanup`, not yet merged — measured there: **1785 passed /
-3 skipped** at `59b033e`.
+**Last updated:** 2026-09-25, GUI wave 3 decisions resolved and its debt
+cleanup merged. GUI wave 2 (live console page) **merged into `main`** via
+PR #1–#4 (`bedad80`, `00949c4`, `56d5114`, `dcf897a`) — measured at
+`dcf897a`: **1580 passed / 3 skipped**. GUI wave 3 (write to a live
+console) **merged into `main`** via PR #8 (`68c0982`) — measured at merge:
+**1761 passed / 3 skipped**. Its debt cleanup (D-41, D-50, D-54, four
+`D-52` minors), plus a same-day fresh-review fix round that refuted
+D-41 v1's C1/I1/I2/M1 findings, **merged into `main`** via PR #9
+(`3c2cda9`), CI `test` green — measured there: **1790 passed / 3 skipped**.
+The release exe was rebuilt from `3c2cda9` with C1's decided extras
+(`.[ui,ingest,llm,llm-openai]`) — gap: Settings ▸ Test connection is still
+unexercised from the frozen exe (needs ToanAZ with a real key).
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -83,7 +87,7 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 1 | **Desktop GUI parity** | The six-page sidebar app — Doctor, Overview, Channels, Routing, Diff, and the G2a/G2b Import wizard — replacing the doctor-only window: every page backed by the same query/advisory layer as the CLI, all user-facing strings through `texts.py`. Tasks 0–13 of the wave-1 plan. | **1342** (1 skipped) |
 | GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
 | GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). *(That last clause described wave 2 and stopped being true on 2026-09-18: GUI 3 below opens one door, `wing_parser/ui/live_write.py`, and the same test now enforces an allow-list of that one module instead of a blanket ban. The Console page itself is still read-only — the write is reached from Doctor.)* Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; merged into `main` 2026-09-17 via PR #1–#4 (`dcf897a`). | **1580** (3 skipped), measured at `dcf897a` |
-| GUI 3 | **Write to a live console** | The Doctor page's **Repair** button can now reach the desk, one OSC leaf per transmission: three apply levels (Manual / Delayed / Immediate) behind a per-connection arming step, a countdown with Apply now / +5 s / Cancel (expiry applies), read-back reporting that moves the scene three different ways (sent / clamped / no reply), and a session ledger with per-row Revert and a sequential reverse-order Revert all. `net set/toggle/push/get` stay CLI-only, deliberately; the read-only AST scan became an **allow-list of one module** (`tests/test_ui_live_is_read_only.py`). Tasks 1-15 of the wave-3 plan, plus D-41 (partial) and D-42. **Merged into `main` 2026-09-18 via PR #8 (`68c0982`).** All 19 decisions pending ToanAZ (three open questions, fifteen `W…` rulings, C1) were answered 2026-09-25 — see §5 item 9 below and `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6. Debt riding along (D-41 fully closed, D-50, D-54, four `D-52` minors) landed on branch `fix/wave3-debt-cleanup`, **not yet merged**. **Real-desk acceptance (spec §9.3) still pending** — scheduled as its own session; runbook at `docs/acceptance/2026-09-wave3-desk-acceptance.md`. **The release exe has not been rebuilt** with C1's decided extras yet. | **1761** (3 skipped) at merge (`68c0982`); **1785** (3 skipped) on `fix/wave3-debt-cleanup` at `59b033e` |
+| GUI 3 | **Write to a live console** | The Doctor page's **Repair** button can now reach the desk, one OSC leaf per transmission: three apply levels (Manual / Delayed / Immediate) behind a per-connection arming step, a countdown with Apply now / +5 s / Cancel (expiry applies), read-back reporting that moves the scene three different ways (sent / clamped / no reply), and a session ledger with per-row Revert and a sequential reverse-order Revert all. `net set/toggle/push/get` stay CLI-only, deliberately; the read-only AST scan became an **allow-list of one module** (`tests/test_ui_live_is_read_only.py`). Tasks 1-15 of the wave-3 plan, plus D-41 (partial) and D-42. **Merged into `main` 2026-09-18 via PR #8 (`68c0982`).** All 19 decisions pending ToanAZ (three open questions, fifteen `W…` rulings, C1) were answered 2026-09-25 — see §5 item 9 below and `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6. Debt riding along (D-41 fully closed, D-50, D-54, four `D-52` minors) **merged into `main` 2026-09-25 via PR #9 (`3c2cda9`)**, plus a same-day fresh-review fix round that refuted D-41 v1's C1/I1/I2/M1 findings. **Real-desk acceptance (spec §9.3) still pending** — scheduled as its own session; runbook at `docs/acceptance/2026-09-wave3-desk-acceptance.md`. **The release exe was rebuilt from `main` (`3c2cda9`) on 2026-09-25** with C1's decided extras (`anthropic`, `openai`) — gap: Settings ▸ Test connection is not yet exercised from the frozen exe. | **1761** (3 skipped) at merge (`68c0982`); **1790** (3 skipped) on `main` at `3c2cda9` after PR #9 |
 
 ### Where each one's paperwork lives
 
@@ -276,7 +280,9 @@ supply. **Do not guess them.**
       (extra `llm`) and `openai` (extra `llm-openai`), so Settings ▸ Test
       connection and Import's AI assist work from the exe; the build venv
       installs `.[ui,ingest,llm,llm-openai]`, `mcp` stays excluded. **The
-      exe has not been rebuilt with these extras yet.**
+      exe was rebuilt from `main` (`3c2cda9`) on 2026-09-25 with these
+      extras** — gap: Settings ▸ Test connection is not yet exercised from
+      the frozen exe (needs ToanAZ with a real key).
    4. **Spec §9.3's acceptance list against the real desk** (WING-GIAQUY,
       `192.168.128.28`, WING-Edit connected throughout) — **still not run**,
       scheduled as its own session when ToanAZ is at the desk. Runbook:
