@@ -21,55 +21,70 @@ serials.
 
 from __future__ import annotations
 
+import threading
+
 from wing_parser.net.schema import SchemaResult
 
 
 class SchemaCache:
     """One remembered walk, or none.
 
-    **I1 (fix round):** `get()`/`clear()` run on the GUI thread, like the
-    rest of `ConsolePage`'s state -- but `set()` is called from
-    `live_controller._schema_for`, which runs INSIDE `discover`/`pull`,
-    which run on a `FunctionWorker` thread (`workers.py`), not the GUI
-    thread. A slow, cancelled or timed-out walk started against one
-    connection can still be running when the operator disconnects and
-    connects to a different desk; without a guard, that walk's late
-    `set()` would overwrite the new connection's schema (or plant a
-    schema where none should exist yet) with the OLD desk's leaves.
+    **I1 (fix round):** exactly which thread calls what --
+    `get()`/`clear()` run on the GUI thread, as part of `ConsolePage`'s
+    own state (`_connected`/`_disconnected`, and reading a cached schema
+    back out); `generation()` and `set()` run on the `FunctionWorker`
+    thread (`workers.py`) that `discover`/`pull` actually execute on,
+    called from `live_controller._schema_for` -- `generation()` right
+    before that thread starts its own walk, `set()` after the walk
+    returns. A walk started against one connection can still be running
+    on its worker thread when the operator disconnects and reconnects to
+    a different desk on the GUI thread; without a guard, that walk's
+    late `set()` would overwrite the new connection's schema with the
+    OLD desk's leaves.
 
-    `_generation` closes that: every `clear()` -- called on every
-    connect and disconnect (`console_page.py`) -- bumps it, and `set()`
-    only writes when the generation it is handed still matches current.
-    A caller captures `generation()` right before it starts its own walk
-    and hands it back to `set()` once that walk returns; a walk that
-    starts under generation N and finishes after `clear()` has moved the
-    cache to N+1 writes nothing. Reading/comparing a plain `int` and
-    reassigning a reference are each a single GIL-protected step, so this
-    check-then-write needs no lock.
+    A generation counter alone is not enough: `set()`'s "compare, then
+    write" is two separate steps, and the GIL can switch threads BETWEEN
+    them -- `clear()` running on the GUI thread right after the
+    comparison passes but before the assignment would still let a stale
+    schema land immediately after a clear. `_lock` (a plain
+    `threading.Lock`) makes every method below one atomic unit instead,
+    so no interleaving of `get`/`set`/`clear`/`generation` across the two
+    threads can produce that outcome. Every `clear()` -- called on every
+    connect and disconnect -- bumps `_generation`; `set()` only writes
+    when the generation it is handed still matches current, so a walk
+    that started under generation N and finishes after `clear()` has
+    moved the cache to N+1 writes nothing.
     """
 
     def __init__(self) -> None:
         self._schema: SchemaResult | None = None
         self._generation = 0
+        self._lock = threading.Lock()
 
     def generation(self) -> int:
-        """Capture this before starting a walk; hand it back to `set()`."""
-        return self._generation
+        """Capture this (worker thread) before starting a walk; hand it
+        back to `set()` once that walk returns."""
+        with self._lock:
+            return self._generation
 
     def get(self) -> SchemaResult | None:
-        return self._schema
+        """GUI thread only."""
+        with self._lock:
+            return self._schema
 
     def set(self, schema: SchemaResult, generation: int) -> None:
-        """Write only if `generation` is still current -- see class
-        docstring (I1). A stale write is silently dropped, not an error:
-        the walk it came from is simply no longer relevant to anything
-        on screen."""
-        if generation == self._generation:
-            self._schema = schema
+        """Worker thread. Write only if `generation` is still current --
+        see class docstring (I1). A stale write is silently dropped, not
+        an error: the walk it came from is simply no longer relevant to
+        anything on screen."""
+        with self._lock:
+            if generation == self._generation:
+                self._schema = schema
 
     def clear(self) -> None:
-        """A new connection lifecycle (connect OR disconnect): drop the
-        schema and bump the generation, so a walk still running under
-        the old one can never write here again."""
-        self._schema = None
-        self._generation += 1
+        """GUI thread only. A new connection lifecycle (connect OR
+        disconnect): drop the schema and bump the generation, so a walk
+        still running under the old one can never write here again."""
+        with self._lock:
+            self._schema = None
+            self._generation += 1
