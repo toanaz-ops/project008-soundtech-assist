@@ -33,7 +33,7 @@ def leaf_parts(path: str) -> list[str]:
     segments = path.split(".")
     if segments[0] != ROOT or len(segments) < 2:
         raise ValueError(
-            f"{path!r}: not an {ROOT} leaf path -- only ae_data leaves map "
+            f"{path!r}: not an {ROOT} leaf path -- only {ROOT} leaves map "
             f"to an OSC address (W2)"
         )
     rest = segments[1:]
