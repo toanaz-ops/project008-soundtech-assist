@@ -189,10 +189,11 @@ class SentLedger(QWidget):
 
     def _end_run(self) -> None:
         if self._skipped:
-            self.progress_label.setText(" ".join((
-                self.progress_label.text(),
-                text("console.write.revert_skipped").format(
-                    skipped=self._skipped))).strip())
+            skipped_line = text("console.write.revert_skipped").format(
+                skipped=self._skipped,
+                plural="" if self._skipped == 1 else "s")
+            self.progress_label.setText(
+                " ".join((self.progress_label.text(), skipped_line)).strip())
         self._queue = None
         self.stop_button.setEnabled(False)
         self.run_finished.emit()                     # W14

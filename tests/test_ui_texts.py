@@ -338,11 +338,30 @@ def test_every_write_placeholder_is_filled_by_someone():
     allowed = {
         "name", "model", "serial", "host", "error", "address", "seconds",
         "remaining", "value", "desk", "file", "after", "readback", "done", "total",
-        "skipped",
+        "skipped", "plural",
     }
     for key, value in WRITE_TEXTS.items():
         fields = {f for _, f, _, _ in string.Formatter().parse(value) if f}
         assert fields <= allowed, f"{key} names {fields - allowed}"
+
+
+def test_revert_skipped_reads_as_a_sentence_singular_and_plural():
+    """Was `"Skipped {skipped} the desk never described."` -- missing a
+    noun and unreadable. The caller (`changes_ledger._end_run`) supplies
+    `plural` from the count; this pins both shapes."""
+    from wing_parser.ui.texts import text
+
+    template = text("console.write.revert_skipped")
+    one = template.format(skipped=1, plural="")
+    many = template.format(skipped=3, plural="s")
+    assert one == (
+        "Skipped 1 row: the desk never said what it held before, so "
+        "there is nothing to put back."
+    )
+    assert many == (
+        "Skipped 3 rows: the desk never said what it held before, so "
+        "there is nothing to put back."
+    )
 
 
 def test_no_write_key_collides_with_an_existing_one():
