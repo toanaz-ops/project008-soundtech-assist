@@ -56,8 +56,11 @@ DATAS = [
 # Optional extras this build deliberately does not carry. The tool is
 # for venues where the network is unreliable or absent, but Settings
 # does perform user-initiated provider calls (the Test connection
-# button), so the anthropic SDK is NOT excluded -- only mcp, pytest
-# and the web engine are.
+# button), so BOTH provider SDKs -- `anthropic` (extra `llm`) and
+# `openai` (extra `llm-openai`) -- are deliberately bundled, per
+# ToanAZ's C1 decision 2026-09-25: the release venv installs
+# `.[ui,ingest,llm,llm-openai]`. Only `mcp`, pytest and the web engine
+# are excluded.
 EXCLUDES = ["mcp", "pytest", "PySide6.QtWebEngineCore"]
 
 analysis = Analysis(
