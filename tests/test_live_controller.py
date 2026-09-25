@@ -27,12 +27,14 @@ from wing_parser.net.identity import (
     parse_identity,
     query_identity,
 )
+from wing_parser.net.schema import walk_schema
 from wing_parser.net.snapshot import SnapshotResult, take_snapshot
 from wing_parser.net.watch import poller
 from wing_parser.net.watch.list import WatchList, build_watch_list
 from wing_parser.ui.live_controller import (
     REAL,
     EmptyReadError,
+    SchemaCache,
     Transport,
     connect,
     discover,
@@ -193,6 +195,58 @@ def test_discover_reports_the_families_the_walk_could_not_resolve():
     assert found.strips == {"ch": 1}
 
 
+def test_discover_walks_once_with_no_cache_and_pull_reuses_it_via_the_cache():
+    """D-41: the seam (`schema=`) already existed; this is the caller
+    that actually hands one in. No `cache` -> unchanged, one walk per
+    call. A shared `SchemaCache` -> the first of discover/pull to run
+    walks once and the other reuses it -- one walk for the round trip."""
+    desk = FakeDesk(
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+        strips={"ch": 1},
+    )
+
+    discover(HOST, desk.transport())
+    pull(HOST, desk.transport())
+    assert desk.walks == [HOST, HOST], "no cache: each call walks on its own"
+
+    desk.walks.clear()
+    cache = SchemaCache()
+    discover(HOST, desk.transport(), cache=cache)
+    pull(HOST, desk.transport(), cache=cache)
+    assert desk.walks == [HOST], "shared cache: only the first call walked"
+
+
+def test_pull_then_discover_shares_the_cache_the_other_way_round():
+    """The reverse order (D-41's "vice versa"): whichever of the two
+    walks FIRST populates the cache, regardless of which one that is."""
+    desk = FakeDesk(
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+        strips={"ch": 1},
+    )
+    cache = SchemaCache()
+
+    pull(HOST, desk.transport(), cache=cache)
+    discover(HOST, desk.transport(), cache=cache)
+
+    assert desk.walks == [HOST]
+
+
+def test_a_cache_never_walks_the_transport_that_does_not_ask_for_one():
+    """A `cache` object that already holds nothing MUST NOT be touched by
+    a caller that omits it -- two independent connections sharing no
+    `SchemaCache` must never see each other's walk."""
+    desk = FakeDesk(
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+        strips={"ch": 1},
+    )
+    cache = SchemaCache()
+
+    discover(HOST, desk.transport(), cache=cache)
+    assert desk.walks == [HOST]
+    discover(HOST, desk.transport())          # no cache: walks again
+    assert desk.walks == [HOST, HOST]
+
+
 def test_real_transport_names_only_read_only_entry_points():
     assert tuple(field.name for field in dataclasses.fields(Transport)) == (
         "identity",
@@ -200,6 +254,7 @@ def test_real_transport_names_only_read_only_entry_points():
         "snapshot",
         "client",
         "watch",
+        "walk_schema",
     )
     assert REAL.identity is query_identity
     assert REAL.walk is build_watch_list
@@ -208,6 +263,9 @@ def test_real_transport_names_only_read_only_entry_points():
     # The poller is the fifth: `GeneratorWorker` drains it on a thread
     # and must not import `net` itself, so the seam names it here (S7.3).
     assert REAL.watch is poller.watch
+    # D-41's sixth: the shape walk `walk`/`snapshot` otherwise run
+    # internally, named explicitly so a `SchemaCache` can share one.
+    assert REAL.walk_schema is walk_schema
     # Frozen: `REAL` is one module-level object every page shares, so a
     # write path must not be assignable onto it after import.
     with pytest.raises(dataclasses.FrozenInstanceError):

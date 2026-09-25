@@ -22,6 +22,7 @@ from wing_parser.net.identity import WingIdentity
 # `_place` is private, and imported anyway: it is the ae/ce nesting rule
 # net S2.2 defines, and a double that re-implemented it could drift from
 # the real `take_snapshot` while still passing its own tests.
+from wing_parser.net.schema import SchemaResult
 from wing_parser.net.snapshot import SNAPSHOT_TYPE_ID, SnapshotResult, _place
 from wing_parser.net.watch import poller
 from wing_parser.net.watch.list import WatchList
@@ -109,6 +110,10 @@ class FakeDesk:
     readbacks  : dict[str, Any]             -- address -> what the desk answers a
                  read-back with; a missing key means "what was sent", and the
                  sentinel `_ABSENT` means the desk did not answer at all
+    walks      : list[str]                  -- one entry per actual schema walk
+                 (D-41): `_walk`/`_snapshot` only append here when called with
+                 `schema=None` -- a caller that already holds one (a
+                 `SchemaCache` round trip) is not walking again
     """
 
     def __init__(
@@ -128,6 +133,7 @@ class FakeDesk:
         self.calls: list[tuple[str, int]] = []
         self.sets: list[tuple[str, Any, bool]] = []
         self.readbacks: dict[str, Any] = dict(readbacks) if readbacks else {}
+        self.walks: list[str] = []
 
     def transport(self):
         """The `live_controller.Transport` wrapping this desk.
@@ -146,6 +152,7 @@ class FakeDesk:
             # faked is the desk, and `poller.watch` reaches it only
             # through `client()` above.
             watch=poller.watch,
+            walk_schema=self._walk_schema,
         )
 
     def write_transport(self):
@@ -197,24 +204,43 @@ class FakeDesk:
             raise self.identity
         return self.identity
 
-    def _walk(self, host: str) -> WatchList:
+    def _walk_schema(self, host: str) -> SchemaResult:
+        """`net.schema.walk_schema`, from the desk's own fields.
+
+        The one place `self.walks` grows (D-41): both `_walk` and
+        `_snapshot` call this only when THEY were not already handed a
+        schema, mirroring the real `build_watch_list`/`take_snapshot`
+        rule -- so a test can assert a Discover/Pull round trip walked
+        once, not twice, by reading `len(desk.walks)`.
+        """
+        self.walks.append(host)
+        return SchemaResult(
+            leaves={address: "s" for address in self.leaves},
+            unresolved_nodes=self.unresolved,
+        )
+
+    def _walk(self, host: str, *, schema: SchemaResult | None = None) -> WatchList:
         """`build_watch_list`, from the desk's own fields.
 
         Deliberately does not go through `client()`: the real walk reads
         the console's SHAPE, and letting it spend rounds here would put
         entries in `calls` that a watch test then has to skip past.
         """
+        if schema is None:
+            self._walk_schema(host)
         return WatchList(
             addresses=tuple(self.leaves),
             unresolved=self.unresolved,
             strips=dict(self.strips),
         )
 
-    def _snapshot(self, host: str) -> SnapshotResult:
+    def _snapshot(self, host: str, *, schema: SchemaResult | None = None) -> SnapshotResult:
         """`take_snapshot`: every leaf read through `client()`, then
         decoded and filed by the real `leaf_value`/`_place`, so a pulled
         `RawScene` is assembled by exactly the rule a real pull uses
         (`snapshot.py:87-113`). Costs one `("get_many", n)` in `calls`."""
+        if schema is None:
+            self._walk_schema(host)
         batch = self.client(host).get_many(tuple(self.leaves))
         ae: dict[str, Any] = {}
         ce: dict[str, Any] = {}

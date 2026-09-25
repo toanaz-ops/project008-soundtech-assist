@@ -9,14 +9,12 @@ What this one adds is the only thing on the page producing a `Session`:
   reason that error exists (`live_controller.py:44-57`). A partial read
   is usable, so it loads, and `incomplete_report` becomes a *persistent*
   banner: a scene that is not the whole desk must never look complete.
-* **The scene it holds is the window's too** (task 13 ruling): this
-  panel produces sessions AND consumes one, because `ConsolePage`
-  forwards `MainWindow._refresh`'s fan-out (`main_window.py:176-178`)
-  -- a stale scene-loaded line beside a live Export is worse than the
-  coupling. The pulled session comes back round that loop, so
-  re-adopting the SAME object changes nothing; only a different one
-  clears the banner, a fact about how this panel read the desk rather
-  than about the window's scene.
+* **The scene it holds is the window's too** (task 13 ruling): this panel
+  produces sessions AND consumes one, because `ConsolePage` forwards
+  `MainWindow._refresh`'s fan-out (`main_window.py:176-178`) -- a stale
+  scene-loaded line beside a live Export is worse than the coupling. The
+  pulled session comes back round that loop, so re-adopting the SAME
+  object changes nothing; only a different one clears the banner.
 * **Export lives in `live_export.py`** -- the `exported` signal stays.
 
 The window is reached by signal only (`live_wiring.py`) -- this module
@@ -25,13 +23,10 @@ must not import `main_window` -- so those three signals are the contract.
 
 from __future__ import annotations
 
+from functools import partial
+
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-)
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout
 
 from wing_parser.ui import live_controller, live_export
 from wing_parser.ui.live_call_panel import CallPanel
@@ -46,11 +41,15 @@ class SnapshotPanel(CallPanel):
     exported = Signal(str)              # the path Export actually wrote
     doctor_requested = Signal()         # Open Doctor clicked (D16)
 
-    def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
+    def __init__(self, parent=None, *, transport=None, timeout=None,
+                 schema_cache=None) -> None:
         super().__init__(parent, transport=transport, timeout=timeout)
         self._host = ""
         self._identity = None
         self._session = None
+        #: D-41: shared with the page's DiscoveryPanel when the page hands
+        #: one in -- `None` (the default) walks exactly as before.
+        self._schema_cache = schema_cache
 
         self.pull_button = QPushButton(text("console.pull"))
         self.cancel_button = QPushButton(text("console.cancel"))
@@ -141,13 +140,14 @@ class SnapshotPanel(CallPanel):
             self.status_label.setText(text("console.no_address"))
             return False
         return self._run_call(
-            "snapshot", live_controller.pull, self._host, self._transport,
+            "snapshot",
+            partial(live_controller.pull, cache=self._schema_cache),
+            self._host, self._transport,
             primary=self.pull_button, cancel_button=self.cancel_button,
             status=self.status_label,
             running=text("console.pulling").format(host=self._host),
             cancelled=text("console.pull_cancelled"),
-            # ButtonRunner formats this with `seconds` alone
-            # (call_button.py:85), so the host goes in first.
+            # ButtonRunner formats with `seconds` alone (call_button.py:85).
             timeout_text=text("console.pull_timeout").replace(
                 "{host}", self._host),
             busy_text=text("console.pull_busy"),
