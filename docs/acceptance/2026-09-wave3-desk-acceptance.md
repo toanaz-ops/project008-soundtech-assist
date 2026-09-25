@@ -30,7 +30,7 @@ step 4.
 | # | Pre-condition | Done? |
 |---|---|---|
 | P1 | **The desk is NOT running a show.** Confirm with whoever is at the venue before touching anything. | ☐ |
-| P2 | **The release exe is rebuilt from `main` after the debt-cleanup branch (`fix/wave3-debt-cleanup`) merges**, from a build venv with the C1 extras installed: `pip install -e ".[ui,ingest,llm,llm-openai]"` (see `README.md` "Building a standalone .exe" and `memory/MEMORY.md`'s 2026-08-24 pitfall entry, updated 2026-09-25). Confirm the exe is alive after launch (`Start-Process dist\wing-ui.exe`, wait ~6 s, check the process is still running) before going further. | ☐ |
+| P2 | **Use the release exe rebuilt 2026-09-25 from `main` at `3c2cda9`** (after PR #9, the debt-cleanup branch, merged), `dist\wing-ui.exe` (71,034,002 bytes), built from a venv with the C1 extras installed: `pip install -e ".[ui,ingest,llm,llm-openai]"` (see `README.md` "Building a standalone .exe" and `memory/MEMORY.md`'s 2026-08-24 pitfall entry, updated 2026-09-25). Confirm the exe is alive after launch (`Start-Process dist\wing-ui.exe`, wait ~6 s, check the process is still running) before going further. | ☐ |
 | P3 | **Baseline identity recorded**, from the CLI, before opening the app: `wing net identity 192.168.128.28`. Write the name/model/serial it prints below — every later "identity matches" check compares against this line, not against memory. | `_______________________` |
 | P4 | **WING-Edit is open and connected** to the same console, and stays that way for the whole session. | ☐ |
 | P5 | A finding is available to repair that maps to rule **G8** (a send to a monitor bus left in POST, `wing_parser/edit/data/repairs.yaml:19-23`) and one that maps to **R1** (a `to: false` boolean repair, `repairs.yaml:52-55`), in whatever scene is pulled from the desk. Pull the scene first (step 1) and open Doctor to confirm both are present before relying on them in later steps. | ☐ |
@@ -133,6 +133,15 @@ step 4.
 |---|---|
 | Throughout every step above, check WING-Edit periodically. | It stayed connected and usable the entire session — never displaced by the app under test. |
 | Screenshot every affected surface from the exe (Doctor with the apply-level bar, the Arm dialog, the Delayed countdown, the Changes dock with all three badge types, the sent ledger mid Revert-all). | Screenshots exist and **ToanAZ has looked at every one of them** — this is wave 1's standing gate: no surface counts as done until he has. |
+
+**Result:** ☐ PASS ☐ FAIL
+**Notes:** _______________________________________________
+
+### 9 — C1 check: Settings ▸ Test connection
+
+| Action | Expected result |
+|---|---|
+| Open Settings, paste ToanAZ's own API key for a configured provider (Anthropic or the OpenAI-compatible one), click **Test connection**. | The frozen exe's bundled SDK (`anthropic` and/or `openai`, per C1) loads and the call either succeeds or fails on the key/network — never on `ModuleNotFoundError`. This proves the bundled SDK actually loads inside the frozen exe built 2026-09-25 from `3c2cda9` (gap noted in `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6.3). |
 
 **Result:** ☐ PASS ☐ FAIL
 **Notes:** _______________________________________________
