@@ -1,8 +1,13 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-09-17, GUI wave 2 (live console page) **merged into
-`main`** via PR #1–#4 (`bedad80`, `00949c4`, `56d5114`, `dcf897a`) —
-measured at `dcf897a`: **1580 passed / 3 skipped**
+**Last updated:** 2026-09-25, GUI wave 3 decisions resolved. GUI wave 2 (live
+console page) **merged into `main`** via PR #1–#4 (`bedad80`, `00949c4`,
+`56d5114`, `dcf897a`) — measured at `dcf897a`: **1580 passed / 3 skipped**.
+GUI wave 3 (write to a live console) **merged into `main`** via PR #8
+(`68c0982`) — measured at merge: **1761 passed / 3 skipped**. Its debt
+cleanup (D-41, D-50, D-54, four `D-52` minors) is on branch
+`fix/wave3-debt-cleanup`, not yet merged — measured there: **1785 passed /
+3 skipped** at `59b033e`.
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -78,7 +83,7 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 1 | **Desktop GUI parity** | The six-page sidebar app — Doctor, Overview, Channels, Routing, Diff, and the G2a/G2b Import wizard — replacing the doctor-only window: every page backed by the same query/advisory layer as the CLI, all user-facing strings through `texts.py`. Tasks 0–13 of the wave-1 plan. | **1342** (1 skipped) |
 | GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
 | GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). *(That last clause described wave 2 and stopped being true on 2026-09-18: GUI 3 below opens one door, `wing_parser/ui/live_write.py`, and the same test now enforces an allow-list of that one module instead of a blanket ban. The Console page itself is still read-only — the write is reached from Doctor.)* Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; merged into `main` 2026-09-17 via PR #1–#4 (`dcf897a`). | **1580** (3 skipped), measured at `dcf897a` |
-| GUI 3 | **Write to a live console** | The Doctor page's **Repair** button can now reach the desk, one OSC leaf per transmission: three apply levels (Manual / Delayed / Immediate) behind a per-connection arming step, a countdown with Apply now / +5 s / Cancel (expiry applies), read-back reporting that moves the scene three different ways (sent / clamped / no reply), and a session ledger with per-row Revert and a sequential reverse-order Revert all. `net set/toggle/push/get` stay CLI-only, deliberately; the read-only AST scan became an **allow-list of one module** (`tests/test_ui_live_is_read_only.py`). Tasks 1-15 of the wave-3 plan, plus D-41 (partial) and D-42. **Not merged — on `feat/gui-write-wave3`, real-desk acceptance pending.** | **1761** (3 skipped), measured at `f56813c` |
+| GUI 3 | **Write to a live console** | The Doctor page's **Repair** button can now reach the desk, one OSC leaf per transmission: three apply levels (Manual / Delayed / Immediate) behind a per-connection arming step, a countdown with Apply now / +5 s / Cancel (expiry applies), read-back reporting that moves the scene three different ways (sent / clamped / no reply), and a session ledger with per-row Revert and a sequential reverse-order Revert all. `net set/toggle/push/get` stay CLI-only, deliberately; the read-only AST scan became an **allow-list of one module** (`tests/test_ui_live_is_read_only.py`). Tasks 1-15 of the wave-3 plan, plus D-41 (partial) and D-42. **Merged into `main` 2026-09-18 via PR #8 (`68c0982`).** All 19 decisions pending ToanAZ (three open questions, fifteen `W…` rulings, C1) were answered 2026-09-25 — see §5 item 9 below and `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6. Debt riding along (D-41 fully closed, D-50, D-54, four `D-52` minors) landed on branch `fix/wave3-debt-cleanup`, **not yet merged**. **Real-desk acceptance (spec §9.3) still pending** — scheduled as its own session; runbook at `docs/acceptance/2026-09-wave3-desk-acceptance.md`. **The release exe has not been rebuilt** with C1's decided extras yet. | **1761** (3 skipped) at merge (`68c0982`); **1785** (3 skipped) on `fix/wave3-debt-cleanup` at `59b033e` |
 
 ### Where each one's paperwork lives
 
@@ -146,8 +151,8 @@ The sequenced execution order for everything below lives in
 history, not a plan:** all three of its steps landed (G2b, the live-watch
 acceptance, the GUI). Since it was written the GUI has run three cycles of
 its own — waves 1/1b, 2 and 3, each on its own spec in §3's paperwork table
-— and **wave 4 is not scoped yet**: what it should contain is one of the
-questions waiting on ToanAZ in §5.9.
+— and **wave 4 is not scoped yet**: ToanAZ named three candidate directions
+to brainstorm from on 2026-09-25, listed in §5 item 10.
 
 G2a deliberately contained **no model call**. It reads a spreadsheet through a
 mapping file ToanAZ writes by hand, and resolves Vietnamese performer terms
@@ -240,15 +245,18 @@ supply. **Do not guess them.**
    pending his review: §9.3's acceptance steps against the real desk
    (WING-GIAQUY), and the exe's Console page screenshot.
 
-9. **GUI wave 3 writes to a live desk, and nothing in it has been seen by
-   ToanAZ or by a real console.** This is the first wave whose failure mode
-   is a wrong value at a venue rather than a wrong report on a screen, so
-   the review list is longer than wave 2's. Three things are open:
+9. **GUI wave 3 writes to a live desk.** This was the first wave whose
+   failure mode is a wrong value at a venue rather than a wrong report on a
+   screen, so its review list was longer than wave 2's. **Resolved
+   2026-09-25 — ToanAZ answered all of it in chat:**
    1. **Three design questions that change what gets built** (spec §11):
       may Immediate be used while `WATCHING`, or only when merely
       `CONNECTED`? In Delayed, should Revert all use one countdown for the
       whole batch instead of one per parameter? Should arm state survive a
-      reconnect to the *same serial*?
+      reconnect to the *same serial*? **Answer: all three keep their
+      default** — Immediate allowed while `WATCHING`; one countdown per
+      parameter in a Delayed Revert all; arm does not survive a reconnect
+      (re-arm every time).
    2. **Fifteen `W…` rulings the orchestrator made for him** — W1 (write
       allowed in `CONNECTED` and `WATCHING`), W2 (`osc_address`, with
       `ce_data`/`$ctl` refused), W3 (always `set`, never `toggle`), W3b
@@ -260,15 +268,37 @@ supply. **Do not guess them.**
       (Cancel inside a Revert-all stops the whole run), W13 (a revert moves
       the scene back, so the finding reappears; the journal patch is NOT
       undone), W14 (no level change mid-run), W15 (a Delayed run is stopped
-      by the countdown's Cancel). Each is listed with what changes if he
-      overturns it in the spec's §5 table.
-   3. **Spec §9.3's acceptance list against the real desk** (WING-GIAQUY,
-      `192.168.128.28`, WING-Edit connected throughout) — none of it run,
-      because it needs the console. Plus the screenshots: wave 1's gate says
-      no surface is done until ToanAZ has looked at them.
-   Full list with evidence, plus the seven rulings made during
-   implementation that are not in the spec:
-   `docs/handoff/2026-09-18-gui-write-wave3-complete.md`.
+      by the countdown's Cancel). **Answer: all fifteen approved as
+      written**, relabelled `FIXED (ToanAZ 2026-09-25)` in the spec's §5
+      table.
+   3. **C1 — does the release exe carry the model provider SDKs?**
+      **Answer: yes** — the release exe shall bundle both `anthropic`
+      (extra `llm`) and `openai` (extra `llm-openai`), so Settings ▸ Test
+      connection and Import's AI assist work from the exe; the build venv
+      installs `.[ui,ingest,llm,llm-openai]`, `mcp` stays excluded. **The
+      exe has not been rebuilt with these extras yet.**
+   4. **Spec §9.3's acceptance list against the real desk** (WING-GIAQUY,
+      `192.168.128.28`, WING-Edit connected throughout) — **still not run**,
+      scheduled as its own session when ToanAZ is at the desk. Runbook:
+      `docs/acceptance/2026-09-wave3-desk-acceptance.md`. Plus the
+      screenshots: wave 1's gate says no surface is done until ToanAZ has
+      looked at them.
+   Full list with evidence, the seven rulings made during implementation
+   that are not in the spec, and the 2026-09-25 answers:
+   `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6.
+
+10. **Wave 4 is not scoped or brainstormed yet.** ToanAZ named three
+    candidate directions on 2026-09-25 to start that brainstorm from —
+    none of this is committed work:
+    1. A durable write log across sessions, plus a post-show report
+       export. This will deliberately overturn W8 above when it lands (W8
+       says exactly one new persisted key and no write log).
+    2. Better cue-sheet import: the vocabulary seed from §5.2 above, and a
+       live DeepSeek smoke test run inside the app rather than only from
+       the CLI.
+    3. An advisory layer that encodes ToanAZ's own mixing judgement more
+       directly.
+    Invoke `superpowers:brainstorming` on these before writing a spec.
 
 ## 6. Waiting on hardware — NOTHING
 

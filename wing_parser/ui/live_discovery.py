@@ -23,6 +23,8 @@ breadth-first loop with no callback seam, and this wave does not touch
 
 from __future__ import annotations
 
+from functools import partial
+
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -45,10 +47,14 @@ class DiscoveryPanel(CallPanel):
     discovered = Signal(object)     # the WatchList the walk returned
     rerun_requested = Signal()      # Rerun clicked, ahead of the retry
 
-    def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
+    def __init__(self, parent=None, *, transport=None, timeout=None,
+                 schema_cache=None) -> None:
         super().__init__(parent, transport=transport, timeout=timeout)
         self._host = ""
         self._has_unresolved = False
+        #: D-41: shared with the page's SnapshotPanel when the page hands
+        #: one in -- `None` (the default) walks exactly as before.
+        self._schema_cache = schema_cache
 
         self.discover_button = QPushButton(text("console.discover"))
         self.cancel_button = QPushButton(text("console.cancel"))
@@ -131,6 +137,13 @@ class DiscoveryPanel(CallPanel):
     # -- internals --------------------------------------------------------
 
     def _rerun(self) -> None:
+        """C1 (D-41 fix round): force a fresh walk. `_schema_for` already
+        refuses to CACHE an incomplete schema, so `rerun_button` (only
+        enabled while `_has_unresolved`) should never find one waiting --
+        this clears it anyway, defensively, and bumps the generation so a
+        walk still in flight from an earlier click cannot land late."""
+        if self._schema_cache is not None:
+            self._schema_cache.clear()
         self.rerun_requested.emit()
         self._start()
 
@@ -139,7 +152,9 @@ class DiscoveryPanel(CallPanel):
             self.status_label.setText(text("console.no_address"))
             return False
         return self._run_call(
-            "walk", live_controller.discover, self._host, self._transport,
+            "walk",
+            partial(live_controller.discover, cache=self._schema_cache),
+            self._host, self._transport,
             primary=self.discover_button, cancel_button=self.cancel_button,
             status=self.status_label,
             running=text("console.discovering"),

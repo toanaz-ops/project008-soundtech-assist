@@ -2,86 +2,72 @@
 
 Mirrors `import_controller.py` -- every decision the live page needs is a
 plain function, testable headless -- with one addition it does not need:
-a seam. `Transport` names the five `net/` entry points the page uses, so
+a seam. `Transport` names the six `net/` entry points the page uses, so
 this module is the ONLY place under `wing_parser/ui/` that says `net`,
 and a test can drive the whole page against an in-memory desk
 (`tests/fake_desk.py`) with no socket anywhere (spec S7.1, S9.1).
 
-That the seam names five *read-only* calls and no others is how spec S8
+That the seam names six *read-only* calls and no others is how spec S8
 makes a write impossible in this wave: `net/write.py` has no way in.
 
 Failures pass through untouched: `query_identity`'s `TimeoutError`
 naming the host and the 2.0 s it waited (`identity.py:83`), and its
 `IdentityError`, a `ValueError` (`identity.py:29`), reach the page as
 they are -- the `import_controller.read_with` precedent.
+
+**D-41**: `discover`/`pull` take an optional `cache: SchemaCache`
+(`live_schema_cache.py`). Omitted, both walk exactly as before -- the
+default is unchanged. Handed one, whichever of the two runs FIRST for a
+connection walks once (via the sixth entry, `walk_schema`) and remembers
+it; the other reuses it via `net/`'s own `schema=` parameter instead of
+paying for a second walk. The cache is the caller's (`ConsolePage`'s) to
+clear -- neither function here writes to one it was not explicitly handed.
 """
 
 from __future__ import annotations
 
-import json
-import re
 from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 from typing import Callable, Iterator
 
 from wing_parser.net.client import WingClient
-from wing_parser.net.export import to_snap_json
 from wing_parser.net.identity import WingIdentity, query_identity
+from wing_parser.net.schema import SchemaResult, walk_schema
 from wing_parser.net.snapshot import SnapshotResult, take_snapshot
 from wing_parser.net.watch import poller
 from wing_parser.net.watch.events import Change
 from wing_parser.net.watch.list import WatchList, build_watch_list
-from wing_parser.ui.session import Session
+from wing_parser.ui.live_errors import EmptyReadError
+from wing_parser.ui.live_schema_cache import SchemaCache
+from wing_parser.ui.live_session_build import session_from_snapshot, suggested_name
 
-# `wing://<host>` is the prefix `net/snapshot.py:106` stamps onto every
-# scene read off a console, and `RawScene.source` is the only record a
-# `SnapshotResult` keeps of which desk it came from -- so it is the one
-# place `session_from_snapshot` can recover the host its filename needs.
-_LIVE_SOURCE = "wing://"
-
-
-class EmptyReadError(OSError):
-    """A pull that reached the desk's address and read nothing at all.
-
-    Ported from `cli/commands.py:47-62`, where it is a printed line and a
-    `None` return. It has to be an *error* rather than an empty result:
-    OSC is UDP, so an unreachable host raises nothing -- every leaf times
-    out, `take_snapshot` faithfully returns a valid empty scene, and the
-    advisory engine truthfully finds nothing wrong with it. `doctor
-    --live` showed "No findings." for a desk it had never reached, until
-    this guard existed. An `OSError` because that is the vocabulary every
-    other live-read failure already speaks (`commands.py:25-28`). Both
-    counts, never one: `walk_schema` runs first and the leaf reads run
-    after it, so `nodes` can be 0 while every leaf timed out.
-    """
-
-    def __init__(self, host: str, nodes: int, leaves: int) -> None:
-        super().__init__(
-            f"no console answered at {host}: read nothing at all "
-            f"({nodes} top-level node(s) and {leaves} leaf/leaves did not "
-            f"answer). Check the address and that the desk is on the network."
-        )
-        self.host = host
-        self.nodes = nodes
-        self.leaves = leaves
+__all__ = [
+    "REAL", "Transport", "EmptyReadError", "SchemaCache",
+    "connect", "discover", "pull", "incomplete_report",
+    "session_from_snapshot", "suggested_name",
+]
 
 
 @dataclass(frozen=True)
 class Transport:
-    """The five net/ entry points the Console page uses, injectable.
+    """The six net/ entry points the Console page uses, injectable.
 
     `watch` is the poller's loop, read-only like the rest (it only calls
     `get_many` on the client it is handed, `poller.py:36,51`), and named
     here because `GeneratorWorker` (S7.3), which drains it on a thread,
     must not say `net` either.
+
+    `walk_schema` (D-41) is the shape walk `walk`/`snapshot` otherwise run
+    internally -- named here so a caller that wants to SHARE one walk
+    between them (a `SchemaCache`, see `discover`/`pull`) can trigger it
+    explicitly instead of paying for it a second time.
     """
 
     identity: Callable[[str], WingIdentity]
-    walk: Callable[[str], WatchList]
-    snapshot: Callable[[str], SnapshotResult]
+    walk: Callable[..., WatchList]
+    snapshot: Callable[..., SnapshotResult]
     client: Callable[[str], WingClient]
     watch: Callable[..., Iterator[Change]]
+    walk_schema: Callable[[str], SchemaResult]
 
 
 REAL = Transport(
@@ -90,6 +76,7 @@ REAL = Transport(
     snapshot=take_snapshot,
     client=WingClient,
     watch=poller.watch,
+    walk_schema=walk_schema,
 )
 
 
@@ -106,7 +93,43 @@ def connect(host: str, transport: Transport = REAL) -> WingIdentity:
     return transport.identity(host)
 
 
-def discover(host: str, transport: Transport = REAL) -> WatchList:
+def _schema_for(
+    host: str, transport: Transport, cache: SchemaCache | None
+) -> SchemaResult | None:
+    """D-41: `None` when no `cache` is in play -- `discover`/`pull` then
+    walk exactly as before, every call. Given one, its remembered schema
+    (walking once, via `transport.walk_schema`, the first time either
+    caller asks) so the other reuses it instead of paying for a second
+    walk.
+
+    **C1 (fix round):** an INCOMPLETE walk (`unresolved_nodes` non-empty)
+    is used for THIS call but never written to the cache. Caching it
+    would make Rerun -- whose entire purpose is trying again -- replay
+    the exact same partial result forever, and a later Pull would
+    silently inherit the same missing leaves instead of walking fresh
+    the way it did before this cache existed.
+
+    **I1 (fix round):** `cache.generation()` is captured before the walk
+    starts and handed to `cache.set()` afterwards, so a walk that was
+    still running when the operator moved to a different connection
+    (`SchemaCache.clear()` bumps the generation on every connect/
+    disconnect) writes nothing, however late it finishes.
+    """
+    if cache is None:
+        return None
+    schema = cache.get()
+    if schema is not None:
+        return schema
+    generation = cache.generation()
+    schema = transport.walk_schema(host)
+    if not schema.unresolved_nodes:
+        cache.set(schema, generation)
+    return schema
+
+
+def discover(
+    host: str, transport: Transport = REAL, *, cache: SchemaCache | None = None
+) -> WatchList:
     """Walk the console and return the watch list exactly as built.
 
     `build_watch_list` (`watch/list.py:67`) already carries `addresses`,
@@ -115,18 +138,27 @@ def discover(host: str, transport: Transport = REAL) -> WatchList:
     could only lose the unresolved half, which `WatchList` keeps as a
     field rather than an omission precisely so a node that never answered
     stays visible to its caller (`watch/list.py:39-48`).
+
+    `schema` is passed on only when `cache` actually produced one: a
+    `transport.walk` a test swapped in (a plain `def _walk(host)`, no
+    `schema` keyword) must keep working exactly as before `cache` existed.
     """
-    return transport.walk(host)
+    schema = _schema_for(host, transport, cache)
+    return transport.walk(host, schema=schema) if schema is not None else transport.walk(host)
 
 
-def pull(host: str, transport: Transport = REAL) -> SnapshotResult:
+def pull(
+    host: str, transport: Transport = REAL, *, cache: SchemaCache | None = None
+) -> SnapshotResult:
     """Read the whole console, refusing a read that reached nothing.
 
     Whatever the snapshot raises -- `OSError`, `ValueError` -- reaches the
     caller untouched, as everywhere else here. The one thing this adds is
     the failure that raises nothing at all: see `EmptyReadError`.
     """
-    result = transport.snapshot(host)
+    schema = _schema_for(host, transport, cache)
+    result = (transport.snapshot(host, schema=schema) if schema is not None
+              else transport.snapshot(host))
     if not result.raw.ae and not result.raw.ce:
         raise EmptyReadError(
             host, len(result.unresolved_nodes), len(result.unresolved_leaves)
@@ -156,44 +188,5 @@ def incomplete_report(result: SnapshotResult) -> str | None:
     )
 
 
-def suggested_name(identity: WingIdentity | None, host: str) -> str:
-    """What to call a pulled scene: `WING-GIAQUY-20260915-1432.snap`.
-
-    A **bare filename, no directory** (D4): a `path` naming a real file
-    would let a plain Save overwrite something nobody chose. Sanitised
-    at the source (D-43) because `menus.save_as` proposes from this same
-    path (`menus.py:87-89`) and `WingIdentity.name` is whatever somebody
-    typed into the desk -- "FOH/Monitors" would otherwise arrive as a
-    directory. Dot and dash survive: the fallback stays an address.
-    """
-    stamp = datetime.now().strftime("%Y%m%d-%H%M")
-    stem = identity.name if identity is not None else f"wing-{host}"
-    who = re.sub(r"[^\w.\-]", "_", stem)
-    return f"{who}-{stamp}.snap"
-
-
-def session_from_snapshot(
-    result: SnapshotResult,
-    identity: WingIdentity | None,
-    profile: str | None = None,
-) -> tuple[Session, str]:
-    """A pulled scene as an ordinary `Session`, plus the pull-time text.
-
-    The scene goes through `net/export.py`'s serialiser and straight back
-    through `json.loads`, so what the `Session` holds is the same
-    document an opened `.snap` would give it -- which is why Doctor,
-    Overview, Channels, Routing and Diff need to know nothing about
-    consoles.
-
-    The text is returned as well, and it is the *pull-time original*
-    (D3): export must go through `Session.save_as`, which writes the
-    patched document (`session.py:92-96` -> `_document()` at `:43-44`),
-    so writing this string instead would silently drop every repair made
-    after the pull. Only the tests keep it, to prove that difference.
-    """
-    text = to_snap_json(result.raw, identity)
-    host = result.raw.source.removeprefix(_LIVE_SOURCE)
-    session = Session(
-        json.loads(text), Path(suggested_name(identity, host)), profile
-    )
-    return session, text
+# `suggested_name`/`session_from_snapshot` live in `live_session_build.py`
+# now (D-41, headroom) and are re-exported above.

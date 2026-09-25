@@ -18,6 +18,10 @@ build/
 dist/
 junit.xml
 
+# JUnit XML written with --junitxml (D-47/D-54 -- the summary line is
+# unreliable, so tasks read the tally from here instead)
+dist-reports/
+
 # PyInstaller build output; the spec in packaging/ is the source
 *.spec.bak
 # ...except this one, which packaging/make-debug-spec.py generates from

@@ -46,9 +46,11 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
+from wing_parser.ui.console_wiring import wire_console_page
 from wing_parser.ui.live_connect_bar import ConnectBar
 from wing_parser.ui.live_discovery import DiscoveryPanel
 from wing_parser.ui.live_events_view import LiveEventsView
+from wing_parser.ui.live_schema_cache import SchemaCache
 from wing_parser.ui.live_snapshot import SnapshotPanel
 from wing_parser.ui.live_state import LiveState, allowed_actions, transition
 
@@ -69,9 +71,15 @@ class ConsolePage(QWidget):
     def __init__(self, parent=None, *, transport=None, timeout=None) -> None:
         super().__init__(parent)
         self._state = LiveState.DISCONNECTED
+        #: D-41: the one walk Discover and Pull share for a round trip
+        #: through this page -- cleared on every connect/disconnect, see
+        #: `_connected`/`_disconnected`. Never valid across desks.
+        self._schema_cache = SchemaCache()
         self.connect_bar = ConnectBar(transport=transport, timeout=timeout)
-        self.discovery = DiscoveryPanel(transport=transport, timeout=timeout)
-        self.snapshot = SnapshotPanel(transport=transport, timeout=timeout)
+        self.discovery = DiscoveryPanel(transport=transport, timeout=timeout,
+                                        schema_cache=self._schema_cache)
+        self.snapshot = SnapshotPanel(transport=transport, timeout=timeout,
+                                      schema_cache=self._schema_cache)
         self.events = LiveEventsView(transport=transport)
 
         middle = QHBoxLayout()
@@ -82,7 +90,7 @@ class ConsolePage(QWidget):
         layout.addLayout(middle)
         layout.addWidget(self.events, 1)
 
-        self._wire()
+        wire_console_page(self)
         self._apply_state(LiveState.DISCONNECTED)
 
     # -- what the window drives -------------------------------------------
@@ -106,36 +114,6 @@ class ConsolePage(QWidget):
     def set_consoles(self, consoles) -> None:
         """Offer the remembered addresses, most recent first."""
         self.connect_bar.set_consoles(consoles)
-
-    # -- the wiring, whole -------------------------------------------------
-
-    def _wire(self) -> None:
-        bar, walk = self.connect_bar, self.discovery
-        pull, watch = self.snapshot, self.events
-
-        bar.connect_button.clicked.connect(lambda: self._begun("connect", bar))
-        bar.connected.connect(self._connected)
-        bar.disconnected.connect(lambda: self._fire("disconnect"))
-
-        walk.discover_button.clicked.connect(lambda: self._begun("walk", walk))
-        walk.rerun_button.clicked.connect(lambda: self._begun("walk", walk))
-        walk.discovered.connect(self._discovered)
-
-        pull.pull_button.clicked.connect(lambda: self._begun("pull", pull))
-        pull.session_pulled.connect(self._pulled)
-        pull.exported.connect(self.exported)
-        pull.doctor_requested.connect(self.doctor_requested)
-
-        watch.started.connect(lambda: self._fire("watch"))
-        watch.stopped.connect(lambda: self._fire("stop"))
-        watch.lost.connect(lambda _exc: self._fire("lost"))
-        # Reconnect is offered in `lost` but the handshake is the bar's
-        # (`live_watch_bar.py:10-14`); unconnected it is a dead button.
-        watch.reconnect_requested.connect(self._reconnect)
-
-        for panel in (bar, walk, pull):
-            panel.failed.connect(lambda _exc: self._fire("fail"))
-            panel.cancel_button.clicked.connect(self._cancelled)
 
     # -- the one state -----------------------------------------------------
 
@@ -183,12 +161,23 @@ class ConsolePage(QWidget):
     # -- what the panels report --------------------------------------------
 
     def _connected(self, identity) -> None:
+        # D-41: a fresh connect, even a reconnect to the SAME desk, gets
+        # its own schema -- the tree's shape is live (S2.10), and a stale
+        # walk reused across two connections is worse than one extra walk.
+        self._schema_cache.clear()
         host = self.connect_bar.host()
         self.snapshot.set_identity(identity)
         for panel in (self.discovery, self.snapshot, self.events):
             panel.set_host(host)
         self._fire("ok")
         self.host_connected.emit(host)
+
+    def _disconnected(self) -> None:
+        """D-41: never reuse a schema across desks -- or across the same
+        desk answering a second time, since the shape it walked can be
+        different by then too."""
+        self._schema_cache.clear()
+        self._fire("disconnect")
 
     def _discovered(self, watch_list) -> None:
         self.events.set_watch_list(watch_list)

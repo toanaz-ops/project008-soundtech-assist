@@ -115,10 +115,23 @@ variant from the same edits.
 
 ### Building a standalone `.exe`
 
+The build venv needs every extra the release exe should carry, installed
+**before** running PyInstaller — a venv missing one makes the exe exit
+silently (`console=False` prints nothing; see `packaging/wing-ui-debug.spec`
+for a console build that shows the traceback). The release build installs:
+
 ```powershell
+pip install -e ".[ui,ingest,llm,llm-openai]"
 pip install pyinstaller
 pyinstaller packaging\wing-ui.spec --noconfirm
 ```
+
+`ui` pulls in PySide6 (the app itself), `ingest` pulls in openpyxl (cue-sheet
+import), and `llm`/`llm-openai` pull in the `anthropic` and `openai` SDKs so
+Settings ▸ Test connection and Import's AI assist work from the exe (decided
+2026-09-25). **`mcp` is deliberately excluded** from every release build —
+`packaging/wing-ui.spec`'s own `EXCLUDES` list drops it explicitly, and the
+venv should not have it installed in the first place.
 
 The result is a single `dist\wing-ui.exe` (about 66 MB) with no Python
 installation required on the machine that runs it.

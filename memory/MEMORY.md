@@ -8,11 +8,19 @@ Index of durable knowledge. Newest at the bottom. Read before designing anything
 
 `wing-ui.exe` build xong vẫn chết im lặng (exit 1, console=False nên không in
 lỗi) nếu venv thiếu optional extra. Venv mới = phải cài:
-`pip install -e ".[ui]"` (PySide6) — và nhớ `[ingest]`, `[llm-openai]`.
-Dấu hiệu nhận biết: test UI bị skip trong pytest. Debug exe có terminal:
-`packaging/wing-ui-debug.spec` (console=True) → `dist\wing-ui-debug.exe`.
-Quy trình build bản phát hành: cài đủ extras → `pyinstaller packaging/wing-ui.spec --noconfirm`
-→ Start-Process dist\wing-ui.exe, sleep 6s, kiểm tra process còn sống.
+`pip install -e ".[ui,ingest,llm,llm-openai]"`. Dấu hiệu nhận biết: test UI
+bị skip trong pytest. Debug exe có terminal: `packaging/wing-ui-debug.spec`
+(console=True) → `dist\wing-ui-debug.exe`. Quy trình build bản phát hành:
+cài đủ extras → `pyinstaller packaging/wing-ui.spec --noconfirm` →
+Start-Process dist\wing-ui.exe, sleep 6s, kiểm tra process còn sống.
+**(Cập nhật 2026-09-25, C1 quyết bởi ToanAZ):** bản phát hành PHẢI có cả hai
+SDK model, `anthropic` (extra `llm`) và `openai` (extra `llm-openai`), để
+Settings ▸ Test connection và AI assist trong Import chạy được từ exe — vì
+vậy dòng cài giờ là `.[ui,ingest,llm,llm-openai]`, không phải chỉ `.[ui]` +
+`[ingest]` + `[llm-openai]` như trước (thiếu `llm`/anthropic). `mcp` vẫn cố ý
+KHÔNG cài — `packaging/wing-ui.spec`'s `EXCLUDES` cũng loại nó ra khỏi bundle.
+Exe phát hành hiện tại (tính đến 2026-09-25) CHƯA được build lại với các
+extra này.
 
 ## 2026-08-24 — UI-FIRST LÀ RÀNG BUỘC SỐ 1
 
@@ -127,3 +135,26 @@ Chi tiết: `docs/handoff/2026-09-18-gui-write-wave3-complete.md`.
 **checkout chính**, không trỏ vào worktree — build exe từ worktree mà
 không `pip install -e` lại thì đóng gói nhầm code cũ, im lặng. Kiểm bằng
 `build/wing-ui/Analysis-00.toc`.
+
+## 2026-09-25 — GUI wave 3: ToanAZ đã trả lời cả 19 quyết định treo
+
+Cả 19 mục treo từ wave 3 (3 câu hỏi thiết kế §11, 15 ruling W, C1) đều được
+ToanAZ trả lời trong chat, hầu hết giữ nguyên mặc định — spec §5/§11 và
+handoff §6 đã cập nhật "FIXED (ToanAZ 2026-09-25)". **C1**: exe phát hành
+PHẢI có cả hai SDK model (`anthropic` qua extra `llm`, `openai` qua extra
+`llm-openai`) để Settings ▸ Test connection và Import AI assist chạy được
+từ exe — dòng cài giờ là `.[ui,ingest,llm,llm-openai]` (`mcp` vẫn cố ý loại
+trừ); exe hiện tại CHƯA build lại với các extra này. **Wave 4** (chưa scope,
+chờ brainstorm): (a) sổ ghi bền qua nhiều phiên + xuất báo cáo sau show (sẽ
+lật ngược W8), (b) import cue sheet tốt hơn (seed từ vựng §5.2, live
+DeepSeek smoke trong app), (c) advisory mã hoá gu mix riêng của ToanAZ.
+Nghiệm thu §9.3 trên console thật **vẫn chưa chạy** — runbook mới:
+`docs/acceptance/2026-09-wave3-desk-acceptance.md`.
+
+Nhánh `fix/wave3-debt-cleanup` (chưa merge vào `main`) đóng nợ: **D-54**
+(dist-reports/ vào .gitignore), **D-50** (tách `write_delay_dialog.py` lấy
+lại headroom thật, 200→179 dòng), **D-41** (Console page dùng chung một lần
+walk schema giữa Discover/Pull qua `SchemaCache` mới) đã đóng đầy đủ; D-52
+mục 1/2/5/8 đóng (thông báo lỗi dùng `{ROOT}`, `RevertQueue` dùng deque,
+nhánh chết ở `WriteGate._start` thay bằng `RuntimeError`, `+5s` tại 0 giây
+tiếp tục đếm thay vì đứng im). Suite **1785 passed / 3 skipped** @ `59b033e`.

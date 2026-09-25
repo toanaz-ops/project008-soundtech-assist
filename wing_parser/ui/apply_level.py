@@ -13,6 +13,7 @@ would be a cycle (`live_write` is a `ui/` module too).
 
 from __future__ import annotations
 
+from collections import deque
 from enum import Enum
 from typing import Any, Sequence
 
@@ -63,7 +64,9 @@ class RevertQueue:
     """
 
     def __init__(self, records: Sequence[Any]) -> None:
-        self._pending = list(reversed(list(records)))
+        #: D-52 #2: a deque so `next()` pops the front in O(1) -- a plain
+        #: list's `pop(0)` shifts every remaining element down each call.
+        self._pending: deque[Any] = deque(reversed(records))
         self._total = len(self._pending)
         self._done = 0
         self._stopped = False
@@ -73,7 +76,7 @@ class RevertQueue:
         if self._stopped or not self._pending:
             return None
         self._done += 1
-        return self._pending.pop(0)
+        return self._pending.popleft()
 
     def stop(self) -> None:
         """W12/W15: end the run between parameters. The one already on the

@@ -113,11 +113,13 @@ class SentLedger(QWidget):
 
     # -- reverting -----------------------------------------------------------
 
-    def _revert_one(self, record) -> None:
+    def _route(self, record, **callbacks) -> None:
         write_router.route_revert(
             self._gate, record, getattr(self._window, "_apply_delay", 5),
-            self.window(), transport=self._gate.transport,
-            on_sent=self._reverted)
+            self.window(), transport=self._gate.transport, **callbacks)
+
+    def _revert_one(self, record) -> None:
+        self._route(record, on_sent=self._reverted)
 
     def revert_all(self) -> None:
         """F7: reverse order, sequential, one parameter per transmission.
@@ -152,12 +154,8 @@ class SentLedger(QWidget):
         done, total = self._queue.progress
         self.progress_label.setText(text("console.write.reverting").format(
             done=done, total=total, address=record.address))
-        write_router.route_revert(
-            self._gate, record, getattr(self._window, "_apply_delay", 5),
-            self.window(), transport=self._gate.transport,
-            on_sent=self._step_done,
-            on_error=self._step_failed,
-            on_cancelled=self.stop)                  # W12: Cancel stops the run
+        self._route(record, on_sent=self._step_done, on_error=self._step_failed,
+                    on_cancelled=self.stop)           # W12: Cancel stops the run
 
     def _step_done(self, _patch, record) -> None:
         if record is not None:
@@ -189,10 +187,11 @@ class SentLedger(QWidget):
 
     def _end_run(self) -> None:
         if self._skipped:
-            self.progress_label.setText(" ".join((
-                self.progress_label.text(),
-                text("console.write.revert_skipped").format(
-                    skipped=self._skipped))).strip())
+            skipped_line = text("console.write.revert_skipped").format(
+                skipped=self._skipped,
+                plural="" if self._skipped == 1 else "s")
+            self.progress_label.setText(
+                " ".join((self.progress_label.text(), skipped_line)).strip())
         self._queue = None
         self.stop_button.setEnabled(False)
         self.run_finished.emit()                     # W14

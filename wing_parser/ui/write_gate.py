@@ -125,12 +125,22 @@ class WriteGate(QObject):
                 job.on_error, GateClosed(text("console.write.gate_closed"))),
             timeout=self._timeout,
         )
+        # D-52 #5: `started` is always True here. `WriteQueue._pump` calls
+        # `_start` only when its own `_in_flight` slot is empty, and that
+        # slot is cleared by `_settle_then` -> `_queue.settle()`, which
+        # runs from `CallRunner._settle` only AFTER `_settle` has already
+        # cleared `self._runner._active`. So `self._runner.busy` is always
+        # False the moment `_pump` calls back in here -- this `WriteGate`
+        # is the runner's only caller. An old requeue-on-False branch lived
+        # here (removed 2026-09-25); besides being unreachable, it was
+        # also wrong -- `settle()` then `enqueue()` re-enters `_start`
+        # synchronously while the same runner would still be busy, which
+        # recurses rather than actually waiting. Fail loudly instead of
+        # reintroducing that: if this assumption is ever wrong, something
+        # now lets two writes past `WriteQueue`'s single in-flight
+        # guarantee (W10), and that is worse to hide than to crash on.
         if not started:
-            # The runner is busy with something the queue does not know
-            # about. Requeue rather than drop: W10 says neither of two rapid
-            # Immediate repairs is lost.
-            self._queue.settle()
-            self._queue.enqueue(job)
+            raise RuntimeError("WriteGate's own CallRunner was busy at _start")
 
     def _settle_then(self, callback, payload) -> None:
         """Exactly one terminal path per write, and the queue hears it

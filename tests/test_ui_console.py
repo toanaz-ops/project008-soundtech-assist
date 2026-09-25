@@ -497,11 +497,18 @@ def vu_result(vu_path):
 
 
 def _replaying(result):
-    """A `Transport` whose `snapshot` hands back `result` and nothing else."""
+    """A `Transport` whose `snapshot` hands back `result` and nothing else.
+
+    `**_kw` (not just `host`): D-41's `pull` may call this with `schema=`
+    when the page it is driving wired a real `SchemaCache` -- a double
+    standing in for `Transport.snapshot` has to tolerate exactly the
+    keyword the real one does, or `pull` raises `TypeError` instead of
+    reaching the outcome this test wants to drive.
+    """
     from tests.fake_desk import FakeDesk
 
     return dataclasses.replace(
-        FakeDesk().transport(), snapshot=lambda host: result)
+        FakeDesk().transport(), snapshot=lambda host, **_kw: result)
 
 
 def _snapshot_panel(transport, *, identity=None, host=HOST):
@@ -803,7 +810,7 @@ def test_export_and_open_doctor_survive_a_later_failed_pull(
 
     answers = iter([vu_result, FakeDesk().transport().snapshot(HOST)])
     transport = dataclasses.replace(
-        FakeDesk().transport(), snapshot=lambda host: next(answers))
+        FakeDesk().transport(), snapshot=lambda host, **_kw: next(answers))
     panel = _snapshot_panel(transport)
     window = _wired(monkeypatch, panel)
 
@@ -1416,7 +1423,7 @@ def test_a_walk_arms_the_watch_and_a_failed_one_reddens_the_page(
                   and page.events._watch_list is not None)
     assert page.events.bar.start_button.isEnabled()
 
-    def refuse(host):
+    def refuse(host, **_kw):
         raise OSError("no route to host")
 
     page.discovery._transport = dataclasses.replace(
@@ -1426,6 +1433,151 @@ def test_a_walk_arms_the_watch_and_a_failed_one_reddens_the_page(
     assert page.connect_bar.lamp.property("azStyle") == "danger"
     assert page.connect_bar.connect_button.isEnabled(), (
         "error reconnects in one click, like lost")
+
+
+def _schema_share_desk():
+    """A desk small enough to read fast, and shaped for BOTH Discover
+    (any leaf works) and Pull (`/ch/1/name` is a real `ae_data` leaf, so
+    the read is non-empty and never raises `EmptyReadError`)."""
+    from tests.fake_desk import FakeDesk
+    from wing_parser.net.codec import OscMessage
+
+    return FakeDesk(
+        identity=_identity(), strips={"ch": 1},
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+    )
+
+
+def test_a_round_trip_through_discover_and_pull_walks_the_schema_once(
+        qt_app, settle):
+    """D-41: the `net/` seam (`schema=`) already existed; this proves the
+    Console page actually uses it. Discover then Pull -- and the reverse
+    order -- must cost the desk ONE walk for the whole round trip, not
+    one inside each call, driven through the real buttons against
+    `FakeDesk` (`desk.walks`, D-41's own counter)."""
+    from wing_parser.ui.live_state import LiveState
+
+    desk = _schema_share_desk()
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None)
+    page.snapshot.pull_button.click()
+    assert settle(lambda: page.snapshot._session is not None)
+    assert desk.walks == [HOST], "Discover then Pull must share one walk"
+
+    # The reverse order, on its own fresh connection: Pull walks first,
+    # Discover must reuse it.
+    desk2 = _schema_share_desk()
+    page2 = _page(desk2)
+    page2.connect_bar.address.setCurrentText(HOST)
+    page2.connect_bar.connect_button.click()
+    assert settle(lambda: page2.state is LiveState.CONNECTED)
+
+    page2.snapshot.pull_button.click()
+    assert settle(lambda: page2.snapshot._session is not None)
+    page2.discovery.discover_button.click()
+    assert settle(lambda: page2.events._watch_list is not None)
+    assert desk2.walks == [HOST], "Pull then Discover must share it too"
+
+
+def test_rerun_after_an_incomplete_discover_actually_walks_again(qt_app, settle):
+    """C1 (D-41 fix round, CRITICAL): an incomplete first walk must never
+    be cached. Rerun exists precisely to try again -- a `_schema_for`
+    that cached the incomplete `SchemaResult` anyway would make Rerun
+    (and a later Pull) replay the SAME unresolved families forever,
+    exactly the failure the banner's own comment (2026-08-23) describes
+    D-41 must not reintroduce."""
+    from tests.fake_desk import FakeDesk
+    from wing_parser.net.codec import OscMessage
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(
+        identity=_identity(), strips={"ch": 1}, unresolved=("/mtx",),
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+    )
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None)
+    assert desk.walks == [HOST]
+    assert page.discovery.banner.isVisibleTo(page.discovery)
+    assert page.events._watch_list.unresolved == ("/mtx",)
+
+    # The desk resolves /mtx by the time Rerun is clicked.
+    desk.unresolved = ()
+    desk.leaves["/mtx/1/name"] = OscMessage("/mtx/1/name", "s", ("MTX1",))
+
+    page.discovery.rerun_button.click()
+    assert settle(lambda: not page.discovery.banner.isVisibleTo(page.discovery))
+    assert desk.walks == [HOST, HOST], "Rerun must walk again, not replay the cached one"
+    assert page.events._watch_list.unresolved == ()
+    assert "/mtx/1/name" in page.events._watch_list.addresses
+
+
+def test_pull_after_an_incomplete_discover_walks_fresh_not_the_stale_schema(
+        qt_app, settle):
+    """C1's other half: before D-41, Pull always walked fresh. A cache
+    populated by an INCOMPLETE Discover must not change that -- Pull
+    must never inherit the same partial leaf list."""
+    from tests.fake_desk import FakeDesk
+    from wing_parser.net.codec import OscMessage
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(
+        identity=_identity(), strips={"ch": 1}, unresolved=("/mtx",),
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+    )
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None)
+    assert desk.walks == [HOST]
+
+    page.snapshot.pull_button.click()
+    assert settle(lambda: page.snapshot._session is not None)
+    assert desk.walks == [HOST, HOST], (
+        "Pull must walk fresh, not reuse the incomplete schema")
+
+
+def test_the_schema_cache_is_dropped_on_disconnect_and_on_reconnect(
+        qt_app, settle):
+    """D-41: a schema must never outlive its own connection. Disconnect
+    drops it, and so does the NEXT connect, even to the same address --
+    the tree's shape is live (S2.10), so a stale walk carried into a new
+    connection is worse than paying for one more."""
+    from wing_parser.ui.live_state import LiveState
+
+    desk = _schema_share_desk()
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None)
+    assert desk.walks == [HOST]
+    assert page._schema_cache.get() is not None
+
+    page.connect_bar.disconnect_button.click()
+    assert page._schema_cache.get() is None, "disconnect must drop the cache"
+
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+    assert page._schema_cache.get() is None, "a fresh connect must drop it too"
+
+    page.snapshot.pull_button.click()
+    assert settle(lambda: page.snapshot._session is not None)
+    assert desk.walks == [HOST, HOST], "the second connection walked fresh"
 
 
 def test_the_page_re_emits_all_three_window_signals(

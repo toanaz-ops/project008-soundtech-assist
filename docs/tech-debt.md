@@ -524,16 +524,58 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     touches `wing_parser/net/`, which is why wave 2 did not do it (its own
     rule: a UI consumer does not modify `net/client.py`, `codec.py` or
     `schema.py`).
-  - status: partially closed (task 15a) -- the `net/` seam now exists:
-    `take_snapshot` and `build_watch_list` both accept a keyword-only
-    `schema: SchemaResult | None = None` and skip their internal
-    `walk_schema` call when one is supplied; default (omitted) behaviour
-    is unchanged and pinned by test. **The UI has not adopted it** --
-    `console_page.py` (199), `live_controller.py` (199) and
-    `live_snapshot.py` (199) are all at the ceiling wave 3 forbids growing,
-    so passing Discover's schema into a later Pull needs a file split
-    first. Not marked closed -- the second of the two walks is still
-    being paid at a venue.
+  - status: closed 2026-09-25 (debt-cleanup branch) -- the UI now adopts
+    the seam. `Transport` gained a sixth entry, `walk_schema`; a new
+    `wing_parser/ui/live_schema_cache.SchemaCache` remembers one walk;
+    `discover`/`pull` take an optional `cache:` that, when given, walks
+    once via `transport.walk_schema` and shares the result the other
+    way. `ConsolePage` owns one `SchemaCache`, hands it to its
+    `DiscoveryPanel` and `SnapshotPanel` (`functools.partial` binds
+    `cache=` at the call site), and clears it on every disconnect and
+    every fresh connect -- a schema is never reused across connections,
+    per S2.10. `live_events_view.py` needed no change: Start Watch only
+    ever consumes Discover's `WatchList`, it never walks on its own.
+    Headroom needed splitting `console_page.py` (199 -> 188, `_wire`
+    moved to `console_wiring.wire_console_page`), `live_controller.py`
+    (199 -> 168, `EmptyReadError` moved to `live_errors.py`,
+    `suggested_name`/`session_from_snapshot` moved to
+    `live_session_build.py`, both re-exported) and `live_snapshot.py`
+    (stayed at 199, a docstring trim plus one import line collapsed).
+    Proven with a real `ConsolePage` driven through Connect/Discover/
+    Pull/Disconnect against `FakeDesk` (`tests/test_ui_console.py`:
+    `test_a_round_trip_through_discover_and_pull_walks_the_schema_once`,
+    `test_the_schema_cache_is_dropped_on_disconnect_and_on_reconnect`),
+    counting `FakeDesk.walks` (new: `_walk`/`_snapshot` only append there
+    when NOT already handed a schema). Verified:
+    `python -m pytest -q -p no:faulthandler --junitxml=dist-reports/suite.xml`
+    -> 1785 passed / 3 skipped.
+  - fix round 2026-09-25 (same-day fresh review found four real bugs in
+    the above): **CRITICAL** an incomplete walk (`unresolved_nodes`
+    non-empty) was being cached same as a clean one, so Rerun -- whose
+    whole purpose is trying again -- replayed the same partial result
+    forever, and a Pull right after an incomplete Discover silently
+    inherited its missing leaves; `_schema_for` now uses an incomplete
+    walk for the current call only, never caches it, and
+    `DiscoveryPanel._rerun` clears the cache defensively too.
+    **IMPORTANT** `SchemaCache.set()` actually runs on the `discover`/
+    `pull` worker thread, not the GUI thread as the class first claimed --
+    an orphaned slow/cancelled/timed-out walk against one desk could
+    write into the cache after a reconnect to a different one;
+    `SchemaCache` gained a generation counter (bumped by `clear()`) and
+    `_schema_for` now captures it before walking and hands it to `set()`,
+    which drops a write whose generation has since moved on.
+    **IMPORTANT** `FakeDesk._walk`/`_snapshot` ignored the `schema=` they
+    were handed and always read the desk's live fields, so a stale
+    schema could never actually show up in a page test; both now derive
+    from `schema.leaves`/`.unresolved_nodes`, mirroring
+    `build_watch_list`/`take_snapshot`. **MINOR**
+    `PreflightRead.failed()` left `_expired=True` and `extend_button`
+    enabled after a failed read that arrived post-expiry, so +5s could
+    resume a countdown for a read that had already failed for good;
+    `failed()` now clears both. Each fix has a test confirmed failing
+    against the pre-fix code first. Verified:
+    `python -m pytest -q -p no:faulthandler --junitxml=dist-reports/suite.xml`
+    -> 1790 passed / 3 skipped.
 
 - **D-42** Quitting the app can wait up to ~5 s for a watch round in flight
   - owner: machine-doable
@@ -753,13 +795,19 @@ same loss that made D1-D18 a rescue job.
   - close: split the pre-flight read (`_read_desk` / `_no_read`) or the
     terminal-state handling out of the dialog before the next change to it;
     `wc -l wing_parser/ui/write_delay_dialog.py`
-  - status: open -- and the prediction came true at task 16. Fixing the
-    undismissable modal (review IMPORTANT 2) needed one more line in
-    `_apply`; it was paid for by moving the "somebody moved the desk" line
-    out to `write_records.mismatch_line` and tightening three docstrings,
-    not by dropping a guard. The file is back at exactly **200**.
-    `changes_ledger.py` went 169 -> **198** in the same round. The next
-    change to either pays this debt first.
+  - status: closed 2026-09-25 (debt-cleanup branch) -- split for real
+    headroom this time, not just enough for the next line. New
+    `wing_parser/ui/write_delay_support.py` holds `PreflightRead` (was
+    `_read_desk`/`_no_read`), `WriteOutcome` (was `_done`/`_failed`) and
+    `cancel()` (was `_cancel`), each mutating the dialog instance it is
+    given, same behaviour. `write_delay_dialog.py`: 200 -> 179 (168
+    right after the split, +11 for the D-52 #8 fix that landed in the
+    same session). `changes_ledger.py` also got a small win: its two
+    identical `write_router.route_revert` call sites collapsed behind a
+    `_route()` helper, 198 -> 197. Verified:
+    `python -m pytest -q -p no:faulthandler tests/test_ui_write_dialogs.py
+    tests/test_ui_changes_send.py tests/test_ui_house_style.py
+    tests/test_ui_live_is_read_only.py` -> 99 passed, 0 failed.
 
 - **D-51** Two of the three result badges have no glyph in the shipped font
   - owner: machine-doable
@@ -802,9 +850,13 @@ same loss that made D1-D18 a rescue job.
     by the implementing agents and, except where marked, not independently
     re-verified here.)*
     1. `net/address.py`'s error text hardcodes `"ae_data"` beside `{ROOT}`
-       (task 1).
+       (task 1). **Closed 2026-09-25** -- both mentions in `leaf_parts`'s
+       `ValueError` now read `{ROOT}`.
     2. `RevertQueue.next` pops index 0 of a list, O(n) (task 2) --
        `wing_parser/ui/apply_level.py:76`. Re-verified by reading.
+       **Closed 2026-09-25** -- `_pending` is a `collections.deque` now,
+       `next()` calls `popleft()`; order, `progress` and `remaining` are
+       unchanged and covered by the existing tests.
     3. `live_write.REAL._read` has no unit test (task 3); it must therefore
        be on the section 9.3 real-desk acceptance list.
     4. ~~`tests/test_live_state.py:70` re-imports `pytest` inside a
@@ -815,6 +867,14 @@ same loss that made D1-D18 a rescue job.
        was wrong. Nothing to do.
     5. An unreachable requeue branch in `WriteGate._start` (task 8) --
        `wing_parser/ui/write_gate.py:120-125`. Re-verified by reading.
+       **Closed 2026-09-25** -- proved unreachable (`WriteQueue._pump` only
+       calls `_start` when its own in-flight slot is empty, which clears
+       only after `CallRunner._settle` already cleared `_active`, and this
+       `WriteGate`'s runner has no other caller); the branch was also
+       WRONG on top of being dead (it would recurse into `_start` while
+       the runner was still busy, not actually wait). Replaced with a
+       `RuntimeError` naming the assumption -- `WriteQueue._pump` already
+       catches and propagates a raising `start()`.
     6. `tests/test_ui_state_store.py`'s geometry test fails **only** under
        `QT_QPA_PLATFORM=offscreen` (task 8, pre-existing).
     7. The step-5 red-mutation demo was skipped for the classifier (task 9).
@@ -822,8 +882,15 @@ same loss that made D1-D18 a rescue job.
        pre-flight read, and a gate-closed path leaves buttons
        enabled-but-inert (task 10). **Second half fixed 2026-09-18 (task 16,
        review IMPORTANT 2):** a gate-closed path now CLOSES the dialog, so
-       there are no enabled-but-inert buttons left to be stuck behind. The
-       `+5 s`-at-zero half is untouched.
+       there are no enabled-but-inert buttons left to be stuck behind.
+       **First half closed 2026-09-25:** per spec F5 ("+5 s (extends the
+       remainder, unbounded presses)"), `+5 s` at zero now clears
+       `_expired` and restarts `_timer`, resuming the countdown from 5s
+       rather than sitting inert until the read lands and applies
+       immediately with none of the extra time actually bought. TDD:
+       `test_plus_five_resumes_a_countdown_held_at_zero_awaiting_the_read`
+       (`tests/test_ui_write_dialogs.py`), confirmed failing on the
+       unfixed code by temporarily stashing the fix and re-running it.
     9. `ImmediateWrite` submits `desk_before=None` on a failed pre-flight
        (task 11; plan-mandated), and `_LevelBox` raises on a non-`ApplyLevel`
        string. **Half-answered 2026-09-18 (task 16, review CRITICAL 1):** the
@@ -834,11 +901,13 @@ same loss that made D1-D18 a rescue job.
     10. The end-to-end revert-all test asserts order but not strictly "the
         second did not start before the first settled" (task 13);
         serialisation is proven by a separate base-round mutation test.
-  - close: triage as its own pass -- several are one-line fixes, and (6) is a
-    real blind spot in how this suite is run. Read the source lines out of
-    `.superpowers/sdd/2026-09-17-gui-write-wave3/progress.md` while that file
-    still exists.
-  - status: open
+  - close: (3), (6), (7), (9) second half and (10) still need triage --
+    (3) and parts of (9)/(10) need a real desk (§9.3) or a larger
+    behaviour decision. Read the source lines out of
+    `.superpowers/sdd/2026-09-17-gui-write-wave3/progress.md` while that
+    file still exists.
+  - status: partially closed 2026-09-25 (items 1, 2, 5, 8) -- items 3, 4
+    (n/a), 6, 7, 9, 10 remain open
 
 - **D-53** W3b's warning never reached `repairs.yaml`
   - owner: machine-doable
@@ -878,7 +947,10 @@ same loss that made D1-D18 a rescue job.
     before it was closed, and exactly what a careless `git add -A` sweeps up.
   - close: add `dist-reports/` to `.gitignore` beside the other build
     output; `git check-ignore -v dist-reports/suite.xml`
-  - status: open
+  - status: closed 2026-09-25 (debt-cleanup branch) -- added at
+    `.gitignore:23`, under the `junit.xml` line and above the PyInstaller
+    block. Verified: `git check-ignore -v dist-reports/suite.xml` prints
+    `.gitignore:23:dist-reports/`.
 
 ---
 

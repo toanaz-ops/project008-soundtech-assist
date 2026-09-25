@@ -100,7 +100,8 @@ WRITE_TEXTS: dict[str, str] = {
         "put back."
     ),
     "console.write.revert_skipped": (
-        "Skipped {skipped} the desk never described."
+        "Skipped {skipped} row{plural}: the desk never said what it held "
+        "before, so there is nothing to put back."
     ),
     "console.write.revert_failed": (
         "The revert run stopped: {error}. The rest were left as they are."
