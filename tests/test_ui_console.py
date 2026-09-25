@@ -1484,6 +1484,71 @@ def test_a_round_trip_through_discover_and_pull_walks_the_schema_once(
     assert desk2.walks == [HOST], "Pull then Discover must share it too"
 
 
+def test_rerun_after_an_incomplete_discover_actually_walks_again(qt_app, settle):
+    """C1 (D-41 fix round, CRITICAL): an incomplete first walk must never
+    be cached. Rerun exists precisely to try again -- a `_schema_for`
+    that cached the incomplete `SchemaResult` anyway would make Rerun
+    (and a later Pull) replay the SAME unresolved families forever,
+    exactly the failure the banner's own comment (2026-08-23) describes
+    D-41 must not reintroduce."""
+    from tests.fake_desk import FakeDesk
+    from wing_parser.net.codec import OscMessage
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(
+        identity=_identity(), strips={"ch": 1}, unresolved=("/mtx",),
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+    )
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None)
+    assert desk.walks == [HOST]
+    assert page.discovery.banner.isVisibleTo(page.discovery)
+    assert page.events._watch_list.unresolved == ("/mtx",)
+
+    # The desk resolves /mtx by the time Rerun is clicked.
+    desk.unresolved = ()
+    desk.leaves["/mtx/1/name"] = OscMessage("/mtx/1/name", "s", ("MTX1",))
+
+    page.discovery.rerun_button.click()
+    assert settle(lambda: not page.discovery.banner.isVisibleTo(page.discovery))
+    assert desk.walks == [HOST, HOST], "Rerun must walk again, not replay the cached one"
+    assert page.events._watch_list.unresolved == ()
+    assert "/mtx/1/name" in page.events._watch_list.addresses
+
+
+def test_pull_after_an_incomplete_discover_walks_fresh_not_the_stale_schema(
+        qt_app, settle):
+    """C1's other half: before D-41, Pull always walked fresh. A cache
+    populated by an INCOMPLETE Discover must not change that -- Pull
+    must never inherit the same partial leaf list."""
+    from tests.fake_desk import FakeDesk
+    from wing_parser.net.codec import OscMessage
+    from wing_parser.ui.live_state import LiveState
+
+    desk = FakeDesk(
+        identity=_identity(), strips={"ch": 1}, unresolved=("/mtx",),
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+    )
+    page = _page(desk)
+    page.connect_bar.address.setCurrentText(HOST)
+    page.connect_bar.connect_button.click()
+    assert settle(lambda: page.state is LiveState.CONNECTED)
+
+    page.discovery.discover_button.click()
+    assert settle(lambda: page.events._watch_list is not None)
+    assert desk.walks == [HOST]
+
+    page.snapshot.pull_button.click()
+    assert settle(lambda: page.snapshot._session is not None)
+    assert desk.walks == [HOST, HOST], (
+        "Pull must walk fresh, not reuse the incomplete schema")
+
+
 def test_the_schema_cache_is_dropped_on_disconnect_and_on_reconnect(
         qt_app, settle):
     """D-41: a schema must never outlive its own connection. Disconnect

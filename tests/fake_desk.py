@@ -220,28 +220,36 @@ class FakeDesk:
         )
 
     def _walk(self, host: str, *, schema: SchemaResult | None = None) -> WatchList:
-        """`build_watch_list`, from the desk's own fields.
+        """`build_watch_list`, from the desk's own fields -- or from
+        `schema` when one is handed in (I2, D-41 fix round): the real
+        `build_watch_list` reads `schema.leaves`/`.unresolved_nodes`
+        (`net/watch/list.py:99,116`), never the live desk, so a stale or
+        cross-desk schema must produce stale/cross-desk addresses here
+        too, or a page test could never catch the bug that reuses one.
 
         Deliberately does not go through `client()`: the real walk reads
         the console's SHAPE, and letting it spend rounds here would put
         entries in `calls` that a watch test then has to skip past.
         """
         if schema is None:
-            self._walk_schema(host)
+            schema = self._walk_schema(host)
         return WatchList(
-            addresses=tuple(self.leaves),
-            unresolved=self.unresolved,
+            addresses=tuple(schema.leaves),
+            unresolved=schema.unresolved_nodes,
             strips=dict(self.strips),
         )
 
     def _snapshot(self, host: str, *, schema: SchemaResult | None = None) -> SnapshotResult:
-        """`take_snapshot`: every leaf read through `client()`, then
+        """`take_snapshot`: every leaf `schema` names (I2 -- the desk's
+        own fields when none was handed in, otherwise exactly what a
+        stale/cross-desk schema carries) read through `client()`, then
         decoded and filed by the real `leaf_value`/`_place`, so a pulled
         `RawScene` is assembled by exactly the rule a real pull uses
-        (`snapshot.py:87-113`). Costs one `("get_many", n)` in `calls`."""
+        (`snapshot.py:87-113,119`). Costs one `("get_many", n)` in
+        `calls`."""
         if schema is None:
-            self._walk_schema(host)
-        batch = self.client(host).get_many(tuple(self.leaves))
+            schema = self._walk_schema(host)
+        batch = self.client(host).get_many(tuple(schema.leaves))
         ae: dict[str, Any] = {}
         ce: dict[str, Any] = {}
         for address, message in batch.replies.items():
@@ -256,6 +264,6 @@ class FakeDesk:
                 path=None,
                 source=f"wing://{host}",
             ),
-            unresolved_nodes=self.unresolved,
+            unresolved_nodes=schema.unresolved_nodes,
             unresolved_leaves=batch.unresolved,
         )

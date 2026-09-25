@@ -100,13 +100,30 @@ def _schema_for(
     walk exactly as before, every call. Given one, its remembered schema
     (walking once, via `transport.walk_schema`, the first time either
     caller asks) so the other reuses it instead of paying for a second
-    walk."""
+    walk.
+
+    **C1 (fix round):** an INCOMPLETE walk (`unresolved_nodes` non-empty)
+    is used for THIS call but never written to the cache. Caching it
+    would make Rerun -- whose entire purpose is trying again -- replay
+    the exact same partial result forever, and a later Pull would
+    silently inherit the same missing leaves instead of walking fresh
+    the way it did before this cache existed.
+
+    **I1 (fix round):** `cache.generation()` is captured before the walk
+    starts and handed to `cache.set()` afterwards, so a walk that was
+    still running when the operator moved to a different connection
+    (`SchemaCache.clear()` bumps the generation on every connect/
+    disconnect) writes nothing, however late it finishes.
+    """
     if cache is None:
         return None
     schema = cache.get()
-    if schema is None:
-        schema = transport.walk_schema(host)
-        cache.set(schema)
+    if schema is not None:
+        return schema
+    generation = cache.generation()
+    schema = transport.walk_schema(host)
+    if not schema.unresolved_nodes:
+        cache.set(schema, generation)
     return schema
 
 

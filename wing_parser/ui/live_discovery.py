@@ -137,6 +137,13 @@ class DiscoveryPanel(CallPanel):
     # -- internals --------------------------------------------------------
 
     def _rerun(self) -> None:
+        """C1 (D-41 fix round): force a fresh walk. `_schema_for` already
+        refuses to CACHE an incomplete schema, so `rerun_button` (only
+        enabled while `_has_unresolved`) should never find one waiting --
+        this clears it anyway, defensively, and bumps the generation so a
+        walk still in flight from an earlier click cannot land late."""
+        if self._schema_cache is not None:
+            self._schema_cache.clear()
         self.rerun_requested.emit()
         self._start()
 

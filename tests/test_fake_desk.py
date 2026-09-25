@@ -142,6 +142,36 @@ def test_transport_builds_the_four_callables_from_the_desks_own_fields():
         )
 
 
+def test_walk_and_snapshot_derive_from_a_supplied_schema_not_live_leaves():
+    """I2 (D-41 fix round): a schema someone hands in (a `SchemaCache`
+    round trip) must determine what `_walk`/`_snapshot` see -- mirroring
+    `build_watch_list`/`take_snapshot`, which read `schema.leaves` rather
+    than re-deriving from the desk. Without this, a stale or cross-desk
+    schema can never actually show up against this double, and the C1/I1
+    regression tests would not be real."""
+    from wing_parser.net.schema import SchemaResult
+
+    desk = FakeDesk(
+        leaves={
+            "/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",)),
+            "/ch/2/name": OscMessage("/ch/2/name", "s", ("SNARE",)),
+        },
+    )
+    # A schema from an earlier, smaller/incomplete walk -- as if it were
+    # reused here instead of a fresh one.
+    stale = SchemaResult(leaves={"/ch/1/name": "s"}, unresolved_nodes=("/mtx",))
+
+    walked = desk.transport().walk("HOST", schema=stale)
+    assert walked.addresses == ("/ch/1/name",), "must come from schema, not desk.leaves"
+    assert walked.unresolved == ("/mtx",)
+
+    pulled = desk.transport().snapshot("HOST", schema=stale)
+    assert pulled.raw.ae == {"ch": {"1": {"name": "KICK"}}}, "only the schema's leaf was read"
+    assert pulled.unresolved_nodes == ("/mtx",)
+    # No new walk counted -- a schema was already supplied both times.
+    assert desk.walks == []
+
+
 def test_transport_identity_raises_the_exception_the_desk_was_given():
     refused = TimeoutError("no WING? reply from 10.0.0.9:2222 within 2.0s")
     desk = FakeDesk(identity=refused)

@@ -450,6 +450,30 @@ def test_plus_five_resumes_a_countdown_held_at_zero_awaiting_the_read(
     assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
 
 
+def test_a_read_that_fails_after_expiry_clears_expired_and_kills_extend(
+        qt_app, settle):
+    """M1 (D-41 fix round): expiry can hold at 0 waiting for the read
+    (previous two tests) -- and that read can still come back FAILED
+    rather than landing late. `PreflightRead.failed` used to leave
+    `_expired=True` and `extend_button` enabled, so pressing +5s
+    afterwards would resume a countdown for a read that has already
+    failed for good: it counts down, finds Apply still disabled, sets
+    `_expired` back to True and shows "reading..." again -- forever,
+    for a read that will never land. `failed()` must clear `_expired`
+    and disable `extend_button` so that dead end cannot be re-armed."""
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(), leaves={})   # no answer for OSC
+    dlg, _g, _d = _delay_dialog(qt_app, desk=desk, seconds=1)
+    dlg._tick()                       # reaches 0 before the read lands
+    assert dlg._expired is True
+
+    assert settle(lambda: dlg.desk_label.text() == text("console.write.no_read"))
+    assert dlg._expired is False, "a failed read must clear the held-at-zero flag"
+    assert dlg.extend_button.isEnabled() is False, (
+        "+5s must not be able to resume a countdown for a dead read")
+
+
 def test_a_failed_pre_flight_read_never_applies(qt_app, settle):
     """CRITICAL: a desk that never answers the pre-flight read must leave
     Apply dead for this dialog's life -- expiry included."""

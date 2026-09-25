@@ -41,9 +41,19 @@ class PreflightRead:
             dlg._apply()                  # F5: the countdown was waiting
 
     def failed(self) -> None:
+        """M1 (D-41 fix round): `_expired` and `extend_button` must both
+        be dropped here too, not just `apply_button` -- expiry can beat
+        THIS failure to zero (`_tick` sets `dlg._expired` and stops the
+        timer while still waiting), and a `failed()` that left either one
+        alone let a later +5s resume a countdown for a read that has
+        already failed for good: it would count down, find Apply still
+        disabled, and land right back on `_expired`/"reading..." -- a
+        dead end presented as if it were still in progress."""
         dlg = self._dlg
         dlg.desk_label.setText(text("console.write.no_read"))
         dlg.apply_button.setEnabled(False)
+        dlg.extend_button.setEnabled(False)
+        dlg._expired = False
         dlg._timer.stop()
 
 

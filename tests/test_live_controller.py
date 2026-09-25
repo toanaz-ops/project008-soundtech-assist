@@ -247,6 +247,39 @@ def test_a_cache_never_walks_the_transport_that_does_not_ask_for_one():
     assert desk.walks == [HOST, HOST]
 
 
+def test_a_walk_that_finishes_after_a_reconnect_cannot_overwrite_the_cache():
+    """I1 (D-41 fix round, IMPORTANT): a walk started under one connection
+    can still be running when the operator moves to a different one.
+    `SchemaCache.clear()` (called on every connect/disconnect,
+    `console_page.py`) bumps a generation; `_schema_for` captures it
+    before walking and hands it back to `set()`, so a walk that finishes
+    AFTER a `clear()` happened in the meantime writes nothing -- however
+    late it lands, and regardless of which connection's leaves it
+    carries."""
+    desk = FakeDesk(
+        leaves={"/ch/1/name": OscMessage("/ch/1/name", "s", ("KICK",))},
+        strips={"ch": 1},
+    )
+    cache = SchemaCache()
+
+    def _walk_schema_that_reconnects_mid_walk(host):
+        # Simulate: the operator disconnected and reconnected to a
+        # DIFFERENT desk while this walk was still running on its own
+        # worker thread -- ConsolePage's `_connected`/`_disconnected`
+        # would have called `cache.clear()` by now.
+        cache.clear()
+        return desk._walk_schema(host)
+
+    stale_transport = dataclasses.replace(
+        desk.transport(), walk_schema=_walk_schema_that_reconnects_mid_walk)
+
+    discover(HOST, stale_transport, cache=cache)
+
+    assert cache.get() is None, (
+        "a walk that started before the reconnect must not populate "
+        "the new connection's cache")
+
+
 def test_real_transport_names_only_read_only_entry_points():
     assert tuple(field.name for field in dataclasses.fields(Transport)) == (
         "identity",
