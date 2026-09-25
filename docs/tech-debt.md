@@ -549,6 +549,33 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     when NOT already handed a schema). Verified:
     `python -m pytest -q -p no:faulthandler --junitxml=dist-reports/suite.xml`
     -> 1785 passed / 3 skipped.
+  - fix round 2026-09-25 (same-day fresh review found four real bugs in
+    the above): **CRITICAL** an incomplete walk (`unresolved_nodes`
+    non-empty) was being cached same as a clean one, so Rerun -- whose
+    whole purpose is trying again -- replayed the same partial result
+    forever, and a Pull right after an incomplete Discover silently
+    inherited its missing leaves; `_schema_for` now uses an incomplete
+    walk for the current call only, never caches it, and
+    `DiscoveryPanel._rerun` clears the cache defensively too.
+    **IMPORTANT** `SchemaCache.set()` actually runs on the `discover`/
+    `pull` worker thread, not the GUI thread as the class first claimed --
+    an orphaned slow/cancelled/timed-out walk against one desk could
+    write into the cache after a reconnect to a different one;
+    `SchemaCache` gained a generation counter (bumped by `clear()`) and
+    `_schema_for` now captures it before walking and hands it to `set()`,
+    which drops a write whose generation has since moved on.
+    **IMPORTANT** `FakeDesk._walk`/`_snapshot` ignored the `schema=` they
+    were handed and always read the desk's live fields, so a stale
+    schema could never actually show up in a page test; both now derive
+    from `schema.leaves`/`.unresolved_nodes`, mirroring
+    `build_watch_list`/`take_snapshot`. **MINOR**
+    `PreflightRead.failed()` left `_expired=True` and `extend_button`
+    enabled after a failed read that arrived post-expiry, so +5s could
+    resume a countdown for a read that had already failed for good;
+    `failed()` now clears both. Each fix has a test confirmed failing
+    against the pre-fix code first. Verified:
+    `python -m pytest -q -p no:faulthandler --junitxml=dist-reports/suite.xml`
+    -> 1790 passed / 3 skipped.
 
 - **D-42** Quitting the app can wait up to ~5 s for a watch round in flight
   - owner: machine-doable
