@@ -125,13 +125,24 @@ class DelayedWriteDialog(QDialog):
             self.status_label.setText(text("console.write.reading"))
 
     def _extend(self) -> None:
-        """Adds five to whatever remains, any number of times, no ceiling."""
+        """Adds five to whatever remains, any number of times, no ceiling.
+
+        D-52 #8: also resumes a countdown HELD at 0 awaiting the pre-flight
+        read (`_expired`, set by `_tick`, which stops `_timer` on the way
+        there) -- adding seconds alone would be inert against a stopped
+        timer, and the read landing straight after would still trigger
+        `PreflightRead.landed`'s immediate apply with no time bought at all.
+        """
         self.remaining += EXTEND_SECONDS
         self._total = max(self._total, self.remaining)
         self.bar.setMaximum(self._total)
         self.bar.setValue(self.remaining)
         self.countdown_label.setText(
             text("console.write.countdown").format(remaining=self.remaining))
+        if self._expired:
+            self._expired = False
+            self.status_label.setText("")
+            self._timer.start(1000)
 
     # -- the three ways out -----------------------------------------------
     def _apply(self) -> None:

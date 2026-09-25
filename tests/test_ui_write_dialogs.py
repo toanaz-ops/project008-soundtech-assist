@@ -415,6 +415,41 @@ def test_expiry_holds_at_zero_until_a_pending_read_lands(qt_app, settle):
     assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
 
 
+def test_plus_five_resumes_a_countdown_held_at_zero_awaiting_the_read(
+        qt_app, settle):
+    """D-52 #8: expiry can beat the pre-flight read to zero and HOLDS there
+    (previous test). Pressing +5s in that state used to be inert -- it
+    bumped `remaining` but never restarted the stopped `_timer`, so the
+    read landing right after still applied immediately through
+    `PreflightRead.landed`'s "the countdown was waiting" branch, with none
+    of the extra 5 seconds actually bought. This pins the fix: +5s at zero
+    clears `_expired` and resumes the countdown, so Apply only fires once
+    the resumed timer itself reaches zero."""
+    from wing_parser.ui.write_delay_dialog import EXTEND_SECONDS
+
+    dlg, _g, desk = _delay_dialog(qt_app, seconds=1)
+    dlg._tick()                       # reaches 0 before the read lands
+    assert dlg._expired is True
+    assert dlg._timer.isActive() is False
+
+    dlg.extend_button.click()
+    assert dlg.remaining == EXTEND_SECONDS
+    assert dlg._expired is False
+    assert dlg._timer.isActive() is True
+
+    # the read lands during the resumed countdown -- must NOT apply yet
+    assert settle(lambda: dlg.desk_label.text() != "")
+    assert desk.sets == []
+    assert dlg.apply_button.isEnabled() is True
+
+    results = []
+    dlg.applied.connect(results.append)
+    for _ in range(EXTEND_SECONDS):
+        dlg._tick()
+    assert settle(lambda: results)
+    assert [c[0:2] for c in desk.sets] == [(OSC, "PRE")]
+
+
 def test_a_failed_pre_flight_read_never_applies(qt_app, settle):
     """CRITICAL: a desk that never answers the pre-flight read must leave
     Apply dead for this dialog's life -- expiry included."""
