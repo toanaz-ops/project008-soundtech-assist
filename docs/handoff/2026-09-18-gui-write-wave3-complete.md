@@ -5,10 +5,10 @@ worktree: D:/DEV CAVE EP3/PROJECT008-SOUNDTECH-ASSIST/.claude/worktrees/pull-lat
 feature: GUI wave 3 - per-parameter write to a live WING console
 phase: GUI3
 status: wip
-next: PR #8 open (https://github.com/toanaz-ops/project008-soundtech-assist/pull/8), CI green (run 35340086326, test 2m54s); ToanAZ: look at the 16 screenshots, run 9.3 on WING-GIAQUY, rule on 19 decisions, then Merge
-decisions_pending: 19
+next: PR #8 merged (68c0982). ToanAZ ruled on all 19 decisions 2026-09-25 (see §6 "Resolved 2026-09-25"); remaining: rebuild the release exe with the C1 extras, then run §9.3 on WING-GIAQUY (runbook docs/acceptance/2026-09-wave3-desk-acceptance.md)
+decisions_pending: 0 (resolved 2026-09-25 -- see §6)
 date: 2026-09-18
-updated: 2026-09-18 (task 16 whole-branch review + its fixes)
+updated: 2026-09-25 (all 19 decisions resolved; see §6)
 ---
 
 # GUI wave 3 — write to a live console, task 14 handoff
@@ -251,6 +251,40 @@ the screenshot gate.
 ## 6. Decisions pending a human — 19
 
 Every one is the orchestrator's, made *for* ToanAZ. Nothing here was his.
+
+### Resolved 2026-09-25
+
+ToanAZ answered all 19 items below in chat. Nothing in §6.1–6.4 is still pending;
+the sections are kept as written, as the record of what was asked and why, with
+the answer noted inline.
+
+- **§6.1, the three open questions (spec §11):** all three keep their default —
+  Immediate **allowed** while `WATCHING`; Revert all in Delayed uses **one
+  countdown per parameter**; arm state does **not** survive a reconnect to the
+  same serial (re-arm every time). See the spec's §11 for the full answer text.
+- **§6.2, the fifteen `W…` rulings:** all approved as written. They are
+  relabelled **FIXED (ToanAZ 2026-09-25)** in the spec's §5 table instead of
+  ASSUMED; nothing about their behaviour changed.
+- **§6.3, C1 (build venv and the model SDKs):** decided — the release exe
+  **shall bundle both model SDKs**, `anthropic` (extra `llm`) and `openai`
+  (extra `llm-openai`), so Settings ▸ Test connection and Import's AI assist
+  work from the exe. The build venv installs `.[ui,ingest,llm,llm-openai]`
+  (`mcp` stays excluded, as it already was). **The release exe has not been
+  rebuilt with these extras yet** — the one in `dist\wing-ui.exe` as of this
+  writing still predates the decision.
+- **§6.4, the seven implementation rulings:** all approved as written; no
+  changes requested.
+- **§9.3, real-desk acceptance:** still not run. Scheduled as its own session
+  when ToanAZ is at WING-GIAQUY; nothing here has touched the real desk.
+  Runbook: `docs/acceptance/2026-09-wave3-desk-acceptance.md`.
+- **Wave 4:** not scoped or brainstormed yet. ToanAZ named three candidate
+  directions to brainstorm from when that session happens: (a) a durable write
+  log across sessions plus a post-show report export — this will deliberately
+  overturn W8 above when it lands; (b) better cue-sheet import (the vocabulary
+  seed in ROADMAP §5.2, and a live DeepSeek smoke test run inside the app);
+  (c) an advisory layer that encodes his own mixing judgement. None of these is
+  committed work — they are inputs to the next `superpowers:brainstorming` pass
+  (ROADMAP §5 item 10).
 
 ### 6.1 Three questions that change what gets built (spec §11)
 
