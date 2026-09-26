@@ -93,4 +93,22 @@ IMPORT_TEXTS: dict[str, str] = {
     "import.scene.file_error": "Could not read {path}: {error}",
     "import.scene.file_error_named": "Could not read that .snap: {error}",
     "import.step.scene": "Scene check",
+    "import.lint.title": "Check a show-context file",
+    "import.lint.open": "Check an existing show-context file…",
+    "import.lint.fix": "Fix",
+    "import.lint.close": "Close",
+    "import.lint.confirm": "Write repairs into this file? A .bak copy is made first.",
+    "import.lint.clean": "{count} segments, nothing to repair.",
+    "import.lint.fixed": "fixed {n} item(s):",
+    "import.lint.backup_failed": "Could not write a backup: {error}",
+    "import.try_ai.button": "Try AI on this file",
+    "import.try_ai.cancel": "Cancel",
+    "import.try_ai.running": "Asking the model...",
+    "import.try_ai.cancelled": "Cancelled.",
+    "import.try_ai.timeout": "The model did not answer within {seconds} s.",
+    "import.try_ai.busy": "A model request is already running — cancel it or wait.",
+    "import.try_ai.no_key": (
+        "No model key configured — Try AI needs one. Set it in Settings."
+    ),
+    "import.try_ai.result": "{provider}, {seconds}s",
 }

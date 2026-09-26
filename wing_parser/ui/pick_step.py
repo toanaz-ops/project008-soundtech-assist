@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from wing_parser.ui.lint_dialog import LintDialog
 from wing_parser.ui.texts import text
 
 
@@ -19,6 +20,8 @@ class PickStep(QWidget):
         super().__init__()
         self.choose_button = QPushButton(text("import.pick"))
         self.choose_button.setIcon(qta.icon("fa5s.file-excel"))
+        self.lint_button = QPushButton(text("import.lint.open"))
+        self.lint_button.clicked.connect(self._open_lint)
 
         self.sample_pane = QTextEdit()
         self.sample_pane.setReadOnly(True)
@@ -29,7 +32,11 @@ class PickStep(QWidget):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.choose_button)
+        layout.addWidget(self.lint_button)
         layout.addWidget(group, stretch=1)
+
+    def _open_lint(self) -> None:
+        LintDialog(self).exec()
 
     def show_samples(self, samples) -> None:
         """Each sheet's name and first lines, as a what-is-in-here pane."""

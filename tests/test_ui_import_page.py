@@ -962,3 +962,13 @@ def test_starting_a_second_call_while_one_runs_is_queue_rejected(
         assert page.step_area.currentIndex() == 0
     finally:
         gate.set()
+
+
+def test_the_pick_steps_lint_button_opens_a_lint_dialog(page, monkeypatch):
+    opened = []
+    monkeypatch.setattr(
+        "wing_parser.ui.pick_step.LintDialog",
+        lambda parent: type("D", (), {"exec": lambda self: opened.append(True) or 0})(),
+    )
+    page.pick_step.lint_button.click()
+    assert opened == [True]
