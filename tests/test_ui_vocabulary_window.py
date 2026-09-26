@@ -682,6 +682,97 @@ def test_the_window_has_an_assistant_tab_and_it_shares_the_reload(qt_app, tmp_pa
     assert window.assistant_tab._vocabulary is window.vocabulary
 
 
+# -- fix round 1, I1: a broken provider factory must not abort __init__ ---
+
+
+def test_a_broken_provider_factory_does_not_abort_window_construction(
+        qt_app, monkeypatch, tmp_path, settle):
+    from wing_parser import config as config_module
+    from wing_parser.classifier import provider as provider_module
+    from wing_parser.ui import vocabulary_window
+
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text("api_key: sk-test\n", encoding="utf-8")
+    monkeypatch.setenv(config_module.ENV_VAR, str(knowledge))
+    monkeypatch.delenv(provider_module.ENV_VAR, raising=False)
+
+    def _raising_factory(self):
+        raise ValueError("boom: bad provider.yaml")
+
+    monkeypatch.setattr(
+        vocabulary_window.VocabularyWindow, "_provider_factory", _raising_factory)
+
+    # Must not raise -- the old, eager `self._provider_factory()` call in
+    # _start would have propagated straight out of this constructor.
+    window = vocabulary_window.VocabularyWindow(
+        directory=tmp_path / "vocab", initial_fragments=("x",))
+    assert window.tabs.currentWidget() is window.assistant_tab
+    assert settle(lambda: "boom" in window.assistant_tab.status_label.text())
+
+
+def test_initial_fragments_switches_tab_and_really_starts_a_proposal(
+        qt_app, monkeypatch, tmp_path, settle):
+    from wing_parser import config as config_module
+    from wing_parser.classifier import provider as provider_module
+    from wing_parser.ui import vocabulary_window
+
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "provider.yaml").write_text("api_key: sk-test\n", encoding="utf-8")
+    monkeypatch.setenv(config_module.ENV_VAR, str(knowledge))
+    monkeypatch.delenv(provider_module.ENV_VAR, raising=False)
+
+    class _FakeProvider:
+        def complete_json(self, system, user, schema):
+            import json
+
+            return {"changes_json": json.dumps([
+                {"op": "add", "target": "term", "key": "cajon", "before": None,
+                 "after": {"kinds": ["drums.pad"]}, "reason": "a hand drum"},
+            ])}
+
+    monkeypatch.setattr(
+        vocabulary_window.VocabularyWindow, "_provider_factory", lambda self: _FakeProvider())
+
+    window = vocabulary_window.VocabularyWindow(
+        directory=tmp_path / "vocab", initial_fragments=("tốp múa",))
+    assert window.tabs.currentWidget() is window.assistant_tab
+    # Proof the pipeline really ran end to end (worker -> propose_changes
+    # -> validate -> _show_proposal), not merely that the tab was
+    # selected: the fake provider's one change populates exactly one row.
+    assert settle(lambda: window.assistant_tab.table.rowCount() == 1)
+
+
+# -- fix round 1, I0: the rest of the window keeps working while the
+# assistant is greyed out --------------------------------------------------
+
+
+def test_sets_and_terms_tabs_still_edit_while_the_assistant_is_greyed(
+        qt_app, monkeypatch, tmp_path):
+    from wing_parser import config as config_module
+    from wing_parser.classifier import provider as provider_module
+    from wing_parser.ui import vocabulary_sets_tab
+    from wing_parser.ui.vocabulary_window import VocabularyWindow
+
+    monkeypatch.setenv(config_module.ENV_VAR, str(tmp_path / "knowledge"))
+    monkeypatch.delenv(provider_module.ENV_VAR, raising=False)
+    monkeypatch.chdir(tmp_path)
+    for env in ("ANTHROPIC_API_KEY", "DEEPSEEK_API_KEY"):
+        monkeypatch.delenv(env, raising=False)
+
+    window = VocabularyWindow(directory=tmp_path / "vocab")
+    assert not window.assistant_tab.propose_button.isEnabled()   # greyed: no key
+
+    monkeypatch.setattr(
+        vocabulary_sets_tab, "VocabularySetDialog",
+        lambda *a, **k: _AutoAcceptSetDialog("brand new set", "New Set", ("speech.mc",), ()),
+    )
+    window.sets_tab.table.clearSelection()
+    window.sets_tab._add()
+    assert "brand new set" in {s.key for s in window.vocabulary.sets()}
+
+
 class _NullExec:
     def exec(self):
         return 0

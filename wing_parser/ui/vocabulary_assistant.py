@@ -5,32 +5,29 @@ below, and the Terms step's "AI: propose for unread rows" button (Task
 7), which calls `propose_for_fragments` on a `VocabularyWindow` opened
 with `initial_fragments` set (see vocabulary_window.py). Neither writes
 anything before Apply (F11) -- `_show_proposal` only ever populates the
-table; `_apply` is the sole call to `vocab_changes.apply`.
+table; `_apply` (via `vocabulary_assistant_support.apply_ticked`) is the
+sole path to `vocab_changes.apply`.
 
-Greying out on failure (design spec §8.1: "the window works fully with
-no key and no network; only the assistant greys out, saying why"):
-`_failed` classifies every call failure through `provider_errors.classify`
-(same classifier Settings' Test connection and Task 9's Try AI use) and,
-for the classes that mean nothing will succeed until something OUTSIDE
-this window changes (a bad/missing key, no network, a missing SDK in a
-frozen exe), disables `propose_button`/`instruction_edit` on top of
-reporting the message -- the rest of the Vocabulary window (Sets/Terms
-tabs) is a separate widget and is never touched.
+Grey-out has two independent triggers (fix round 1, I0 added the first):
 
-One honest limitation, worth knowing before reading `_UNRECOVERABLE`:
-`propose_changes` (vocab_changes.py) calls into `provider.py`'s shared
-`complete_json`, which wraps ANY raw exception a Provider raises into a
-bare `ProviderError(str(exc))` before it ever reaches `_failed` --
-discarding a real SDK error's `.status_code` and its type. That strips
-exactly what `provider_errors.classify` uses to tell BAD_KEY/QUOTA/
-NO_NETWORK apart (see that module's own docstring), so through THIS
-call path only SDK_MISSING is genuinely reachable today (its check is a
-text match on the wrapped message, not the exception's type -- see
-`provider_anthropic.py`'s own ImportError handler). This predates this
-task (`llm.py`/`guess.py`/`suggest.py` hit the same wrapper) and is not
-this task's to fix; `_UNRECOVERABLE` still lists all three classes so
-this widget starts telling them apart for real the moment that wrapper
-is changed to preserve a raw exception's identity.
+- **Proactive:** `_update_key_status`, run at construction and on every
+  `showEvent` (same idiom as `key_status.KeyStatusLine`, and it recovers
+  the same way -- re-showing this tab, or the window reopening after
+  Settings changes, re-checks), disables `propose_button`/
+  `instruction_edit` and says why BEFORE any call is attempted, using
+  `key_status.key_configured()`. `propose_for_fragments`/`_propose` both
+  also refuse outright.
+- **Reactive:** `_failed` classifies every call failure through
+  `provider_errors.classify` and, for `vocabulary_assistant_support.
+  UNRECOVERABLE` classes, disables the same two widgets on top of
+  reporting the message.
+
+The rest of the Vocabulary window (Sets/Terms tabs) is a separate widget
+and is never touched by either trigger. The worker-thread plumbing
+(`propose_via_factory`, so a bad `provider.yaml` fails inside the worker
+rather than the GUI thread -- fix round 1, I1) and the row/apply
+mechanics live in `vocabulary_assistant_support.py`, split out to stay
+under this project's 200-line UI-file ceiling.
 """
 
 from __future__ import annotations
@@ -39,22 +36,16 @@ from functools import partial
 
 from PySide6.QtWidgets import (
     QCheckBox, QHBoxLayout, QLabel, QPlainTextEdit, QPushButton,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+    QTableWidget, QVBoxLayout, QWidget,
 )
 
 from wing_parser.classifier import provider_errors, vocab_changes
 from wing_parser.classifier.matcher import known_kinds
+from wing_parser.ui import key_status
+from wing_parser.ui import vocabulary_assistant_support as support
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.texts import text
-from wing_parser.ui.vocabulary_tab_support import write_or_report
 from wing_parser.ui.workers import CallRunner
-
-_COLUMNS = (
-    "vocabulary.assistant.col.apply", "vocabulary.assistant.col.before",
-    "vocabulary.assistant.col.after", "vocabulary.assistant.col.reason",
-)
-
-_UNRECOVERABLE = (provider_errors.BAD_KEY, provider_errors.NO_NETWORK, provider_errors.SDK_MISSING)
 
 
 class VocabularyAssistant(QWidget):
@@ -65,6 +56,7 @@ class VocabularyAssistant(QWidget):
         self._on_applied = on_applied
         self._validated: list[vocab_changes.Validated] = []
         self._checks: list[QCheckBox] = []
+        self._key_ok = True
 
         self.instruction_edit = QPlainTextEdit()
         self.instruction_edit.setPlaceholderText(text("vocabulary.assistant.placeholder"))
@@ -86,8 +78,8 @@ class VocabularyAssistant(QWidget):
         )
         self.cancel_button.clicked.connect(self._call.cancel)
 
-        self.table = QTableWidget(0, len(_COLUMNS))
-        self.table.setHorizontalHeaderLabels([text(key) for key in _COLUMNS])
+        self.table = QTableWidget(0, len(support.COLUMNS))
+        self.table.setHorizontalHeaderLabels([text(key) for key in support.COLUMNS])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
         self.apply_button = QPushButton(text("vocabulary.assistant.apply"))
@@ -104,70 +96,73 @@ class VocabularyAssistant(QWidget):
         layout.addWidget(self.table)
         layout.addWidget(self.apply_button)
 
+        self._update_key_status()
+
+    def showEvent(self, event) -> None:  # noqa: N802 - Qt naming
+        super().showEvent(event)
+        self._update_key_status()
+
     def set_vocabulary(self, vocabulary) -> None:
         self._vocabulary = vocabulary
 
     def propose_for_fragments(self, fragments: tuple[str, ...]) -> bool:
+        if not self._key_ok:
+            return False
         return self._start(fragments=fragments, instruction="")
 
     def _propose(self) -> None:
+        if not self._key_ok:
+            return
         self._start(fragments=(), instruction=self.instruction_edit.toPlainText().strip())
 
     def _start(self, *, fragments, instruction) -> bool:
-        provider = self._provider_factory()
         call = partial(
-            vocab_changes.propose_changes, instruction=instruction, fragments=fragments,
+            support.propose_via_factory, instruction=instruction, fragments=fragments,
             vocabulary=self._vocabulary, known_kinds=known_kinds("channels"),
         )
-        return self._call.run("guesses", call, provider, on_success=self._show_proposal)
+        return self._call.run("guesses", call, self._provider_factory, on_success=self._show_proposal)
 
     def _show_proposal(self, changes) -> None:
-        """Populate the table only -- nothing here writes. A row's
-        checkbox starts ticked and enabled exactly when `validate` found
-        no problem; an invalid row's reason column names why, appended
-        to the model's own stated reason."""
+        """Populate the table only -- nothing here writes."""
         self._validated = [vocab_changes.validate(c, self._vocabulary) for c in changes]
         self._checks = []
         self.table.setRowCount(len(self._validated))
         for row, validated in enumerate(self._validated):
-            change = validated.change
-            reason = change.reason if validated.valid else (
-                f"{change.reason} — {'; '.join(validated.problems)}"
-            )
-            check = QCheckBox()
-            check.setEnabled(validated.valid)
-            check.setChecked(validated.valid)
-            self.table.setCellWidget(row, 0, check)
-            self.table.setItem(row, 1, QTableWidgetItem("" if change.before is None else str(change.before)))
-            self.table.setItem(row, 2, QTableWidgetItem("" if change.after is None else str(change.after)))
-            self.table.setItem(row, 3, QTableWidgetItem(reason))
+            check = support.populate_row(self.table, row, validated, self._vocabulary)
             self._checks.append(check)
 
     def _apply(self) -> None:
-        """The sole call to `vocab_changes.apply` in this class -- and
-        the sole point anything is written (F11). A row ticked-and-valid
-        at proposal time is re-checked here for real: `apply` calls
-        straight into `vocabulary.put_set`/`put_term`, which validate
-        again immediately before writing -- catching the case a batch of
-        several changes can create (an earlier applied change altering
-        what a later one's cycle/kind/set check sees, see vocab_changes.py's
-        own docstring for why this module does not chain-validate the
-        whole batch up front instead). `write_or_report` (shared with the
-        Sets/Terms tabs) reports any such failure with the house
-        QMessageBox and lets the rest of the ticked rows proceed."""
-        applied = 0
-        for check, validated in zip(self._checks, self._validated):
-            if not (check.isChecked() and validated.valid):
-                continue
-            change = validated.change
-            if write_or_report(self, partial(vocab_changes.apply, change, self._vocabulary)):
-                applied += 1
+        """The sole path to `vocab_changes.apply` -- and the sole point
+        anything is written (F11). Nothing ticked-and-valid is a no-op
+        (leaves the table for a still-undecided operator); otherwise the
+        table is cleared and the tally shown, so a second click with
+        nothing left ticked is also a no-op (fix round 1 minor: never
+        re-write)."""
+        applied, failed = support.apply_ticked(self, self._checks, self._validated, self._vocabulary)
+        if applied or failed:
+            self.status_label.setText(
+                text("vocabulary.assistant.apply_result").format(applied=applied, failed=failed))
+            self.table.setRowCount(0)
+            self._checks = []
+            self._validated = []
         if applied:
             self._on_applied()
+
+    def _update_key_status(self) -> None:
+        """Proactive grey-out (fix round 1, I0): before any call is
+        attempted, not only after one fails."""
+        self._key_ok = key_status.key_configured()
+        self.propose_button.setEnabled(self._key_ok)
+        self.instruction_edit.setEnabled(self._key_ok)
+        no_key_text = text("vocabulary.assistant.no_key")
+        if not self._key_ok:
+            self.status_label.setText(no_key_text)
+        elif self.status_label.text() == no_key_text:
+            self.status_label.setText("")
 
     def _failed(self, exc: Exception) -> None:
         code, message = provider_errors.classify(exc)
         self.status_label.setText(message)
-        if code in _UNRECOVERABLE:
+        if code in support.UNRECOVERABLE:
             self.propose_button.setEnabled(False)
             self.instruction_edit.setEnabled(False)

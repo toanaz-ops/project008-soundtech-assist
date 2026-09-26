@@ -19,6 +19,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTabWidget, QVBoxLayout
 
 from wing_parser.classifier import vocabulary as vocab_module
+from wing_parser.ui import key_status
 from wing_parser.ui.texts import text
 from wing_parser.ui.vocabulary_assistant import VocabularyAssistant
 from wing_parser.ui.vocabulary_sets_tab import VocabularySetsTab
@@ -70,10 +71,11 @@ class VocabularyWindow(QDialog):
             self.assistant_tab.propose_for_fragments(initial_fragments)
 
     def _provider_factory(self):
-        from wing_parser import config
-        from wing_parser.classifier.provider import make_provider, resolve_config
-
-        return make_provider(resolve_config(config.knowledge_dir()))
+        """Passed to `VocabularyAssistant`, which invokes it on a worker
+        thread (fix round 1, I1), never here. Delegates to
+        `key_status.provider_factory` (fix round 1 minor -- was
+        duplicated with `ImportPage`'s own copy)."""
+        return key_status.provider_factory()
 
     def _reload(self) -> None:
         """Every write on either tab re-reads the vocabulary and refreshes

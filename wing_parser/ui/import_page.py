@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.ui import import_controller as ic
 from wing_parser.ui import import_steps
+from wing_parser.ui import key_status
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.key_status import KeyStatusLine
 from wing_parser.ui.step_rail import StepRail
@@ -92,12 +93,11 @@ class ImportPage(QWidget):
         self._directory = path
 
     def _provider_factory(self):
-        """The provider a real call uses -- `key_status` reads the same
-        resolver, and the two must never disagree (tech-debt.md#d-30)."""
-        from wing_parser import config
-        from wing_parser.classifier.provider import make_provider, resolve_config
-
-        return make_provider(resolve_config(config.knowledge_dir()))
+        """Kept as a bound method: `import_steps.py`/`terms_step.py` pass
+        it around as a callable. Delegates to `key_status.provider_factory`
+        (fix round 1 minor -- was duplicated with VocabularyWindow's own
+        copy)."""
+        return key_status.provider_factory()
 
     def _fail(self, exc: Exception) -> None:
         self.status.setText(text("import.error").format(error=exc))

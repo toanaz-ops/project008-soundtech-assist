@@ -64,4 +64,8 @@ IMPORT_TEXTS: dict[str, str] = {
     "vocabulary.assistant.col.before": "Before",
     "vocabulary.assistant.col.after": "After",
     "vocabulary.assistant.col.reason": "Reason",
+    "vocabulary.assistant.no_key": (
+        "No model key configured — the assistant needs one. Set it in Settings."
+    ),
+    "vocabulary.assistant.apply_result": "{applied} applied, {failed} failed.",
 }
