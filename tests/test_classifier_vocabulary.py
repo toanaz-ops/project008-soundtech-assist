@@ -65,6 +65,7 @@ def test_a_cycle_is_refused_at_write_naming_the_path(directory):
     with pytest.raises(vocab.CycleError) as exc:
         v.put_set("band", label="Band", sets=("drum kit", "loop a"))
     assert "band" in str(exc.value) and "loop a" in str(exc.value)
+    assert exc.value.path == ("band", "loop a", "band")
 
 
 def test_a_cycle_already_on_disk_expands_once_and_does_not_loop(directory):
@@ -174,3 +175,142 @@ def test_effective_terms_are_ready_for_keywords_match(directory):
     v = vocab.Vocabulary.load(directory)
     result = keywords.match("Mời MC lên sân khấu", v.effective())
     assert "speech.mc" in result.kinds and "utility.playback" in result.kinds
+
+
+# -- fix round 1 (review of 748b51a..912f125): identity bugs -----------------
+# CRITICAL 1: put/delete/reset must find an existing raw entry by FOLDED
+# identity, not by the exact string passed -- a raw key on disk keeps
+# whatever the person typed (W3), so a caller using a different
+# spelling/case/diacritics for the SAME logical entry must still find it.
+
+
+def test_delete_finds_a_user_term_saved_under_different_diacritics_or_case(directory):
+    from wing_parser.showcontext.ingest import keywords
+
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("Cá Nhân", kinds=("speech.lectern",), match="word")  # no default shadows this
+    v.delete_term("ca nhan")  # same folded identity, different spelling
+    doc = cache.read_raw(directory)
+    assert not any(keywords.fold(k) == "ca nhan" for k in doc["cuesheet"])
+    reloaded = vocab.Vocabulary.load(directory)
+    assert not any(keywords.fold(t.key) == "ca nhan" for t in reloaded.terms())
+
+
+def test_reset_finds_an_override_saved_under_a_different_spelling_than_the_default(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("MC", kinds=("speech.lectern",), match="word")  # overrides default "mc"
+    v.reset_term("Mc")  # different case than what was typed, same folded identity
+    reloaded = vocab.Vocabulary.load(directory)
+    terms = {t.key: t for t in reloaded.terms()}
+    assert terms["mc"].kinds == ("speech.mc",)
+    assert terms["mc"].origin == "default"
+
+
+def test_put_term_again_under_a_different_spelling_replaces_not_duplicates(directory):
+    from wing_parser.showcontext.ingest import keywords
+
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("Cajon", kinds=("drums.pad",), match="word")
+    v.put_term("cajon", kinds=("drums.pad", "drums.tom"), match="word")
+    doc = cache.read_raw(directory)
+    matching = [k for k in doc["cuesheet"] if keywords.fold(k) == "cajon"]
+    assert len(matching) == 1
+
+
+# IMPORTANT 1: _check_cycle must tolerate a pre-existing disk cycle it is not
+# joining, not RecursionError.
+
+
+def test_put_set_tolerates_a_pre_existing_disk_cycle_it_does_not_join(directory):
+    doc = cache.read_raw(directory)
+    doc.setdefault("cuesheet_sets", {})
+    doc["cuesheet_sets"]["loop a"] = {"label": "Loop A", "sets": ["loop b"], "origin": "manual"}
+    doc["cuesheet_sets"]["loop b"] = {"label": "Loop B", "sets": ["loop a"], "kinds": ["speech.mc"],
+                                      "origin": "manual"}
+    cache.write_raw(doc, directory)
+
+    v = vocab.Vocabulary.load(directory)
+    v.put_set("x", label="X", sets=("loop a",))  # must not raise / RecursionError
+    reloaded = vocab.Vocabulary.load(directory)
+    assert reloaded.expand_set("x") == ("speech.mc",)
+
+
+# IMPORTANT 2: deciding "had a default" from the currently-merged entry is
+# wrong once that entry IS the tombstone -- must decide from the shipped
+# defaults' own (static) key set instead.
+
+
+def test_deleting_an_already_deleted_default_stays_deleted(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.delete_term("hoa tươi")
+    v.delete_term("hoa tươi")  # deleting again must not resurrect it
+    reloaded = vocab.Vocabulary.load(directory)
+    assert "hoa tươi" not in {t.key for t in reloaded.terms()}
+    doc = cache.read_raw(directory)
+    assert doc["cuesheet"]["hoa tươi"]["deleted"] is True
+
+
+# IMPORTANT 3: _check_sets must compare against the folded identity of
+# visible sets, not their (possibly unfolded) display key.
+
+
+def test_check_sets_finds_a_set_by_folded_identity_not_its_display_key(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_set("Loop A", label="Loop A", kinds=("speech.mc",))  # display key keeps the case
+    v.put_term("y", sets=("loop a",), match="word")  # different case, same folded identity
+    reloaded = vocab.Vocabulary.load(directory)
+    effective = {t.key: t for t in reloaded.effective()}
+    assert effective["y"].kinds == ("speech.mc",)
+
+
+# -- spec gaps (spec governs over the brief's own draft) ---------------------
+
+
+def test_missing_match_on_a_hand_edited_entry_defaults_to_exact(directory):
+    doc = cache.read_raw(directory)
+    doc["cuesheet"]["newword"] = {"kinds": ["speech.mc"], "origin": "manual"}  # no match:
+    cache.write_raw(doc, directory)
+    v = vocab.Vocabulary.load(directory)
+    terms = {t.key: t for t in v.terms()}
+    assert terms["newword"].match == "exact"
+
+
+def test_put_term_without_a_match_argument_defaults_to_exact(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("newterm2", kinds=("speech.mc",))  # match not given
+    doc = cache.read_raw(directory)
+    assert doc["cuesheet"]["newterm2"]["match"] == "exact"
+
+
+def test_put_term_refuses_an_entry_with_neither_kinds_sets_nor_ignore(directory):
+    v = vocab.Vocabulary.load(directory)
+    with pytest.raises(ValueError, match="kinds"):
+        v.put_term("empty term")
+
+
+def test_problems_reports_an_unknown_kind_on_a_hand_edited_term_and_excludes_it(directory):
+    doc = cache.read_raw(directory)
+    doc["cuesheet"]["broken term"] = {"kinds": ["nonsense.kind"], "match": "word", "origin": "manual"}
+    cache.write_raw(doc, directory)
+    v = vocab.Vocabulary.load(directory)
+    assert any("broken term" in p and "nonsense.kind" in p for p in v.problems)
+    assert "broken term" not in {t.key for t in v.effective()}
+
+
+def test_problems_reports_a_set_cycle_found_on_disk(directory):
+    doc = cache.read_raw(directory)
+    doc.setdefault("cuesheet_sets", {})
+    doc["cuesheet_sets"]["loop a"] = {"label": "Loop A", "sets": ["loop b"], "origin": "manual"}
+    doc["cuesheet_sets"]["loop b"] = {"label": "Loop B", "sets": ["loop a"], "kinds": ["speech.mc"],
+                                      "origin": "manual"}
+    cache.write_raw(doc, directory)
+    v = vocab.Vocabulary.load(directory)
+    assert any("cycle" in p and "loop a" in p and "loop b" in p for p in v.problems)
+
+
+def test_a_term_naming_a_now_missing_set_is_also_listed_in_problems(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("solo term2", sets=("band",), match="word")
+    v.delete_set("band")
+    reloaded = vocab.Vocabulary.load(directory)
+    assert any("solo term2" in p for p in reloaded.problems)
