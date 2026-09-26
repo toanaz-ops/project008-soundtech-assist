@@ -239,6 +239,52 @@ class Vocabulary:
     def _check_cycle(self, key: str, nested_sets: tuple[str, ...]) -> None:
         checks.check_cycle(self._sets, key, nested_sets)
 
+    def dry_run_set(self, key: str, *, kinds: tuple[str, ...] = (),
+                    sets: tuple[str, ...] = ()) -> tuple[str, ...]:
+        """Every problem `put_set(key, ...)` would raise, without writing --
+        vocab_changes.validate calls this to decide whether an AI-proposed
+        set change could be written. Same order as put_set: an unknown
+        kind/set is worth reporting even when a cycle is ALSO present, but
+        a cycle check only makes sense once kinds/sets are themselves
+        known-good (check_cycle walks `sets`, which an unknown-set problem
+        already flagged as untrustworthy)."""
+        problems: list[str] = []
+        try:
+            self._check_kinds(key, kinds)
+        except UnknownKindError as exc:
+            problems.append(str(exc))
+        try:
+            self._check_sets(key, sets)
+        except UnknownSetError as exc:
+            problems.append(str(exc))
+        if not problems:
+            try:
+                self._check_cycle(key, sets)
+            except CycleError as exc:
+                problems.append(str(exc))
+        return tuple(problems)
+
+    def dry_run_term(self, key: str, *, kinds: tuple[str, ...] = (),
+                     sets: tuple[str, ...] = (), ignore: bool = False) -> tuple[str, ...]:
+        """Every problem `put_term(key, ...)` would raise, without writing.
+        The two `put_term` shape rules (ignore XOR kinds/sets; at least one
+        of them) are reported as their own single problem, same wording
+        `put_term` itself raises, before the per-kind/per-set checks run."""
+        if ignore and (kinds or sets):
+            return (f"term {key!r}: ignore: true OR kinds/sets, not both",)
+        if not ignore and not kinds and not sets:
+            return (f"term {key!r}: needs kinds and/or sets, or ignore: true",)
+        problems: list[str] = []
+        try:
+            self._check_kinds(key, kinds)
+        except UnknownKindError as exc:
+            problems.append(str(exc))
+        try:
+            self._check_sets(key, sets)
+        except UnknownSetError as exc:
+            problems.append(str(exc))
+        return tuple(problems)
+
     # -- writing (validated here, mutated in vocabulary_store.py) -----------
 
     def put_set(self, key: str, *, label: str, kinds: tuple[str, ...] = (),

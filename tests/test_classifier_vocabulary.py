@@ -463,3 +463,43 @@ def test_a_string_kinds_value_is_skipped_and_reported_not_split_into_characters(
     v = vocab.Vocabulary.load(directory)  # must not raise, must not split into 's','p','e',...
     assert "string kinds" not in {t.key for t in v.terms()}
     assert any("string kinds" in p for p in v.problems)
+
+
+# -- dry_run_set / dry_run_term: every problem put_set/put_term would raise,
+# without writing (vocab_changes.validate calls these) ----------------------
+
+
+def test_dry_run_set_reports_an_unknown_kind_without_writing(directory):
+    v = vocab.Vocabulary.load(directory)
+    problems = v.dry_run_set("x", kinds=("nonsense.kind",))
+    assert problems and "nonsense.kind" in problems[0]
+    assert "x" not in {s.key for s in vocab.Vocabulary.load(directory).sets()}
+
+
+def test_dry_run_set_reports_a_cycle_without_writing(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_set("loop a", label="Loop A", sets=("band",))
+    problems = v.dry_run_set("band", kinds=(), sets=("drum kit", "loop a"))
+    assert problems and "loop a" in problems[0]
+
+
+def test_dry_run_set_is_empty_for_a_writable_set(directory):
+    v = vocab.Vocabulary.load(directory)
+    assert v.dry_run_set("new one", kinds=("speech.mc",)) == ()
+
+
+def test_dry_run_term_reports_ignore_with_kinds_as_one_problem(directory):
+    v = vocab.Vocabulary.load(directory)
+    problems = v.dry_run_term("x", kinds=("speech.mc",), ignore=True)
+    assert len(problems) == 1 and "ignore" in problems[0]
+
+
+def test_dry_run_term_reports_an_empty_term_as_one_problem(directory):
+    v = vocab.Vocabulary.load(directory)
+    problems = v.dry_run_term("x")
+    assert len(problems) == 1 and "kinds" in problems[0]
+
+
+def test_dry_run_term_is_empty_for_a_writable_term(directory):
+    v = vocab.Vocabulary.load(directory)
+    assert v.dry_run_term("cajon", kinds=("drums.pad",)) == ()
