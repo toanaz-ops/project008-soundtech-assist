@@ -36,6 +36,8 @@ full-sentence stage directions ("Mời BLĐ lên sân khấu quay số", "Trao g
 | F10 | **Sets** are separate from terms: define "Drum kit" once; "trống", "drum", "dàn trống" all point at it. | ToanAZ |
 | F11 | The AI assistant **proposes; he approves** each change. It never writes on its own. | ToanAZ |
 | F12 | Section 7 (editor + assistant) approved as presented in chat. | ToanAZ |
+| F13 | **Nested sets**: a set may contain other sets (Band contains Drum kit), so editing Drum kit changes Band too. Built now "because it will be needed". | ToanAZ |
+| F14 | Appendix A ships as drafted; he corrects defaults in the Vocabulary window afterwards (F9), so §A does not block task 2. | orchestrator, from F9 |
 | W1 | New UI strings are English, like every existing string in `texts*.py`; the AI-diagnosis reasons are plain-language English. *If overturned:* a Vietnamese string table is its own wave — every page would have to follow. | orchestrator |
 | W2 | Lint's **Fix** writes `<file>.bak` (overwriting an older `.bak`) before `apply_repairs`, which itself keeps no backup. *If overturned to "Save As":* one dialog more, no `.bak`. | orchestrator |
 | W3 | Diacritic folding applies to the match only; stored keys keep what the user typed. *If overturned:* keys stored folded, and the YAML stops being readable Vietnamese. | orchestrator |
@@ -65,6 +67,11 @@ cuesheet_sets:
     label: Drum kit
     kinds: [drums.kick.in, drums.kick.out, drums.snare.top, drums.snare.bottom, drums.tom, drums.hihat, drums.overhead]
     origin: default            # default | manual | ai-approved
+  band:
+    label: Band
+    sets: [drum kit]           # nested (F13)
+    kinds: [speech.vocal, instrument.guitar, instrument.bass, instrument.keys]
+    origin: default
 cuesheet:
   trống:     {sets: [drum kit], match: word, origin: default}
   trao giải: {kinds: [speech.mc, utility.playback], match: word, origin: default}
@@ -80,6 +87,11 @@ cuesheet:
 - Every kind must be one `patterns.yaml` can produce — `expects:` refuses anything else (ROADMAP §5 item 7). The loader
   rejects an unknown kind or an unknown set name, naming the key; a test runs that check over the shipped defaults.
   A term pointing at a set he later deleted is shown in the editor as broken, and resolves to its remaining kinds.
+- **Nested sets (F13).** A set has `kinds:` and/or `sets:`. Expansion is recursive, depth-first, first-seen order, no
+  duplicates. A **cycle** (A contains B contains A) is refused at save in the editor and by `vocab_changes.validate`,
+  naming the path (`band → drum kit → band`); if one reaches disk by hand-editing, the loader reports it and expands
+  each set on the cycle once, never looping. A nested reference to a deleted set is broken exactly like a term's.
+  The editor shows each set's fully expanded kinds beside its own list, so the effect of nesting is visible.
 
 ### 3.3 Lookup order (per performer fragment)
 
@@ -203,9 +215,9 @@ The prompt text lives in one module, not scattered through widgets, so it can be
 ## 9. Tests and acceptance
 
 **Plain pytest:** `fold` (tones, `Đ`, punctuation, whole-word); `match` (union, longest-wins, ignore-only-alone);
-`vocabulary.effective` (his entry over default, tombstone hides default, reset restores it, set expansion, broken set
-reference, old single-`kind` entries); the shipped defaults validate against `patterns.yaml` kinds;
-`vocab_changes.validate` (valid, unknown kind, unknown set, delete of a missing key); `missing_for_segments`;
+`vocabulary.effective` (his entry over default, tombstone hides default, reset restores it, set expansion, nested
+expansion, a cycle detected and not looped, broken set reference at both levels, old single-`kind` entries); the shipped defaults validate against `patterns.yaml` kinds;
+`vocab_changes.validate` (valid, unknown kind, unknown set, a change that would create a cycle, delete of a missing key); `missing_for_segments`;
 `provider_errors.classify` for every row of §7 with fake exceptions.
 
 **Acceptance on real files:** extend `tests/test_g2b_acceptance.py` to pin the resolved/ignored/unreadable counts for vivo
@@ -213,8 +225,8 @@ and BIDV **with** the defaults. Target: every one of the 21 unresolved fragments
 is listed in the test as deliberately left unread with a reason.
 
 **Qt, offscreen, real MainWindow, `timeout=2`:** Terms Record with a shortened key clears several rows; Ignore (remember)
-persists and a re-import shows no comment; Vocabulary window add/edit/delete/reset on both tabs, and editing a set
-changes what a term resolves to; the assistant with a fake provider returning a mixed valid/invalid change list —
+persists and a re-import shows no comment; Vocabulary window add/edit/delete/reset on both tabs, and editing Drum kit
+changes what a "band" term resolves to (nesting); saving a cycle is refused with the path shown; the assistant with a fake provider returning a mixed valid/invalid change list —
 only ticked valid changes are written, nothing before Apply; scene step with each of the three sources (a fake Pull for
 the Console one); lint Fix writes `.bak` and re-lints; Try AI with a fake provider raising each §7 class. Suite tally
 read from `--junitxml`. Every `wing_parser/ui/*.py` stays ≤200 lines.
@@ -229,7 +241,7 @@ gap); one real cue sheet from his next show through the whole wizard.
 
 1. `keywords.py` + tests.
 2. Cache domains and entry shape; `vocabulary.py` (defaults, overrides, tombstones, sets); `cuesheet_defaults.yaml`
-   (§A after ToanAZ's edits) + tests.
+   (§A as drafted, F14) + nested sets and cycle detection + tests.
 3. `build.resolve_fragment`/`_expectations` → `Resolution`; `ignored_performers`; CLI + UI callers; acceptance counts.
 4. `provider_errors.py`; Settings ▸ Test connection reuses it.
 5. Vocabulary window (Sets, Terms, reset, broken references).
@@ -255,12 +267,11 @@ two real sheets. Concert rows are **not checked against a real file** (F4).
 | Set | Kinds |
 |---|---|
 | Drum kit | drums.kick.in, drums.kick.out, drums.snare.top, drums.snare.bottom, drums.tom, drums.hihat, drums.overhead |
-| Band | speech.vocal, instrument.guitar, instrument.bass, instrument.keys, + Drum kit's kinds |
+| Band | sets: Drum kit · kinds: speech.vocal, instrument.guitar, instrument.bass, instrument.keys |
 | Speech, handheld | speech.handheld |
 | Award moment | speech.mc, utility.playback |
 
-(A set cannot contain another set; "Band" lists the drum kinds itself so editing Drum kit does **not** change Band.
-If he wants it to, that is a nested-set feature — say so.)
+Band contains Drum kit (F13): editing Drum kit changes Band.
 
 ### A.2 Terms
 
