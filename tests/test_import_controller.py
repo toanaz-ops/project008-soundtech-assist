@@ -59,37 +59,3 @@ def test_context_for_collects_up_to_two_rows_per_term():
     assert len(hits) == 2
     assert hits[0].startswith("row 3:")
     assert hits[1].startswith("row 4:")
-
-
-def test_guesses_swallow_errors_per_term():
-    class DeadProvider:
-        def complete_json(self, system, user, schema):
-            raise RuntimeError("offline")
-
-    guesses = ic.guesses_for(
-        ("ca trống",),
-        {"ca trống": ["row 1: ca trống"]},
-        lambda: DeadProvider(),
-    )
-    assert guesses == [("ca trống", None)]
-
-
-def test_guesses_respect_the_kill_switch(monkeypatch):
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
-
-    def forbidden():
-        raise AssertionError("provider must not be constructed")
-
-    assert ic.guesses_for(("ca trống",), {}, forbidden) == []
-
-
-def test_record_term_writes_through_cache(tmp_path):
-    from wing_parser.classifier import cache
-    from wing_parser.classifier.matcher import Classification
-
-    entry = Classification(kind="music.traditional", confidence=0.9,
-                           origin="g2b-assisted")
-    ic.record_term("ca trống", entry, directory=tmp_path)
-
-    stored = cache.load(directory=tmp_path)["cuesheet"]["ca trống"]
-    assert stored.kind == "music.traditional"

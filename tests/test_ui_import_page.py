@@ -160,40 +160,6 @@ def test_valid_mapping_advances_to_the_terms_step(bidv_terms, monkeypatch):
     assert bidv_terms.term_row_state("ca trống") == "pending"
 
 
-def test_record_writes_vocabulary_only_on_click(page, tmp_path, monkeypatch,
-                                                settle):
-    """The G2b invariant: nothing writes without the explicit click."""
-    from wing_parser.classifier.matcher import Classification
-    from wing_parser.ui import import_page
-
-    class FakeResult:
-        segments = [type("S", (), {"comments": [
-            "row 1: could not read performer 'ca trống'"]})()]
-
-    monkeypatch.setattr(import_page.ic, "unresolved",
-                        lambda result: ("ca trống",))
-    monkeypatch.setattr(import_page.ic, "guesses_for",
-                        lambda terms, ctx, factory: [
-                            ("ca trống", Classification(
-                                kind="music.traditional", confidence=0.9,
-                                origin="g2b-assisted"))])
-    page.set_output_directory(tmp_path)      # where record_term writes
-    page.show_terms_step(FakeResult())       # builds step 3 UI
-    vocab = tmp_path / "classifier.yaml"
-
-    assert page.term_row_state("ca trống") == "pending"
-    page.load_guesses_button.click()         # prefill, not a write
-    assert settle(lambda: page.kind_editor_for("ca trống").text() != "")
-    assert page.kind_editor_for("ca trống").text() == "music.traditional"
-    assert not vocab.exists()                # NO click -> nothing written
-
-    page.record_button_for("ca trống").click()
-    assert page.term_row_state("ca trống") == "recorded"
-    assert vocab.exists()                    # after click -> the term is there
-    doc = yaml.safe_load(vocab.read_text(encoding="utf-8"))
-    assert doc["cuesheet"]["ca trống"]["kind"] == "music.traditional"
-
-
 def test_skip_marks_the_row_without_writing(page, tmp_path, monkeypatch):
     from wing_parser.ui import import_page
 
@@ -201,10 +167,7 @@ def test_skip_marks_the_row_without_writing(page, tmp_path, monkeypatch):
         segments = [type("S", (), {"comments": [
             "row 1: could not read performer 'múa rối'"]})()]
 
-    monkeypatch.setattr(import_page.ic, "unresolved",
-                        lambda result: ("múa rối",))
-    monkeypatch.setattr(import_page.ic, "guesses_for",
-                        lambda terms, ctx, factory: [])
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("múa rối",))
     page.set_output_directory(tmp_path)
     page.show_terms_step(FakeResult())
     page.skip_button_for("múa rối").click()
@@ -212,24 +175,248 @@ def test_skip_marks_the_row_without_writing(page, tmp_path, monkeypatch):
     assert not (tmp_path / "classifier.yaml").exists()
 
 
-def test_raising_provider_factory_degrades_to_status_label(page, monkeypatch,
-                                                           settle):
+def test_record_writes_the_picked_kinds_through_vocabulary_put_term(page, tmp_path, monkeypatch):
+    from PySide6.QtCore import Qt
     from wing_parser.ui import import_page
 
     class FakeResult:
         segments = [type("S", (), {"comments": [
             "row 1: could not read performer 'ca trống'"]})()]
 
-    def boom(*args):
-        raise RuntimeError("offline")
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+    vocab = tmp_path / "classifier.yaml"
+
+    assert page.term_row_state("ca trống") == "pending"
+    assert not vocab.exists()
+
+    row = page.terms_step._rows["ca trống"]
+    hit = row.kinds_list.findItems("speech.mc", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for("ca trống").click()
+
+    assert page.term_row_state("ca trống") == "recorded"
+    assert vocab.exists()
+    doc = yaml.safe_load(vocab.read_text(encoding="utf-8"))
+    assert doc["cuesheet"]["ca trống"]["kinds"] == ["speech.mc"]
+
+
+def test_ignore_remember_writes_ignore_true(page, tmp_path, monkeypatch):
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'hoa tươi'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("hoa tươi",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    page.terms_step._rows["hoa tươi"].ignore_button.click()
+    assert page.term_row_state("hoa tươi") == "recorded"
+    doc = yaml.safe_load((tmp_path / "classifier.yaml").read_text(encoding="utf-8"))
+    assert doc["cuesheet"]["hoa tươi"]["ignore"] is True
+
+
+def test_recording_one_term_re_resolves_a_pending_sibling(page, tmp_path, monkeypatch):
+    from PySide6.QtCore import Qt
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'trống'",
+            "row 2: could not read performer 'dàn trống'",
+        ]})()]
 
     monkeypatch.setattr(import_page.ic, "unresolved",
-                        lambda result: ("ca trống",))
-    monkeypatch.setattr(import_page.ic, "guesses_for", boom)
+                        lambda result: ("trống", "dàn trống"))
+    page.set_output_directory(tmp_path)
     page.show_terms_step(FakeResult())
-    page.load_guesses_button.click()         # must not raise
-    assert settle(lambda: page.status.text() != "")
-    assert page.status.text() != ""
+
+    row = page.terms_step._rows["trống"]
+    row.word_match_check.setChecked(True)   # "trống" alone equals the fragment; tick by hand
+    hit = row.kinds_list.findItems("drums.kick", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for("trống").click()
+
+    assert page.term_row_state("trống") == "recorded"
+    assert page.term_row_state("dàn trống") == "resolved"
+
+
+def test_a_shortened_key_auto_ticks_match_inside_a_sentence(page, tmp_path, monkeypatch):
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'Mời BLĐ lên sân khấu'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved",
+                        lambda result: ("Mời BLĐ lên sân khấu",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows["Mời BLĐ lên sân khấu"]
+    assert row.word_match_check.isChecked() is False
+    row.key_edit.setText("BLĐ")
+    assert row.word_match_check.isChecked() is True
+
+
+def test_the_ai_propose_button_opens_the_vocabulary_window_with_pending_fragments(
+        page, tmp_path, monkeypatch):
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'tốp múa'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("tốp múa",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    seen = {}
+
+    class _NullDialog:
+        def exec(self):
+            return 0
+
+    def fake_window(parent, *, directory=None, initial_fragments=()):
+        seen["fragments"] = initial_fragments
+        return _NullDialog()
+
+    import wing_parser.ui.vocabulary_window as vw_module
+
+    monkeypatch.setattr(vw_module, "VocabularyWindow", fake_window)
+    page.terms_step.ai_propose_button.click()
+    assert seen["fragments"] == ("tốp múa",)
+
+
+def test_the_vocabulary_button_opens_the_window_over_the_steps_own_directory(
+        page, tmp_path, monkeypatch):
+    """Controller requirement on top of the brief: the Terms step's
+    Vocabulary... button must open the window on `self.directory` (the
+    knowledge dir this wizard is using), not the library default."""
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'tốp múa'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("tốp múa",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    seen = {}
+
+    class _NullDialog:
+        def exec(self):
+            return 0
+
+    def fake_window(parent, *, directory=None, initial_fragments=()):
+        seen["directory"] = directory
+        return _NullDialog()
+
+    import wing_parser.ui.vocabulary_window as vw_module
+
+    monkeypatch.setattr(vw_module, "VocabularyWindow", fake_window)
+    page.terms_step.vocabulary_button.click()
+    assert seen["directory"] == tmp_path
+
+
+def test_a_term_added_in_the_vocabulary_window_re_resolves_a_matching_row(
+        page, tmp_path, monkeypatch):
+    """Spec §8.1: closing the Vocabulary window must re-read the effective
+    vocabulary and re-resolve the remaining rows, so a term taught there
+    clears a matching row here without a separate reload step."""
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    seen = {}
+
+    class _WritingVocabularyWindow:
+        def __init__(self, parent, *, directory=None, initial_fragments=()):
+            seen["directory"] = directory
+
+        def exec(self):
+            from wing_parser.classifier import vocabulary as vocab_module
+
+            vocab_module.Vocabulary.load(seen["directory"]).put_term(
+                "ca trống", kinds=("speech.mc",), match="exact")
+            return 1
+
+    import wing_parser.ui.vocabulary_window as vw_module
+
+    monkeypatch.setattr(vw_module, "VocabularyWindow", _WritingVocabularyWindow)
+    page.terms_step.vocabulary_button.click()
+
+    assert seen["directory"] == tmp_path
+    assert page.term_row_state("ca trống") == "resolved"
+
+
+def test_recording_with_no_kinds_or_sets_reports_the_problem_and_keeps_the_row(
+        page, tmp_path, monkeypatch):
+    """Controller requirement: a Record that fails validation (put_term's
+    own "needs kinds and/or sets, or ignore: true") is shown to the
+    operator naming the problem; the row keeps its input and does not
+    crash or silently advance."""
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning",
+                        lambda *a, **k: warnings.append(a[-1]))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    page.record_button_for("ca trống").click()   # no kind/set picked
+
+    assert warnings and "ca trống" in warnings[0]
+    assert page.term_row_state("ca trống") == "pending"
+    assert page.terms_step._rows["ca trống"].key_edit.text() == "ca trống"
+    assert not (tmp_path / "classifier.yaml").exists()
+
+
+def test_an_oserror_on_record_is_reported_and_keeps_the_row(page, tmp_path, monkeypatch):
+    """Controller requirement: an OSError on write (disk trouble) is
+    shown naming the problem, not raised."""
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning",
+                        lambda *a, **k: warnings.append(a[-1]))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows["ca trống"]
+    hit = row.kinds_list.findItems("speech.mc", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+
+    def _boom(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(row._vocabulary, "put_term", _boom)
+    page.record_button_for("ca trống").click()
+
+    assert warnings and "disk full" in warnings[0]
     assert page.term_row_state("ca trống") == "pending"
 
 
@@ -441,41 +628,6 @@ def test_cancel_discards_a_stuck_proposal_and_the_page_retries(
                         lambda xlsx, factory: None)
     page.pick_file(BIDV)
     assert settle(lambda: page.step_area.currentIndex() == 1)
-
-
-def test_guesses_cancel_leaves_the_terms_step_retriable(
-        page, monkeypatch, settle):
-    from wing_parser.classifier.matcher import Classification
-    from wing_parser.ui import import_page
-
-    class FakeResult:
-        segments = [type("S", (), {"comments": [
-            "row 1: could not read performer 'ca trống'"]})()]
-
-    monkeypatch.setattr(import_page.ic, "unresolved",
-                        lambda result: ("ca trống",))
-    gate = threading.Event()
-
-    def stuck(terms, ctx, factory):
-        return hold_gate(gate)
-
-    monkeypatch.setattr(import_page.ic, "guesses_for", stuck)
-    page.show_terms_step(FakeResult())
-    page.load_guesses_button.click()
-    try:
-        page.terms_step.cancel_button.click()
-    finally:
-        gate.set()
-    assert page.status.text() != ""
-    assert page.load_guesses_button.isEnabled()
-
-    monkeypatch.setattr(import_page.ic, "guesses_for",
-                        lambda terms, ctx, factory: [
-                            ("ca trống", Classification(
-                                kind="music.traditional", confidence=0.9,
-                                origin="g2b-assisted"))])
-    page.load_guesses_button.click()
-    assert settle(lambda: page.kind_editor_for("ca trống").text() != "")
 
 
 def test_a_slow_proposal_times_out_with_a_message_naming_seconds(

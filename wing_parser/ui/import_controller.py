@@ -12,7 +12,6 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from wing_parser.classifier import cache
 from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.provider import ProviderError
 from wing_parser.showcontext.ingest import build, emit, guess, mapping, sheet
@@ -92,28 +91,6 @@ def unresolved(result):
     return guess.unresolved_terms(result)
 
 
-def guesses_for(terms, context_by_term, provider_factory):
-    """One model guess per term; per-term errors collapse to None entries.
-
-    The list of (term, Classification | None) pairs is the whole result:
-    the UI decides how to present a dead provider per term instead of
-    losing every other term to one failure. With WING_DISABLE_LLM set,
-    no provider is ever constructed and the answer is simply [].
-    """
-    if kill_switch_on():
-        return []
-    results = []
-    for term in terms:
-        try:
-            found = guess.propose_term(
-                term, context_by_term.get(term, []), provider_factory()
-            )
-        except Exception:  # noqa: BLE001 - degrade like every model path
-            found = None
-        results.append((term, found))
-    return results
-
-
 def context_for(terms, rows) -> dict[str, list[str]]:
     """Up to two rendered rows per term, as context for the guess.
 
@@ -137,8 +114,3 @@ def context_for(terms, rows) -> dict[str, list[str]]:
                     break
         context[term] = hits
     return context
-
-
-def record_term(term, classification, directory=None) -> None:
-    """Write through the same atomic cache path every classification takes."""
-    cache.remember(term, "cuesheet", classification, directory=directory)

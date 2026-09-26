@@ -62,11 +62,7 @@ def _mapping(page) -> QWidget:
 
 
 def _terms(page) -> QWidget:
-    page.terms_step = TermsStep(
-        page._provider_factory, page._fail,
-        runner=page._runner, report=page.status.setText,
-    )
-    page.load_guesses_button = page.terms_step.load_guesses_button
+    page.terms_step = TermsStep()
     page.preview_button = QPushButton(text("import.preview"))
     page.preview_button.clicked.connect(lambda: show_preview(page))
 

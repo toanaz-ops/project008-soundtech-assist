@@ -68,4 +68,8 @@ IMPORT_TEXTS: dict[str, str] = {
         "No model key configured — the assistant needs one. Set it in Settings."
     ),
     "vocabulary.assistant.apply_result": "{applied} applied, {failed} failed.",
+    "import.terms.key": "Key",
+    "import.terms.match_word": "match inside a sentence",
+    "import.terms.ignore_remember": "Ignore (remember)",
+    "import.terms.ai_propose": "AI: propose for unread rows",
 }
