@@ -1,31 +1,33 @@
-"""The Import page's steps: what each one is made of, and what finishing it does.
+"""The Import page's steps: what each one is made of, and how they wire up.
 
 `import_page` keeps the page -- its layout, its worker, and the two file
 dialogs the tests reach for through `import_page.QFileDialog`. Everything
 that is about a *step* lives here: building the five of them, publishing
-the widgets the page's seams expose, and the transitions that read the
-workbook (`finish_mapping`), rebuild against a freshly taught vocabulary
-(`refresh_result`), hand the built result to the Scene step
-(`show_scene_step`), render the YAML with its chosen scene
-(`finish_scene`) and write it (`write_output`).
+the widgets the page's seams expose, and `finish_mapping` (the one
+transition that is itself about building a step, not finishing the
+wizard). The step 3 -> 4 -> 5 finishing transitions (`refresh_result`,
+`show_scene_step`, `finish_scene`, `write_output`) live in
+`import_finish.py`, re-exported here by import so every existing caller
+(`import_page.save_as` -> `import_steps.write_output`, and this file's
+own `_terms`/`_scene` wiring) is unaffected.
 
 Split out under docs/tech-debt.md#d-29 -- the 1b-19 wiring had put
 import_page.py 46 lines over the ~200-line ceiling. Behaviour is
 byte-preserved and every public seam still answers on the page, so
-tests/test_ui_import_page.py passes unchanged. Fix round 2 moved
-`refresh_result` (and the write half of `save_as`, `write_output`) here
-from `import_page.py` for the same reason -- Task 9 needs the headroom
-`_refresh_result`'s 13 lines and `save_as`'s write logic were using up.
+tests/test_ui_import_page.py passes unchanged. Task 9 fix round 1 moved
+the four finishing functions out again to `import_finish.py` for the
+same reason -- Try AI's own wiring in `_mapping` needed the headroom.
 """
 
 from __future__ import annotations
-
-from pathlib import Path
 
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 from wing_parser.showcontext.ingest import sheet as sheet_mod
 from wing_parser.ui import import_controller as ic
+from wing_parser.ui.import_finish import (
+    finish_scene, refresh_result, show_scene_step, write_output,
+)
 from wing_parser.ui.mapping_step import MappingStep
 from wing_parser.ui.mapping_try_ai import MappingTryAi
 from wing_parser.ui.pick_step import PickStep
@@ -33,6 +35,11 @@ from wing_parser.ui.save_step import SaveStep
 from wing_parser.ui.scene_step import SceneStep
 from wing_parser.ui.terms_step import TermsStep
 from wing_parser.ui.texts import text
+
+__all__ = (
+    "build_steps", "finish_mapping", "finish_scene", "refresh_result",
+    "show_scene_step", "write_output",
+)
 
 # The mapping widgets the page re-exports by name. They are the seams
 # tests drive (`page.sheet_edit`, `page.next_button`, ...), so the list
@@ -126,74 +133,3 @@ def finish_mapping(page) -> None:
     page._rows = read.rows
     page._read, page._resolved = read, resolved
     page.show_terms_step(result)
-
-
-def refresh_result(page) -> bool:
-    """R1: Preview and Save must reflect what Record/Ignore just taught
-    in the Terms step, not the mapping-time snapshot -- rebuild from the
-    stored read/resolved mapping against the freshly loaded vocabulary at
-    this wizard's own directory.
-
-    Returns False, having already reported through `page._fail`, when the
-    rebuild itself fails -- fix round 2: the caller must then stop rather
-    than show or write the stale `page._result` it never touches on
-    failure. Returns True when there is nothing to rebuild (a test that
-    hands `show_terms_step` a bare result directly, never having gone
-    through `finish_mapping`) or when the rebuild succeeds.
-    """
-    if page._read is None or page._resolved is None:
-        return True
-    try:
-        page._result = ic.build_result(page._read, page._resolved, page._directory)
-    except (OSError, ValueError) as exc:
-        page._fail(exc)
-        return False
-    return True
-
-
-def show_scene_step(page) -> None:
-    """Step 3 -> step 4: rebuild against the freshly taught vocabulary
-    (same rule as the old show_preview, R1) and hand the scene step the
-    just-built result. A failed rebuild has already reported itself;
-    stop here without advancing past step 3 (fix round 2)."""
-    if not refresh_result(page):
-        return
-    page.scene_step.set_result(page._result)
-    page.step_area.setCurrentIndex(3)
-
-
-def finish_scene(page, scene) -> None:
-    """Step 4 -> step 5: render the YAML, with the chosen scene's
-    cross-check proposals if any -- Skip passes scene=None, and the file
-    is byte-for-byte what today's (pre-wave-4) Save produces. `scene` is
-    already `page.scene_step.chosen_scene` by the time this runs -- the
-    step sets it before emitting -- so write_output can read it back
-    from there and render the SAME thing Save later writes."""
-    try:
-        page.preview_pane.setPlainText(
-            ic.preview_text(page._xlsx, page._result, scene=scene)
-        )
-    except (OSError, ValueError) as exc:
-        page._fail(exc)
-        return
-    page.step_area.setCurrentIndex(4)
-
-
-def write_output(page, path: str) -> bool:
-    """Step 5's Save, minus the dialog -- `import_page.save_as` delegates
-    here. Refreshed first, same as Preview; a failed refresh must not be
-    followed by writing the stale mapping-time result (fix round 2). The
-    chosen scene threads through exactly as it did into Preview, so the
-    saved file is always byte-identical to what was just previewed."""
-    if not refresh_result(page):
-        return False
-    try:
-        Path(path).write_text(
-            ic.preview_text(
-                page._xlsx, page._result, scene=page.scene_step.chosen_scene),
-            encoding="utf-8",
-        )
-    except (OSError, ValueError) as exc:
-        page._fail(exc)
-        return False
-    return True

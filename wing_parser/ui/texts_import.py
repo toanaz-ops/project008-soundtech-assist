@@ -101,6 +101,11 @@ IMPORT_TEXTS: dict[str, str] = {
     "import.lint.clean": "{count} segments, nothing to repair.",
     "import.lint.fixed": "fixed {n} item(s):",
     "import.lint.backup_failed": "Could not write a backup: {error}",
+    "import.lint.repair_failed": (
+        "Could not write repairs (the .bak is still there): {error}"
+    ),
+    "import.lint.fixable_mark": "[auto-fixable] {anomaly}",
+    "import.lint.unfixable_mark": "[manual only] {anomaly}",
     "import.try_ai.button": "Try AI on this file",
     "import.try_ai.cancel": "Cancel",
     "import.try_ai.running": "Asking the model...",
@@ -110,5 +115,12 @@ IMPORT_TEXTS: dict[str, str] = {
     "import.try_ai.no_key": (
         "No model key configured — Try AI needs one. Set it in Settings."
     ),
+    "import.try_ai.kill_switch": "AI is disabled (WING_DISABLE_LLM).",
     "import.try_ai.result": "{provider}, {seconds}s",
+    "import.try_ai.field.sheet": "sheet: {value}",
+    "import.try_ai.field.header_row": "header_row: {value}",
+    "import.try_ai.field.columns": "columns: {value}",
+    "import.try_ai.field.headers": "headers: {value}",
+    "import.try_ai.field.problems": "problems: {value}",
+    "vocabulary.assistant.kill_switch": "AI is disabled (WING_DISABLE_LLM).",
 }

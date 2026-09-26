@@ -964,19 +964,63 @@ def test_starting_a_second_call_while_one_runs_is_queue_rejected(
         gate.set()
 
 
-def test_the_pick_steps_lint_button_opens_a_lint_dialog(page, monkeypatch):
+def test_the_pick_steps_lint_button_opens_the_file_chooser_then_a_lint_dialog(
+        page, monkeypatch, tmp_path):
+    """UX fix (Task 9 fix round 1): the button goes straight to the file
+    chooser and, once a file is picked, opens the dialog already showing
+    that file's lint result -- no second click on a same-labelled button
+    inside an empty dialog."""
+    from wing_parser.ui import pick_step
+
+    chosen = tmp_path / "show.yaml"
+    chosen.write_text("show: t\nsegments: []\n", encoding="utf-8")
+    monkeypatch.setattr(
+        pick_step.QFileDialog, "getOpenFileName",
+        staticmethod(lambda *a, **k: (str(chosen), "")),
+    )
+    opened = {}
+
+    class _FakeDialog:
+        def __init__(self, parent):
+            pass
+
+        def open_path(self, path):
+            opened["path"] = path
+
+        def exec(self):
+            opened["exec"] = True
+            return 0
+
+    monkeypatch.setattr(pick_step, "LintDialog", _FakeDialog)
+    page.pick_step.lint_button.click()
+    assert opened == {"path": str(chosen), "exec": True}
+
+
+def test_the_pick_steps_lint_button_does_nothing_if_the_chooser_is_cancelled(
+        page, monkeypatch):
+    from wing_parser.ui import pick_step
+
+    monkeypatch.setattr(
+        pick_step.QFileDialog, "getOpenFileName",
+        staticmethod(lambda *a, **k: ("", "")),
+    )
     opened = []
     monkeypatch.setattr(
-        "wing_parser.ui.pick_step.LintDialog",
+        pick_step, "LintDialog",
         lambda parent: type("D", (), {"exec": lambda self: opened.append(True) or 0})(),
     )
     page.pick_step.lint_button.click()
-    assert opened == [True]
+    assert opened == []
 
 
 def test_try_ai_on_the_mapping_step_is_reachable_and_uses_the_pages_xlsx(page, monkeypatch, settle):
     from wing_parser.ui import mapping_try_ai
 
+    # Fix round 1, controller ruling: Try AI now honours WING_DISABLE_LLM
+    # (the `page` fixture sets it for every OTHER wizard test, so that
+    # auto-assist never makes a real call) -- this test is the one place
+    # that explicitly asks for a real Try AI click, so it opts back in.
+    monkeypatch.delenv("WING_DISABLE_LLM", raising=False)
     page.pick_file(BIDV)
     # pick_file's own proposal runs on a worker thread even with the
     # model disabled (WING_DISABLE_LLM=1, set by the `page` fixture) --

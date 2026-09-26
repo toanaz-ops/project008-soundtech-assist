@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import qtawesome as qta
 from PySide6.QtWidgets import (
+    QFileDialog,
     QGroupBox,
     QPushButton,
     QTextEdit,
@@ -36,7 +37,18 @@ class PickStep(QWidget):
         layout.addWidget(group, stretch=1)
 
     def _open_lint(self) -> None:
-        LintDialog(self).exec()
+        """UX fix (Task 9 fix round 1): go straight to the file chooser --
+        an operator clicking this button already means to pick a file, so
+        landing on an empty dialog whose OWN "Check an existing show-
+        context file..." button (same label) has to be clicked a second
+        time was a real double-click-the-same-thing bug, not a feature."""
+        path, _ = QFileDialog.getOpenFileName(
+            self, text("import.lint.open"), "", text("import.yaml_filter"))
+        if not path:
+            return
+        dialog = LintDialog(self)
+        dialog.open_path(path)
+        dialog.exec()
 
     def show_samples(self, samples) -> None:
         """Each sheet's name and first lines, as a what-is-in-here pane."""

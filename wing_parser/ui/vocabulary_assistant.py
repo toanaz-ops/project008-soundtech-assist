@@ -15,8 +15,11 @@ Grey-out has two independent triggers (fix round 1, I0 added the first):
   the same way -- re-showing this tab, or the window reopening after
   Settings changes, re-checks), disables `propose_button`/
   `instruction_edit` and says why BEFORE any call is attempted, using
-  `key_status.key_configured()`. `propose_for_fragments`/`_propose` both
-  also refuse outright.
+  `key_status.key_configured()` AND (Task 9 fix round 1, controller
+  ruling) `classifier.llm.kill_switch_on()` -- every path that would
+  construct a provider must ask it first (that function's own
+  docstring). `propose_for_fragments`/`_propose` both also refuse
+  outright.
 - **Reactive:** `_failed` classifies every call failure through
   `provider_errors.classify` and, for `vocabulary_assistant_support.
   UNRECOVERABLE` classes, disables the same two widgets on top of
@@ -40,6 +43,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.classifier import provider_errors, vocab_changes
+from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.matcher import known_kinds
 from wing_parser.ui import key_status
 from wing_parser.ui import vocabulary_assistant_support as support
@@ -57,6 +61,7 @@ class VocabularyAssistant(QWidget):
         self._validated: list[vocab_changes.Validated] = []
         self._checks: list[QCheckBox] = []
         self._key_ok = True
+        self._kill_switch = False
 
         self.instruction_edit = QPlainTextEdit()
         self.instruction_edit.setPlaceholderText(text("vocabulary.assistant.placeholder"))
@@ -106,12 +111,12 @@ class VocabularyAssistant(QWidget):
         self._vocabulary = vocabulary
 
     def propose_for_fragments(self, fragments: tuple[str, ...]) -> bool:
-        if not self._key_ok:
+        if not self._key_ok or self._kill_switch:
             return False
         return self._start(fragments=fragments, instruction="")
 
     def _propose(self) -> None:
-        if not self._key_ok:
+        if not self._key_ok or self._kill_switch:
             return
         self._start(fragments=(), instruction=self.instruction_edit.toPlainText().strip())
 
@@ -157,17 +162,24 @@ class VocabularyAssistant(QWidget):
         button then would break `ButtonRunner`'s own disabled-while-
         running rule. `self._runner.busy` (workers.CallRunner) is the
         same flag `ButtonRunner.run` itself checks before starting a new
-        call, so this can never disagree with it."""
+        call, so this can never disagree with it. Fix round 1, controller
+        ruling: the kill switch (`classifier.llm.kill_switch_on`) is
+        checked here too and takes priority over the no-key hint when
+        both apply -- either alone is reason enough to stay disabled."""
         self._key_ok = key_status.key_configured()
-        enabled = self._key_ok and not self._runner.busy
+        self._kill_switch = kill_switch_on()
+        enabled = self._key_ok and not self._kill_switch and not self._runner.busy
         self.propose_button.setEnabled(enabled)
         self.instruction_edit.setEnabled(enabled)
         if self._runner.busy:
             return   # a running call owns the status line; leave it alone
+        kill_switch_text = text("vocabulary.assistant.kill_switch")
         no_key_text = text("vocabulary.assistant.no_key")
-        if not self._key_ok:
+        if self._kill_switch:
+            self.status_label.setText(kill_switch_text)
+        elif not self._key_ok:
             self.status_label.setText(no_key_text)
-        elif self.status_label.text() == no_key_text:
+        elif self.status_label.text() in (no_key_text, kill_switch_text):
             self.status_label.setText("")
 
     def _failed(self, exc: Exception) -> None:

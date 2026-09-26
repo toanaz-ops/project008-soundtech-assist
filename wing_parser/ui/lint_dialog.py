@@ -1,12 +1,26 @@
 """Lint an existing show-context file from the Pick step (design spec
 §6). Reads exactly what `wing showcontext lint` reads
 (`load_show_context`, `context.anomalies`) -- no second lint
-implementation. Fix writes `<file>.bak` (overwriting an older one, W2)
-before `apply_repairs`, which itself keeps no backup of its own, then
-re-lints and shows what changed and what remains. A failed backup write
-(a full disk, a read-only file) must stop before `apply_repairs` ever
-runs -- writing repairs into a file this dialog could not first protect
-would defeat the whole point of W2.
+implementation. Each anomaly line is marked auto-fixable or manual-only
+via `rewrite.is_fixable_anomaly`, and Fix is enabled only when at least
+one line is fixable -- an unfixable anomaly (an unreadable `time:`
+value) used to leave Fix enabled forever: clicking it wrote a `.bak`,
+ran `apply_repairs` (which touched nothing), reported "fixed 0", and
+re-lit the identical list, an infinite loop with no way out.
+
+Fix writes `<file>.bak` (overwriting an older one, W2) before
+`apply_repairs`, which itself keeps no backup of its own, then re-lints
+and shows what changed and what remains. Two distinct failures are each
+caught and reported, never left to raise inside this Qt slot (silent in
+the console=False release exe):
+
+- A failed backup write (a full disk, a read-only file) stops before
+  `apply_repairs` ever runs -- writing repairs into a file this dialog
+  could not first protect would defeat the whole point of W2.
+- A failed `apply_repairs` itself (a read-only *source* -- the `.bak`
+  copy succeeds, then `open(path, "w")` raises `PermissionError`; or a
+  document ruamel cannot round-trip) is reported the same way. The
+  `.bak` this dialog already wrote is left in place either way.
 """
 
 from __future__ import annotations
@@ -18,9 +32,10 @@ from PySide6.QtWidgets import (
     QDialog, QFileDialog, QHBoxLayout, QMessageBox, QPushButton, QTextEdit,
     QVBoxLayout,
 )
+from ruamel.yaml import YAMLError
 
 from wing_parser.showcontext import load_show_context
-from wing_parser.showcontext.rewrite import apply_repairs
+from wing_parser.showcontext.rewrite import apply_repairs, is_fixable_anomaly
 from wing_parser.ui.texts import text
 
 
@@ -73,8 +88,13 @@ class LintDialog(QDialog):
                 text("import.lint.clean").format(count=len(context.segments)))
             self.fix_button.setEnabled(False)
             return
-        self.output.setPlainText("\n".join(context.anomalies))
-        self.fix_button.setEnabled(True)
+        lines = [
+            text("import.lint.fixable_mark" if is_fixable_anomaly(a)
+                 else "import.lint.unfixable_mark").format(anomaly=a)
+            for a in context.anomalies
+        ]
+        self.output.setPlainText("\n".join(lines))
+        self.fix_button.setEnabled(any(is_fixable_anomaly(a) for a in context.anomalies))
 
     def _fix(self) -> None:
         answer = QMessageBox.question(
@@ -87,7 +107,11 @@ class LintDialog(QDialog):
         except OSError as exc:
             self.output.setPlainText(text("import.lint.backup_failed").format(error=exc))
             return
-        repairs = apply_repairs(self._path)
+        try:
+            repairs = apply_repairs(self._path)
+        except (OSError, ValueError, YAMLError) as exc:
+            self.output.setPlainText(text("import.lint.repair_failed").format(error=exc))
+            return
         fixed_lines = [text("import.lint.fixed").format(n=len(repairs)), *repairs]
         self._lint()   # sets fix_button's new state and its own text first
         self.output.setPlainText(

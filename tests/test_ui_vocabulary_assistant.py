@@ -221,6 +221,35 @@ def test_no_key_greys_out_before_any_call_and_the_factory_is_never_reached(
     assert reached == []
 
 
+# -- Task 9 fix round 1, controller ruling: the kill switch is honoured ---
+
+
+def test_kill_switch_on_greys_out_before_any_call_and_the_factory_is_never_reached(
+        qt_app, monkeypatch, tmp_path):
+    """Same shape as the no-key test above, for WING_DISABLE_LLM instead:
+    `classifier.llm.kill_switch_on`'s own docstring rules that every path
+    which would construct a provider must ask it first."""
+    from wing_parser.classifier import vocabulary as vocab_module
+    from wing_parser.ui.vocabulary_assistant import VocabularyAssistant
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+
+    vocabulary = vocab_module.Vocabulary.load(tmp_path / "vocab")
+    reached = []
+    widget = VocabularyAssistant(
+        vocabulary, lambda: reached.append(1) or _FakeProvider(_mixed_reply()), lambda: None)
+
+    assert not widget.propose_button.isEnabled()
+    assert not widget.instruction_edit.isEnabled()
+    assert "WING_DISABLE_LLM" in widget.status_label.text()
+
+    assert widget.propose_for_fragments(("x",)) is False
+    assert reached == []   # the factory was never even invoked
+
+    widget._propose()      # the button click path refuses the same way
+    assert reached == []
+
+
 def test_the_key_status_rechecks_when_the_tab_is_shown(qt_app, monkeypatch, tmp_path):
     from wing_parser import config as config_module
     from wing_parser.classifier import provider as provider_module

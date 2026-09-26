@@ -7,22 +7,25 @@ SHOW a classified failure, which a swallowed exception cannot be).
 Reuses the page's one shared CallRunner -- never a second one on this
 page.
 
-Two deliberate departures from the plan's own draft, both load-bearing
-(see tests/test_ui_mapping_try_ai.py's own docstring for how they were
-checked against the real test fixtures):
+**Fix round 1, controller ruling (supersedes this file's own earlier
+docstring): the kill switch IS honoured here.** `classifier/llm.py`'s
+own policy (`kill_switch_on`'s docstring) is that every path which
+would construct a provider must ask it first; `_try()` now does, before
+anything else, and shows `import.try_ai.kill_switch` without ever
+calling `self._provider_factory`. Tests that need a real call now
+route through the panel's `panel` fixture (which never sets the switch)
+or explicitly `monkeypatch.delenv("WING_DISABLE_LLM", raising=False)`;
+`tests/test_ui_import_page.py`'s own end-to-end test does the latter,
+since its `page` fixture sets the switch for every OTHER wizard test.
+Settings' own "Test connection" is UNCHANGED by this ruling -- a
+deliberately deferred decision, not an oversight.
 
-- The kill switch (`classifier.llm.kill_switch_on`) is never checked
-  here, the same way Settings' own "Test connection" (settings_dialog.py)
-  never checks it. Both are an explicit, one-off diagnostic action the
-  operator asked for, not the wizard's silent auto-assist the switch
-  exists to silence -- and `tests/test_ui_import_page.py`'s `page`
-  fixture sets the switch for every wizard test, so honouring it here
-  would make Try AI unreachable from the very page it lives on.
-- `_call_provider` runs the provider factory (and the config read for
-  the provider/model line) on the WORKER thread, never the GUI thread,
-  so a bad provider.yaml reaches `_failed` like any other provider
-  failure instead of escaping this button's Qt slot (mirrors
-  vocabulary_assistant_support.propose_via_factory).
+One departure from the plan's own draft remains, load-bearing:
+`_call_provider` runs the provider factory (and the config read for the
+provider/model line) on the WORKER thread, never the GUI thread, so a
+bad provider.yaml reaches `_failed` like any other provider failure
+instead of escaping this button's Qt slot (mirrors
+vocabulary_assistant_support.propose_via_factory).
 
 The no-key hint mirrors VocabularyAssistant's `_update_key_status`, but
 only on showEvent, never at construction: this panel lives inside a
@@ -41,6 +44,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser import config
 from wing_parser.classifier import provider_errors
+from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.provider import resolve_config
 from wing_parser.showcontext.ingest import suggest
 from wing_parser.ui import key_status
@@ -103,19 +107,28 @@ class MappingTryAi(QWidget):
         """Proactive grey-out, same idiom as VocabularyAssistant's own
         (module doc): re-checked whenever this panel is shown, and never
         re-enabled while a call the ButtonRunner itself disabled is
-        still running."""
+        still running. The kill switch takes priority over the no-key
+        hint when both apply -- either one alone is reason enough to
+        stay disabled."""
         self._key_ok = key_status.key_configured()
-        enabled = self._key_ok and not self._runner.busy
+        switched_off = kill_switch_on()
+        enabled = self._key_ok and not switched_off and not self._runner.busy
         self.try_button.setEnabled(enabled)
         if self._runner.busy:
             return
+        kill_switch_text = text("import.try_ai.kill_switch")
         no_key_text = text("import.try_ai.no_key")
-        if not self._key_ok:
+        if switched_off:
+            self.result_label.setText(kill_switch_text)
+        elif not self._key_ok:
             self.result_label.setText(no_key_text)
-        elif self.result_label.text() == no_key_text:
+        elif self.result_label.text() in (no_key_text, kill_switch_text):
             self.result_label.setText("")
 
     def _try(self) -> bool:
+        if kill_switch_on():
+            self.result_label.setText(text("import.try_ai.kill_switch"))
+            return False
         if not self._key_ok:
             return False
         xlsx = self._xlsx_provider()
@@ -134,11 +147,14 @@ class MappingTryAi(QWidget):
             text("import.try_ai.result").format(
                 provider=f"{cfg.name}/{cfg.model}", seconds=elapsed))
         lines = [
-            f"sheet: {proposal.sheet}", f"header_row: {proposal.header_row}",
-            f"columns: {proposal.columns}", f"headers: {proposal.headers}",
+            text("import.try_ai.field.sheet").format(value=proposal.sheet),
+            text("import.try_ai.field.header_row").format(value=proposal.header_row),
+            text("import.try_ai.field.columns").format(value=proposal.columns),
+            text("import.try_ai.field.headers").format(value=proposal.headers),
         ]
         if proposal.problems:
-            lines.append("problems: " + "; ".join(proposal.problems))
+            lines.append(text("import.try_ai.field.problems").format(
+                value="; ".join(proposal.problems)))
         self.proposal_view.setPlainText("\n".join(lines))
 
     def _failed(self, exc: Exception) -> None:
