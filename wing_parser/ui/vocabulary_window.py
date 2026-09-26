@@ -20,12 +20,14 @@ from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTabWid
 
 from wing_parser.classifier import vocabulary as vocab_module
 from wing_parser.ui.texts import text
+from wing_parser.ui.vocabulary_assistant import VocabularyAssistant
 from wing_parser.ui.vocabulary_sets_tab import VocabularySetsTab
 from wing_parser.ui.vocabulary_terms_tab import VocabularyTermsTab
 
 
 class VocabularyWindow(QDialog):
-    def __init__(self, parent=None, *, directory=None) -> None:
+    def __init__(self, parent=None, *, directory=None,
+                 initial_fragments: tuple[str, ...] = ()) -> None:
         super().__init__(parent)
         self.setWindowTitle(text("vocabulary.title"))
         self.setMinimumSize(640, 420)
@@ -42,9 +44,11 @@ class VocabularyWindow(QDialog):
 
         self.sets_tab = VocabularySetsTab(self.vocabulary, self._reload)
         self.terms_tab = VocabularyTermsTab(self.vocabulary, self._reload)
+        self.assistant_tab = VocabularyAssistant(self.vocabulary, self._provider_factory, self._reload)
         self.tabs = QTabWidget()
         self.tabs.addTab(self.sets_tab, text("vocabulary.tab.sets"))
         self.tabs.addTab(self.terms_tab, text("vocabulary.tab.terms"))
+        self.tabs.addTab(self.assistant_tab, text("vocabulary.tab.assistant"))
 
         close_button = QPushButton(text("vocabulary.close"))
         close_button.clicked.connect(self.accept)
@@ -58,13 +62,29 @@ class VocabularyWindow(QDialog):
         layout.addLayout(buttons)
         self._update_problems()
 
+        if initial_fragments:
+            # Task 7's Terms-step entry point: open straight into a
+            # running proposal for the fragments it could not resolve,
+            # with no UI of its own needed on that step.
+            self.tabs.setCurrentWidget(self.assistant_tab)
+            self.assistant_tab.propose_for_fragments(initial_fragments)
+
+    def _provider_factory(self):
+        from wing_parser import config
+        from wing_parser.classifier.provider import make_provider, resolve_config
+
+        return make_provider(resolve_config(config.knowledge_dir()))
+
     def _reload(self) -> None:
         """Every write on either tab re-reads the vocabulary and refreshes
-        both -- editing Drum kit must be visible in Band's nested-kinds
-        cell without closing this window (F13)."""
+        all three -- editing Drum kit must be visible in Band's
+        nested-kinds cell without closing this window (F13), and an
+        Apply in the assistant must be visible on the Sets/Terms tabs
+        the same way a manual edit already is."""
         self.vocabulary = vocab_module.Vocabulary.load(self._directory)
         self.sets_tab.set_vocabulary(self.vocabulary)
         self.terms_tab.set_vocabulary(self.vocabulary)
+        self.assistant_tab.set_vocabulary(self.vocabulary)
         self._update_problems()
 
     def _update_problems(self) -> None:

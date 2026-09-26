@@ -48,4 +48,20 @@ IMPORT_TEXTS: dict[str, str] = {
         "not recognise. Continue?"
     ),
     "vocabulary.delete_confirm": "Delete {name}? This cannot be undone from here.",
+    "vocabulary.tab.assistant": "Assistant",
+    "vocabulary.assistant.placeholder": (
+        "e.g. \"my drum kit has no kick out, add a second tom\", "
+        "\"cajon is percussion\""
+    ),
+    "vocabulary.assistant.propose": "Propose",
+    "vocabulary.assistant.cancel": "Cancel",
+    "vocabulary.assistant.apply": "Apply ticked changes",
+    "vocabulary.assistant.running": "Asking the model...",
+    "vocabulary.assistant.cancelled": "Cancelled — nothing was applied.",
+    "vocabulary.assistant.timeout": "The model did not answer within {seconds} s.",
+    "vocabulary.assistant.busy": "A model request is already running — cancel it or wait.",
+    "vocabulary.assistant.col.apply": "",
+    "vocabulary.assistant.col.before": "Before",
+    "vocabulary.assistant.col.after": "After",
+    "vocabulary.assistant.col.reason": "Reason",
 }

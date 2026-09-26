@@ -674,6 +674,14 @@ def test_selection_is_cleared_after_a_successful_delete(window, monkeypatch):
     assert not window.terms_tab.edit_button.isEnabled()
 
 
+def test_the_window_has_an_assistant_tab_and_it_shares_the_reload(qt_app, tmp_path):
+    from wing_parser.ui.vocabulary_window import VocabularyWindow
+
+    window = VocabularyWindow(directory=tmp_path)
+    assert window.tabs.indexOf(window.assistant_tab) >= 0
+    assert window.assistant_tab._vocabulary is window.vocabulary
+
+
 class _NullExec:
     def exec(self):
         return 0
