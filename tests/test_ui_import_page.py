@@ -683,6 +683,42 @@ def test_recording_a_key_that_does_not_match_its_own_fragment_warns_but_stays_sa
     assert any(v.get("kinds") == ["speech.mc"] for v in doc["cuesheet"].values())
 
 
+# -- fix round 2 -------------------------------------------------------------
+
+
+def test_preview_does_not_advance_when_the_rebuild_fails(page, tmp_path):
+    """Important, fix round 2: refresh_result reported the failure but
+    show_preview kept going and rendered/advanced on the stale result
+    anyway. It must now stop at step 3."""
+    fragment = "xyzzy plugh waldo"
+    result = _seed_synthetic_result(page, tmp_path, fragment)
+    page.show_terms_step(result)
+    assert page.step_area.currentIndex() == 2
+
+    (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
+
+    page.preview_button.click()
+
+    assert page.step_area.currentIndex() == 2   # did not advance to step 4
+    assert page.status.text() != ""
+
+
+def test_save_does_not_write_when_the_rebuild_fails(page, tmp_path):
+    """Important, fix round 2: save_as wrote the stale mapping-time
+    result and returned True even though the rebuild it asked for had
+    just failed."""
+    fragment = "xyzzy plugh waldo"
+    result = _seed_synthetic_result(page, tmp_path, fragment)
+    page.show_terms_step(result)
+
+    (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
+
+    out = tmp_path / "out.yaml"
+    assert page.save_as(str(out)) is False
+    assert not out.exists()
+    assert page.status.text() != ""
+
+
 def test_preview_renders_and_save_writes_utf8(bidv_terms, tmp_path):
     bidv_terms.preview_button.click()
     assert bidv_terms.step_area.currentIndex() == 3

@@ -3,16 +3,23 @@
 `import_page` keeps the page -- its layout, its worker, and the two file
 dialogs the tests reach for through `import_page.QFileDialog`. Everything
 that is about a *step* lives here: building the four of them, publishing
-the widgets the page's seams expose, and the two transitions that read
-the workbook (`finish_mapping`) and render the YAML (`show_preview`).
+the widgets the page's seams expose, and the transitions that read the
+workbook (`finish_mapping`), rebuild against a freshly taught vocabulary
+(`refresh_result`), render the YAML (`show_preview`) and write it
+(`write_output`).
 
 Split out under docs/tech-debt.md#d-29 -- the 1b-19 wiring had put
 import_page.py 46 lines over the ~200-line ceiling. Behaviour is
 byte-preserved and every public seam still answers on the page, so
-tests/test_ui_import_page.py passes unchanged.
+tests/test_ui_import_page.py passes unchanged. Fix round 2 moved
+`refresh_result` (and the write half of `save_as`, `write_output`) here
+from `import_page.py` for the same reason -- Task 9 needs the headroom
+`_refresh_result`'s 13 lines and `save_as`'s write logic were using up.
 """
 
 from __future__ import annotations
+
+from pathlib import Path
 
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
@@ -103,14 +110,37 @@ def finish_mapping(page) -> None:
     page.show_terms_step(result)
 
 
+def refresh_result(page) -> bool:
+    """R1: Preview and Save must reflect what Record/Ignore just taught
+    in the Terms step, not the mapping-time snapshot -- rebuild from the
+    stored read/resolved mapping against the freshly loaded vocabulary at
+    this wizard's own directory.
+
+    Returns False, having already reported through `page._fail`, when the
+    rebuild itself fails -- fix round 2: the caller must then stop rather
+    than show or write the stale `page._result` it never touches on
+    failure. Returns True when there is nothing to rebuild (a test that
+    hands `show_terms_step` a bare result directly, never having gone
+    through `finish_mapping`) or when the rebuild succeeds.
+    """
+    if page._read is None or page._resolved is None:
+        return True
+    try:
+        page._result = ic.build_result(page._read, page._resolved, page._directory)
+    except (OSError, ValueError) as exc:
+        page._fail(exc)
+        return False
+    return True
+
+
 def show_preview(page) -> None:
     """Step 3 -> step 4: render the YAML the Save button will write.
 
-    R1: rebuilt first against whatever Record/Ignore just taught in the
-    Terms step (`page._refresh_result`), so the trailer's ignored/
-    unreadable counts and the YAML itself are never one step behind.
-    """
-    page._refresh_result()
+    A failed `refresh_result` has already reported itself; stop here
+    without advancing past step 3 or rendering the now-stale result
+    (fix round 2)."""
+    if not refresh_result(page):
+        return
     try:
         page.preview_pane.setPlainText(
             ic.preview_text(page._xlsx, page._result)
@@ -119,3 +149,19 @@ def show_preview(page) -> None:
         page._fail(exc)
         return
     page.step_area.setCurrentIndex(3)
+
+
+def write_output(page, path: str) -> bool:
+    """Step 4's Save, minus the dialog -- `import_page.save_as` delegates
+    here. Refreshed first, same as Preview; a failed refresh must not be
+    followed by writing the stale mapping-time result (fix round 2)."""
+    if not refresh_result(page):
+        return False
+    try:
+        Path(path).write_text(
+            ic.preview_text(page._xlsx, page._result), encoding="utf-8"
+        )
+    except (OSError, ValueError) as exc:
+        page._fail(exc)
+        return False
+    return True

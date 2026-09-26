@@ -10,7 +10,6 @@ network. Every failure degrades to a status label -- no tracebacks.
 from __future__ import annotations
 
 import zipfile
-from pathlib import Path
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
@@ -44,8 +43,9 @@ class ImportPage(QWidget):
         self._xlsx: str | None = None
         self._result = None
         self._rows: tuple = ()
-        # the sheet read and its resolved mapping, from finish_mapping -- kept so
-        # Preview/Save can rebuild _result against a freshly taught vocabulary (R1).
+        # the sheet read and its resolved mapping, from finish_mapping -- read by
+        # import_steps.refresh_result to rebuild _result against a freshly taught
+        # vocabulary before Preview/Save (R1; moved out of this file, fix round 2).
         self._read = None
         self._resolved = None
         # record_term's write target; tests point this at tmp_path, None = cache default.
@@ -105,20 +105,6 @@ class ImportPage(QWidget):
 
     def _fail(self, exc: Exception) -> None:
         self.status.setText(text("import.error").format(error=exc))
-
-    def _refresh_result(self) -> None:
-        """R1: Preview and Save must reflect what Record/Ignore just
-        taught in the Terms step, not the mapping-time snapshot -- rebuild
-        from the stored read/resolved mapping against the freshly loaded
-        vocabulary at this wizard's own directory. A no-op when there is
-        no real read to rebuild from (a test that hands show_terms_step a
-        bare result directly, never having gone through finish_mapping)."""
-        if self._read is None or self._resolved is None:
-            return
-        try:
-            self._result = ic.build_result(self._read, self._resolved, self._directory)
-        except (OSError, ValueError) as exc:
-            self._fail(exc)
 
     def _choose_file(self) -> None:
         name, _ = QFileDialog.getOpenFileName(
@@ -180,16 +166,13 @@ class ImportPage(QWidget):
         return self.terms_step.term_row_state(term)
 
     def save_as(self, path: str) -> bool:
-        """Public seam: write the preview as UTF-8, minus the dialog."""
-        self._refresh_result()
-        try:
-            Path(path).write_text(
-                ic.preview_text(self._xlsx, self._result), encoding="utf-8"
-            )
-        except (OSError, ValueError) as exc:
-            self._fail(exc)
-            return False
-        return True
+        """Public seam: write the preview as UTF-8, minus the dialog.
+
+        Refreshed first against what Record/Ignore just taught -- the
+        write itself lives in `import_steps.write_output` (fix round 2:
+        moved out with `refresh_result` to keep this file under the
+        line ceiling; behaviour unchanged)."""
+        return import_steps.write_output(self, path)
 
     def _save_dialog(self) -> None:
         name, _ = QFileDialog.getSaveFileName(
