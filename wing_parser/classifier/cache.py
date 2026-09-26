@@ -20,7 +20,7 @@ from wing_parser.classifier.matcher import Classification
 from wing_parser.classifier.normalize import clean
 
 FILENAME = "classifier.yaml"
-DOMAINS = ("channels", "buses", "cuesheet")
+DOMAINS = ("channels", "buses", "cuesheet", "cuesheet_sets")
 
 _SEED = """\
 # Cached and manually declared classifications.
@@ -40,7 +40,16 @@ buses: {}
 # sheet and a console strip are different naming domains -- nobody
 # labels a strip "ca si nu", and no director writes "HS4" -- so a term
 # lives here and not in channels.
+#
+# Two shapes coexist here on purpose (wave 4): the CLI wizard's assisted
+# guessing still writes {kind, confidence, origin}; the Vocabulary window
+# and its AI assistant write {kinds/sets/ignore, match, origin} -- see
+# classifier/vocabulary.py. cache.load() only ever parses the first shape.
 cuesheet: {}
+# cuesheet_sets: named bundles of kinds a term can point at ("Drum kit"),
+# editable from the same Vocabulary window. classifier/vocabulary.py owns
+# this domain entirely; cache.load() never parses it.
+cuesheet_sets: {}
 """
 
 
@@ -124,16 +133,28 @@ def _one(domain: str, key: str, entry: Any, path: Path) -> Classification:
     )
 
 
+_STRICT_DOMAINS = ("channels", "buses")
+
+
 def load(directory: Path | None = None) -> dict[str, dict[str, Classification]]:
     doc = _read(directory)
     path = _path(directory)
-    return {
-        domain: {
-            key: _one(domain, key, entry, path)
-            for key, entry in (doc.get(domain) or {}).items()
-        }
-        for domain in DOMAINS
-    }
+    result: dict[str, dict[str, Classification]] = {}
+    for domain in DOMAINS:
+        raw = doc.get(domain) or {}
+        if domain in _STRICT_DOMAINS:
+            result[domain] = {key: _one(domain, key, entry, path) for key, entry in raw.items()}
+        else:
+            # cuesheet's pre-wave-4 entries ({kind, confidence, ...}) still
+            # parse as Classification; a wave-4 term/set entry has neither
+            # key and belongs to vocabulary.py, not this view (cache.py
+            # docstring above _SEED).
+            result[domain] = {
+                key: _one(domain, key, entry, path)
+                for key, entry in raw.items()
+                if "kind" in entry and "confidence" in entry
+            }
+    return result
 
 
 def lookup(name: str, domain: str, directory: Path | None = None) -> Classification | None:
@@ -155,4 +176,18 @@ def remember(
         "origin": classification.origin,
         "matched": classification.matched,
     }
+    _write(doc, directory)
+
+
+def read_raw(directory: Path | None = None) -> Any:
+    """The live document, unfiltered -- vocabulary.py's own domains
+    (`cuesheet`, `cuesheet_sets`) carry a richer shape than `_one()` can
+    parse, so it reads and writes through this pair instead of `load()`/
+    `remember()`. Mutate the result and pass it to `write_raw` to keep
+    every hand-added comment in classifier.yaml (same contract as `_read`/
+    `_write`, just under a name another module in this package may call)."""
+    return _read(directory)
+
+
+def write_raw(doc: Any, directory: Path | None = None) -> None:
     _write(doc, directory)

@@ -15,4 +15,13 @@ buses: {}
 # sheet and a console strip are different naming domains -- nobody
 # labels a strip "ca si nu", and no director writes "HS4" -- so a term
 # lives here and not in channels.
+#
+# Two shapes coexist here on purpose (wave 4): the CLI wizard's assisted
+# guessing still writes {kind, confidence, origin}; the Vocabulary window
+# and its AI assistant write {kinds/sets/ignore, match, origin} -- see
+# classifier/vocabulary.py. cache.load() only ever parses the first shape.
 cuesheet: {}
+# cuesheet_sets: named bundles of kinds a term can point at ("Drum kit"),
+# editable from the same Vocabulary window. classifier/vocabulary.py owns
+# this domain entirely; cache.load() never parses it.
+cuesheet_sets: {}
