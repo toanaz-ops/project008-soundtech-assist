@@ -16,6 +16,7 @@ from wing_parser.ui.session import Session
 from wing_parser.ui.settings_dialog import SettingsDialog
 from wing_parser.ui.state_store import PAGE_KEYS
 from wing_parser.ui.texts import text
+from wing_parser.ui.vocabulary_window import VocabularyWindow
 from wing_parser.ui.window_state import adopt_session
 
 # Bound to a name because two call sites share it. The texts.py scan
@@ -36,6 +37,7 @@ def build_menus(window) -> None:
         text("menu.undo"), window.undo)
     tools_menu = window.menuBar().addMenu(text("menu.tools"))
     tools_menu.addAction(text("menu.settings"), window.open_settings)
+    tools_menu.addAction(text("menu.vocabulary"), window.open_vocabulary)
     window._reanalyse_action = tools_menu.addAction(
         text("menu.reanalyse"), window.reanalyse
     )
@@ -68,6 +70,10 @@ def build_accelerators(window) -> None:
 def open_settings(window) -> None:
     """Modal: the operator finishes or cancels the key edit in one go."""
     SettingsDialog(window).exec()
+
+
+def open_vocabulary(window) -> None:
+    VocabularyWindow(window).exec()
 
 
 def open_file(window) -> None:

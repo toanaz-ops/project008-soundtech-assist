@@ -40,6 +40,8 @@ class TermsStep(QWidget):
 
         self.load_guesses_button = QPushButton(text("import.load_guesses"))
         self.load_guesses_button.clicked.connect(self.load_guesses)
+        self.vocabulary_button = QPushButton(text("vocabulary.open_button"))
+        self.vocabulary_button.clicked.connect(self._open_vocabulary)
         self.cancel_button = QPushButton(text("import.cancel"))
         self.cancel_button.setVisible(False)
         self._calls = ButtonRunner(
@@ -57,6 +59,7 @@ class TermsStep(QWidget):
         self.grid.setColumnStretch(1, 1)
         layout = QVBoxLayout(self)
         layout.addWidget(self.load_guesses_button)
+        layout.addWidget(self.vocabulary_button)
         layout.addWidget(self.cancel_button)
         layout.addLayout(self.grid)
         layout.addStretch()
@@ -137,6 +140,11 @@ class TermsStep(QWidget):
 
     def mark(self, term: str, state: str) -> None:
         self._rows[term]["state"] = state
+
+    def _open_vocabulary(self) -> None:
+        from wing_parser.ui.vocabulary_window import VocabularyWindow
+
+        VocabularyWindow(self).exec()
 
     # -- test seams -----------------------------------------------------------
 

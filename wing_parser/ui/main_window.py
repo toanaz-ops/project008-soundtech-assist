@@ -138,6 +138,9 @@ class MainWindow(QMainWindow):
     def open_settings(self) -> None:
         menus.open_settings(self)
 
+    def open_vocabulary(self) -> None:
+        menus.open_vocabulary(self)
+
     def show_knowledge_dir(self) -> None:
         window_state.show_knowledge_dir(self)
 

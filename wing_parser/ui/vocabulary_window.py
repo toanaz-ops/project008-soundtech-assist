@@ -1,0 +1,70 @@
+"""The Vocabulary window: Sets and Terms tabs over one shared Vocabulary.
+
+Opened from the Tools menu (menus.py) and from a button on the Terms
+step (Task 7). Task 6 adds a third tab, the AI assistant, without
+changing anything below -- `_reload()` is written generically enough
+that the assistant's Apply can call it too.
+
+`problems_label` surfaces `Vocabulary.problems` (a hand-edited
+`classifier.yaml` entry the loader could not fully trust -- an unknown
+kind/set or a set cycle already on disk; `vocabulary.py`'s loader never
+raises, spec S3.2) as a plain in-window notice, not a `QMessageBox`: it
+is informational, not a step blocking anything, and a modal popup on
+every open would be in the way every single time until the entry is
+fixed."""
+
+from __future__ import annotations
+
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTabWidget, QVBoxLayout
+
+from wing_parser.classifier import vocabulary as vocab_module
+from wing_parser.ui.texts import text
+from wing_parser.ui.vocabulary_sets_tab import VocabularySetsTab
+from wing_parser.ui.vocabulary_terms_tab import VocabularyTermsTab
+
+
+class VocabularyWindow(QDialog):
+    def __init__(self, parent=None, *, directory=None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(text("vocabulary.title"))
+        self.setMinimumSize(640, 420)
+        self._directory = directory
+        self.vocabulary = vocab_module.Vocabulary.load(directory)
+
+        self.problems_label = QLabel("")
+        self.problems_label.setWordWrap(True)
+        self.problems_label.setVisible(False)
+
+        self.sets_tab = VocabularySetsTab(self.vocabulary, self._reload)
+        self.terms_tab = VocabularyTermsTab(self.vocabulary, self._reload)
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.sets_tab, text("vocabulary.tab.sets"))
+        self.tabs.addTab(self.terms_tab, text("vocabulary.tab.terms"))
+
+        close_button = QPushButton(text("vocabulary.close"))
+        close_button.clicked.connect(self.accept)
+        buttons = QHBoxLayout()
+        buttons.addStretch(1)
+        buttons.addWidget(close_button)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.problems_label)
+        layout.addWidget(self.tabs)
+        layout.addLayout(buttons)
+        self._update_problems()
+
+    def _reload(self) -> None:
+        """Every write on either tab re-reads the vocabulary and refreshes
+        both -- editing Drum kit must be visible in Band's nested-kinds
+        cell without closing this window (F13)."""
+        self.vocabulary = vocab_module.Vocabulary.load(self._directory)
+        self.sets_tab.set_vocabulary(self.vocabulary)
+        self.terms_tab.set_vocabulary(self.vocabulary)
+        self._update_problems()
+
+    def _update_problems(self) -> None:
+        problems = self.vocabulary.problems
+        if problems:
+            self.problems_label.setText(
+                text("vocabulary.problems_header") + "\n" + "\n".join(problems))
+        self.problems_label.setVisible(bool(problems))

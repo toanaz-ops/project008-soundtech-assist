@@ -7,6 +7,7 @@ seam a flat table of strings actually has.
 """
 
 from wing_parser.ui.texts_console import CONSOLE_TEXTS
+from wing_parser.ui.texts_import import IMPORT_TEXTS
 from wing_parser.ui.texts_write import WRITE_TEXTS
 
 TEXTS: dict[str, str] = {
@@ -115,6 +116,7 @@ TEXTS: dict[str, str] = {
     "menu.undo": "&Undo",
     "menu.knowledge": "Where my judgements are stored...",
     "menu.settings": "&Settings...",
+    "menu.vocabulary": "&Vocabulary...",
     "menu.reanalyse": "&Reanalyse",
     "menu.recent": "Open &Recent",
     "recent.missing.title": "File is gone",
@@ -159,6 +161,7 @@ TEXTS: dict[str, str] = {
     "settings.busy": "A connection test is already running.",
     **CONSOLE_TEXTS,
     **WRITE_TEXTS,
+    **IMPORT_TEXTS,
 }
 
 
