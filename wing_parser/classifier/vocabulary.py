@@ -156,6 +156,32 @@ class Vocabulary:
         return tuple(sorted((t for t in self._terms.values() if not t.deleted),
                             key=lambda t: t.key))
 
+    def deleted_sets(self) -> tuple[SetEntry, ...]:
+        """Tombstoned defaults (fix round 1, I1): the Vocabulary window
+        shows these as their own greyed rows so Reset is reachable
+        without going around the UI. `store.delete()` only ever writes a
+        tombstone when a default existed under that key -- a manual-only
+        delete drops the raw entry outright (nothing left to revert to),
+        so every entry returned here is a deleted default, never a
+        deleted manual-only entry."""
+        return tuple(sorted((s for s in self._sets.values() if s.deleted),
+                            key=lambda s: s.key))
+
+    def deleted_terms(self) -> tuple[TermEntry, ...]:
+        return tuple(sorted((t for t in self._terms.values() if t.deleted),
+                            key=lambda t: t.key))
+
+    def has_default_set(self, key: str) -> bool:
+        """Whether `key` has a shipped default underneath -- Reset only
+        makes sense when this is true (fix round 1: reset_set on a
+        manual-only entry has nothing to fall back to and just deletes it
+        outright, which a "Reset to default" button must never do
+        silently)."""
+        return self._had_default_set(key)
+
+    def has_default_term(self, key: str) -> bool:
+        return self._had_default_term(key)
+
     def expand_set(self, key: str, _visiting: frozenset[str] = frozenset(),
                    _known: frozenset[str] | None = None) -> tuple[str, ...]:
         """Depth-first, first-seen order: a nested set's own kinds come

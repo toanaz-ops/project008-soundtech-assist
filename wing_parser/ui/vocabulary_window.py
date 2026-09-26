@@ -15,6 +15,7 @@ fixed."""
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTabWidget, QVBoxLayout
 
 from wing_parser.classifier import vocabulary as vocab_module
@@ -34,6 +35,10 @@ class VocabularyWindow(QDialog):
         self.problems_label = QLabel("")
         self.problems_label.setWordWrap(True)
         self.problems_label.setVisible(False)
+        # Plain text (fix round 1 minor): a hand-edited key can contain
+        # anything, including characters Qt's rich-text parser would
+        # otherwise treat as markup.
+        self.problems_label.setTextFormat(Qt.TextFormat.PlainText)
 
         self.sets_tab = VocabularySetsTab(self.vocabulary, self._reload)
         self.terms_tab = VocabularyTermsTab(self.vocabulary, self._reload)

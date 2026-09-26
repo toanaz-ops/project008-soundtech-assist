@@ -1,4 +1,7 @@
-"""Spec §8.1: the Vocabulary window's Sets and Terms tabs.
+"""Spec §8.1: the Vocabulary window's Sets and Terms tabs, plus fix
+round 1's spec gaps (S1 search, S2 broken-reference actions) and
+data-safety fixes (I1 reachable Reset for a deleted default, I2 Add
+validation, I3 shared dialog-retry helper).
 
 Every test builds a real VocabularyWindow over an isolated tmp_path
 directory (no real knowledge/ touched) and drives its real buttons and
@@ -11,7 +14,11 @@ import pytest
 
 pytest.importorskip("PySide6.QtWidgets")
 
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QInputDialog, QMessageBox
+
+from wing_parser.classifier import vocabulary as vocab_module
+from wing_parser.ui.texts import text
 
 
 @pytest.fixture
@@ -21,15 +28,36 @@ def window(qt_app, tmp_path):
     return VocabularyWindow(directory=tmp_path)
 
 
+def _make_broken_term(window) -> None:
+    """A term with a kind AND a set reference that then stops existing
+    (a manual-only set, so deleting it drops the raw entry outright --
+    genuinely unknown afterwards, not a "default, deleted" tombstone)."""
+    window.vocabulary.put_set("temp kit", label="Temp kit", kinds=("drums.pad",))
+    window.vocabulary.put_term("temp term", kinds=("speech.mc",),
+                               sets=("temp kit",), match="word")
+    window.vocabulary.delete_set("temp kit")
+    window._reload()
+
+
+def _rows_by_key(table, column=0) -> dict:
+    return {table.item(r, column).text(): r for r in range(table.rowCount())}
+
+
+def _visible_keys(table, column=0) -> set:
+    return {table.item(r, column).text() for r in range(table.rowCount())
+           if not table.isRowHidden(r)}
+
+
+# -- brief's original coverage (kept) ----------------------------------------
+
+
 def test_the_sets_tab_lists_every_shipped_default(window):
-    labels = {window.sets_tab.table.item(r, 0).text()
-             for r in range(window.sets_tab.table.rowCount())}
+    labels = _visible_keys(window.sets_tab.table)
     assert {"Drum kit", "Band", "Award moment"} <= labels
 
 
 def test_the_terms_tab_lists_every_shipped_default(window):
-    keys = {window.terms_tab.table.item(r, 0).text()
-           for r in range(window.terms_tab.table.rowCount())}
+    keys = _visible_keys(window.terms_tab.table)
     assert {"mc", "trống", "hoa tươi"} <= keys
 
 
@@ -43,9 +71,7 @@ def test_adding_a_set_through_the_dialog_shows_up_after_accept(window, monkeypat
     )
     window.sets_tab.table.clearSelection()
     window.sets_tab._add()
-    labels = {window.sets_tab.table.item(r, 0).text()
-             for r in range(window.sets_tab.table.rowCount())}
-    assert "Cajon kit" in labels
+    assert "Cajon kit" in _rows_by_key(window.sets_tab.table)
 
 
 def test_editing_drum_kit_changes_what_band_shows_as_nested(window, monkeypatch):
@@ -58,39 +84,45 @@ def test_editing_drum_kit_changes_what_band_shows_as_nested(window, monkeypatch)
         vocabulary_sets_tab, "VocabularySetDialog",
         lambda *a, **k: _AutoAcceptSetDialog("drum kit", "Drum kit", ("drums.pad",), ()),
     )
-    rows = {window.sets_tab.table.item(r, 0).text(): r
-           for r in range(window.sets_tab.table.rowCount())}
+    rows = _rows_by_key(window.sets_tab.table)
     window.sets_tab.table.selectRow(rows["Drum kit"])
     window.sets_tab._edit()
 
-    band_row = {window.sets_tab.table.item(r, 0).text(): r
-               for r in range(window.sets_tab.table.rowCount())}["Band"]
+    band_row = _rows_by_key(window.sets_tab.table)["Band"]
     nested_cell = window.sets_tab.table.item(band_row, 2).text()
     assert "drums.pad" in nested_cell
 
 
-def test_deleting_a_default_term_then_resetting_brings_it_back(window):
-    rows = {window.terms_tab.table.item(r, 0).text(): r
-           for r in range(window.terms_tab.table.rowCount())}
-    window.terms_tab.table.selectRow(rows["hoa tươi"])
-    window.terms_tab._delete()
-    keys_after_delete = {window.terms_tab.table.item(r, 0).text()
-                         for r in range(window.terms_tab.table.rowCount())}
-    assert "hoa tươi" not in keys_after_delete
+def test_a_hand_edited_bad_entry_shows_as_a_non_modal_problem_notice(qt_app, tmp_path):
+    """Controller addition 1: `Vocabulary.problems` (loader-side
+    diagnostics for a hand-edited classifier.yaml, vocabulary.py S3.2)
+    must be visible somewhere in this window -- not swallowed, and not
+    a blocking QMessageBox that would fire on every single open. Fix
+    round 1: plain text (a hand-edited key can contain markup-looking
+    characters), and the header must not tell the operator to fix a row
+    that does not exist for a malformed entry."""
+    from wing_parser.classifier import cache
+    from wing_parser.ui.vocabulary_window import VocabularyWindow
 
-    # Reset needs a fresh vocabulary reload to see the tombstone go away --
-    # exactly what _on_changed()/_reload() already does on every write.
-    window._reload()
-    from wing_parser.classifier import vocabulary as vocab_module
-    v = vocab_module.Vocabulary.load(window._directory)
-    v.reset_term("hoa tươi")
-    window._reload()
-    keys_after_reset = {window.terms_tab.table.item(r, 0).text()
-                        for r in range(window.terms_tab.table.rowCount())}
-    assert "hoa tươi" in keys_after_reset
+    doc = cache.read_raw(tmp_path)
+    doc.setdefault("cuesheet", {})["broken term"] = {
+        "kinds": ["no.such.kind"], "match": "word",
+    }
+    cache.write_raw(doc, tmp_path)
+
+    win = VocabularyWindow(directory=tmp_path)
+    win.show()  # isVisible() reflects real on-screen state, not just the flag
+    assert win.problems_label.isVisible()
+    assert "broken term" in win.problems_label.text()
+    assert "fix the entry below" not in win.problems_label.text()
+    assert "classifier.yaml" in win.problems_label.text()
+    assert win.problems_label.textFormat() == Qt.TextFormat.PlainText
+    assert not win.isModal()  # the window itself never blocks on this notice
 
 
 def test_the_window_opens_from_the_real_main_windows_tools_menu(qt_app, tmp_path, monkeypatch):
+    """Fix round 1 minor: trigger the real QAction found by its own
+    label, rather than calling the delegating method directly."""
     from wing_parser import config
     from wing_parser.ui.main_window import MainWindow
     from wing_parser.ui import menus
@@ -105,75 +137,308 @@ def test_the_window_opens_from_the_real_main_windows_tools_menu(qt_app, tmp_path
 
     monkeypatch.setattr(menus, "VocabularyWindow", _stub_vocabulary_window)
     window = MainWindow(None)
-    window.open_vocabulary()
+    action = _tools_menu_action(window, text("menu.vocabulary"))
+    action.trigger()
     assert opened["parent"] is window
 
 
-def test_a_hand_edited_bad_entry_shows_as_a_non_modal_problem_notice(qt_app, tmp_path):
-    """Controller addition 1: `Vocabulary.problems` (loader-side
-    diagnostics for a hand-edited classifier.yaml, vocabulary.py S3.2)
-    must be visible somewhere in this window -- not swallowed, and not
-    a blocking QMessageBox that would fire on every single open."""
-    from wing_parser.classifier import cache
-    from wing_parser.ui.vocabulary_window import VocabularyWindow
-
-    doc = cache.read_raw(tmp_path)
-    doc.setdefault("cuesheet", {})["broken term"] = {
-        "kinds": ["no.such.kind"], "match": "word",
-    }
-    cache.write_raw(doc, tmp_path)
-
-    win = VocabularyWindow(directory=tmp_path)
-    win.show()  # isVisible() reflects real on-screen state, not just the flag
-    assert win.problems_label.isVisible()
-    assert "broken term" in win.problems_label.text()
-    assert not win.isModal()  # the window itself never blocks on this notice
+def _tools_menu_action(window, label):
+    for menu_action in window.menuBar().actions():
+        menu = menu_action.menu()
+        if menu is None:
+            continue
+        for action in menu.actions():
+            if action.text() == label:
+                return action
+    raise AssertionError(f"no menu action with text {label!r}")
 
 
-def test_creating_a_set_cycle_shows_the_path_and_keeps_the_dialog_open(window, monkeypatch):
-    """Controller addition 2: CycleError must be shown naming the path,
-    the write must not happen, and nothing may crash."""
+# -- fix round 1, S1: live search ---------------------------------------------
+
+
+def test_search_filters_terms_by_folded_diacritic_insensitive_key(window):
+    window.terms_tab.search_edit.setText("trong")   # folds from "trống"
+    visible = _visible_keys(window.terms_tab.table)
+    assert "trống" in visible
+    assert "mc" not in visible
+    assert "hoa tươi" not in visible
+
+
+def test_search_filters_sets_by_key_and_label(window):
+    window.sets_tab.search_edit.setText("drum")
+    assert _visible_keys(window.sets_tab.table) == {"Drum kit"}
+
+
+def test_search_also_matches_by_kind_not_only_key_or_label(window):
+    window.sets_tab.search_edit.setText("vocal")   # only Band's kinds have it
+    assert _visible_keys(window.sets_tab.table) == {"Band"}
+
+
+def test_clearing_the_search_shows_every_row_again(window):
+    window.terms_tab.search_edit.setText("trong")
+    window.terms_tab.search_edit.setText("")
+    visible = _visible_keys(window.terms_tab.table)
+    assert {"mc", "trống", "hoa tươi"} <= visible
+
+
+# -- fix round 1, S2: fixing a broken set reference ---------------------------
+
+
+def test_a_broken_reference_disables_edit_and_enables_the_two_fix_actions(window):
+    """"today's silent drop-on-Edit must go" -- Edit is disabled outright
+    for a row whose set reference is genuinely gone."""
+    _make_broken_term(window)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["temp term"])
+    assert not window.terms_tab.edit_button.isEnabled()
+    assert window.terms_tab.pick_set_button.isEnabled()
+    assert window.terms_tab.drop_ref_button.isEnabled()
+
+
+def test_picking_another_set_replaces_the_broken_reference(window, monkeypatch):
+    _make_broken_term(window)
+    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: ("band", True))
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["temp term"])
+    window.terms_tab._pick_another_set()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    term = {t.key: t for t in v.terms()}["temp term"]
+    assert term.sets == ("band",)
+    assert term.kinds == ("speech.mc",)   # untouched
+
+
+def test_dropping_the_reference_removes_it_and_keeps_the_rest(window):
+    _make_broken_term(window)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["temp term"])
+    window.terms_tab._drop_reference()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    term = {t.key: t for t in v.terms()}["temp term"]
+    assert term.sets == ()
+    assert term.kinds == ("speech.mc",)
+
+
+# -- fix round 1, I1: Reset reachable for a deleted default -------------------
+
+
+def test_deleting_a_default_term_then_resetting_brings_it_back(window):
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["hoa tươi"])
+    window.terms_tab.delete_button.click()
+
+    rows_after_delete = _rows_by_key(window.terms_tab.table)
+    assert "hoa tươi" in rows_after_delete   # now its own greyed row
+    window.terms_tab.table.selectRow(rows_after_delete["hoa tươi"])
+    assert not window.terms_tab.edit_button.isEnabled()
+    assert not window.terms_tab.delete_button.isEnabled()
+    assert window.terms_tab.reset_button.isEnabled()
+    window.terms_tab.reset_button.click()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "hoa tươi" in {t.key for t in v.terms()}
+    assert "hoa tươi" not in {t.key for t in v.deleted_terms()}
+
+
+def test_deleting_a_default_set_then_resetting_brings_it_back(window):
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Award moment"])
+    window.sets_tab.delete_button.click()
+
+    rows_after_delete = _rows_by_key(window.sets_tab.table)
+    assert "award moment" in rows_after_delete   # deleted rows show their key
+    window.sets_tab.table.selectRow(rows_after_delete["award moment"])
+    assert not window.sets_tab.edit_button.isEnabled()
+    assert not window.sets_tab.delete_button.isEnabled()
+    assert window.sets_tab.reset_button.isEnabled()
+    window.sets_tab.reset_button.click()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "award moment" in {s.key for s in v.sets()}
+    assert "award moment" not in {s.key for s in v.deleted_sets()}
+
+
+def test_reset_is_disabled_for_a_manual_only_set(window):
+    window.vocabulary.put_set("cajon kit", label="Cajon kit", kinds=("drums.pad",))
+    window._reload()
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Cajon kit"])
+    assert not window.sets_tab.reset_button.isEnabled()
+
+
+def test_reset_is_disabled_for_a_manual_only_term(window):
+    window.vocabulary.put_term("cajon", kinds=("drums.pad",), match="word")
+    window._reload()
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["cajon"])
+    assert not window.terms_tab.reset_button.isEnabled()
+
+
+# -- fix round 1, I2: Add validates the name -----------------------------------
+
+
+def test_add_set_refuses_a_blank_name_and_keeps_the_dialog_open(window, monkeypatch):
     from wing_parser.ui import vocabulary_sets_tab
 
     warnings = []
-    monkeypatch.setattr(QMessageBox, "warning",
-                        lambda *a, **k: warnings.append(a[-1]))
-    monkeypatch.setattr(
-        vocabulary_sets_tab, "VocabularySetDialog",
-        lambda *a, **k: _FailOnceDialog(("drum kit", "Drum kit", (), ("band",))),
-    )
-    rows = {window.sets_tab.table.item(r, 0).text(): r
-           for r in range(window.sets_tab.table.rowCount())}
-    window.sets_tab.table.selectRow(rows["Drum kit"])
-    window.sets_tab._edit()  # band already nests drum kit -> a cycle through it
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("   ", "Blank", (), ()))
+    monkeypatch.setattr(vocabulary_sets_tab, "VocabularySetDialog", lambda *a, **k: dialog)
+    before = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.clearSelection()
+    window.sets_tab._add()
 
-    assert len(warnings) == 1
-    assert "cycle" in warnings[0] and "→" in warnings[0]
-    # the failed write never landed: Drum kit is still there, unmoved.
-    rows_after = {window.sets_tab.table.item(r, 0).text(): r
-                 for r in range(window.sets_tab.table.rowCount())}
-    assert "Drum kit" in rows_after
+    assert warnings and "empty" in warnings[0].lower()
+    assert dialog.calls == 2
+    assert _rows_by_key(window.sets_tab.table).keys() == before.keys()
 
 
-def test_an_empty_term_write_shows_an_error_and_keeps_the_dialog_open(window, monkeypatch):
-    """put_term raises a plain ValueError (not ignore, no kinds, no sets)
-    -- must be caught the same way as the named vocabulary exceptions."""
+def test_add_set_refuses_a_name_that_already_exists(window, monkeypatch):
+    from wing_parser.ui import vocabulary_sets_tab
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("Band", "Band", (), ()))   # folds to the existing "band"
+    monkeypatch.setattr(vocabulary_sets_tab, "VocabularySetDialog", lambda *a, **k: dialog)
+    window.sets_tab.table.clearSelection()
+    window.sets_tab._add()
+
+    assert warnings and "already exists" in warnings[0]
+    assert dialog.calls == 2
+
+
+def test_add_term_refuses_a_blank_name(window, monkeypatch):
     from wing_parser.ui import vocabulary_terms_tab
 
     warnings = []
-    monkeypatch.setattr(QMessageBox, "warning",
-                        lambda *a, **k: warnings.append(a[-1]))
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("", (), (), False, "exact"))
+    monkeypatch.setattr(vocabulary_terms_tab, "VocabularyTermDialog", lambda *a, **k: dialog)
+    window.terms_tab.table.clearSelection()
+    window.terms_tab._add()
+
+    assert warnings and "empty" in warnings[0].lower()
+    assert dialog.calls == 2
+
+
+def test_add_term_refuses_a_name_that_already_exists(window, monkeypatch):
+    from wing_parser.ui import vocabulary_terms_tab
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("MC", ("speech.mc",), (), False, "word"))   # folds to "mc"
+    monkeypatch.setattr(vocabulary_terms_tab, "VocabularyTermDialog", lambda *a, **k: dialog)
+    window.terms_tab.table.clearSelection()
+    window.terms_tab._add()
+
+    assert warnings and "already exists" in warnings[0]
+    assert dialog.calls == 2
+
+
+def test_editing_keeps_its_replace_semantics_same_key_no_validation(window, monkeypatch):
+    """Edit disables the name field, so check_new_key never fires for it
+    -- editing Drum kit back onto itself must not be refused as a
+    "duplicate"."""
+    from wing_parser.ui import vocabulary_sets_tab
+
     monkeypatch.setattr(
-        vocabulary_terms_tab, "VocabularyTermDialog",
-        lambda *a, **k: _FailOnceDialog(("brand new term", (), (), False, "word")),
+        vocabulary_sets_tab, "VocabularySetDialog",
+        lambda *a, **k: _AutoAcceptSetDialog("drum kit", "Drum kit", ("drums.pad",), ()),
     )
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Drum kit"])
+    window.sets_tab._edit()
+    assert "Drum kit" in _rows_by_key(window.sets_tab.table)
+
+
+# -- fix round 1 minors --------------------------------------------------------
+
+
+def test_creating_a_set_cycle_shows_the_path_and_keeps_the_dialog_open(window, monkeypatch):
+    from wing_parser.ui import vocabulary_sets_tab
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("drum kit", "Drum kit", (), ("band",)))
+    monkeypatch.setattr(vocabulary_sets_tab, "VocabularySetDialog", lambda *a, **k: dialog)
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Drum kit"])
+    window.sets_tab._edit()   # band already nests drum kit -> a cycle through it
+
+    assert len(warnings) == 1
+    assert "cycle" in warnings[0] and "→" in warnings[0]
+    assert dialog.calls == 2
+    assert "Drum kit" in _rows_by_key(window.sets_tab.table)
+
+
+def test_an_empty_term_write_shows_an_error_and_keeps_the_dialog_open(window, monkeypatch):
+    from wing_parser.ui import vocabulary_terms_tab
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("brand new term", (), (), False, "word"))
+    monkeypatch.setattr(vocabulary_terms_tab, "VocabularyTermDialog", lambda *a, **k: dialog)
     window.terms_tab.table.clearSelection()
     window.terms_tab._add()
 
     assert len(warnings) == 1
-    keys_after = {window.terms_tab.table.item(r, 0).text()
-                 for r in range(window.terms_tab.table.rowCount())}
-    assert "brand new term" not in keys_after
+    assert dialog.calls == 2
+    assert "brand new term" not in _rows_by_key(window.terms_tab.table)
+
+
+def test_editing_keeps_a_case_variant_set_reference_via_folded_preselect(window):
+    """Adapted from the plan's draft (fix round 1 minor): a reference
+    that only differs in case/diacritics from a real set's own key is
+    valid by folded identity, not broken, and the dialog's own
+    pre-select must not silently drop it on an untouched OK."""
+    from wing_parser.ui.vocabulary_term_dialog import VocabularyTermDialog
+
+    window.vocabulary.put_term("case variant term", sets=("Drum Kit",), match="word")
+    window._reload()
+    entry = next(t for t in window.vocabulary.terms() if t.key == "case variant term")
+
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["case variant term"])
+    assert window.terms_tab.edit_button.isEnabled()   # not treated as broken
+
+    dialog = VocabularyTermDialog(window.terms_tab, known_kinds=(),
+                                  known_sets=("drum kit",), initial=entry)
+    _key, _kinds, sets_, _ignore, _match = dialog.result()
+    assert sets_ == ("drum kit",)   # preserved, normalised to the real key
+
+
+def test_an_oserror_from_delete_is_reported_not_raised(window, monkeypatch):
+    def _boom(key):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(window.vocabulary, "delete_set", _boom)
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Band"])
+    window.sets_tab.delete_button.click()
+
+    assert warnings and "disk full" in warnings[0]
+    assert "Band" in _rows_by_key(window.sets_tab.table)
+
+
+def test_an_oserror_from_a_dialog_save_is_reported_and_keeps_the_dialog_open(window, monkeypatch):
+    from wing_parser.ui import vocabulary_sets_tab
+
+    def _boom(key, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(window.vocabulary, "put_set", _boom)
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    dialog = _ScriptedDialog(("cajon kit", "Cajon kit", ("drums.pad",), ()))
+    monkeypatch.setattr(vocabulary_sets_tab, "VocabularySetDialog", lambda *a, **k: dialog)
+    window.sets_tab.table.clearSelection()
+    window.sets_tab._add()
+
+    assert warnings and "disk full" in warnings[0]
+    assert dialog.calls == 2
 
 
 class _NullExec:
@@ -195,20 +460,19 @@ class _AutoAcceptSetDialog:
         return self._payload
 
 
-class _FailOnceDialog:
-    """A stand-in dialog whose write is expected to fail: exec() accepts
-    once (as if the operator clicked OK), and the tab's own retry loop
-    calls exec() on it again after the write raises -- this second call
-    returns 0, as if the operator saw the error and gave up, so the test
-    does not hang in the tab's re-show loop."""
+class _ScriptedDialog:
+    """Feeds one `result()` payload per `exec()` call, in the order
+    given; once every payload has been consumed, `exec()` returns 0 (as
+    if the operator gave up) -- so a tab's retry-on-failure loop cannot
+    spin forever waiting for a payload that will never come."""
 
-    def __init__(self, payload):
-        self._payload = payload
-        self._calls = 0
+    def __init__(self, *payloads):
+        self._payloads = list(payloads)
+        self.calls = 0
 
     def exec(self):
-        self._calls += 1
-        return 1 if self._calls == 1 else 0
+        self.calls += 1
+        return 1 if self._payloads else 0
 
     def result(self):
-        return self._payload
+        return self._payloads.pop(0)

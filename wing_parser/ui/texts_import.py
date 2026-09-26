@@ -30,7 +30,17 @@ IMPORT_TEXTS: dict[str, str] = {
     "vocabulary.dialog.match.word": "as a whole word inside a sentence",
     "vocabulary.broken": "broken — {names} no longer exists",
     "vocabulary.problems_header": (
-        "Problems found in classifier.yaml (from a hand edit) — "
-        "fix the entry below or Reset it to the shipped default:"
+        "Problems found in classifier.yaml (from a hand edit) — fix the "
+        "entry directly in classifier.yaml, or remove it here with "
+        "Delete/Reset where a row exists for it:"
     ),
+    "vocabulary.search_placeholder": "Search…",
+    "vocabulary.source.default_deleted": "default, deleted",
+    "vocabulary.pick_set": "Pick another set…",
+    "vocabulary.drop_reference": "Drop the reference",
+    "vocabulary.pick_set_prompt": "Choose a set to replace {name}:",
+    "vocabulary.no_sets_to_pick": "There are no sets to choose from.",
+    "vocabulary.name_required": "Name cannot be empty.",
+    "vocabulary.name_exists": "already exists — use Edit",
+    "vocabulary.write_failed": "Could not save: {error}",
 }

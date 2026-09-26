@@ -7,7 +7,13 @@ Combo default (adapted from the plan's draft, which left a brand-new
 term at "word"): `vocabulary.put_term`'s own keyword default is
 `match="exact"` (vocabulary.py), so a term created here with the combo
 untouched writes the same value the API would have chosen on its own.
-An edited term keeps whatever match its entry already has."""
+An edited term keeps whatever match its entry already has.
+
+Pre-selecting an edited entry's own sets/kinds by FOLDED identity, not
+exact string equality (fix round 1 minor) -- see `vocabulary_set_dialog`'s
+docstring for why: a case/diacritic-variant set reference is valid, not
+broken, and must not be silently dropped just because the dialog's own
+pre-select missed it."""
 
 from __future__ import annotations
 
@@ -16,6 +22,7 @@ from PySide6.QtWidgets import (
     QFormLayout, QLineEdit, QListWidget, QListWidgetItem, QVBoxLayout,
 )
 
+from wing_parser.showcontext.ingest import keywords
 from wing_parser.ui.texts import text
 
 
@@ -38,20 +45,22 @@ class VocabularyTermDialog(QDialog):
         self.ignore_check.setChecked(bool(initial and initial.ignore))
         self.ignore_check.toggled.connect(self._apply_ignore_state)
 
+        initial_kind_identities = {keywords.fold(k) for k in initial.kinds} if initial else set()
         self.kinds_list = QListWidget()
         self.kinds_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         for kind in known_kinds:
             item = QListWidgetItem(kind)
             self.kinds_list.addItem(item)
-            if initial and kind in initial.kinds:
+            if keywords.fold(kind) in initial_kind_identities:
                 item.setSelected(True)
 
+        initial_set_identities = {keywords.fold(s) for s in initial.sets} if initial else set()
         self.sets_list = QListWidget()
         self.sets_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         for key in known_sets:
             item = QListWidgetItem(key)
             self.sets_list.addItem(item)
-            if initial and key in initial.sets:
+            if keywords.fold(key) in initial_set_identities:
                 item.setSelected(True)
 
         self._apply_ignore_state(self.ignore_check.isChecked())

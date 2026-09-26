@@ -130,6 +130,50 @@ def test_deleting_a_manual_term_that_has_no_default_removes_it_outright(director
     assert "cajon" not in doc["cuesheet"]
 
 
+# -- fix round 1 (I1): reaching a tombstoned default for Reset --------------
+
+
+def test_deleted_terms_lists_a_tombstoned_default_term(directory):
+    v = vocab.Vocabulary.load(directory)
+    assert "hoa tươi" not in {t.key for t in v.deleted_terms()}
+    v.delete_term("hoa tươi")
+    deleted = {t.key for t in v.deleted_terms()}
+    assert "hoa tươi" in deleted
+    assert "hoa tươi" not in {t.key for t in v.terms()}
+
+
+def test_deleted_sets_lists_a_tombstoned_default_set(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.delete_set("drum kit")
+    assert "drum kit" in {s.key for s in v.deleted_sets()}
+    assert "drum kit" not in {s.key for s in v.sets()}
+
+
+def test_deleting_a_manual_only_term_never_shows_up_as_deleted(directory):
+    """A manual-only delete drops the raw entry outright (fix round 1's
+    docstring on deleted_terms): there is no default underneath for
+    Reset to bring back, so it must not appear as a "greyed, resettable"
+    row either."""
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("cajon", kinds=("drums.pad",), match="word")
+    v.delete_term("cajon")
+    assert "cajon" not in {t.key for t in v.deleted_terms()}
+
+
+def test_has_default_term_is_true_for_a_default_and_false_for_manual_only(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("cajon", kinds=("drums.pad",), match="word")
+    assert v.has_default_term("hoa tươi") is True
+    assert v.has_default_term("cajon") is False
+
+
+def test_has_default_set_is_true_for_a_default_and_false_for_manual_only(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_set("cajon kit", label="Cajon kit", kinds=("drums.pad",))
+    assert v.has_default_set("drum kit") is True
+    assert v.has_default_set("cajon kit") is False
+
+
 # -- validation ---------------------------------------------------------------
 
 
