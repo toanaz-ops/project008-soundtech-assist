@@ -220,6 +220,37 @@ def test_a_syntax_error_in_the_classifier_file_is_an_error_too(
     assert "classifier.yaml" in err
 
 
+def test_vocabulary_problems_are_printed_as_warnings_before_the_summary(
+    tmp_path, capsys, monkeypatch
+):
+    """Vocabulary.load never raises on a hand-edit mistake -- an unknown
+    kind, a dangling set -- it reports it through .problems and excludes
+    the broken entry instead. That must not vanish silently: showcontext
+    import prints each problem as one warning line on stderr, before the
+    summary (fix round 1, controller ruling R2)."""
+    _knowledge(
+        tmp_path, monkeypatch,
+        "channels: {}\nbuses: {}\n"
+        "cuesheet:\n  bad term:\n    kinds: [nonexistent.kind]\n"
+        "    match: exact\n",
+    )
+    out = tmp_path / "tonight.yaml"
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(out),
+    ])
+    assert code == 0
+    err = capsys.readouterr().err
+    lines = err.splitlines()
+    warning_lines = [i for i, line in enumerate(lines) if line.startswith("warning:")]
+    summary_lines = [i for i, line in enumerate(lines) if line.startswith("wrote ")]
+    assert warning_lines, err
+    assert "bad term" in err and "unknown kind" in err
+    assert summary_lines, err
+    assert warning_lines[0] < summary_lines[0]
+
+
 def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
     tmp_path, monkeypatch
 ):
@@ -230,19 +261,28 @@ def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
 
     Task 3 wired build.py to `vocabulary.Vocabulary` instead of a raw
     cache dict: the disk read now happens inside `Vocabulary.load()`
-    (`cache.read_raw`, called once by `showcontext_import`), and every
-    per-fragment call is `.effective()` working off the already-parsed,
-    in-memory term list -- no further disk I/O."""
+    (called once by `showcontext_import`), and every per-fragment call is
+    `.effective()` working off the already-parsed, in-memory term list --
+    no further disk I/O.
+
+    Counts `cache._read` -- the function that actually touches disk --
+    rather than the thinner `cache.read_raw` wrapper (fix round 1,
+    controller ruling R4): `cache.load()` also calls `_read()` directly,
+    bypassing `read_raw` entirely, so counting only `read_raw` would miss
+    a regression that read classifier.yaml through THAT path instead.
+    Counting `_read` itself is the only way to catch any real disk read
+    on this path, whichever wrapper triggers it -- the original intent
+    behind this test's name."""
     from wing_parser.classifier import cache
 
     reads: list[object] = []
-    real_read_raw = cache.read_raw
+    real_read = cache._read
 
     def counted(directory=None):
         reads.append(directory)
-        return real_read_raw(directory)
+        return real_read(directory)
 
-    monkeypatch.setattr(cache, "read_raw", counted)
+    monkeypatch.setattr(cache, "_read", counted)
 
     out = tmp_path / "tonight.yaml"
     assert main([

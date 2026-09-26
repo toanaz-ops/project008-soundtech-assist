@@ -296,18 +296,30 @@ def showcontext_import(args) -> int:
         raw = mapping.load_mapping(args.mapping)
         read = sheet.read_sheet(args.sheet, raw.sheet, raw.header_row)
         resolved = mapping.resolve_columns(raw, read.headers, read.last_column)
-        # One read of classifier.yaml, not one per performer fragment.
-        # cache.lookup() re-reads and re-parses the whole file through a
-        # ruamel round-trip on every call; classifier/resolve.py:31-40
-        # records the measurement -- 50 per-name lookups 3.4 s against
-        # 65 ms for one load plus 50 in-memory lookups, 17 s at a
-        # thousand entries -- and the cuesheet domain is designed to grow
-        # one entry per term ever seen.
+        # One read of classifier.yaml, not one per performer fragment:
+        # Vocabulary.load merges the shipped defaults with this
+        # directory's own edits through a single cache.read_raw call, and
+        # every per-fragment resolve_fragment call works off the
+        # already-merged, in-memory term list. classifier/resolve.py:31-40
+        # measured the per-call-reread hazard this avoids -- 3.4 s for 50
+        # per-name lookups against 65 ms for one load -- and the cuesheet
+        # domain is designed to grow one entry per term ever seen.
         vocabulary = vocab_module.Vocabulary.load(config.knowledge_dir())
-        # build.build belongs inside this try: it is what reads the
-        # vocabulary, and the README tells ToanAZ to hand-edit
-        # classifier.yaml, so a malformed one must be an error line and
-        # not a traceback.
+        # A hand-edit mistake in classifier.yaml (an unknown kind, a
+        # dangling set, a shape term_from_user cannot parse at all) is
+        # skipped and reported through vocabulary.problems, never
+        # raised -- surface it now, or it silently changes what
+        # resolves without ToanAZ ever seeing why (fix round 1, R2).
+        for problem in vocabulary.problems:
+            print(f"warning: {problem}", file=sys.stderr)
+        # build.build belongs inside this try: it is what reads
+        # `vocabulary.effective()`, and the README tells ToanAZ to
+        # hand-edit classifier.yaml, so a malformed one must be an error
+        # line and not a traceback. Vocabulary.load already turned a
+        # malformed ENTRY into a .problems warning above and skipped it;
+        # only malformed YAML itself (a syntax error, or a domain that is
+        # not a mapping) still reaches this except, raised by
+        # cache.read_raw before Vocabulary ever gets to parse an entry.
         result = build.build(
             read.rows,
             resolved,

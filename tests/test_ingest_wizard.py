@@ -223,7 +223,16 @@ def test_kill_switch_skips_the_mapping_proposal(tmp_path, capsys, monkeypatch):
 
 def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     """With the switch on, unresolved terms stay comments: no provider is
-    built and no Record question is ever asked."""
+    built, no Record question is ever asked, and the printed line names
+    that outcome explicitly ('stay as comments').
+
+    The performers column MUST actually be mapped (a header, 'Người',
+    pointing at column C) and MUST carry a fragment nothing resolves
+    ('tốp múa'), or guess.unresolved_terms(result) comes back empty and
+    wizard.py's term-guess gate (the `if terms:` block) is never reached
+    at all -- the earlier version of this test left the performers
+    header answer blank, so it only ever exercised the mapping-proposal
+    kill-switch line, not this one (fix round 1, IMPORTANT 1)."""
     from openpyxl import Workbook
 
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
@@ -239,13 +248,13 @@ def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     wb = Workbook()
     ws = wb.active
     ws.title = "Rundown"
-    ws.append(["No", "Nội dung"])
+    ws.append(["No", "Nội dung", "Người"])
     ws.append([1, "Đón khách", "tốp múa"])
     xlsx = tmp_path / "run.xlsx"
     wb.save(xlsx)
 
     asked = []
-    answers = iter(["Rundown", "1", "A", "", "B", "", "", "", "", ""])
+    answers = iter(["Rundown", "1", "A", "", "B", "Người", "", "", "", ""])
 
     def answer(prompt):
         asked.append(prompt)
@@ -265,6 +274,7 @@ def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     captured = capsys.readouterr()
     assert not any(p.startswith("Record") for p in asked)
     assert "WING_DISABLE_LLM" in captured.out
+    assert "stay as comments" in captured.out
 
 
 class UnverifiedProvider:

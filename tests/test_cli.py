@@ -6,7 +6,7 @@ import yaml
 
 from wing_parser.classifier.resolve import Classifier
 from wing_parser.cli.__main__ import main
-from wing_parser.cli.render import changes, findings, level
+from wing_parser.cli.render import changes, findings, import_summary, level
 from wing_parser.query.diff import Change
 
 
@@ -19,6 +19,22 @@ def test_level_formats_silence_and_real_values():
     assert level(float("-inf")) == "-inf"
     assert level(-7.9) == "-7.9 dB"
     assert level(0.0) == "0.0 dB"
+
+
+def test_import_summary_names_a_nonzero_ignored_count():
+    """fix round 1, controller ruling R5: emit.py's trailer already pins a
+    non-zero ignored count reaching the written file; this pins the CLI's
+    own printed summary line (render.import_summary), the other place
+    BuildResult.ignored_performers has to surface."""
+    from wing_parser.showcontext.ingest.build import BuildResult, BuiltSegment
+    from wing_parser.showcontext.models import Segment
+
+    result = BuildResult(
+        segments=(BuiltSegment(segment=Segment(id="S1", title="t"), comments=()),),
+        loose_comments=(), data_rows=1, comment_rows=0, blank_rows=0,
+        unreadable_performers=0, ignored_performers=3,
+    )
+    assert "and 3 ignored" in import_summary("out.yaml", result)
 
 
 def test_analyze_prints_an_overview(vu_path, capsys):

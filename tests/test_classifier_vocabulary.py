@@ -166,6 +166,61 @@ def test_an_old_shape_cache_remember_entry_loads_as_a_match_exact_term(directory
     assert terms["guitar solo"].match == "exact"
 
 
+# -- fix round 1, controller ruling R1: an old entry keeps its meaning -------
+# Before Task 3 wired build.py through Vocabulary, resolve_fragment only
+# trusted a remembered Classification when matcher.is_confident() (confidence
+# >= matcher.HIGH) -- a weak model guess stayed a comment, never `expects:`.
+# term_from_user must preserve that for the same pre-wave-4 shape it now
+# also has to parse.
+
+
+def test_an_old_shape_entry_below_matcher_high_does_not_resolve(directory):
+    from wing_parser.classifier.matcher import HIGH, Classification
+    from wing_parser.showcontext.ingest import build
+    from wing_parser.showcontext.ingest.mapping import SheetMapping
+    from wing_parser.showcontext.ingest.sheet import RawRow
+
+    assert HIGH - 0.3 < HIGH  # sanity: 0.5 really is below matcher.HIGH (0.8)
+    cache.remember("flooble", "cuesheet",
+                   Classification(kind="speech.mc", confidence=0.5, origin="manual"),
+                   directory=directory)
+    v = vocab.Vocabulary.load(directory)
+
+    # The term itself must carry no kind (not be dropped outright): it
+    # still identity-matches at match="exact" -- correctly shadowing a
+    # same-key default, if one existed -- it just resolves to nothing.
+    terms = {t.key: t for t in v.terms()}
+    assert terms["flooble"].kinds == ()
+    assert terms["flooble"].match == "exact"
+
+    mapping = SheetMapping(source="t", fields={"title": "C", "performers": "D"})
+    row = RawRow(number=5, cells={"C": "x", "D": "flooble"})
+    result = build.build([row], mapping, v)
+    assert result.segments[0].segment.expects == ()
+    assert result.unreadable_performers == 1
+
+
+def test_an_old_shape_entry_at_or_above_matcher_high_resolves(directory):
+    from wing_parser.classifier.matcher import HIGH, Classification
+    from wing_parser.showcontext.ingest import build
+    from wing_parser.showcontext.ingest.mapping import SheetMapping
+    from wing_parser.showcontext.ingest.sheet import RawRow
+
+    cache.remember("flooble", "cuesheet",
+                   Classification(kind="speech.mc", confidence=1.0, origin="manual"),
+                   directory=directory)
+    v = vocab.Vocabulary.load(directory)
+    terms = {t.key: t for t in v.terms()}
+    assert terms["flooble"].kinds == ("speech.mc",)
+
+    mapping = SheetMapping(source="t", fields={"title": "C", "performers": "D"})
+    row = RawRow(number=5, cells={"C": "x", "D": "flooble"})
+    result = build.build([row], mapping, v)
+    assert result.segments[0].segment.expects == ("speech.mc",)
+    assert result.unreadable_performers == 0
+    assert HIGH == 0.8  # documents the exact threshold this test straddles
+
+
 # -- effective() feeds keywords.match directly -------------------------------
 
 

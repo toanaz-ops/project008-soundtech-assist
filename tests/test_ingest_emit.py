@@ -55,6 +55,15 @@ def test_the_reconciliation_line_states_the_counts():
     assert "1 row" in text and "comment" in text
 
 
+def test_a_nonzero_ignored_count_is_named_in_the_trailer():
+    """fix round 1, controller ruling R5: 0 ignored is already pinned in
+    test_a_segment_with_no_technical_fields_is_byte_identical_to_before;
+    this pins that a NON-zero count actually reaches the printed text,
+    not only the field on BuildResult."""
+    text = emit.render("t", _result(ignored_performers=3))
+    assert "3 ignored" in text
+
+
 def test_a_title_with_yaml_punctuation_survives():
     """A colon, a hash and a quote in one Vietnamese title."""
     nasty = 'Tiết mục: "Nắng" #1'

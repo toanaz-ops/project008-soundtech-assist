@@ -36,6 +36,7 @@ from pathlib import Path
 from typing import Any
 
 from wing_parser.classifier import cache
+from wing_parser.classifier.matcher import HIGH
 from wing_parser.showcontext.ingest import keywords
 
 
@@ -149,11 +150,21 @@ def term_from_user(key: str, raw: dict) -> TermEntry:
     if "confidence" in raw:
         # Pre-wave-4 shape (guess.offer_terms -> cache.remember): read as
         # kinds: [x], match: exact (design spec S3.2) so it keeps its
-        # meaning with no migration step.
+        # meaning with no migration step -- INCLUDING a confidence below
+        # matcher.HIGH. Before this module existed, build.py's old
+        # resolve_fragment only trusted a remembered Classification when
+        # matcher.is_confident() (confidence >= HIGH); a weak model guess
+        # stayed a comment, never `expects:` (fix round 1, controller
+        # ruling R1). Modelled here as kinds=() rather than dropping the
+        # entry outright: it still identity-matches at match="exact" (so
+        # it correctly shadows a default of the same key, if any), it
+        # just contributes no kind, so keywords.match falls through to
+        # the pattern matcher exactly as the pre-wave-4 lookup did.
         if "kind" not in raw:
             raise MalformedEntryError(f"term {key!r}: has confidence but no kind")
+        confident = float(raw["confidence"]) >= HIGH
         return TermEntry(
-            key=key, kinds=(str(raw["kind"]),), match="exact",
+            key=key, kinds=(str(raw["kind"]),) if confident else (), match="exact",
             origin=str(raw.get("origin", "cache")),
         )
     kinds, sets = raw.get("kinds", ()), raw.get("sets", ())
