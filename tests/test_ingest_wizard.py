@@ -180,7 +180,15 @@ def test_closed_input_is_one_line_and_a_clean_nonzero_exit(tmp_path, capsys, mon
 def test_kill_switch_skips_the_mapping_proposal(tmp_path, capsys, monkeypatch):
     """WING_DISABLE_LLM=1 must gate the wizard's model paths too, not only
     classifier/llm.py: no provider is ever constructed, one line, manual
-    questions with no defaults."""
+    questions with no defaults.
+
+    Only the mapping-proposal gate is checked here: with the wave-4
+    shipped cuesheet defaults (Task 2), every VIVO performer fragment now
+    resolves (measured in tests/test_g2b_acceptance.py -- 9 fragments, 9
+    resolved, 0 left unread), so this sheet no longer reaches the
+    term-guess gate at all. That second gated call site is proven
+    separately by test_kill_switch_skips_the_term_guess below, which
+    supplies a fragment ('tốp múa') no default names."""
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
 
     def forbidden(config):
@@ -209,10 +217,7 @@ def test_kill_switch_skips_the_mapping_proposal(tmp_path, capsys, monkeypatch):
         line for line in capsys.readouterr().out.splitlines()
         if "WING_DISABLE_LLM" in line
     ]
-    # One line per gated call site: the proposal and the term guess
-    # (the vivo sheet has unresolved performers, so both paths run).
     assert any("continuing manually" in line for line in lines)
-    assert any("stay as comments" in line for line in lines)
     assert out.exists()
 
 

@@ -223,21 +223,26 @@ def test_a_syntax_error_in_the_classifier_file_is_an_error_too(
 def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
     tmp_path, monkeypatch
 ):
-    """classifier/resolve.py:31-40 measured this exact hazard: cache.lookup
-    re-reads and re-parses the whole file through a ruamel round-trip on
-    every call -- 3.4 s for 50 per-name lookups against 65 ms for one load
-    -- and the cuesheet domain grows one entry per term ever seen."""
+    """classifier/resolve.py:31-40 measured this exact hazard: re-reading
+    and re-parsing classifier.yaml through a ruamel round-trip on every
+    call costs 3.4 s for 50 per-name lookups against 65 ms for one load --
+    and the cuesheet domain grows one entry per term ever seen.
+
+    Task 3 wired build.py to `vocabulary.Vocabulary` instead of a raw
+    cache dict: the disk read now happens inside `Vocabulary.load()`
+    (`cache.read_raw`, called once by `showcontext_import`), and every
+    per-fragment call is `.effective()` working off the already-parsed,
+    in-memory term list -- no further disk I/O."""
     from wing_parser.classifier import cache
 
-    loads: list[object] = []
-    real_load = cache.load
+    reads: list[object] = []
+    real_read_raw = cache.read_raw
 
     def counted(directory=None):
-        loads.append(directory)
-        return real_load(directory)
+        reads.append(directory)
+        return real_read_raw(directory)
 
-    monkeypatch.setattr(cache, "load", counted)
-    monkeypatch.setattr(cache, "lookup", _refuse_a_per_name_read)
+    monkeypatch.setattr(cache, "read_raw", counted)
 
     out = tmp_path / "tonight.yaml"
     assert main([
@@ -245,11 +250,7 @@ def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
         str(DATA / "ingest-fixture.xlsx"),
         "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(out),
     ]) == 0
-    assert len(loads) == 1
-
-
-def _refuse_a_per_name_read(*args, **kwargs):
-    raise AssertionError("cache.lookup() re-reads the file on every call")
+    assert len(reads) == 1
 
 
 def test_a_column_with_a_blank_header_can_be_mapped_by_its_letter(

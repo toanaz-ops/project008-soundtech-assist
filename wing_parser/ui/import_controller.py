@@ -14,7 +14,6 @@ from pathlib import Path
 
 from wing_parser.classifier import cache
 from wing_parser.classifier.llm import kill_switch_on
-from wing_parser.classifier.normalize import clean
 from wing_parser.classifier.provider import ProviderError
 from wing_parser.showcontext.ingest import build, emit, guess, mapping, sheet
 from wing_parser.showcontext.ingest.sample import sample_workbook
@@ -65,19 +64,21 @@ def read_with(xlsx, sheet_name: str | None, header_row: int,
 
 
 def build_result(read, resolved):
-    """Rows and a resolved mapping become BuiltSegments, vocabulary first.
+    """Rows and a resolved mapping become BuiltSegments, the effective
+    cuesheet vocabulary (defaults + his edits, Task 2) first.
 
-    The cuesheet vocabulary is whatever `classifier.yaml` holds right
-    now (the autouse test fixture keeps that file off the real disk);
-    unresolved fragments stay comments, never guesses.
+    `config.knowledge_dir()` is read fresh on every call rather than
+    cached: the autouse test fixture points it at a throwaway directory
+    per test, and Settings/the Vocabulary window can change what it
+    points to while the app is running.
     """
-    vocabulary = cache.load()["cuesheet"]
+    from wing_parser import config
+    from wing_parser.classifier import vocabulary as vocab_module
+
+    vocabulary = vocab_module.Vocabulary.load(config.knowledge_dir())
     return build.build(
-        read.rows,
-        resolved,
-        lambda term: vocabulary.get(clean(term)),
-        blank_rows=read.blank_rows,
-        headers=read.headers,
+        read.rows, resolved, vocabulary,
+        blank_rows=read.blank_rows, headers=read.headers,
     )
 
 

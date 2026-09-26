@@ -172,7 +172,7 @@ def test_a_segment_with_no_technical_fields_is_byte_identical_to_before():
         "    cues: []\n"
         "\n"
         "# imported 1 data row(s) -> 1 segment(s) carrying 1 expectation(s), "
-        "0 row(s) and 0 performer fragment(s) kept as comments, "
+        "0 row(s) and 0 performer fragment(s) kept as comments, 0 ignored, "
         "0 blank row(s) skipped\n"
     )
     assert emit.render("t", result) == expected

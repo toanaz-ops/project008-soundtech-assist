@@ -116,6 +116,7 @@ def render(show: str, result, proposals: dict[str, tuple[str, ...]] | None = Non
         f"{result.expectations} expectation(s), "
         f"{result.comment_rows} row(s) and "
         f"{result.unreadable_performers} performer fragment(s) kept as "
-        f"comments, {result.blank_rows} blank row(s) skipped"
+        f"comments, {result.ignored_performers} ignored, "
+        f"{result.blank_rows} blank row(s) skipped"
     )
     return text + "\n".join(trailer) + "\n"

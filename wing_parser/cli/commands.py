@@ -280,8 +280,8 @@ def showcontext_import(args) -> int:
             knowledge_dir=config.knowledge_dir(),
         )
 
-    from wing_parser.classifier import cache
-    from wing_parser.classifier.normalize import clean
+    from wing_parser import config
+    from wing_parser.classifier import vocabulary as vocab_module
     from wing_parser.showcontext.ingest import build, emit, mapping, propose, sheet
 
     destination = Path(args.output) if args.output else None
@@ -303,7 +303,7 @@ def showcontext_import(args) -> int:
         # 65 ms for one load plus 50 in-memory lookups, 17 s at a
         # thousand entries -- and the cuesheet domain is designed to grow
         # one entry per term ever seen.
-        vocabulary = cache.load().get("cuesheet", {})
+        vocabulary = vocab_module.Vocabulary.load(config.knowledge_dir())
         # build.build belongs inside this try: it is what reads the
         # vocabulary, and the README tells ToanAZ to hand-edit
         # classifier.yaml, so a malformed one must be an error line and
@@ -311,7 +311,7 @@ def showcontext_import(args) -> int:
         result = build.build(
             read.rows,
             resolved,
-            lambda term: vocabulary.get(clean(term)),
+            vocabulary,
             blank_rows=read.blank_rows,
             # Same pipeline, same behavior: the wizard passes headers so
             # an unmapped technical column folds into a visible comment;

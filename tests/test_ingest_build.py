@@ -1,7 +1,7 @@
 import pytest
 
-from wing_parser.classifier.matcher import Classification
 from wing_parser.showcontext.ingest import build as builder
+from wing_parser.showcontext.ingest import keywords
 from wing_parser.showcontext.ingest.mapping import SheetMapping
 from wing_parser.showcontext.ingest.sheet import RawRow
 
@@ -10,14 +10,22 @@ MAPPING = SheetMapping(
     fields={"id": "A", "time": "B", "title": "C", "performers": "D", "note": "E"},
 )
 
-VOCABULARY = {"ca sĩ nữ": "speech.vocal", "trống": "drums.kick"}
+
+class _FakeVocabulary:
+    """Stands in for `vocabulary.Vocabulary` -- `resolve_fragment` only
+    ever calls `.effective()`, so the fake need not touch a filesystem."""
+
+    def __init__(self, terms):
+        self._terms = terms
+
+    def effective(self):
+        return self._terms
 
 
-def lookup(term):
-    kind = VOCABULARY.get(term)
-    if kind is None:
-        return None
-    return Classification(kind=kind, confidence=0.95, origin="manual")
+lookup = _FakeVocabulary((
+    keywords.Term(key="ca sĩ nữ", kinds=("speech.vocal",), ignored=False, match="exact"),
+    keywords.Term(key="trống", kinds=("drums.kick",), ignored=False, match="exact"),
+))
 
 
 def row(number, **cells):
@@ -91,10 +99,9 @@ def test_the_vocabulary_is_consulted_before_the_pattern_matcher():
     'guitar' is instrument.guitar at 0.85 in patterns.yaml, so only the
     vocabulary winning can produce speech.vocal here.
     """
-    def contradicting(term):
-        assert term == "guitar"
-        return Classification(kind="speech.vocal", confidence=0.95,
-                              origin="manual")
+    contradicting = _FakeVocabulary((
+        keywords.Term(key="guitar", kinds=("speech.vocal",), ignored=False, match="exact"),
+    ))
 
     matched = builder.build([row(5, C="x", D="guitar")], MAPPING, lookup)
     assert matched.segments[0].segment.expects == ("instrument.guitar",)
@@ -143,6 +150,39 @@ def test_a_weak_pattern_hit_does_not_satisfy_an_expectation():
     result = builder.build([row(5, C="x", D="spd")], MAPPING, lookup)
     assert result.segments[0].segment.expects == ()
     assert any("spd" in note for note in result.segments[0].comments)
+
+
+def test_an_ignored_fragment_is_counted_and_produces_no_comment_or_expectation():
+    ignoring = _FakeVocabulary((
+        keywords.Term(key="hoa tươi", kinds=(), ignored=True, match="exact"),
+    ))
+    result = builder.build([row(5, C="x", D="hoa tươi")], MAPPING, ignoring)
+    assert result.segments[0].segment.expects == ()
+    assert result.segments[0].comments == ()
+    assert result.ignored_performers == 1
+    assert result.unreadable_performers == 0
+
+
+def test_ignored_and_unresolved_fragments_are_counted_separately():
+    ignoring = _FakeVocabulary((
+        keywords.Term(key="hoa tươi", kinds=(), ignored=True, match="exact"),
+    ))
+    result = builder.build(
+        [row(5, C="x", D="hoa tươi, tốp múa")], MAPPING, ignoring
+    )
+    assert result.ignored_performers == 1
+    assert result.unreadable_performers == 1
+
+
+def test_a_fragment_matching_several_word_terms_unions_their_kinds():
+    several = _FakeVocabulary((
+        keywords.Term(key="BLĐ", kinds=("speech.handheld",), ignored=False, match="word"),
+        keywords.Term(key="lên sân khấu", kinds=("utility.playback",), ignored=False, match="word"),
+    ))
+    result = builder.build(
+        [row(5, C="x", D="Mời BLĐ lên sân khấu")], MAPPING, several
+    )
+    assert result.segments[0].segment.expects == ("speech.handheld", "utility.playback")
 
 
 def test_note_and_time_become_comments_not_fields():

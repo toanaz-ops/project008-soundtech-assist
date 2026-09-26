@@ -37,8 +37,12 @@ class DeadProvider:
         raise RuntimeError("socket closed")
 
 
-def _never(term):
-    return None
+class _NoVocabulary:
+    """A vocabulary with nothing in it -- every fragment falls through to
+    the pattern matcher and, for these terms, stays unresolved."""
+
+    def effective(self):
+        return ()
 
 
 def row(number, **cells):
@@ -110,5 +114,5 @@ def test_unresolved_terms_are_deduped_in_first_seen_order():
         row(6, C="Hai", D="PGs"),
         row(7, C="Ba", D="Nhạc đón khách"),
     ]
-    result = builder.build(rows, MAPPING, _never)
+    result = builder.build(rows, MAPPING, _NoVocabulary())
     assert unresolved_terms(result) == ("Nhạc đón khách", "PGs")

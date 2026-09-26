@@ -4,10 +4,11 @@ pattern matcher it calls into (`wing_parser.classifier.matcher.classify`)
 does read `patterns.yaml` from disk on first use, cached for the rest of
 the process; that read is the matcher's business, not this module's.
 
-The vocabulary lookup arrives as a callable rather than an import, which
-is what keeps every interpretation decision in this file testable without
-a filesystem -- and what keeps this module's own tests free of fixtures
-on disk.
+The vocabulary arrives as an object exposing `.effective() ->
+tuple[keywords.Term, ...]` (`vocabulary.Vocabulary`, or any stand-in a
+test supplies) rather than an import, which is what keeps every
+interpretation decision in this file testable without a filesystem --
+and what keeps this module's own tests free of fixtures on disk.
 
 Nothing is ever guessed. A fragment that does not resolve confidently
 becomes a verbatim comment, because a weak guess entering `expects:`
@@ -22,6 +23,7 @@ from dataclasses import dataclass
 
 from wing_parser.classifier import matcher
 from wing_parser.classifier.normalize import clean
+from wing_parser.showcontext.ingest import keywords
 from wing_parser.showcontext.models import Segment
 
 _SPLIT = re.compile(r"[,/;\n]+")
@@ -41,6 +43,7 @@ class BuildResult:
     comment_rows: int
     blank_rows: int
     unreadable_performers: int = 0
+    ignored_performers: int = 0
 
     @property
     def expectations(self) -> int:
@@ -57,21 +60,22 @@ class BuildResult:
         return sum(len(built.segment.expects) for built in self.segments)
 
 
-def resolve_fragment(fragment: str, lookup) -> str | None:
-    """Vocabulary first, pattern matcher second, nothing third."""
+def resolve_fragment(fragment: str, vocabulary) -> keywords.Resolution:
+    """Vocabulary first (exact, then word -- keywords.match's own two
+    steps), pattern matcher second, nothing third."""
     target = clean(fragment)
     if not target:
-        return None
+        return keywords.Resolution((), False)
 
-    remembered = lookup(target)
-    if remembered is not None and matcher.is_confident(remembered):
-        return remembered.kind
+    found = keywords.match(fragment, vocabulary.effective())
+    if found.kinds or found.ignored:
+        return found
 
-    found = matcher.classify(fragment, "channels")
-    if matcher.is_confident(found):
-        return found.kind
+    pattern = matcher.classify(fragment, "channels")
+    if matcher.is_confident(pattern):
+        return keywords.Resolution((pattern.kind,), False)
 
-    return None
+    return keywords.Resolution((), False)
 
 
 def _cell(row, mapping, field: str) -> str:
@@ -81,22 +85,28 @@ def _cell(row, mapping, field: str) -> str:
     return row.cells.get(letter, "")
 
 
-def _expectations(text: str, lookup, row_number: int) -> tuple[tuple[str, ...],
-                                                               tuple[str, ...]]:
+def _expectations(text: str, vocabulary, row_number: int) -> tuple[
+        tuple[str, ...], tuple[str, ...], int]:
     kinds: list[str] = []
     comments: list[str] = []
+    ignored = 0
     for fragment in _SPLIT.split(text):
         stripped = fragment.strip()
         if not stripped:
             continue
-        kind = resolve_fragment(stripped, lookup)
-        if kind is None:
+        resolution = resolve_fragment(stripped, vocabulary)
+        if resolution.ignored and not resolution.kinds:
+            ignored += 1
+            continue
+        if not resolution.kinds:
             comments.append(
                 f"row {row_number}: could not read performer {stripped!r}"
             )
-        elif kind not in kinds:
-            kinds.append(kind)
-    return tuple(kinds), tuple(comments)
+            continue
+        for kind in resolution.kinds:
+            if kind not in kinds:
+                kinds.append(kind)
+    return tuple(kinds), tuple(comments), ignored
 
 
 def _fold(segment_id: str) -> str:
@@ -117,7 +127,7 @@ def _unique(wanted: str, used: set[str]) -> str:
     return f"{wanted}-{suffix}"
 
 
-def build(rows, mapping, lookup, blank_rows: int = 0,
+def build(rows, mapping, vocabulary, blank_rows: int = 0,
           *, headers: dict[str, str] | None = None) -> BuildResult:
     """Segment ids are unique here, and every consumer downstream needs that.
 
@@ -131,6 +141,7 @@ def build(rows, mapping, lookup, blank_rows: int = 0,
     built: list[BuiltSegment] = []
     loose: list[str] = []
     unreadable = 0
+    ignored_total = 0
     generated = 0
     used: set[str] = set()
 
@@ -161,8 +172,9 @@ def build(rows, mapping, lookup, blank_rows: int = 0,
             )
             continue
 
-        kinds, comments = _expectations(performers, lookup, row.number)
+        kinds, comments, ignored = _expectations(performers, vocabulary, row.number)
         unreadable += len(comments)
+        ignored_total += ignored
         notes = list(comments)
         if written_time:
             notes.insert(0, f"row {row.number}: time {written_time!r}")
@@ -214,4 +226,5 @@ def build(rows, mapping, lookup, blank_rows: int = 0,
         comment_rows=len(loose),
         blank_rows=blank_rows,
         unreadable_performers=unreadable,
+        ignored_performers=ignored_total,
     )
