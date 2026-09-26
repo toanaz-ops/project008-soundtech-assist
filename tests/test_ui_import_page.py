@@ -510,6 +510,7 @@ def test_previewing_after_ignore_reflects_it_in_the_summary_and_drops_the_commen
     assert page.term_row_state(fragment) == "recorded"
 
     page.preview_button.click()
+    page.scene_step.skip_button.click()      # the new Scene step, unrelated here
     rendered = page.preview_pane.toPlainText()
     assert "1 ignored" in rendered
     assert f"could not read performer {fragment!r}" not in rendered
@@ -721,7 +722,9 @@ def test_save_does_not_write_when_the_rebuild_fails(page, tmp_path):
 
 def test_preview_renders_and_save_writes_utf8(bidv_terms, tmp_path):
     bidv_terms.preview_button.click()
-    assert bidv_terms.step_area.currentIndex() == 3
+    assert bidv_terms.step_area.currentIndex() == 3        # the new Scene step
+    bidv_terms.scene_step.skip_button.click()
+    assert bidv_terms.step_area.currentIndex() == 4         # Save, unchanged content
     rendered = bidv_terms.preview_pane.toPlainText()
     assert rendered != ""
     out = tmp_path / "out.yaml"
@@ -734,7 +737,7 @@ def test_preview_renders_and_save_writes_utf8(bidv_terms, tmp_path):
 
 def test_the_wizard_has_a_step_rail_starting_at_pick(page):
     assert page.step_rail.step == 0
-    assert page.step_rail.names == ("pick", "mapping", "vocabulary", "save")
+    assert page.step_rail.names == ("pick", "mapping", "vocabulary", "scene", "save")
     assert page.step_rail.labels[0].isEnabled()
     assert not page.step_rail.labels[-1].isEnabled()
 

@@ -77,6 +77,7 @@ class MainWindow(QMainWindow):
         self.pages["import_"].open_settings_requested.connect(self.open_settings)
         self.pages["console"] = ConsolePage()
         live_wiring.wire_console(self, self.pages["console"])
+        self.pages["console"].session_pulled.connect(self.pages["import_"].set_last_pull)
 
         self.stack = QStackedWidget()
         for key in PAGE_ORDER:

@@ -77,4 +77,19 @@ IMPORT_TEXTS: dict[str, str] = {
         "Saved, but {fragment!r} still does not match its own key -- check "
         "the key or the \"match inside a sentence\" checkbox."
     ),
+    "import.scene.source": "Scene",
+    "import.scene.source.doctor": "Doctor's scene",
+    "import.scene.source.file": "Open .snap…",
+    "import.scene.source.pull": "Console's last Pull",
+    "import.scene.open_file": "Open .snap…",
+    "import.scene.col.segment": "Segment",
+    "import.scene.col.needed": "Kinds needed",
+    "import.scene.col.found": "Found",
+    "import.scene.col.missing": "Missing",
+    "import.scene.skip": "Skip",
+    "import.scene.continue": "Continue",
+    "import.scene.no_scene": "No scene loaded for this source yet.",
+    "import.scene.no_pull_yet": "Nothing pulled from a console this run yet.",
+    "import.scene.file_error": "Could not read {path}: {error}",
+    "import.step.scene": "Scene check",
 }

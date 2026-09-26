@@ -14,7 +14,7 @@ from pathlib import Path
 
 from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.provider import ProviderError
-from wing_parser.showcontext.ingest import build, emit, guess, mapping, sheet
+from wing_parser.showcontext.ingest import build, emit, guess, mapping, propose, sheet
 from wing_parser.showcontext.ingest.sample import sample_workbook
 from wing_parser.showcontext.ingest.suggest import propose_mapping
 
@@ -88,9 +88,13 @@ def build_result(read, resolved, directory=None):
     )
 
 
-def preview_text(xlsx, result) -> str:
-    """The rendered YAML document, under the workbook's stem as show name."""
-    return emit.render(Path(xlsx).stem, result, None)
+def preview_text(xlsx, result, scene=None) -> str:
+    """The rendered YAML document, under the workbook's stem as show
+    name. `scene`, given, adds the --scene cross-check proposals exactly
+    as the CLI's --scene does (design spec §5) -- commented-out cues,
+    never live ones."""
+    proposals = propose.for_segments(result, scene) if scene is not None else None
+    return emit.render(Path(xlsx).stem, result, proposals)
 
 
 def unresolved(result):

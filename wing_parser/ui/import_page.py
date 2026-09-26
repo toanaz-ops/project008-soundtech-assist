@@ -32,7 +32,7 @@ from wing_parser.ui.workers import CallRunner
 
 FILTER = text("import.xlsx_filter")
 SAVE_FILTER = text("import.yaml_filter")
-STEPS = ("pick", "mapping", "vocabulary", "save")
+STEPS = ("pick", "mapping", "vocabulary", "scene", "save")
 
 
 class ImportPage(QWidget):
@@ -50,6 +50,11 @@ class ImportPage(QWidget):
         self._resolved = None
         # record_term's write target; tests point this at tmp_path, None = cache default.
         self._directory = None
+        # the window's current session (Doctor's scene) and the scene the
+        # operator chose on the Scene step -- read by import_steps.finish_scene
+        # and threaded into both Preview and Save so they never disagree.
+        self._session = None
+        self._scene = None
 
         self.status = QLabel("")
         self.status.setWordWrap(True)
@@ -85,7 +90,20 @@ class ImportPage(QWidget):
         layout.addLayout(self.step_area)
 
     def set_session(self, session) -> None:
-        """Accepted but unused: import is scene-independent."""
+        """The window's current session -- offered as the Scene step's
+        default cross-check source, 'Doctor's scene' (design spec §5).
+        Was previously accepted but unused; import is no longer fully
+        scene-independent once the Scene step exists."""
+        self._session = session
+
+    def set_last_pull(self, session) -> None:
+        """The Console page's last successful Pull this app run (W4).
+        Wired from MainWindow, not from set_session — a pull can arrive
+        and be superseded by a different file being opened on Doctor
+        without losing what was pulled. Note the seam on SceneStep is
+        named `set_pulled_session`, not `set_last_pull_session` — do not
+        introduce a second name for the same thing."""
+        self.scene_step.set_pulled_session(session)
 
     @property
     def result(self):
