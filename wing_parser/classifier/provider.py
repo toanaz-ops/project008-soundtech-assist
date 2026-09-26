@@ -252,10 +252,21 @@ _PING_SCHEMA = {
 
 
 def ping(cfg: ProviderConfig) -> tuple[bool, str]:
-    """One trivial round-trip; any failure becomes the message."""
+    """One trivial round-trip; any failure's message comes from the same
+    `provider_errors.classify` every other surface uses (fix round 1,
+    (c)) -- this is the ONE production caller of this function
+    (`SettingsDialog._probe` defaults to it) and it used to catch every
+    exception and show `str(exc)` raw, so classify() was reachable in
+    Settings' Test connection only when a test injected a raising probe
+    in its place. Lazy import: `provider_errors` imports `ProviderError`
+    from this module, so importing it at module scope here would cycle.
+    The (ok, message) contract is unchanged for this function's only
+    caller."""
+    from wing_parser.classifier.provider_errors import classify
+
     try:
         engine = make_provider(cfg)
         complete_json(engine, "You reply ok.", "ping", _PING_SCHEMA)
     except Exception as exc:  # noqa: BLE001 - every failure becomes a message
-        return False, str(exc)
+        return False, classify(exc)[1]
     return True, f"{cfg.name} replied"
