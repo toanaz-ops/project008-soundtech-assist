@@ -43,4 +43,9 @@ IMPORT_TEXTS: dict[str, str] = {
     "vocabulary.name_required": "Name cannot be empty.",
     "vocabulary.name_exists": "already exists — use Edit",
     "vocabulary.write_failed": "Could not save: {error}",
+    "vocabulary.kind_drop_confirm": (
+        "Saving will drop unknown kind(s) {kinds}, which this build does "
+        "not recognise. Continue?"
+    ),
+    "vocabulary.delete_confirm": "Delete {name}? This cannot be undone from here.",
 }

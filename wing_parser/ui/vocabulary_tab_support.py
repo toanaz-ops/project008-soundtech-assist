@@ -1,5 +1,7 @@
-"""Shared plumbing for the Vocabulary window's Sets and Terms tabs (fix
-round 1, I3 -- the two tabs had near-identical copies of this before).
+"""Write-path plumbing shared by the Vocabulary window's Sets and Terms
+tabs (fix round 1, I3). Widget construction, search, and broken-set
+display live in `vocabulary_tab_widgets.py` (split out in fix round 2 to
+stay under the 200-line house-style ceiling).
 
 `run_dialog_loop`/`write_or_report` both treat `ValueError` and `OSError`
 the same way: `UnknownKindError`/`UnknownSetError`/`CycleError` are all
@@ -19,6 +21,15 @@ from wing_parser.showcontext.ingest import keywords
 from wing_parser.ui.texts import text
 
 
+class UserDeclined(Exception):
+    """Raised by an `apply` callback passed to `run_dialog_loop` to
+    reshow the same dialog with NO additional message box -- for when
+    the operator already answered an inline confirmation (fix round 2:
+    declining to drop an unknown kind). Distinct from `ValueError`/
+    `OSError` so `run_dialog_loop` does not also pop a redundant warning
+    on top of the confirmation the operator just answered."""
+
+
 def run_dialog_loop(parent, dialog, apply) -> bool:
     """Re-show `dialog` (same instance, its input kept) until `apply`
     succeeds or the operator cancels -- a QDialog's widgets keep their
@@ -27,6 +38,8 @@ def run_dialog_loop(parent, dialog, apply) -> bool:
     while dialog.exec():
         try:
             apply(dialog.result())
+        except UserDeclined:
+            continue
         except (ValueError, OSError) as exc:
             QMessageBox.warning(parent, text("vocabulary.title"), _message(exc))
             continue
@@ -62,14 +75,31 @@ def check_new_key(key: str, existing_identities) -> None:
         raise ValueError(text("vocabulary.name_exists"))
 
 
-def folded_haystack(*parts: str) -> str:
-    return keywords.fold(" ".join(parts))
+def confirm_kind_drop(parent, dropped: tuple[str, ...]) -> None:
+    """Fix round 2, item 4: an edit that would silently drop a
+    hand-edited kind the dialog cannot even display (it only lists
+    `known_kinds`) must be confirmed first, naming what would be
+    dropped. Raises `UserDeclined` on No/Esc/close -- the caller (a
+    `run_dialog_loop` `apply`) then reshows the SAME dialog, nothing
+    written, "Cancel keeps the entry unchanged"."""
+    if not dropped:
+        return
+    answer = QMessageBox.question(
+        parent, text("vocabulary.title"),
+        text("vocabulary.kind_drop_confirm").format(kinds=", ".join(dropped)),
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
+    )
+    if answer != QMessageBox.StandardButton.Yes:
+        raise UserDeclined()
 
 
-def apply_search_filter(table, haystacks: list[str], query: str) -> None:
-    """S1: live, case-insensitive, diacritic-folded row filtering. Rows
-    are hidden, not removed, so table indices stay stable for every
-    other lookup this tab does."""
-    folded_query = keywords.fold(query)
-    for row, haystack in enumerate(haystacks):
-        table.setRowHidden(row, bool(folded_query) and folded_query not in haystack)
+def confirm_delete(parent, name: str) -> bool:
+    """Fix round 2, item 5: Delete must name the entry and default to
+    No."""
+    answer = QMessageBox.question(
+        parent, text("vocabulary.title"), text("vocabulary.delete_confirm").format(name=name),
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
+    )
+    return answer == QMessageBox.StandardButton.Yes

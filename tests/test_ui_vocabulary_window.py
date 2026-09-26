@@ -39,6 +39,30 @@ def _make_broken_term(window) -> None:
     window._reload()
 
 
+def _make_broken_set(window) -> None:
+    """Fix round 2, item 3: a set nesting another set that then stops
+    existing -- "broken exactly like a term's" (spec §8.1)."""
+    window.vocabulary.put_set("temp kit", label="Temp kit", kinds=("drums.pad",))
+    window.vocabulary.put_set("host kit", label="Host kit", kinds=("speech.mc",),
+                              sets=("temp kit",))
+    window.vocabulary.delete_set("temp kit")
+    window._reload()
+
+
+def _stub_confirm(monkeypatch, *, yes: bool) -> list:
+    """Stubs QMessageBox.question the same way existing tests stub
+    QMessageBox.warning -- returns the list of call-arg tuples so a test
+    can assert what was named in the confirmation."""
+    calls: list = []
+
+    def _question(*args, **kwargs):
+        calls.append(args)
+        return QMessageBox.StandardButton.Yes if yes else QMessageBox.StandardButton.No
+
+    monkeypatch.setattr(QMessageBox, "question", _question)
+    return calls
+
+
 def _rows_by_key(table, column=0) -> dict:
     return {table.item(r, column).text(): r for r in range(table.rowCount())}
 
@@ -169,6 +193,23 @@ def test_search_filters_sets_by_key_and_label(window):
     assert _visible_keys(window.sets_tab.table) == {"Drum kit"}
 
 
+def test_search_finds_a_set_by_its_key_when_the_label_does_not_contain_it(window, monkeypatch):
+    """Fix round 2, item 1: the Sets-tab haystack used to be built from
+    label_text + label + kinds -- label_text equals label for a normal
+    row, so the key itself was never actually searchable."""
+    from wing_parser.ui import vocabulary_sets_tab
+
+    monkeypatch.setattr(
+        vocabulary_sets_tab, "VocabularySetDialog",
+        lambda *a, **k: _AutoAcceptSetDialog("cajon kit", "Percussion", ("drums.pad",), ()),
+    )
+    window.sets_tab.table.clearSelection()
+    window.sets_tab._add()
+
+    window.sets_tab.search_edit.setText("cajon")
+    assert "Percussion" in _visible_keys(window.sets_tab.table)
+
+
 def test_search_also_matches_by_kind_not_only_key_or_label(window):
     window.sets_tab.search_edit.setText("vocal")   # only Band's kinds have it
     assert _visible_keys(window.sets_tab.table) == {"Band"}
@@ -179,6 +220,36 @@ def test_clearing_the_search_shows_every_row_again(window):
     window.terms_tab.search_edit.setText("")
     visible = _visible_keys(window.terms_tab.table)
     assert {"mc", "trống", "hoa tươi"} <= visible
+
+
+def test_a_search_hidden_term_cannot_be_deleted_unseen(window, monkeypatch):
+    """Fix round 2, item 2: select "mc", type "trong" (hides "mc"'s row),
+    click Delete -- "mc" must survive, and the confirmation must never
+    even fire, because the selection was cleared when its row vanished
+    behind the filter."""
+    calls = _stub_confirm(monkeypatch, yes=True)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["mc"])
+    window.terms_tab.search_edit.setText("trong")
+    assert not window.terms_tab.delete_button.isEnabled()
+    window.terms_tab.delete_button.click()
+
+    assert not calls
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "mc" in {t.key for t in v.terms()}
+
+
+def test_a_search_hidden_set_cannot_be_deleted_unseen(window, monkeypatch):
+    calls = _stub_confirm(monkeypatch, yes=True)
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Band"])
+    window.sets_tab.search_edit.setText("drum")   # hides "Band", keeps "Drum kit"
+    assert not window.sets_tab.delete_button.isEnabled()
+    window.sets_tab.delete_button.click()
+
+    assert not calls
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "band" in {s.key for s in v.sets()}
 
 
 # -- fix round 1, S2: fixing a broken set reference ---------------------------
@@ -220,10 +291,55 @@ def test_dropping_the_reference_removes_it_and_keeps_the_rest(window):
     assert term.kinds == ("speech.mc",)
 
 
+# -- fix round 2, item 3: S2 generalised to the Sets tab -----------------------
+
+
+def test_a_broken_nested_set_shows_the_broken_marker(window):
+    _make_broken_set(window)
+    rows = _rows_by_key(window.sets_tab.table)
+    nested_cell = window.sets_tab.table.item(rows["Host kit"], 2).text()
+    assert "temp kit" in nested_cell and "no longer exists" in nested_cell
+
+
+def test_a_broken_nested_set_disables_edit_and_enables_the_two_fix_actions(window):
+    _make_broken_set(window)
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Host kit"])
+    assert not window.sets_tab.edit_button.isEnabled()
+    assert window.sets_tab.pick_set_button.isEnabled()
+    assert window.sets_tab.drop_ref_button.isEnabled()
+
+
+def test_picking_another_set_replaces_a_sets_broken_nested_reference(window, monkeypatch):
+    _make_broken_set(window)
+    monkeypatch.setattr(QInputDialog, "getItem", lambda *a, **k: ("band", True))
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Host kit"])
+    window.sets_tab._pick_another_set()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    host = {s.key: s for s in v.sets()}["host kit"]
+    assert host.sets == ("band",)
+    assert host.kinds == ("speech.mc",)   # untouched
+
+
+def test_dropping_a_sets_broken_nested_reference_keeps_the_rest(window):
+    _make_broken_set(window)
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Host kit"])
+    window.sets_tab._drop_reference()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    host = {s.key: s for s in v.sets()}["host kit"]
+    assert host.sets == ()
+    assert host.kinds == ("speech.mc",)
+
+
 # -- fix round 1, I1: Reset reachable for a deleted default -------------------
 
 
-def test_deleting_a_default_term_then_resetting_brings_it_back(window):
+def test_deleting_a_default_term_then_resetting_brings_it_back(window, monkeypatch):
+    _stub_confirm(monkeypatch, yes=True)
     rows = _rows_by_key(window.terms_tab.table)
     window.terms_tab.table.selectRow(rows["hoa tươi"])
     window.terms_tab.delete_button.click()
@@ -241,7 +357,8 @@ def test_deleting_a_default_term_then_resetting_brings_it_back(window):
     assert "hoa tươi" not in {t.key for t in v.deleted_terms()}
 
 
-def test_deleting_a_default_set_then_resetting_brings_it_back(window):
+def test_deleting_a_default_set_then_resetting_brings_it_back(window, monkeypatch):
+    _stub_confirm(monkeypatch, yes=True)
     rows = _rows_by_key(window.sets_tab.table)
     window.sets_tab.table.selectRow(rows["Award moment"])
     window.sets_tab.delete_button.click()
@@ -413,6 +530,7 @@ def test_an_oserror_from_delete_is_reported_not_raised(window, monkeypatch):
         raise OSError("disk full")
 
     monkeypatch.setattr(window.vocabulary, "delete_set", _boom)
+    _stub_confirm(monkeypatch, yes=True)
     warnings = []
     monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
     rows = _rows_by_key(window.sets_tab.table)
@@ -439,6 +557,121 @@ def test_an_oserror_from_a_dialog_save_is_reported_and_keeps_the_dialog_open(win
 
     assert warnings and "disk full" in warnings[0]
     assert dialog.calls == 2
+
+
+# -- fix round 2, item 4: confirm before dropping a hand-edited kind ----------
+
+
+def _inject_weird_set(window) -> None:
+    from wing_parser.classifier import cache
+
+    doc = cache.read_raw(window._directory)
+    doc.setdefault("cuesheet_sets", {})["weird kit"] = {
+        "label": "Weird kit", "kinds": ["drums.pad", "no.such.kind"], "origin": "manual",
+    }
+    cache.write_raw(doc, window._directory)
+    window._reload()
+
+
+def _inject_weird_term(window) -> None:
+    from wing_parser.classifier import cache
+
+    doc = cache.read_raw(window._directory)
+    doc.setdefault("cuesheet", {})["weird term"] = {
+        "kinds": ["speech.mc", "no.such.kind"], "match": "word", "origin": "manual",
+    }
+    cache.write_raw(doc, window._directory)
+    window._reload()
+
+
+def test_editing_a_set_confirms_before_dropping_an_unknown_kind(window, monkeypatch):
+    from wing_parser.ui import vocabulary_sets_tab
+
+    _inject_weird_set(window)
+    calls = _stub_confirm(monkeypatch, yes=False)
+    dialog = _ScriptedDialog(("weird kit", "Weird kit", ("drums.pad",), ()))
+    monkeypatch.setattr(vocabulary_sets_tab, "VocabularySetDialog", lambda *a, **k: dialog)
+
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Weird kit"])
+    window.sets_tab._edit()
+
+    assert len(calls) == 1 and "no.such.kind" in str(calls[0])
+    assert dialog.calls == 2   # declined -- reshown, not just abandoned
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "no.such.kind" in {s.key: s for s in v.sets()}["weird kit"].kinds
+
+
+def test_confirming_the_kind_drop_saves_without_the_unknown_kind(window, monkeypatch):
+    from wing_parser.ui import vocabulary_sets_tab
+
+    _inject_weird_set(window)
+    _stub_confirm(monkeypatch, yes=True)
+    dialog = _ScriptedDialog(("weird kit", "Weird kit", ("drums.pad",), ()))
+    monkeypatch.setattr(vocabulary_sets_tab, "VocabularySetDialog", lambda *a, **k: dialog)
+
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Weird kit"])
+    window.sets_tab._edit()
+
+    assert dialog.calls == 1
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert {s.key: s for s in v.sets()}["weird kit"].kinds == ("drums.pad",)
+
+
+def test_editing_a_term_confirms_before_dropping_an_unknown_kind(window, monkeypatch):
+    from wing_parser.ui import vocabulary_terms_tab
+
+    _inject_weird_term(window)
+    calls = _stub_confirm(monkeypatch, yes=False)
+    dialog = _ScriptedDialog(("weird term", ("speech.mc",), (), False, "word"))
+    monkeypatch.setattr(vocabulary_terms_tab, "VocabularyTermDialog", lambda *a, **k: dialog)
+
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["weird term"])
+    window.terms_tab._edit()
+
+    assert len(calls) == 1 and "no.such.kind" in str(calls[0])
+    assert dialog.calls == 2
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "no.such.kind" in {t.key: t for t in v.terms()}["weird term"].kinds
+
+
+# -- fix round 2, item 5: Delete confirms by name, defaults to No -------------
+
+
+def test_delete_asks_for_confirmation_naming_the_entry_and_defaults_to_no(window, monkeypatch):
+    calls = _stub_confirm(monkeypatch, yes=False)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["mc"])
+    window.terms_tab.delete_button.click()
+
+    assert len(calls) == 1
+    *_, message, buttons, default = calls[0]
+    assert "mc" in message
+    assert default == QMessageBox.StandardButton.No
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "mc" in {t.key for t in v.terms()}   # declined -- nothing deleted
+
+
+def test_delete_proceeds_once_confirmed(window, monkeypatch):
+    _stub_confirm(monkeypatch, yes=True)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["mc"])
+    window.terms_tab.delete_button.click()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert "mc" not in {t.key for t in v.terms()}
+
+
+def test_selection_is_cleared_after_a_successful_delete(window, monkeypatch):
+    _stub_confirm(monkeypatch, yes=True)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["mc"])
+    window.terms_tab.delete_button.click()
+
+    assert window.terms_tab.table.currentRow() == -1
+    assert not window.terms_tab.edit_button.isEnabled()
 
 
 class _NullExec:
