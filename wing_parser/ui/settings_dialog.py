@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser import config
-from wing_parser.classifier import provider
+from wing_parser.classifier import provider, provider_errors
 from wing_parser.ui import state_store
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.settings_io import dump_yaml, mask
@@ -173,7 +173,8 @@ class SettingsDialog(QDialog):
         self._probe_line(ok, message)
 
     def _show_probe_error(self, exc) -> None:
-        self._probe_line(False, str(exc))
+        _code, message = provider_errors.classify(exc)
+        self._probe_line(False, message)
 
     def _probe_line(self, ok: bool, message: str) -> None:
         key = "settings.probe_ok" if ok else "settings.probe_fail"

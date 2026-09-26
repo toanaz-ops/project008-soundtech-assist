@@ -43,6 +43,21 @@ def test_probe_failure_is_reported_not_raised(qt_app, knowledge, settle):
     assert dlg.test_button.isEnabled()
 
 
+def test_a_401_from_the_probe_shows_the_shared_bad_key_message(qt_app, knowledge, settle):
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    class _Unauthorized(Exception):
+        status_code = 401
+
+    def failing_probe(cfg):
+        raise _Unauthorized("nope")
+
+    dlg = SettingsDialog(probe=failing_probe)
+    assert dlg.run_probe()
+    assert settle(lambda: "rejected" in dlg.status_label.text())
+    assert "rejected" in dlg.status_label.text()
+
+
 def test_a_working_probe_reports_ok(qt_app, knowledge, settle):
     from wing_parser.ui.settings_dialog import SettingsDialog
 
