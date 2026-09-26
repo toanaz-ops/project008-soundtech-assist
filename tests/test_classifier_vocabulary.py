@@ -1,0 +1,176 @@
+"""Spec §3.2-3.3: defaults + his edits + tombstones + nested sets.
+
+Every fixture uses an isolated `directory` (tmp_path) so no test reads
+or writes the real knowledge/ directory -- see conftest.py's session
+autouse fixture, which already isolates config.knowledge_dir() but NOT
+an explicit directory= argument, so tests here pass one explicitly.
+"""
+from __future__ import annotations
+
+import pytest
+
+from wing_parser.classifier import cache, vocabulary as vocab
+
+
+@pytest.fixture
+def directory(tmp_path):
+    return tmp_path
+
+
+# -- defaults load with no user file at all ---------------------------------
+
+
+def test_the_shipped_defaults_load_with_an_empty_classifier_yaml(directory):
+    v = vocab.Vocabulary.load(directory)
+    keys = {s.key for s in v.sets()}
+    assert "drum kit" in keys and "band" in keys
+    terms = {t.key: t for t in v.terms()}
+    assert terms["mc"].kinds == ("speech.mc",)
+    assert terms["mc"].origin == "default"
+    assert terms["mc"].match == "word"
+
+
+def test_every_shipped_default_kind_is_one_patterns_yaml_can_produce(directory):
+    from wing_parser.classifier.matcher import known_kinds
+
+    known = set(known_kinds("channels"))
+    v = vocab.Vocabulary.load(directory)
+    for term in v.effective():
+        for kind in term.kinds:
+            assert kind in known, f"{term.key!r} names unknown kind {kind!r}"
+
+
+# -- nested sets (F13) --------------------------------------------------------
+
+
+def test_band_expands_to_its_own_kinds_plus_drum_kits_nested_ones(directory):
+    v = vocab.Vocabulary.load(directory)
+    expanded = v.expand_set("band")
+    for kind in ("drums.kick.in", "drums.tom", "speech.vocal", "instrument.guitar"):
+        assert kind in expanded
+
+
+def test_editing_drum_kit_changes_what_band_expands_to(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_set("drum kit", label="Drum kit", kinds=("drums.pad",))
+    reloaded = vocab.Vocabulary.load(directory)
+    assert reloaded.expand_set("band") == ("drums.pad", "speech.vocal",
+                                           "instrument.guitar", "instrument.bass",
+                                           "instrument.keys")
+
+
+def test_a_cycle_is_refused_at_write_naming_the_path(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_set("loop a", label="Loop A", sets=("band",))
+    with pytest.raises(vocab.CycleError) as exc:
+        v.put_set("band", label="Band", sets=("drum kit", "loop a"))
+    assert "band" in str(exc.value) and "loop a" in str(exc.value)
+
+
+def test_a_cycle_already_on_disk_expands_once_and_does_not_loop(directory):
+    """Reached only by hand-editing classifier.yaml -- the loader must
+    tolerate it, not crash every fragment behind it (design spec S3.2)."""
+    doc = cache.read_raw(directory)
+    doc.setdefault("cuesheet_sets", {})
+    doc["cuesheet_sets"]["loop a"] = {"label": "Loop A", "sets": ["loop b"], "origin": "manual"}
+    doc["cuesheet_sets"]["loop b"] = {"label": "Loop B", "sets": ["loop a"], "kinds": ["speech.mc"],
+                                      "origin": "manual"}
+    cache.write_raw(doc, directory)
+
+    v = vocab.Vocabulary.load(directory)
+    assert v.expand_set("loop a") == ("speech.mc",)  # terminates, no RecursionError
+
+
+def test_a_term_pointing_at_a_deleted_set_resolves_to_its_remaining_kinds(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("solo term", kinds=("speech.lectern",), sets=("band",), match="word")
+    v.delete_set("band")
+    reloaded = vocab.Vocabulary.load(directory)
+    effective = {t.key: t for t in reloaded.effective()}
+    assert effective["solo term"].kinds == ("speech.lectern",)  # band's kinds are gone, not an error
+
+
+# -- overrides and tombstones (S3.2) -----------------------------------------
+
+
+def test_his_entry_replaces_a_default_with_the_same_folded_key(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("MC", kinds=("speech.lectern",), match="word")  # overrides the default "mc"
+    reloaded = vocab.Vocabulary.load(directory)
+    terms = {t.key: t for t in reloaded.terms()}
+    assert terms["mc"].kinds == ("speech.lectern",)
+    assert terms["mc"].display_origin == "default, edited"
+
+
+def test_deleting_a_default_term_tombstones_it_rather_than_reviving_on_update(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.delete_term("hoa tươi")
+    reloaded = vocab.Vocabulary.load(directory)
+    assert "hoa tươi" not in {t.key for t in reloaded.terms()}
+    doc = cache.read_raw(directory)
+    assert doc["cuesheet"]["hoa tươi"]["deleted"] is True
+
+
+def test_reset_removes_the_tombstone_and_the_default_shows_through_again(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.delete_term("hoa tươi")
+    v.reset_term("hoa tươi")
+    reloaded = vocab.Vocabulary.load(directory)
+    terms = {t.key: t for t in reloaded.terms()}
+    assert terms["hoa tươi"].ignore is True
+    assert terms["hoa tươi"].origin == "default"
+
+
+def test_deleting_a_manual_term_that_has_no_default_removes_it_outright(directory):
+    v = vocab.Vocabulary.load(directory)
+    v.put_term("cajon", kinds=("drums.pad",), match="word")
+    v.delete_term("cajon")
+    doc = cache.read_raw(directory)
+    assert "cajon" not in doc["cuesheet"]
+
+
+# -- validation ---------------------------------------------------------------
+
+
+def test_put_term_refuses_an_unknown_kind_naming_it(directory):
+    v = vocab.Vocabulary.load(directory)
+    with pytest.raises(vocab.UnknownKindError, match="nonsense.kind"):
+        v.put_term("x", kinds=("nonsense.kind",), match="word")
+
+
+def test_put_term_refuses_an_unknown_set_naming_it(directory):
+    v = vocab.Vocabulary.load(directory)
+    with pytest.raises(vocab.UnknownSetError, match="no such set"):
+        v.put_term("x", sets=("no such set",), match="word")
+
+
+def test_a_term_cannot_be_both_ignore_and_kinds(directory):
+    v = vocab.Vocabulary.load(directory)
+    with pytest.raises(ValueError, match="ignore"):
+        v.put_term("x", kinds=("speech.mc",), ignore=True, match="word")
+
+
+# -- the old single-kind shape still loads (S3.2) ----------------------------
+
+
+def test_an_old_shape_cache_remember_entry_loads_as_a_match_exact_term(directory):
+    from wing_parser.classifier.matcher import Classification
+
+    cache.remember("guitar solo", "cuesheet",
+                   Classification(kind="instrument.guitar", confidence=1.0, origin="manual"),
+                   directory=directory)
+    v = vocab.Vocabulary.load(directory)
+    terms = {t.key: t for t in v.terms()}
+    assert terms["guitar solo"].kinds == ("instrument.guitar",)
+    assert terms["guitar solo"].match == "exact"
+
+
+# -- effective() feeds keywords.match directly -------------------------------
+
+
+def test_effective_terms_are_ready_for_keywords_match(directory):
+    from wing_parser.showcontext.ingest import keywords
+
+    v = vocab.Vocabulary.load(directory)
+    result = keywords.match("Mời MC lên sân khấu", v.effective())
+    assert "speech.mc" in result.kinds and "utility.playback" in result.kinds

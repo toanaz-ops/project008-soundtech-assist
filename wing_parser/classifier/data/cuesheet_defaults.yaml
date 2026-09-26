@@ -1,0 +1,66 @@
+# Shipped defaults for the cuesheet vocabulary (design spec 2026-09-26 §A).
+# Never edited at runtime -- a person's own edits and tombstones live in
+# classifier.yaml's cuesheet/cuesheet_sets domains (vocabulary.py merges
+# the two). Concert rows are marked in the design doc as NOT checked
+# against a real file (F4); ToanAZ corrects them in the Vocabulary window,
+# not here (F14).
+
+sets:
+  drum kit:
+    label: Drum kit
+    kinds: [drums.kick.in, drums.kick.out, drums.snare.top, drums.snare.bottom,
+            drums.tom, drums.hihat, drums.overhead]
+  band:
+    label: Band
+    sets: [drum kit]
+    kinds: [speech.vocal, instrument.guitar, instrument.bass, instrument.keys]
+  handheld:
+    label: "Speech, handheld"
+    kinds: [speech.handheld]
+  award moment:
+    label: Award moment
+    kinds: [speech.mc, utility.playback]
+
+terms:
+  # -- corporate (from the two real sheets ToanAZ dropped 2026-08-24) ----
+  mc: {kinds: [speech.mc], match: word}
+  dẫn chương trình: {kinds: [speech.mc], match: word}
+  blđ: {sets: [handheld], match: word}
+  ban lãnh đạo: {sets: [handheld], match: word}
+  phát biểu: {kinds: [speech.lectern], match: word}
+  đại diện: {sets: [handheld], match: word}
+  khách mời: {sets: [handheld], match: word}
+  giám đốc: {kinds: [speech.lectern], match: word}
+  trao giải: {sets: [award moment], match: word}
+  vinh danh: {sets: [award moment], match: word}
+  quay số: {sets: [award moment], match: word}
+  tặng kỉ niệm chương: {sets: [award moment], match: word}
+  lên sân khấu: {kinds: [utility.playback], match: word}
+  loto: {kinds: [speech.handheld, utility.playback], match: word}
+  band nhạc: {sets: [band], match: word}
+  nhạc nhẹ: {kinds: [utility.playback], match: word}
+  hoa tươi: {ignore: true, match: word}
+  huy chương: {ignore: true, match: word}
+  chụp hình: {ignore: true, match: word}
+  quay phim: {ignore: true, match: word}
+  check in: {ignore: true, match: word}
+  phòng ban: {ignore: true, match: word}
+  tiết mục: {ignore: true, match: word}
+  # -- concert (drafted, NOT checked against a real file -- F4) ----------
+  ca sĩ: {kinds: [speech.vocal], match: word}
+  vocal: {kinds: [speech.vocal], match: word}
+  hát: {kinds: [speech.vocal], match: word}
+  band: {sets: [band], match: word}
+  trống: {sets: [drum kit], match: word}
+  drum: {sets: [drum kit], match: word}
+  dàn trống: {sets: [drum kit], match: word}
+  guitar điện: {kinds: [instrument.guitar.electric], match: word}
+  guitar thùng: {kinds: [instrument.guitar.acoustic], match: word}
+  bass: {kinds: [instrument.bass], match: word}
+  keyboard: {kinds: [instrument.keys], match: word}
+  piano: {kinds: [instrument.keys], match: word}
+  kèn: {kinds: [instrument.horns], match: word}
+  violin: {kinds: [instrument.strings], match: word}
+  backing track: {kinds: [utility.playback], match: word}
+  beat: {kinds: [utility.playback], match: word}
+  playback: {kinds: [utility.playback], match: word}
