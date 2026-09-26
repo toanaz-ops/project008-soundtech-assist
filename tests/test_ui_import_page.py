@@ -972,3 +972,24 @@ def test_the_pick_steps_lint_button_opens_a_lint_dialog(page, monkeypatch):
     )
     page.pick_step.lint_button.click()
     assert opened == [True]
+
+
+def test_try_ai_on_the_mapping_step_is_reachable_and_uses_the_pages_xlsx(page, monkeypatch, settle):
+    from wing_parser.ui import mapping_try_ai
+
+    page.pick_file(BIDV)
+    # pick_file's own proposal runs on a worker thread even with the
+    # model disabled (WING_DISABLE_LLM=1, set by the `page` fixture) --
+    # page._xlsx is only set once that call settles, same as bidv_terms.
+    assert settle(lambda: page.step_area.currentIndex() == 1)
+    seen = {}
+
+    def fake_propose(xlsx, provider):
+        seen["xlsx"] = xlsx
+        return type("P", (), {"sheet": "KB 8.1", "header_row": 5, "columns": {},
+                              "headers": {}, "problems": ()})()
+
+    monkeypatch.setattr(mapping_try_ai.suggest, "propose_mapping", fake_propose)
+    page.try_ai_panel.try_button.click()
+    assert settle(lambda: "xlsx" in seen)
+    assert seen["xlsx"].endswith(".xlsx")

@@ -27,6 +27,7 @@ from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 from wing_parser.showcontext.ingest import sheet as sheet_mod
 from wing_parser.ui import import_controller as ic
 from wing_parser.ui.mapping_step import MappingStep
+from wing_parser.ui.mapping_try_ai import MappingTryAi
 from wing_parser.ui.pick_step import PickStep
 from wing_parser.ui.save_step import SaveStep
 from wing_parser.ui.scene_step import SceneStep
@@ -67,7 +68,14 @@ def _mapping(page) -> QWidget:
         lambda: page.step_area.setCurrentIndex(0)
     )
     page.next_button.clicked.connect(lambda: finish_mapping(page))
-    return page.mapping_step
+
+    page.try_ai_panel = MappingTryAi(
+        page._runner, page._provider_factory, lambda: page._xlsx)
+    step = QWidget()
+    layout = QVBoxLayout(step)
+    layout.addWidget(page.mapping_step)
+    layout.addWidget(page.try_ai_panel)
+    return step
 
 
 def _terms(page) -> QWidget:
