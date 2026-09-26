@@ -91,5 +91,6 @@ IMPORT_TEXTS: dict[str, str] = {
     "import.scene.no_scene": "No scene loaded for this source yet.",
     "import.scene.no_pull_yet": "Nothing pulled from a console this run yet.",
     "import.scene.file_error": "Could not read {path}: {error}",
+    "import.scene.file_error_named": "Could not read that .snap: {error}",
     "import.step.scene": "Scene check",
 }

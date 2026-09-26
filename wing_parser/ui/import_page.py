@@ -1,6 +1,6 @@
 """The Import page: an assisted ingest behind four buttons.
 
-Pick -> Mapping -> Terms -> Preview & Save, stacked in `step_area`;
+Pick -> Mapping -> Terms -> Scene -> Save, stacked in `step_area`;
 each step is built and advanced by `import_steps` (docs/tech-debt.md#d-29).
 Model calls (`proposal_for`, `guesses_for`) run on cancellable workers
 with ruled timeouts (task C, wave 1b) -- the page never blocks on the
@@ -43,18 +43,14 @@ class ImportPage(QWidget):
         self._xlsx: str | None = None
         self._result = None
         self._rows: tuple = ()
-        # the sheet read and its resolved mapping, from finish_mapping -- read by
-        # import_steps.refresh_result to rebuild _result against a freshly taught
-        # vocabulary before Preview/Save (R1; moved out of this file, fix round 2).
+        # the sheet read and resolved mapping; import_steps.refresh_result
+        # rebuilds _result from these against the current vocabulary (R1).
         self._read = None
         self._resolved = None
         # record_term's write target; tests point this at tmp_path, None = cache default.
         self._directory = None
-        # the window's current session (Doctor's scene) and the scene the
-        # operator chose on the Scene step -- read by import_steps.finish_scene
-        # and threaded into both Preview and Save so they never disagree.
+        # the window's session -- Doctor's scene, offered to the Scene step.
         self._session = None
-        self._scene = None
 
         self.status = QLabel("")
         self.status.setWordWrap(True)
@@ -90,20 +86,8 @@ class ImportPage(QWidget):
         layout.addLayout(self.step_area)
 
     def set_session(self, session) -> None:
-        """The window's current session -- offered as the Scene step's
-        default cross-check source, 'Doctor's scene' (design spec §5).
-        Was previously accepted but unused; import is no longer fully
-        scene-independent once the Scene step exists."""
+        """The window's session -- Doctor's scene, the Scene step's default."""
         self._session = session
-
-    def set_last_pull(self, session) -> None:
-        """The Console page's last successful Pull this app run (W4).
-        Wired from MainWindow, not from set_session — a pull can arrive
-        and be superseded by a different file being opened on Doctor
-        without losing what was pulled. Note the seam on SceneStep is
-        named `set_pulled_session`, not `set_last_pull_session` — do not
-        introduce a second name for the same thing."""
-        self.scene_step.set_pulled_session(session)
 
     @property
     def result(self):
@@ -115,10 +99,6 @@ class ImportPage(QWidget):
         self._directory = path
 
     def _provider_factory(self):
-        """Kept as a bound method: `import_steps.py`/`terms_step.py` pass
-        it around as a callable. Delegates to `key_status.provider_factory`
-        (fix round 1 minor -- was duplicated with VocabularyWindow's own
-        copy)."""
         return key_status.provider_factory()
 
     def _fail(self, exc: Exception) -> None:
@@ -184,12 +164,7 @@ class ImportPage(QWidget):
         return self.terms_step.term_row_state(term)
 
     def save_as(self, path: str) -> bool:
-        """Public seam: write the preview as UTF-8, minus the dialog.
-
-        Refreshed first against what Record/Ignore just taught -- the
-        write itself lives in `import_steps.write_output` (fix round 2:
-        moved out with `refresh_result` to keep this file under the
-        line ceiling; behaviour unchanged)."""
+        """Public seam: write the preview as UTF-8, minus the dialog."""
         return import_steps.write_output(self, path)
 
     def _save_dialog(self) -> None:

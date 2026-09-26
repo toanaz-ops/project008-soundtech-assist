@@ -157,10 +157,10 @@ def show_scene_step(page) -> None:
 def finish_scene(page, scene) -> None:
     """Step 4 -> step 5: render the YAML, with the chosen scene's
     cross-check proposals if any -- Skip passes scene=None, and the file
-    is byte-for-byte what today's (pre-wave-4) Save produces. The scene
-    is remembered on the page so write_output renders the SAME thing
-    Save later writes, even though refresh_result runs again there."""
-    page._scene = scene
+    is byte-for-byte what today's (pre-wave-4) Save produces. `scene` is
+    already `page.scene_step.chosen_scene` by the time this runs -- the
+    step sets it before emitting -- so write_output can read it back
+    from there and render the SAME thing Save later writes."""
     try:
         page.preview_pane.setPlainText(
             ic.preview_text(page._xlsx, page._result, scene=scene)
@@ -181,7 +181,8 @@ def write_output(page, path: str) -> bool:
         return False
     try:
         Path(path).write_text(
-            ic.preview_text(page._xlsx, page._result, scene=page._scene),
+            ic.preview_text(
+                page._xlsx, page._result, scene=page.scene_step.chosen_scene),
             encoding="utf-8",
         )
     except (OSError, ValueError) as exc:
