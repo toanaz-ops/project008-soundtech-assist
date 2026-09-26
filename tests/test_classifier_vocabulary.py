@@ -314,3 +314,53 @@ def test_a_term_naming_a_now_missing_set_is_also_listed_in_problems(directory):
     v.delete_set("band")
     reloaded = vocab.Vocabulary.load(directory)
     assert any("solo term2" in p for p in reloaded.problems)
+
+
+# -- fix round 2 (re-review): unknown kinds must not reach the matcher,
+# and the loader must never raise on a malformed hand-edit -------------------
+
+
+def test_a_term_naming_a_set_with_one_unknown_and_one_known_kind_resolves_to_the_known_one(directory):
+    doc = cache.read_raw(directory)
+    doc.setdefault("cuesheet_sets", {})
+    doc["cuesheet_sets"]["broken set"] = {
+        "label": "Broken Set", "kinds": ["nonsense.kind", "speech.mc"], "origin": "manual",
+    }
+    doc["cuesheet"]["uses broken set"] = {"sets": ["broken set"], "match": "word", "origin": "manual"}
+    cache.write_raw(doc, directory)
+
+    v = vocab.Vocabulary.load(directory)
+    assert v.expand_set("broken set") == ("speech.mc",)  # nonsense.kind dropped, not passed through
+    effective = {t.key: t for t in v.effective()}
+    assert effective["uses broken set"].kinds == ("speech.mc",)
+    assert any("broken set" in p and "nonsense.kind" in p for p in v.problems)
+
+
+def test_a_non_dict_hand_edited_entry_is_skipped_and_reported_not_raised(directory):
+    doc = cache.read_raw(directory)
+    doc["cuesheet"]["weird"] = "not a mapping"
+    cache.write_raw(doc, directory)
+
+    v = vocab.Vocabulary.load(directory)  # must not raise
+    assert "weird" not in {t.key for t in v.terms()}
+    assert any("weird" in p for p in v.problems)
+
+
+def test_an_old_shape_entry_missing_kind_is_skipped_and_reported_not_raised(directory):
+    doc = cache.read_raw(directory)
+    doc["cuesheet"]["half old shape"] = {"confidence": 0.9, "origin": "manual"}
+    cache.write_raw(doc, directory)
+
+    v = vocab.Vocabulary.load(directory)  # must not raise KeyError
+    assert "half old shape" not in {t.key for t in v.terms()}
+    assert any("half old shape" in p for p in v.problems)
+
+
+def test_a_string_kinds_value_is_skipped_and_reported_not_split_into_characters(directory):
+    doc = cache.read_raw(directory)
+    doc["cuesheet"]["string kinds"] = {"kinds": "speech.mc", "match": "word", "origin": "manual"}
+    cache.write_raw(doc, directory)
+
+    v = vocab.Vocabulary.load(directory)  # must not raise, must not split into 's','p','e',...
+    assert "string kinds" not in {t.key for t in v.terms()}
+    assert any("string kinds" in p for p in v.problems)

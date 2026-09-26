@@ -3,18 +3,20 @@
 Split out of `vocabulary.py` (ToanAZ's standing preference for short,
 single-responsibility files -- see that module's docstring for the
 domain rules). This file owns everything that touches raw dict shapes:
-the `SetEntry`/`TermEntry` dataclasses, parsing a shipped-default or a
-user-written entry into one, the pure validation/diagnostic functions
-that don't need a `Vocabulary` instance's own state, and mutating
+the `SetEntry`/`TermEntry` dataclasses and the exceptions raised over
+them, parsing a shipped-default or a user-written entry into one
+(raising `MalformedEntryError` -- never `AttributeError`/`KeyError` --
+when a hand-edit's shape cannot be parsed at all), and mutating
 `classifier.yaml`'s `cuesheet`/`cuesheet_sets` domains through
 `cache.read_raw`/`cache.write_raw` -- the same atomic
 temp-file-then-rename write `cache.py` already uses for
-`channels`/`buses`. `vocabulary.Vocabulary` owns the domain algorithm
-that DOES need instance state (nested-set expansion, cycle detection at
-write time, merging defaults with a person's edits) and does every
-validation check (known kinds, known sets, cycle detection) BEFORE
-calling `put_set`/`put_term` here -- the write functions below trust
-their caller and do no validation of their own.
+`channels`/`buses`. The write functions below (`put_set`/`put_term`/
+`delete`/`reset`) do no validation of their own -- `vocabulary.Vocabulary`
+calls `vocabulary_checks`'s pure functions first and only calls into here
+once a write has already passed; `vocabulary_checks.py` (not this file)
+owns the actual cycle-detection/kind/set-validation algorithms and the
+loader-side diagnostics, since those only need a `sets`/`terms` view,
+never this module's I/O.
 
 W3 (spec, governs over an earlier draft of this module): diacritic/case
 folding is for MATCHING identity only -- a stored/displayed key keeps
@@ -49,6 +51,16 @@ class CycleError(ValueError):
     def __init__(self, path: tuple[str, ...]) -> None:
         super().__init__("cycle: " + " → ".join(path))
         self.path = path
+
+
+class MalformedEntryError(ValueError):
+    """A hand-edited raw entry has a shape `set_from_user`/`term_from_user`
+    cannot parse at all (not a mapping; an old-shape entry with
+    `confidence:` but no `kind:`; a `kinds:`/`sets:` value that is a
+    string instead of a list -- `tuple("speech.mc")` silently splits it
+    into single characters otherwise). `Vocabulary._merge` catches this,
+    skips the entry, and reports it via `.problems` -- the loader never
+    raises (spec S3.2), no matter how a person hand-edited the file."""
 
 
 @dataclass(frozen=True)
@@ -107,11 +119,16 @@ def set_from_default(key: str, raw: dict) -> SetEntry:
 
 
 def set_from_user(key: str, raw: dict) -> SetEntry:
+    if not isinstance(raw, dict):
+        raise MalformedEntryError(f"set {key!r}: not a mapping")
     if raw.get("deleted"):
         return SetEntry(key=key, label="", deleted=True, origin="manual")
+    kinds, sets = raw.get("kinds", ()), raw.get("sets", ())
+    if isinstance(kinds, str) or isinstance(sets, str):
+        raise MalformedEntryError(f"set {key!r}: kinds/sets must be a list, not a string")
     return SetEntry(
         key=key, label=str(raw.get("label", key)),
-        kinds=tuple(raw.get("kinds", ())), sets=tuple(raw.get("sets", ())),
+        kinds=tuple(kinds), sets=tuple(sets),
         origin=str(raw.get("origin", "manual")),
     )
 
@@ -125,19 +142,26 @@ def term_from_default(key: str, raw: dict) -> TermEntry:
 
 
 def term_from_user(key: str, raw: dict) -> TermEntry:
+    if not isinstance(raw, dict):
+        raise MalformedEntryError(f"term {key!r}: not a mapping")
     if raw.get("deleted"):
         return TermEntry(key=key, deleted=True, origin="manual")
     if "confidence" in raw:
         # Pre-wave-4 shape (guess.offer_terms -> cache.remember): read as
         # kinds: [x], match: exact (design spec S3.2) so it keeps its
         # meaning with no migration step.
+        if "kind" not in raw:
+            raise MalformedEntryError(f"term {key!r}: has confidence but no kind")
         return TermEntry(
             key=key, kinds=(str(raw["kind"]),), match="exact",
             origin=str(raw.get("origin", "cache")),
         )
+    kinds, sets = raw.get("kinds", ()), raw.get("sets", ())
+    if isinstance(kinds, str) or isinstance(sets, str):
+        raise MalformedEntryError(f"term {key!r}: kinds/sets must be a list, not a string")
     return TermEntry(
-        key=key, kinds=tuple(raw.get("kinds", ())),
-        sets=tuple(raw.get("sets", ())), ignore=bool(raw.get("ignore", False)),
+        key=key, kinds=tuple(kinds), sets=tuple(sets),
+        ignore=bool(raw.get("ignore", False)),
         match=str(raw.get("match", "exact")), origin=str(raw.get("origin", "manual")),
     )
 
@@ -205,118 +229,3 @@ def reset(directory: Path | None, domain: str, key: str) -> None:
     _pop_matching(section, key)
     cache.write_raw(doc, directory)
 
-
-# -- write-time validation (pure; Vocabulary supplies the current state) ----
-
-
-def check_kinds(key: str, kinds, known_kinds: frozenset[str]) -> None:
-    unknown = [k for k in kinds if k not in known_kinds]
-    if unknown:
-        raise UnknownKindError(f"{key!r}: unknown kind(s) {unknown}")
-
-
-def check_sets(key: str, set_keys, visible_set_identities: frozenset[str]) -> None:
-    # `visible_set_identities` is folded dict keys of non-deleted sets,
-    # NOT their (possibly unfolded, W3) display key -- fix-round-1
-    # IMPORTANT 3.
-    unknown = [s for s in set_keys if keywords.fold(s) not in visible_set_identities]
-    if unknown:
-        raise UnknownSetError(f"{key!r}: no such set(s) {unknown}")
-
-
-def check_cycle(sets: dict[str, SetEntry], key: str, nested_sets: tuple[str, ...]) -> None:
-    """Refuse a cycle THROUGH `key` (naming the path); tolerate -- not
-    raise -- a cycle already on disk that this write does not join
-    (fix-round-1 IMPORTANT 1): `seen` stops `walk` from looping forever
-    on that pre-existing cycle instead of ever reaching `key` again."""
-    folded_key = keywords.fold(key)
-
-    def display(folded: str) -> str:
-        if folded == folded_key:
-            return key
-        entry = sets.get(folded)
-        return entry.key if entry is not None else folded
-
-    def walk(current: str, path: tuple[str, ...], seen: frozenset[str]) -> None:
-        if current == folded_key:
-            raise CycleError(tuple(display(p) for p in path) + (display(current),))
-        if current in seen:
-            return
-        seen = seen | {current}
-        entry = sets.get(current)
-        if entry is None or entry.deleted:
-            return
-        for nested in entry.sets:
-            walk(keywords.fold(nested), path + (current,), seen)
-
-    for nested in nested_sets:
-        walk(keywords.fold(nested), (folded_key,), frozenset())
-
-
-# -- loader-side diagnostics (spec S3.2: never raise on load, report) -------
-
-
-def find_set_cycles(sets: dict[str, SetEntry]) -> list[tuple[str, ...]]:
-    """Every distinct cycle among non-deleted sets, one entry per cycle
-    regardless of which node the scan happens to start from (deduped by
-    the frozenset of nodes on the cycle). `sets` is keyed by folded
-    identity; a returned path is folded-identity strings, tolerant of
-    the cycle whether or not it is the one a caller is about to join."""
-    found: list[tuple[str, ...]] = []
-    seen_identities: set[frozenset[str]] = set()
-
-    def walk(current: str, path: tuple[str, ...]) -> None:
-        if current in path:
-            idx = path.index(current)
-            cycle_path = path[idx:] + (current,)
-            identity = frozenset(path[idx:])
-            if identity not in seen_identities:
-                seen_identities.add(identity)
-                found.append(cycle_path)
-            return
-        entry = sets.get(current)
-        if entry is None or entry.deleted:
-            return
-        for nested in entry.sets:
-            walk(keywords.fold(nested), path + (current,))
-
-    for start in sorted(sets):
-        walk(start, ())
-    return found
-
-
-def compute_problems(sets: dict[str, SetEntry], terms: dict[str, TermEntry],
-                      known_kinds: frozenset[str]) -> tuple[str, ...]:
-    """Diagnostics for a hand-edited `classifier.yaml`: an unknown kind or
-    an unknown/missing set, naming the entry's own display key, plus one
-    message per distinct set cycle. Never raised -- `Vocabulary.load()`
-    always succeeds; a broken term still resolves to its remaining kinds
-    (spec S3.2) and a broken term/set is still visible via `.terms()`/
-    `.sets()` so the Vocabulary window can show and let a person fix it."""
-    visible_sets = {k for k, s in sets.items() if not s.deleted}
-    problems: list[str] = []
-
-    for term in terms.values():
-        if term.deleted:
-            continue
-        unknown_kinds = [k for k in term.kinds if k not in known_kinds]
-        if unknown_kinds:
-            problems.append(f"term {term.key!r}: unknown kind(s) {unknown_kinds}")
-        unknown_sets = [s for s in term.sets if keywords.fold(s) not in visible_sets]
-        if unknown_sets:
-            problems.append(f"term {term.key!r}: unknown set(s) {unknown_sets}")
-
-    for entry in sets.values():
-        if entry.deleted:
-            continue
-        unknown_kinds = [k for k in entry.kinds if k not in known_kinds]
-        if unknown_kinds:
-            problems.append(f"set {entry.key!r}: unknown kind(s) {unknown_kinds}")
-        unknown_sets = [s for s in entry.sets if keywords.fold(s) not in visible_sets]
-        if unknown_sets:
-            problems.append(f"set {entry.key!r}: unknown set(s) {unknown_sets}")
-
-    for cycle in find_set_cycles(sets):
-        problems.append("set cycle: " + " → ".join(sets[node].key for node in cycle))
-
-    return tuple(problems)
