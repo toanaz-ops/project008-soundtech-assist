@@ -99,6 +99,22 @@ def test_apply_writes_an_add_with_ai_approved_origin(loaded, directory):
     assert terms["cajon"].match == "exact"
 
 
+def test_validate_and_apply_agree_on_the_default_match(loaded, directory):
+    """Fix round 2, minor 3: validate's default ("exact", checked against
+    VALID_MATCH) and apply's default (passed to put_term) must be the
+    SAME value, and both must match put_term's own default -- a change
+    that never mentions "match" at all validates clean and, once
+    applied, is stored with match: exact, not "word" (an earlier draft
+    of apply used "word" here; both sites already say "exact", pinned so
+    a future edit cannot quietly split them again)."""
+    change = vocab_changes.Change(op="add", target="term", key="cajon", before=None,
+                                  after={"kinds": ["drums.pad"]}, reason="no match given")
+    assert vocab_changes.validate(change, loaded).valid
+    vocab_changes.apply(change, loaded)
+    reloaded = vocab.Vocabulary.load(directory)
+    assert {t.key: t for t in reloaded.terms()}["cajon"].match == "exact"
+
+
 def test_apply_writes_a_delete(loaded, directory):
     change = vocab_changes.Change(op="delete", target="term", key="hoa tươi",
                                   before=None, after=None, reason="unused")

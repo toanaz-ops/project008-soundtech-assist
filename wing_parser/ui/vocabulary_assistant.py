@@ -150,10 +150,20 @@ class VocabularyAssistant(QWidget):
 
     def _update_key_status(self) -> None:
         """Proactive grey-out (fix round 1, I0): before any call is
-        attempted, not only after one fails."""
+        attempted, not only after one fails. Fix round 2 (important):
+        this runs on every `showEvent` -- the window reopening with
+        `initial_fragments` set, or a tab switch away and back -- which
+        can land WHILE a call is genuinely in flight; re-enabling the
+        button then would break `ButtonRunner`'s own disabled-while-
+        running rule. `self._runner.busy` (workers.CallRunner) is the
+        same flag `ButtonRunner.run` itself checks before starting a new
+        call, so this can never disagree with it."""
         self._key_ok = key_status.key_configured()
-        self.propose_button.setEnabled(self._key_ok)
-        self.instruction_edit.setEnabled(self._key_ok)
+        enabled = self._key_ok and not self._runner.busy
+        self.propose_button.setEnabled(enabled)
+        self.instruction_edit.setEnabled(enabled)
+        if self._runner.busy:
+            return   # a running call owns the status line; leave it alone
         no_key_text = text("vocabulary.assistant.no_key")
         if not self._key_ok:
             self.status_label.setText(no_key_text)

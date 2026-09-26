@@ -247,6 +247,49 @@ def test_the_key_status_rechecks_when_the_tab_is_shown(qt_app, monkeypatch, tmp_
     assert widget.status_label.text() == ""
 
 
+# -- fix round 2, important: a re-check (showEvent, or a tab switch back)
+# must never re-enable the button WHILE a call is running -- that breaks
+# ButtonRunner's own disabled-while-running rule ---------------------------
+
+
+def test_the_key_status_recheck_does_not_re_enable_while_a_call_is_running(
+        assistant, monkeypatch, settle):
+    import threading
+
+    from wing_parser.ui import key_status
+
+    # Isolates this test from the busy-check fix's own subject: whether
+    # THIS machine's real environment has a key is irrelevant here, and
+    # without pinning it True the recheck's own "no key" branch would
+    # overwrite the running-call status text for an unrelated reason.
+    monkeypatch.setattr(key_status, "key_configured", lambda: True)
+
+    gate = threading.Event()
+
+    class _HangingProvider:
+        def complete_json(self, system, user, schema):
+            gate.wait(timeout=5.0)
+            return {"changes_json": "[]"}
+
+    assistant._provider_factory = lambda: _HangingProvider()
+    try:
+        assistant._propose()   # the real _call.run -- genuinely in flight
+        assert assistant._runner.busy
+        assert not assistant.propose_button.isEnabled()
+        running_text = assistant.status_label.text()
+        assert running_text != ""
+
+        # showEvent (VocabularyWindow(initial_fragments=...) reopening, or
+        # switching tabs away and back mid-call) must not undo this.
+        assistant.show()
+        assert not assistant.propose_button.isEnabled()
+        assert not assistant.instruction_edit.isEnabled()
+        assert assistant.status_label.text() == running_text
+    finally:
+        gate.set()
+        assert settle(lambda: not assistant._runner.busy)
+
+
 # -- greying out on an unrecoverable call failure (design spec §8.1) -------
 
 

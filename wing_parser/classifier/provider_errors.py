@@ -83,8 +83,12 @@ def _classify_one(exc: BaseException) -> str | None:
     message = str(exc)
     if "no API key" in message:
         return NO_KEY
-    type_name = type(exc).__name__
-    if isinstance(exc, ConnectionError) or "Connection" in type_name:
+    # Fix round 2, minor 2: both SDKs' APITimeoutError subclasses their own
+    # APIConnectionError, so ITS OWN class name has no "Connection" in it --
+    # the whole MRO must be checked, not just type(exc).__name__.
+    if isinstance(exc, ConnectionError) or any(
+        "Connection" in cls.__name__ for cls in type(exc).__mro__
+    ):
         return NO_NETWORK
     if isinstance(exc, ImportError) or "pip install -e ." in message:
         return SDK_MISSING

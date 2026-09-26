@@ -206,3 +206,23 @@ def test_a_schema_failure_through_the_real_wrap_classifies_as_bad_reply():
         assert pe.classify(exc)[0] == pe.BAD_REPLY
     else:
         raise AssertionError("expected a ProviderError")
+
+
+# -- fix round 2, minor 2: a "Connection"-named ancestor further up the
+# MRO must count too -- both SDKs' APITimeoutError subclasses
+# APIConnectionError, so ITS OWN class name has no "Connection" in it -----
+
+
+class _FakeAPITimeoutError(_FakeAPIConnectionError):
+    """Stands in for anthropic.APITimeoutError / openai.APITimeoutError,
+    both of which subclass their own APIConnectionError. A check against
+    only `type(exc).__name__` misses this -- "_FakeAPITimeoutError" has
+    no "Connection" substring -- so classify must walk `__mro__`."""
+
+
+def test_a_timeout_error_subclassing_a_connection_error_by_name_is_no_network():
+    assert pe.classify(_FakeAPITimeoutError("timed out"))[0] == pe.NO_NETWORK
+
+
+def test_a_wrapped_timeout_error_through_the_real_wrap_is_no_network():
+    assert pe.classify(_through_the_real_wrap(_FakeAPITimeoutError("timed out")))[0] == pe.NO_NETWORK
