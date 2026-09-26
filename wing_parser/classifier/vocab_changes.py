@@ -33,8 +33,22 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
+from wing_parser.classifier.provider import ProviderError
+from wing_parser.showcontext.ingest import keywords
+
 VALID_OPS = ("add", "edit", "delete")
 VALID_TARGETS = ("set", "term")
+VALID_MATCH = ("exact", "word")
+
+
+class MalformedReplyError(ProviderError, ValueError):
+    """The model's `changes_json` reply couldn't be read as a JSON list of
+    changes -- fix round 1 (e). Also a `ProviderError`, so
+    `provider_errors.classify` puts it in the same BAD_REPLY bucket as any
+    other malformed model reply instead of the generic OTHER a plain
+    `ValueError` would get; also a `ValueError` so the existing
+    `pytest.raises(ValueError, ...)` caller (and any bare `except
+    ValueError` elsewhere) keeps working unchanged."""
 
 SYSTEM_PROMPT = (
     "You edit a cue-sheet vocabulary that maps terms and sets to "
@@ -87,9 +101,43 @@ def parse(raw: dict) -> Change:
     )
 
 
+def current_before(change: Change, vocabulary):
+    """The real stored entry for `change.key`/`change.target`, matched by
+    folded identity (W3: display keys aren't folded, but identity is) --
+    fix round 1, I3. Used for the UI's Before column (never the model's
+    own `before` claim, which is untrusted and can say anything) AND by
+    `validate` to decide add-of-existing/edit-of-missing. Returns a
+    `SetEntry`/`TermEntry` when one exists (default or manual -- deleted
+    ones are already excluded by `.sets()`/`.terms()`), else `None`."""
+    if vocabulary is None or not isinstance(change.key, str):
+        return None
+    pool = vocabulary.sets() if change.target == "set" else vocabulary.terms()
+    folded = keywords.fold(change.key)
+    for entry in pool:
+        if keywords.fold(entry.key) == folded:
+            return entry
+    return None
+
+
+def _string_list_problem(value: Any, name: str) -> str | None:
+    """None when `value` is a list/tuple of strings; otherwise a problem
+    naming what's wrong -- fix round 1, I2. A bare string here used to
+    silently split into single-character "kinds"/"sets" (the same trap
+    `vocabulary_store.py`'s own `MalformedEntryError` guards against for
+    a hand-edited `classifier.yaml`); an AI-proposed change gets the same
+    protection instead of a misleading "unknown set(s) ['b','a','n','d']"."""
+    if not isinstance(value, (list, tuple)):
+        return f"{name} must be a list, got {type(value).__name__}"
+    if not all(isinstance(item, str) for item in value):
+        return f"{name} must be a list of strings"
+    return None
+
+
 def validate(change: Change, vocabulary) -> Validated:
     """Every problem `apply(change, vocabulary)` would hit, without
-    writing -- delegates the actual kind/set/cycle/shape rules to
+    writing -- total against untrusted model output (fix round 1, I2:
+    `_show_proposal` must never crash on a malformed proposal, only show
+    it greyed with why). Delegates the kind/set/cycle rules to
     `Vocabulary.dry_run_set`/`dry_run_term` (same rules `put_set`/
     `put_term` enforce) so this module carries no rule of its own to
     drift out of sync with them."""
@@ -98,20 +146,43 @@ def validate(change: Change, vocabulary) -> Validated:
         problems.append(f"unknown op {change.op!r}")
     if change.target not in VALID_TARGETS:
         problems.append(f"unknown target {change.target!r}")
+    if not isinstance(change.key, str) or not change.key.strip():
+        problems.append("key must be a non-empty string")
     if problems:
         return Validated(change, tuple(problems))
 
+    current = current_before(change, vocabulary)
     if change.op == "delete":
-        exists = (
-            any(s.key == change.key for s in vocabulary.sets())
-            if change.target == "set" else
-            any(t.key == change.key for t in vocabulary.terms())
-        )
-        if not exists:
+        if current is None:
             problems.append(f"no such {change.target} {change.key!r} to delete")
         return Validated(change, tuple(problems))
+    if change.op == "add" and current is not None:
+        problems.append(f"{change.target} {change.key!r} already exists -- use edit")
+        return Validated(change, tuple(problems))
+    if change.op == "edit" and current is None:
+        problems.append(f"no such {change.target} {change.key!r} to edit")
+        return Validated(change, tuple(problems))
 
-    after = change.after or {}
+    after = change.after
+    if not isinstance(after, dict):
+        return Validated(change, (f"after must be an object, got {type(after).__name__}",))
+
+    kinds_problem = _string_list_problem(after.get("kinds", ()), "kinds")
+    if kinds_problem:
+        problems.append(kinds_problem)
+    sets_problem = _string_list_problem(after.get("sets", ()), "sets")
+    if sets_problem:
+        problems.append(sets_problem)
+    if change.target == "term":
+        ignore_raw = after.get("ignore", False)
+        if not isinstance(ignore_raw, bool):
+            problems.append(f"ignore must be true or false, got {ignore_raw!r}")
+        match_raw = after.get("match", "exact")
+        if match_raw not in VALID_MATCH:
+            problems.append(f"match must be one of {VALID_MATCH}, got {match_raw!r}")
+    if problems:
+        return Validated(change, tuple(problems))
+
     kinds = tuple(after.get("kinds", ()))
     sets_ = tuple(after.get("sets", ()))
     if change.target == "set":
@@ -182,7 +253,21 @@ def propose_changes(provider, *, instruction: str = "", fragments: tuple[str, ..
     try:
         raw_changes = json.loads(reply["changes_json"])
     except (TypeError, ValueError) as exc:
-        raise ValueError(f"changes_json did not parse as JSON: {exc}") from exc
+        raise MalformedReplyError(f"changes_json did not parse as JSON: {exc}") from exc
     if not isinstance(raw_changes, list):
-        raise ValueError("changes_json must decode to a JSON list")
-    return [parse(item) for item in raw_changes]
+        raise MalformedReplyError("changes_json must decode to a JSON list")
+
+    changes: list[Change] = []
+    for item in raw_changes:
+        try:
+            changes.append(parse(item))
+        except (ValueError, TypeError) as exc:
+            # One unparseable item must not cost every OTHER item in the
+            # same reply (fix round 1, I2): `op`/`target` left empty are
+            # deliberately outside VALID_OPS/VALID_TARGETS, so `validate`
+            # reports this the same way it reports any other malformed
+            # proposal -- greyed, with `exc`'s own text as the reason.
+            key = item.get("key", "?") if isinstance(item, dict) else "?"
+            changes.append(Change(op="", target="", key=str(key), before=None,
+                                  after=None, reason=str(exc)))
+    return changes
