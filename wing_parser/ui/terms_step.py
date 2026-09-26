@@ -13,9 +13,22 @@ pre-loaded with every still-pending fragment. The "Vocabulary..." button
 opens the same window over this step's own directory and re-resolves on
 close, so a term taught there clears rows here too (controller
 requirement on top of the brief, spec §8.1).
+
+Fix round 1: `Vocabulary.load` in `populate`/`_reresolve` is guarded --
+a hand-edited classifier.yaml broken badly enough to raise (not just an
+entry-level problem, which `Vocabulary.load` already swallows into
+`.problems`) reports through `self.fail` instead of raising out of a Qt
+slot. `self.fail` is a plain public attribute (same pattern as
+`directory`), wired by `import_steps._terms` to `page._fail`, so this
+widget still needs no constructor args. "AI: propose for unread rows"
+disables itself once no row is left pending -- checked after populate,
+after every re-resolve, and after a Skip (which does not itself trigger
+a re-resolve, since it wrote nothing).
 """
 
 from __future__ import annotations
+
+from collections.abc import Callable
 
 from PySide6.QtWidgets import QPushButton, QScrollArea, QVBoxLayout, QWidget
 
@@ -36,6 +49,9 @@ class TermsStep(QWidget):
         self._vocabulary = None
         # record/ignore's write target; tests point this at tmp_path, None = cache default.
         self.directory = None
+        # a broken classifier.yaml reports here instead of raising out of a slot;
+        # import_steps._terms wires this to page._fail. Default: swallow (headless use).
+        self.fail: Callable[[Exception], None] = lambda exc: None
 
         self.vocabulary_button = QPushButton(text("vocabulary.open_button"))
         self.vocabulary_button.clicked.connect(self._open_vocabulary)
@@ -58,11 +74,16 @@ class TermsStep(QWidget):
 
     def populate(self, result) -> None:
         """One row per unresolved fragment; rebuilt fresh for every result."""
+        try:
+            vocabulary = vocab_module.Vocabulary.load(self.directory)
+        except (OSError, ValueError) as exc:
+            self.fail(exc)
+            return
         for row in self._rows.values():
             row.setParent(None)
         self._rows.clear()
         self._result = result
-        self._vocabulary = vocab_module.Vocabulary.load(self.directory)
+        self._vocabulary = vocabulary
         kinds = known_kinds("channels")
         sets_ = tuple(s.key for s in self._vocabulary.sets())
         terms = ic.unresolved(result)
@@ -73,8 +94,10 @@ class TermsStep(QWidget):
                 context_lines=tuple(context_by_term.get(fragment, ())),
                 on_written=self._reresolve,
             )
+            row.skip_button.clicked.connect(self._update_ai_propose_enabled)
             self._rows_layout.insertWidget(self._rows_layout.count() - 1, row)
             self._rows[fragment] = row
+        self._update_ai_propose_enabled()
 
     def set_rows(self, rows: tuple) -> None:
         self._rows_data = rows
@@ -82,7 +105,12 @@ class TermsStep(QWidget):
     # -- re-resolution ----------------------------------------------------
 
     def _reresolve(self) -> None:
-        self._vocabulary = vocab_module.Vocabulary.load(self.directory)
+        try:
+            vocabulary = vocab_module.Vocabulary.load(self.directory)
+        except (OSError, ValueError) as exc:
+            self.fail(exc)
+            return
+        self._vocabulary = vocabulary
         for fragment, row in self._rows.items():
             if row.state != "pending":
                 continue
@@ -90,6 +118,11 @@ class TermsStep(QWidget):
             resolution = build.resolve_fragment(fragment, self._vocabulary)
             if resolution.kinds or resolution.ignored:
                 row.mark_resolved()
+        self._update_ai_propose_enabled()
+
+    def _update_ai_propose_enabled(self) -> None:
+        self.ai_propose_button.setEnabled(
+            any(row.state == "pending" for row in self._rows.values()))
 
     # -- AI / Vocabulary entry points --------------------------------------
 

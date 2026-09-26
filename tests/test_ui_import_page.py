@@ -420,6 +420,269 @@ def test_an_oserror_on_record_is_reported_and_keeps_the_row(page, tmp_path, monk
     assert page.term_row_state("ca trống") == "pending"
 
 
+# -- fix round 1 ------------------------------------------------------------
+
+
+def test_the_set_picker_refreshes_after_the_vocabulary_window_closes(
+        page, tmp_path, monkeypatch):
+    """Important I1: sets_list used to be filled once in populate() and
+    never touched again, so a set created or deleted in the Vocabulary
+    window never showed up in a still-pending row's picker."""
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'tốp múa'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("tốp múa",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows["tốp múa"]
+
+    def _sets_list_keys():
+        return {row.sets_list.item(i).text() for i in range(row.sets_list.count())}
+
+    assert "brand new set" not in _sets_list_keys()
+    assert "band" in _sets_list_keys()
+
+    class _EditingVocabularyWindow:
+        def __init__(self, parent, *, directory=None, initial_fragments=()):
+            self._directory = directory
+
+        def exec(self):
+            from wing_parser.classifier import vocabulary as vocab_module
+
+            vocab = vocab_module.Vocabulary.load(self._directory)
+            vocab.put_set("brand new set", label="Brand new set", kinds=("speech.mc",))
+            vocab.delete_set("band")
+            return 1
+
+    import wing_parser.ui.vocabulary_window as vw_module
+
+    monkeypatch.setattr(vw_module, "VocabularyWindow", _EditingVocabularyWindow)
+    page.terms_step.vocabulary_button.click()
+
+    assert "brand new set" in _sets_list_keys()
+    assert "band" not in _sets_list_keys()
+
+
+def _seed_synthetic_result(page, tmp_path, fragment: str):
+    """A tiny, fully-controlled read/mapping pair -- bypassing
+    finish_mapping and the real BIDV sheet entirely -- so the R1 tests
+    below are not at the mercy of that sheet's own (unrelated) default
+    vocabulary hits. `fragment` must not overlap any shipped cuesheet
+    default term as a whole word, or it would already "resolve" on its
+    own regardless of anything this test does."""
+    from wing_parser.showcontext.ingest.sheet import RawRow
+    from wing_parser.ui import import_controller as ic_module
+
+    class FakeMapping:
+        fields = {"title": "A", "performers": "B"}
+
+    class FakeRead:
+        rows = (RawRow(number=2, cells={"A": "Intro", "B": fragment}),)
+        blank_rows = 0
+        headers = {"A": "Title", "B": "Thực hiện"}
+
+    page._xlsx = "fake.xlsx"
+    page.set_output_directory(tmp_path)
+    page._read = FakeRead()
+    page._resolved = FakeMapping()
+    page._result = ic_module.build_result(page._read, page._resolved, tmp_path)
+    return page._result
+
+
+def test_previewing_after_ignore_reflects_it_in_the_summary_and_drops_the_comment(
+        page, tmp_path, monkeypatch):
+    """Controller ruling R1: Preview must rebuild against what Ignore just
+    taught, not the mapping-time snapshot."""
+    from wing_parser.ui import import_page
+
+    fragment = "xyzzy plugh waldo"
+    result = _seed_synthetic_result(page, tmp_path, fragment)
+    assert any(f"could not read performer {fragment!r}" in c
+              for seg in result.segments for c in seg.comments)
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda r: (fragment,))
+    page.show_terms_step(result)
+    page.terms_step._rows[fragment].ignore_button.click()
+    assert page.term_row_state(fragment) == "recorded"
+
+    page.preview_button.click()
+    rendered = page.preview_pane.toPlainText()
+    assert "1 ignored" in rendered
+    assert f"could not read performer {fragment!r}" not in rendered
+
+
+def test_recording_a_term_then_saving_reflects_the_kind_in_the_yaml(
+        page, tmp_path, monkeypatch):
+    """Controller ruling R1: Save must rebuild too, even without a Preview
+    click in between."""
+    from PySide6.QtCore import Qt
+    from wing_parser.ui import import_page
+
+    fragment = "xyzzy plugh waldo"
+    result = _seed_synthetic_result(page, tmp_path, fragment)
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda r: (fragment,))
+    page.show_terms_step(result)
+
+    row = page.terms_step._rows[fragment]
+    hit = row.kinds_list.findItems("speech.mc", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for(fragment).click()
+    assert page.term_row_state(fragment) == "recorded"
+
+    out = tmp_path / "out.yaml"
+    assert page.save_as(str(out))
+    saved = out.read_text(encoding="utf-8")
+    assert "speech.mc" in saved
+    assert f"could not read performer {fragment!r}" not in saved
+
+
+def test_recording_with_an_empty_key_warns_and_writes_nothing(page, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows["ca trống"]
+    row.key_edit.setText("   ")
+    page.record_button_for("ca trống").click()
+
+    assert warnings and warnings[0]
+    assert page.term_row_state("ca trống") == "pending"
+    assert not (tmp_path / "classifier.yaml").exists()
+
+
+def test_ignoring_with_an_empty_key_warns_and_writes_nothing(page, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows["ca trống"]
+    row.key_edit.setText("")
+    row.ignore_button.click()
+
+    assert warnings and warnings[0]
+    assert page.term_row_state("ca trống") == "pending"
+    assert not (tmp_path / "classifier.yaml").exists()
+
+
+def test_ai_propose_button_disables_once_no_row_is_left_pending(page, tmp_path, monkeypatch):
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'múa rối'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("múa rối",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    assert page.terms_step.ai_propose_button.isEnabled()
+    page.skip_button_for("múa rối").click()
+    assert not page.terms_step.ai_propose_button.isEnabled()
+
+
+def test_a_broken_classifier_yaml_reports_on_populate_instead_of_crashing(
+        page, tmp_path, monkeypatch):
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    page.set_output_directory(tmp_path)
+    (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
+
+    page.show_terms_step(FakeResult())   # must not raise
+    assert page.status.text() != ""
+
+
+def test_reresolve_reports_a_broken_vocabulary_instead_of_crashing(page, tmp_path, monkeypatch):
+    from PySide6.QtCore import Qt
+    from wing_parser.classifier import vocabulary as vocab_module
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'ca trống'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("ca trống",))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    monkeypatch.setattr(
+        vocab_module.Vocabulary, "load",
+        classmethod(lambda cls, directory=None: (_ for _ in ()).throw(
+            ValueError("classifier.yaml: invalid YAML: boom"))))
+
+    row = page.terms_step._rows["ca trống"]
+    hit = row.kinds_list.findItems("speech.mc", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for("ca trống").click()   # must not raise
+
+    assert page.status.text() != ""
+
+
+def test_recording_a_key_that_does_not_match_its_own_fragment_warns_but_stays_saved(
+        page, tmp_path, monkeypatch):
+    """Minor: after Record, check whether the row's own fragment now
+    resolves. Here the operator shortens the key, then unticks "match
+    inside a sentence" by hand after the auto-tick -- exactly the
+    footgun the brief's own docstring names. "wibble"/"wobble" are pure
+    nonsense, chosen so nothing in the shipped cuesheet defaults already
+    resolves this fragment on its own (unlike a real Vietnamese phrase,
+    which risks overlapping a default word like "blđ" or "trống")."""
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    fragment = "wibble wobble fragment"
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            f"row 1: could not read performer {fragment!r}"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: (fragment,))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a[-1]))
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows[fragment]
+    row.key_edit.setText("wibble")
+    assert row.word_match_check.isChecked() is True   # auto-ticked
+    row.word_match_check.setChecked(False)            # operator unticks it back
+    hit = row.kinds_list.findItems("speech.mc", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for(fragment).click()
+
+    assert warnings and fragment in warnings[-1]
+    assert page.term_row_state(fragment) == "pending"
+    doc = yaml.safe_load((tmp_path / "classifier.yaml").read_text(encoding="utf-8"))
+    assert any(v.get("kinds") == ["speech.mc"] for v in doc["cuesheet"].values())
+
+
 def test_preview_renders_and_save_writes_utf8(bidv_terms, tmp_path):
     bidv_terms.preview_button.click()
     assert bidv_terms.step_area.currentIndex() == 3

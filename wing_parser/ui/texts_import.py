@@ -72,4 +72,9 @@ IMPORT_TEXTS: dict[str, str] = {
     "import.terms.match_word": "match inside a sentence",
     "import.terms.ignore_remember": "Ignore (remember)",
     "import.terms.ai_propose": "AI: propose for unread rows",
+    "import.terms.empty_key": "Type a key before recording — never write a blank.",
+    "import.terms.not_matching": (
+        "Saved, but {fragment!r} still does not match its own key -- check "
+        "the key or the \"match inside a sentence\" checkbox."
+    ),
 }

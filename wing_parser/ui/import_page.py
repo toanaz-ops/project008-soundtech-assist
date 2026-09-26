@@ -44,6 +44,10 @@ class ImportPage(QWidget):
         self._xlsx: str | None = None
         self._result = None
         self._rows: tuple = ()
+        # the sheet read and its resolved mapping, from finish_mapping -- kept so
+        # Preview/Save can rebuild _result against a freshly taught vocabulary (R1).
+        self._read = None
+        self._resolved = None
         # record_term's write target; tests point this at tmp_path, None = cache default.
         self._directory = None
 
@@ -101,6 +105,20 @@ class ImportPage(QWidget):
 
     def _fail(self, exc: Exception) -> None:
         self.status.setText(text("import.error").format(error=exc))
+
+    def _refresh_result(self) -> None:
+        """R1: Preview and Save must reflect what Record/Ignore just
+        taught in the Terms step, not the mapping-time snapshot -- rebuild
+        from the stored read/resolved mapping against the freshly loaded
+        vocabulary at this wizard's own directory. A no-op when there is
+        no real read to rebuild from (a test that hands show_terms_step a
+        bare result directly, never having gone through finish_mapping)."""
+        if self._read is None or self._resolved is None:
+            return
+        try:
+            self._result = ic.build_result(self._read, self._resolved, self._directory)
+        except (OSError, ValueError) as exc:
+            self._fail(exc)
 
     def _choose_file(self) -> None:
         name, _ = QFileDialog.getOpenFileName(
@@ -163,6 +181,7 @@ class ImportPage(QWidget):
 
     def save_as(self, path: str) -> bool:
         """Public seam: write the preview as UTF-8, minus the dialog."""
+        self._refresh_result()
         try:
             Path(path).write_text(
                 ic.preview_text(self._xlsx, self._result), encoding="utf-8"

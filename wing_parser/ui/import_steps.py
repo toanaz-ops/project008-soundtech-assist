@@ -63,6 +63,7 @@ def _mapping(page) -> QWidget:
 
 def _terms(page) -> QWidget:
     page.terms_step = TermsStep()
+    page.terms_step.fail = page._fail
     page.preview_button = QPushButton(text("import.preview"))
     page.preview_button.clicked.connect(lambda: show_preview(page))
 
@@ -93,16 +94,23 @@ def finish_mapping(page) -> None:
             page._xlsx, name, page.header_row_spin.value(),
             columns, headers,
         )
-        result = ic.build_result(read, resolved)
+        result = ic.build_result(read, resolved, page._directory)
     except (OSError, ValueError, sheet_mod.MissingExtra) as exc:
         page._fail(exc)
         return
     page._rows = read.rows
+    page._read, page._resolved = read, resolved
     page.show_terms_step(result)
 
 
 def show_preview(page) -> None:
-    """Step 3 -> step 4: render the YAML the Save button will write."""
+    """Step 3 -> step 4: render the YAML the Save button will write.
+
+    R1: rebuilt first against whatever Record/Ignore just taught in the
+    Terms step (`page._refresh_result`), so the trailer's ignored/
+    unreadable counts and the YAML itself are never one step behind.
+    """
+    page._refresh_result()
     try:
         page.preview_pane.setPlainText(
             ic.preview_text(page._xlsx, page._result)

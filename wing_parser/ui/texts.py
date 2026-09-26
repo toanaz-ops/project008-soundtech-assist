@@ -92,7 +92,6 @@ TEXTS: dict[str, str] = {
     ),
     "import.back": "Back",
     "import.next": "Next",
-    "import.load_guesses": "Load guesses",
     "import.record": "Record",
     "import.skip": "Skip",
     "import.preview": "Preview",
@@ -101,9 +100,7 @@ TEXTS: dict[str, str] = {
         "Could not read that sheet — check the header row, "
         "then try again: {error}"
     ),
-    "import.needs_kind": "Type a kind before recording — never write a blank.",
     "import.proposing": "Reading the workbook with the model...",
-    "import.guessing": "Asking the model about each term...",
     "import.cancel": "Cancel",
     "import.cancelled": "Cancelled — nothing was applied.",
     "import.timeout": "The model did not answer within {seconds} s.",

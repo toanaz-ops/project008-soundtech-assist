@@ -59,3 +59,17 @@ def test_context_for_collects_up_to_two_rows_per_term():
     assert len(hits) == 2
     assert hits[0].startswith("row 3:")
     assert hits[1].startswith("row 4:")
+
+
+def test_build_result_reads_the_vocabulary_from_the_given_directory(tmp_path):
+    """Fix round 1, controller ruling R1: a caller that already knows
+    which knowledge dir it is teaching into (the Terms step) can rebuild
+    against that SAME vocabulary, not whatever config.knowledge_dir()
+    resolves to process-wide."""
+    from wing_parser.classifier import vocabulary as vocab_module
+
+    vocab_module.Vocabulary.load(tmp_path).put_term(
+        "ca trống", kinds=("speech.mc",), match="exact")
+    read, resolved = ic.read_with(BIDV, "KB 8.1", 5, _BIDV_COLUMNS, _BIDV_HEADERS)
+    result = ic.build_result(read, resolved, tmp_path)
+    assert "ca trống" not in ic.unresolved(result)

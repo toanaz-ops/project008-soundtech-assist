@@ -62,19 +62,26 @@ def read_with(xlsx, sheet_name: str | None, header_row: int,
     return read, resolved
 
 
-def build_result(read, resolved):
+def build_result(read, resolved, directory=None):
     """Rows and a resolved mapping become BuiltSegments, the effective
     cuesheet vocabulary (defaults + his edits, Task 2) first.
 
-    `config.knowledge_dir()` is read fresh on every call rather than
-    cached: the autouse test fixture points it at a throwaway directory
-    per test, and Settings/the Vocabulary window can change what it
-    points to while the app is running.
+    `Vocabulary.load(directory)` is called fresh on every call rather
+    than cached: the autouse test fixture points the default directory
+    at a throwaway path per test, and Settings/the Vocabulary window can
+    change what a real directory holds while the app is running.
+    `directory=None` resolves through `Vocabulary.load`'s own default
+    (`config.knowledge_dir()`), unchanged from before this parameter
+    existed; a caller that already knows which knowledge dir it is
+    teaching into -- the Terms step, via `page._directory` -- passes it
+    explicitly (fix round 1, controller ruling R1) so a Preview or Save
+    rebuilt after a Record/Ignore reflects the SAME vocabulary the
+    Terms step just wrote to, not whatever the process-wide default
+    happens to be.
     """
-    from wing_parser import config
     from wing_parser.classifier import vocabulary as vocab_module
 
-    vocabulary = vocab_module.Vocabulary.load(config.knowledge_dir())
+    vocabulary = vocab_module.Vocabulary.load(directory)
     return build.build(
         read.rows, resolved, vocabulary,
         blank_rows=read.blank_rows, headers=read.headers,

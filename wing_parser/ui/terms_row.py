@@ -12,12 +12,22 @@ appears", not "this exact sentence, verbatim" -- the operator can still
 tick it by hand for an unshortened key (e.g. to make a single word like
 "trống" match inside a longer sibling fragment too).
 
-A failed Record/Ignore (an empty picker with no ignore, an unknown kind
-or set that slipped in, or the write itself hitting disk trouble) is
-reported through vocabulary_tab_support.write_or_report -- same wording
-the Vocabulary window's own tabs use -- and leaves the row's input and
-state untouched so the operator can fix and retry (controller
-requirement on top of the brief).
+A failed Record/Ignore (a blank key, an unknown kind or set that slipped
+in, or the write itself hitting disk trouble) is reported by name and
+leaves the row's input and state untouched so the operator can fix and
+retry (controller requirement on top of the brief). A write that
+SUCCEEDS but still leaves this row's own fragment unresolved -- the
+usual cause is a shortened key with "match inside a sentence" unticked
+by hand after the auto-tick -- warns rather than silently claiming
+"recorded"; the term itself stays saved either way (fix round 1,
+Important/minor).
+
+Fix round 1, Important: `sets_list` used to be filled once from the
+constructor's `known_sets` snapshot and never touched again, so a set
+created or deleted in the Vocabulary window (which re-resolves every
+pending row via `set_vocabulary`) never showed up here. `set_vocabulary`
+now rebuilds `sets_list` from the fresh vocabulary's own `.sets()`,
+keeping whichever selected keys still exist.
 """
 
 from __future__ import annotations
@@ -26,9 +36,10 @@ from collections.abc import Callable
 
 from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-    QListWidget, QListWidgetItem, QPushButton, QVBoxLayout,
+    QListWidget, QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout,
 )
 
+from wing_parser.showcontext.ingest import build
 from wing_parser.ui.texts import text
 from wing_parser.ui.vocabulary_tab_support import write_or_report
 
@@ -53,8 +64,7 @@ class TermsRow(QGroupBox):
 
         self.sets_list = QListWidget()
         self.sets_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        for key in known_sets:
-            self.sets_list.addItem(QListWidgetItem(key))
+        self._fill_sets_list(known_sets)
 
         self.record_button = QPushButton(text("import.record"))
         self.record_button.clicked.connect(self._record)
@@ -89,6 +99,8 @@ class TermsRow(QGroupBox):
 
     def set_vocabulary(self, vocabulary) -> None:
         self._vocabulary = vocabulary
+        self._fill_sets_list(
+            tuple(entry.key for entry in vocabulary.sets()), keep=self._picked_sets())
 
     def mark_resolved(self) -> None:
         """A sibling row's Record/Ignore made this fragment resolve too
@@ -97,6 +109,14 @@ class TermsRow(QGroupBox):
         operator can still see what happened to it."""
         self.state = "resolved"
         self.setEnabled(False)
+
+    def _fill_sets_list(self, keys: tuple[str, ...], *, keep: tuple[str, ...] = ()) -> None:
+        self.sets_list.clear()
+        for key in keys:
+            item = QListWidgetItem(key)
+            self.sets_list.addItem(item)
+            if key in keep:
+                item.setSelected(True)
 
     def _picked_kinds(self) -> tuple[str, ...]:
         return tuple(item.text() for item in self.kinds_list.selectedItems())
@@ -111,9 +131,16 @@ class TermsRow(QGroupBox):
         if len(current_text.strip()) < len(self.fragment):
             self.word_match_check.setChecked(True)
 
-    def _record(self) -> None:
+    def _require_key(self) -> str | None:
         key = self.key_edit.text().strip()
-        if not key:
+        if key:
+            return key
+        QMessageBox.warning(self, text("vocabulary.title"), text("import.terms.empty_key"))
+        return None
+
+    def _record(self) -> None:
+        key = self._require_key()
+        if key is None:
             return
         kinds, sets_ = self._picked_kinds(), self._picked_sets()
         ok = write_or_report(
@@ -123,22 +150,36 @@ class TermsRow(QGroupBox):
             ))
         if not ok:
             return
-        self.state = "recorded"
-        self.setEnabled(False)
-        self._on_written()
+        self._finish_write()
 
     def _ignore(self) -> None:
-        key = self.key_edit.text().strip()
-        if not key:
+        key = self._require_key()
+        if key is None:
             return
         ok = write_or_report(
             self, lambda: self._vocabulary.put_term(
                 key, ignore=True, match=self._match_mode(), origin="manual"))
         if not ok:
             return
+        self._finish_write()
+
+    def _finish_write(self) -> None:
+        """The write already landed -- `_on_written` first, so a sibling
+        row can clear even when THIS row's own fragment does not (the
+        vocabulary re-resolve refreshes `self._vocabulary` too). Only
+        THEN check whether this row's own fragment now resolves: if not,
+        warn instead of silently claiming "recorded" -- the term stays
+        saved, but the row stays pending so the operator can fix the key
+        or the checkbox and record again."""
+        self._on_written()
+        resolution = build.resolve_fragment(self.fragment, self._vocabulary)
+        if not (resolution.kinds or resolution.ignored):
+            QMessageBox.warning(
+                self, text("vocabulary.title"),
+                text("import.terms.not_matching").format(fragment=self.fragment))
+            return
         self.state = "recorded"
         self.setEnabled(False)
-        self._on_written()
 
     def _skip(self) -> None:
         self.state = "skipped"
