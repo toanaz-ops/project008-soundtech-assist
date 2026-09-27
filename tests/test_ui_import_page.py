@@ -203,6 +203,10 @@ def test_record_writes_the_picked_kinds_through_vocabulary_put_term(page, tmp_pa
 
 
 def test_ignore_remember_writes_ignore_true(page, tmp_path, monkeypatch):
+    """"hoa tươi" is itself a shipped default (ignore: true) -- M3's
+    overwrite confirm fires here even though the write only reaffirms
+    the same entry, so this test answers Yes."""
+    from PySide6.QtWidgets import QMessageBox
     from wing_parser.ui import import_page
 
     class FakeResult:
@@ -210,6 +214,8 @@ def test_ignore_remember_writes_ignore_true(page, tmp_path, monkeypatch):
             "row 1: could not read performer 'hoa tươi'"]})()]
 
     monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("hoa tươi",))
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: QMessageBox.StandardButton.Yes)
     page.set_output_directory(tmp_path)
     page.show_terms_step(FakeResult())
 
@@ -220,7 +226,11 @@ def test_ignore_remember_writes_ignore_true(page, tmp_path, monkeypatch):
 
 
 def test_recording_one_term_re_resolves_a_pending_sibling(page, tmp_path, monkeypatch):
+    """"trống" is itself a shipped default (sets: [drum kit]) -- M3's
+    overwrite confirm fires even though this write only narrows it to
+    "drums.kick", so this test answers Yes."""
     from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QMessageBox
     from wing_parser.ui import import_page
 
     class FakeResult:
@@ -231,6 +241,8 @@ def test_recording_one_term_re_resolves_a_pending_sibling(page, tmp_path, monkey
 
     monkeypatch.setattr(import_page.ic, "unresolved",
                         lambda result: ("trống", "dàn trống"))
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: QMessageBox.StandardButton.Yes)
     page.set_output_directory(tmp_path)
     page.show_terms_step(FakeResult())
 
@@ -518,8 +530,10 @@ def test_previewing_after_ignore_reflects_it_in_the_summary_and_drops_the_commen
 
 def test_recording_a_term_then_saving_reflects_the_kind_in_the_yaml(
         page, tmp_path, monkeypatch):
-    """Controller ruling R1: Save must rebuild too, even without a Preview
-    click in between."""
+    """Controller ruling R1: Save must reflect what Record just taught --
+    I2 moved the rebuild so it happens only once, before Preview, so
+    this now goes through Preview (and the new Scene step) before Save,
+    exactly like the real wizard flow."""
     from PySide6.QtCore import Qt
     from wing_parser.ui import import_page
 
@@ -533,6 +547,9 @@ def test_recording_a_term_then_saving_reflects_the_kind_in_the_yaml(
     hit.setSelected(True)
     page.record_button_for(fragment).click()
     assert page.term_row_state(fragment) == "recorded"
+
+    page.preview_button.click()
+    page.scene_step.skip_button.click()
 
     out = tmp_path / "out.yaml"
     assert page.save_as(str(out))
@@ -684,6 +701,148 @@ def test_recording_a_key_that_does_not_match_its_own_fragment_warns_but_stays_sa
     assert any(v.get("kinds") == ["speech.mc"] for v in doc["cuesheet"].values())
 
 
+# -- I1: a broken classifier.yaml over the Vocabulary/AI-propose buttons -----
+
+
+def test_the_vocabulary_button_over_a_broken_classifier_yaml_warns_not_crashes(
+        page, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'tốp múa'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("tốp múa",))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a) or None)
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+    (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
+
+    page.terms_step.vocabulary_button.click()   # must not raise
+
+    assert warnings and "invalid YAML" in str(warnings[-1])
+
+
+def test_the_ai_propose_button_over_a_broken_classifier_yaml_warns_not_crashes(
+        page, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            "row 1: could not read performer 'tốp múa'"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: ("tốp múa",))
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a) or None)
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+    (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
+
+    page.terms_step.ai_propose_button.click()   # must not raise
+
+    assert warnings and "invalid YAML" in str(warnings[-1])
+
+
+# -- M3: Record/Ignore over an existing term asks first ----------------------
+
+
+def test_recording_over_an_existing_term_asks_first_and_declining_writes_nothing(
+        page, tmp_path, monkeypatch):
+    """M3: shortening a key so it folds to an already-existing term (here
+    the shipped default 'mc') used to silently overwrite it. Declining
+    the confirmation must write nothing and leave the row pending."""
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    fragment = "xyzzy plugh waldo"
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            f"row 1: could not read performer {fragment!r}"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: (fragment,))
+    confirms = []
+    monkeypatch.setattr(
+        QMessageBox, "question",
+        lambda *a, **k: confirms.append(a) or QMessageBox.StandardButton.No)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows[fragment]
+    row.key_edit.setText("mc")
+    hit = row.kinds_list.findItems("speech.lectern", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for(fragment).click()
+
+    assert confirms and any("mc" in str(arg) for arg in confirms[-1])
+    assert page.term_row_state(fragment) == "pending"
+    assert not (tmp_path / "classifier.yaml").exists()
+
+
+def test_recording_over_an_existing_term_after_confirming_overwrites_it(
+        page, tmp_path, monkeypatch):
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui import import_page
+
+    fragment = "xyzzy plugh waldo"
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            f"row 1: could not read performer {fragment!r}"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: (fragment,))
+    monkeypatch.setattr(QMessageBox, "question",
+                        lambda *a, **k: QMessageBox.StandardButton.Yes)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows[fragment]
+    row.key_edit.setText("mc")
+    hit = row.kinds_list.findItems("speech.lectern", Qt.MatchFlag.MatchExactly)[0]
+    hit.setSelected(True)
+    page.record_button_for(fragment).click()
+
+    doc = yaml.safe_load((tmp_path / "classifier.yaml").read_text(encoding="utf-8"))
+    assert doc["cuesheet"]["mc"]["kinds"] == ["speech.lectern"]
+
+
+def test_ignoring_over_an_existing_term_asks_first_and_declining_writes_nothing(
+        page, tmp_path, monkeypatch):
+    """Same rule for Ignore (remember), the other write path in this row."""
+    from wing_parser.ui import import_page
+    from PySide6.QtWidgets import QMessageBox
+
+    fragment = "xyzzy plugh waldo"
+
+    class FakeResult:
+        segments = [type("S", (), {"comments": [
+            f"row 1: could not read performer {fragment!r}"]})()]
+
+    monkeypatch.setattr(import_page.ic, "unresolved", lambda result: (fragment,))
+    confirms = []
+    monkeypatch.setattr(
+        QMessageBox, "question",
+        lambda *a, **k: confirms.append(a) or QMessageBox.StandardButton.No)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
+    page.set_output_directory(tmp_path)
+    page.show_terms_step(FakeResult())
+
+    row = page.terms_step._rows[fragment]
+    row.key_edit.setText("mc")
+    row.ignore_button.click()
+
+    assert confirms and any("mc" in str(arg) for arg in confirms[-1])
+    assert page.term_row_state(fragment) == "pending"
+    assert not (tmp_path / "classifier.yaml").exists()
+
+
 # -- fix round 2 -------------------------------------------------------------
 
 
@@ -704,20 +863,49 @@ def test_preview_does_not_advance_when_the_rebuild_fails(page, tmp_path):
     assert page.status.text() != ""
 
 
-def test_save_does_not_write_when_the_rebuild_fails(page, tmp_path):
-    """Important, fix round 2: save_as wrote the stale mapping-time
-    result and returned True even though the rebuild it asked for had
-    just failed."""
+def test_save_writes_exactly_the_preview_even_if_the_vocabulary_breaks_afterward(
+        page, tmp_path):
+    """I2: `write_output` used to call `refresh_result` again before
+    writing, so a vocabulary edit (via Tools > Vocabulary) between
+    Preview and Save changed -- or, as here, broke -- what got written.
+    Save must write exactly what was already rendered into the preview,
+    with no rebuild of its own; the rebuild lives only before Preview."""
     fragment = "xyzzy plugh waldo"
     result = _seed_synthetic_result(page, tmp_path, fragment)
     page.show_terms_step(result)
+    page.preview_button.click()
+    page.scene_step.skip_button.click()
+    rendered = page.preview_pane.toPlainText()
+    assert rendered != ""
 
     (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
 
     out = tmp_path / "out.yaml"
-    assert page.save_as(str(out)) is False
-    assert not out.exists()
-    assert page.status.text() != ""
+    assert page.save_as(str(out)) is True
+    assert out.read_text(encoding="utf-8") == rendered
+
+
+def test_save_equals_preview_even_after_teaching_a_term_through_the_vocabulary_window(
+        page, tmp_path):
+    """I2's own test: Preview -> change the vocabulary through the API
+    (standing in for the operator opening Tools > Vocabulary from the
+    Save step) -> Save. The saved bytes must equal the preview -- Save
+    must never disagree with what was reviewed."""
+    fragment = "xyzzy plugh waldo"
+    result = _seed_synthetic_result(page, tmp_path, fragment)
+    page.show_terms_step(result)
+    page.preview_button.click()
+    page.scene_step.skip_button.click()
+    rendered = page.preview_pane.toPlainText()
+
+    from wing_parser.classifier import vocabulary as vocab_module
+
+    vocab = vocab_module.Vocabulary.load(tmp_path)
+    vocab.put_term("xyzzy", kinds=("speech.mc",), match="word", origin="manual")
+
+    out = tmp_path / "out.yaml"
+    assert page.save_as(str(out)) is True
+    assert out.read_text(encoding="utf-8") == rendered
 
 
 def test_preview_renders_and_save_writes_utf8(bidv_terms, tmp_path):

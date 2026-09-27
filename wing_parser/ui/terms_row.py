@@ -5,12 +5,11 @@ lists built off patterns.yaml's known kinds and the current sets --
 never typed, so nothing expects: would refuse can be saved, W6). Ignore
 (remember) writes put_term(..., ignore=True). Skip writes nothing --
 this import only (design spec §4). The key field prefills with the
-WHOLE fragment; "match inside a sentence" auto-ticks the moment the
-operator shortens it below the fragment's own length, because a
-shortened key almost always means "match this word wherever it
-appears", not "this exact sentence, verbatim" -- the operator can still
-tick it by hand for an unshortened key (e.g. to make a single word like
-"trống" match inside a longer sibling fragment too).
+WHOLE fragment; "match inside a sentence" auto-ticks once the operator
+shortens it below the fragment's own length (a shortened key almost
+always means "match this word wherever it appears"), and can still be
+ticked by hand for an unshortened key (e.g. so "trống" also matches
+inside a longer sibling fragment).
 
 A failed Record/Ignore (a blank key, an unknown kind or set that slipped
 in, or the write itself hitting disk trouble) is reported by name and
@@ -22,12 +21,12 @@ by hand after the auto-tick -- warns rather than silently claiming
 "recorded"; the term itself stays saved either way (fix round 1,
 Important/minor).
 
-Fix round 1, Important: `sets_list` used to be filled once from the
-constructor's `known_sets` snapshot and never touched again, so a set
-created or deleted in the Vocabulary window (which re-resolves every
-pending row via `set_vocabulary`) never showed up here. `set_vocabulary`
-now rebuilds `sets_list` from the fresh vocabulary's own `.sets()`,
-keeping whichever selected keys still exist.
+`set_vocabulary` rebuilds `sets_list` from the fresh vocabulary's own
+`.sets()` on every re-resolve, keeping whichever selected keys still
+exist -- a set created or deleted in the Vocabulary window must show up
+here too. M3: Record/Ignore confirms first, naming the entry, when the
+key folds to one that already exists -- `put_term` would otherwise
+replace it with no warning of its own.
 """
 
 from __future__ import annotations
@@ -39,9 +38,9 @@ from PySide6.QtWidgets import (
     QListWidget, QListWidgetItem, QMessageBox, QPushButton, QVBoxLayout,
 )
 
-from wing_parser.showcontext.ingest import build
+from wing_parser.showcontext.ingest import build, keywords
 from wing_parser.ui.texts import text
-from wing_parser.ui.vocabulary_tab_support import write_or_report
+from wing_parser.ui.vocabulary_tab_support import confirm_overwrite, write_or_report
 
 
 class TermsRow(QGroupBox):
@@ -138,9 +137,22 @@ class TermsRow(QGroupBox):
         QMessageBox.warning(self, text("vocabulary.title"), text("import.terms.empty_key"))
         return None
 
+    def _existing_term_with_same_key(self, key: str):
+        folded = keywords.fold(key)
+        for term in self._vocabulary.terms():
+            if keywords.fold(term.key) == folded:
+                return term
+        return None
+
+    def _confirm_overwrite_if_any(self, key: str) -> bool:
+        existing = self._existing_term_with_same_key(key)
+        return existing is None or confirm_overwrite(self, existing.key)
+
     def _record(self) -> None:
         key = self._require_key()
         if key is None:
+            return
+        if not self._confirm_overwrite_if_any(key):
             return
         kinds, sets_ = self._picked_kinds(), self._picked_sets()
         ok = write_or_report(
@@ -155,6 +167,8 @@ class TermsRow(QGroupBox):
     def _ignore(self) -> None:
         key = self._require_key()
         if key is None:
+            return
+        if not self._confirm_overwrite_if_any(key):
             return
         ok = write_or_report(
             self, lambda: self._vocabulary.put_term(

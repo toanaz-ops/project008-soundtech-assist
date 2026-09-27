@@ -7,16 +7,24 @@ that the assistant's Apply can call it too.
 
 `problems_label` surfaces `Vocabulary.problems` (a hand-edited
 `classifier.yaml` entry the loader could not fully trust -- an unknown
-kind/set or a set cycle already on disk; `vocabulary.py`'s loader never
-raises, spec S3.2) as a plain in-window notice, not a `QMessageBox`: it
-is informational, not a step blocking anything, and a modal popup on
-every open would be in the way every single time until the entry is
-fixed."""
+kind/set or a set cycle already on disk; `vocabulary.py`'s own per-entry
+loader never raises, spec S3.2) as a plain in-window notice, not a
+`QMessageBox`: it is informational, not a step blocking anything, and a
+modal popup on every open would be in the way every single time until
+the entry is fixed. That "never raises" claim does NOT extend to
+`Vocabulary.load` itself: `cache._read` raises `ValueError` for a YAML
+syntax error or a non-mapping domain, which is not a per-entry problem
+`.problems` can report. `open_vocabulary()` below is the guarded entry
+point every caller (menus.py, terms_step.py) uses instead of
+constructing this dialog directly (fix round, I1) -- in a console=False
+release exe, an unguarded raise out of a Qt slot is a silent no-op."""
 
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QTabWidget, QVBoxLayout
+from PySide6.QtWidgets import (
+    QDialog, QHBoxLayout, QLabel, QMessageBox, QPushButton, QTabWidget, QVBoxLayout,
+)
 
 from wing_parser.classifier import vocabulary as vocab_module
 from wing_parser.ui import key_status
@@ -95,3 +103,15 @@ class VocabularyWindow(QDialog):
             self.problems_label.setText(
                 text("vocabulary.problems_header") + "\n" + "\n".join(problems))
         self.problems_label.setVisible(bool(problems))
+
+
+def open_vocabulary(parent, directory=None, fragments: tuple[str, ...] = ()) -> None:
+    """Construct and run a `VocabularyWindow` without ever letting a
+    broken `classifier.yaml` escape a Qt slot (I1) -- every caller uses
+    this instead of constructing the dialog directly."""
+    try:
+        window = VocabularyWindow(parent, directory=directory, initial_fragments=fragments)
+    except (OSError, ValueError) as exc:
+        QMessageBox.warning(parent, text("vocabulary.title"), str(exc))
+        return
+    window.exec()

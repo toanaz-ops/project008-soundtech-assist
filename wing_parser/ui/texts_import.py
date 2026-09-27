@@ -48,6 +48,7 @@ IMPORT_TEXTS: dict[str, str] = {
         "not recognise. Continue?"
     ),
     "vocabulary.delete_confirm": "Delete {name}? This cannot be undone from here.",
+    "vocabulary.overwrite_confirm": "{name} already exists — overwrite it?",
     "vocabulary.tab.assistant": "Assistant",
     "vocabulary.assistant.placeholder": (
         "e.g. \"my drum kit has no kick out, add a second tom\", "

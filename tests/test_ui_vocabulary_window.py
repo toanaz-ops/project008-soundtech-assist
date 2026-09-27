@@ -75,6 +75,34 @@ def _visible_keys(table, column=0) -> set:
 # -- brief's original coverage (kept) ----------------------------------------
 
 
+def test_tools_vocabulary_over_a_broken_classifier_yaml_warns_instead_of_crashing(
+        qt_app, tmp_path, monkeypatch):
+    """I1: `VocabularyWindow.__init__` calls `Vocabulary.load(directory)`
+    unguarded -- `cache._read` raises ValueError for a YAML syntax error
+    or a non-mapping domain (unlike a per-entry hand-edit mistake, which
+    `vocabulary.py`'s own loader never raises on). Reached from Tools >
+    Vocabulary (menus.py), the Terms step's Vocabulary... button, and its
+    AI: propose button; this test drives the real menu action, which in
+    a console=False release exe would otherwise die silently."""
+    from PySide6.QtGui import QAction
+    from PySide6.QtWidgets import QMessageBox
+    from wing_parser.ui.main_window import MainWindow
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    monkeypatch.setenv("WING_KNOWLEDGE_DIR", str(tmp_path))
+    (tmp_path / "classifier.yaml").write_text("cuesheet: [unterminated", encoding="utf-8")
+
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: warnings.append(a) or None)
+
+    main_window = MainWindow(None)
+    action = next(
+        a for a in main_window.findChildren(QAction) if a.text() == text("menu.vocabulary"))
+    action.trigger()   # must not raise
+
+    assert warnings and "invalid YAML" in str(warnings[-1])
+
+
 def test_the_sets_tab_lists_every_shipped_default(window):
     labels = _visible_keys(window.sets_tab.table)
     assert {"Drum kit", "Band", "Award moment"} <= labels
@@ -146,20 +174,23 @@ def test_a_hand_edited_bad_entry_shows_as_a_non_modal_problem_notice(qt_app, tmp
 
 def test_the_window_opens_from_the_real_main_windows_tools_menu(qt_app, tmp_path, monkeypatch):
     """Fix round 1 minor: trigger the real QAction found by its own
-    label, rather than calling the delegating method directly."""
+    label, rather than calling the delegating method directly. I1: the
+    handler goes through `vocabulary_window.open_vocabulary` now (a
+    broken classifier.yaml warns instead of crashing), so the stub is
+    patched where that guard actually constructs the dialog."""
+    import wing_parser.ui.vocabulary_window as vw_module
     from wing_parser import config
     from wing_parser.ui.main_window import MainWindow
-    from wing_parser.ui import menus
 
     monkeypatch.setenv(config.ENV_VAR, str(tmp_path))
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     opened = {}
 
-    def _stub_vocabulary_window(parent):
+    def _stub_vocabulary_window(parent, *, directory=None, initial_fragments=()):
         opened["parent"] = parent
         return _NullExec()
 
-    monkeypatch.setattr(menus, "VocabularyWindow", _stub_vocabulary_window)
+    monkeypatch.setattr(vw_module, "VocabularyWindow", _stub_vocabulary_window)
     window = MainWindow(None)
     action = _tools_menu_action(window, text("menu.vocabulary"))
     action.trigger()
@@ -521,7 +552,7 @@ def test_editing_keeps_a_case_variant_set_reference_via_folded_preselect(window)
 
     dialog = VocabularyTermDialog(window.terms_tab, known_kinds=(),
                                   known_sets=("drum kit",), initial=entry)
-    _key, _kinds, sets_, _ignore, _match = dialog.result()
+    _key, _kinds, sets_, _ignore, _match = dialog.values()
     assert sets_ == ("drum kit",)   # preserved, normalised to the real key
 
 
@@ -779,7 +810,7 @@ class _NullExec:
 
 
 class _AutoAcceptSetDialog:
-    """Stands in for VocabularySetDialog -- exec() always accepts, result()
+    """Stands in for VocabularySetDialog -- exec() always accepts, values()
     hands back whatever this test wants written."""
 
     def __init__(self, key, label, kinds, sets_):
@@ -788,12 +819,12 @@ class _AutoAcceptSetDialog:
     def exec(self):
         return 1
 
-    def result(self):
+    def values(self):
         return self._payload
 
 
 class _ScriptedDialog:
-    """Feeds one `result()` payload per `exec()` call, in the order
+    """Feeds one `values()` payload per `exec()` call, in the order
     given; once every payload has been consumed, `exec()` returns 0 (as
     if the operator gave up) -- so a tab's retry-on-failure loop cannot
     spin forever waiting for a payload that will never come."""
@@ -806,5 +837,5 @@ class _ScriptedDialog:
         self.calls += 1
         return 1 if self._payloads else 0
 
-    def result(self):
+    def values(self):
         return self._payloads.pop(0)

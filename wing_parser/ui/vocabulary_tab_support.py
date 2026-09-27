@@ -37,7 +37,7 @@ def run_dialog_loop(parent, dialog, apply) -> bool:
     result resets."""
     while dialog.exec():
         try:
-            apply(dialog.result())
+            apply(dialog.values())
         except UserDeclined:
             continue
         except (ValueError, OSError) as exc:
@@ -92,6 +92,20 @@ def confirm_kind_drop(parent, dropped: tuple[str, ...]) -> None:
     )
     if answer != QMessageBox.StandardButton.Yes:
         raise UserDeclined()
+
+
+def confirm_overwrite(parent, name: str) -> bool:
+    """M3: Record/Ignore on the Terms step writes through `put_term`,
+    which replaces any existing entry under the same folded key with no
+    warning of its own -- a shortened key can silently collide with an
+    already-taught term (default or manual). Same default-to-No idiom as
+    `confirm_delete`, naming the entry that would be overwritten."""
+    answer = QMessageBox.question(
+        parent, text("vocabulary.title"), text("vocabulary.overwrite_confirm").format(name=name),
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
+    )
+    return answer == QMessageBox.StandardButton.Yes
 
 
 def confirm_delete(parent, name: str) -> bool:

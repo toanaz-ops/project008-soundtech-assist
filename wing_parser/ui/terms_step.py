@@ -127,16 +127,16 @@ class TermsStep(QWidget):
     # -- AI / Vocabulary entry points --------------------------------------
 
     def _open_vocabulary(self) -> None:
-        from wing_parser.ui.vocabulary_window import VocabularyWindow
+        from wing_parser.ui.vocabulary_window import open_vocabulary
 
-        VocabularyWindow(self, directory=self.directory).exec()
+        open_vocabulary(self, directory=self.directory)
         self._reresolve()
 
     def _ai_propose(self) -> None:
-        from wing_parser.ui.vocabulary_window import VocabularyWindow
+        from wing_parser.ui.vocabulary_window import open_vocabulary
 
         pending = tuple(f for f, row in self._rows.items() if row.state == "pending")
-        VocabularyWindow(self, directory=self.directory, initial_fragments=pending).exec()
+        open_vocabulary(self, directory=self.directory, fragments=pending)
         self._reresolve()
 
     # -- test seams -----------------------------------------------------------

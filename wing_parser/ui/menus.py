@@ -16,7 +16,7 @@ from wing_parser.ui.session import Session
 from wing_parser.ui.settings_dialog import SettingsDialog
 from wing_parser.ui.state_store import PAGE_KEYS
 from wing_parser.ui.texts import text
-from wing_parser.ui.vocabulary_window import VocabularyWindow
+from wing_parser.ui.vocabulary_window import open_vocabulary as open_vocabulary_dialog
 from wing_parser.ui.window_state import adopt_session
 
 # Bound to a name because two call sites share it. The texts.py scan
@@ -73,7 +73,7 @@ def open_settings(window) -> None:
 
 
 def open_vocabulary(window) -> None:
-    VocabularyWindow(window).exec()
+    open_vocabulary_dialog(window)
 
 
 def open_file(window) -> None:

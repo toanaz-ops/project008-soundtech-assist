@@ -52,11 +52,10 @@ def show_scene_step(page) -> None:
 
 def finish_scene(page, scene) -> None:
     """Step 4 -> step 5: render the YAML, with the chosen scene's
-    cross-check proposals if any -- Skip passes scene=None, and the file
-    is byte-for-byte what today's (pre-wave-4) Save produces. `scene` is
-    already `page.scene_step.chosen_scene` by the time this runs -- the
-    step sets it before emitting -- so write_output can read it back
-    from there and render the SAME thing Save later writes."""
+    cross-check proposals if any -- Skip passes scene=None. I2: this is
+    now the ONLY place `ic.preview_text` is called on the way to a saved
+    file -- `write_output` writes exactly this rendered text back out,
+    never re-renders it."""
     try:
         page.preview_pane.setPlainText(
             ic.preview_text(page._xlsx, page._result, scene=scene)
@@ -69,19 +68,17 @@ def finish_scene(page, scene) -> None:
 
 def write_output(page, path: str) -> bool:
     """Step 5's Save, minus the dialog -- `import_page.save_as` delegates
-    here. Refreshed first, same as Preview; a failed refresh must not be
-    followed by writing the stale mapping-time result (fix round 2). The
-    chosen scene threads through exactly as it did into Preview, so the
-    saved file is always byte-identical to what was just previewed."""
-    if not refresh_result(page):
-        return False
+    here. I2: writes exactly what Preview already rendered into
+    `page.preview_pane`, with NO rebuild of its own -- the rebuild lives
+    only in `show_scene_step`, before Preview is shown. A second rebuild
+    here used to mean Preview and Save could disagree: opening Tools >
+    Vocabulary from the Save step and teaching a term (or a classifier.
+    yaml that broke in between) changed, or blocked, what got written,
+    even though the operator had already reviewed the preview and the
+    Scene step's table against the OLDER vocabulary."""
     try:
-        Path(path).write_text(
-            ic.preview_text(
-                page._xlsx, page._result, scene=page.scene_step.chosen_scene),
-            encoding="utf-8",
-        )
-    except (OSError, ValueError) as exc:
+        Path(path).write_text(page.preview_pane.toPlainText(), encoding="utf-8")
+    except OSError as exc:
         page._fail(exc)
         return False
     return True
