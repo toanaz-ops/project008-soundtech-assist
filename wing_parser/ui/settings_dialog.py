@@ -28,9 +28,10 @@ from PySide6.QtWidgets import (
 
 from wing_parser import config
 from wing_parser.classifier import provider, provider_errors
+from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.ui import state_store
 from wing_parser.ui.call_button import ButtonRunner
-from wing_parser.ui.settings_io import dump_yaml, mask
+from wing_parser.ui.settings_io import dump_yaml, mask, resolve_key
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
 
@@ -158,11 +159,14 @@ class SettingsDialog(QDialog):
         return True
 
     def run_probe(self) -> bool:
-        """Save, then ping off the GUI thread; False when one runs already.
-
-        The outcome lands in the status label either way -- the dialog
-        never blocks on the network, and Cancel settles the wait now.
-        """
+        """Save, then ping off the GUI thread; False when one runs already
+        -- the dialog never blocks on the network, and Cancel settles the
+        wait now. The kill switch is honoured here too (same as Try AI
+        and the Vocabulary Assistant), checked before save() so no
+        provider is ever resolved while it is on."""
+        if kill_switch_on():
+            self.status_label.setText(text("import.try_ai.kill_switch"))
+            return False
         self.save()
         cfg = provider.resolve_config(config.knowledge_dir())
         return self._probe_call.run(
@@ -183,10 +187,7 @@ class SettingsDialog(QDialog):
     # -- internals -------------------------------------------------------
 
     def _current_key(self) -> str:
-        shown = self.key_edit.text()
-        if shown == self._loaded_mask:
-            return self._loaded_key
-        return shown
+        return resolve_key(self.key_edit.text(), self._loaded_mask, self._loaded_key)
 
     def _save_and_close(self) -> None:
         window = self.parent()

@@ -20,6 +20,14 @@ def mask(key: str) -> str:
     return MASK + key[-4:] if key else ""
 
 
+def resolve_key(shown: str, loaded_mask: str, loaded_key: str) -> str:
+    """The mask doubles as an unchanged-marker: saving it untouched
+    re-writes the real key, anything the operator typed replaces it.
+    Split out of `settings_dialog._current_key` to keep the dialog under
+    its line ceiling (`test_ui_house_style.py:170`)."""
+    return loaded_key if shown == loaded_mask else shown
+
+
 def dump_yaml(doc: dict) -> str:
     from ruamel.yaml import YAML
 
