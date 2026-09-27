@@ -176,6 +176,13 @@ def _finish(xlsx, read, resolved, *, output, force, scene, print_fn,
 
     try:
         vocabulary = vocab_module.Vocabulary.load(knowledge_dir)
+        # A hand-edit mistake in classifier.yaml (an unknown kind, a
+        # dangling set) is skipped and reported through vocabulary.problems,
+        # never raised -- surface it the same way commands.py's own
+        # showcontext import does (fix round, M1), or it silently changes
+        # what resolves without ToanAZ ever seeing why.
+        for problem in vocabulary.problems:
+            print_fn(f"warning: {problem}")
         result = build.build(
             read.rows,
             resolved,

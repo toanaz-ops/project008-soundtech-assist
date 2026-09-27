@@ -400,6 +400,38 @@ def test_unresolved_performers_are_offered_a_guess_after_the_render(
     assert "'tốp múa'" in record[0] and "speech.playback" in record[0]
 
 
+def test_vocabulary_problems_are_printed_as_warnings(tmp_path, monkeypatch):
+    """M1: the wizard's own `_finish` loads the vocabulary the same way
+    `commands.py`'s `showcontext import` does (cli/commands.py:313), but
+    never surfaced `vocabulary.problems` -- a hand-edit mistake (an
+    unknown kind here) was silently dropped with no diagnostic at all."""
+    _fake_provider(monkeypatch, VivoProvider())
+    monkeypatch.chdir(tmp_path)
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "classifier.yaml").write_text(
+        "channels: {}\nbuses: {}\n"
+        "cuesheet:\n  bad term:\n    kinds: [nonexistent.kind]\n"
+        "    match: exact\n",
+        encoding="utf-8",
+    )
+    messages = []
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda *a, **k: "",
+        print_fn=messages.append,
+        output=str(tmp_path / "vivo.yaml"),
+        force=False,
+        scene=None,
+        one_shot=False,
+        knowledge_dir=knowledge,
+    )
+    assert code == 0
+    warnings = [m for m in messages if m.startswith("warning:")]
+    assert warnings, messages
+    assert "bad term" in warnings[0] and "unknown kind" in warnings[0]
+
+
 def test_cli_one_shot_flag_reaches_the_wizard(tmp_path, capsys, monkeypatch):
     """Wiring check: the flag travels into run_wizard. The wizard body
     itself (Enter-to-accept, one map file) is proven directly above --
