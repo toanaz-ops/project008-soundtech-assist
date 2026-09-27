@@ -66,7 +66,7 @@ class VocabularySetDialog(QDialog):
         layout.addLayout(form)
         layout.addWidget(buttons)
 
-    def result(self) -> tuple[str, str, tuple[str, ...], tuple[str, ...]]:
+    def values(self) -> tuple[str, str, tuple[str, ...], tuple[str, ...]]:
         key = self.name_edit.text().strip() or (self._initial.key if self._initial else "")
         label = self.label_edit.text().strip() or key
         kinds = tuple(item.text() for item in self.kinds_list.selectedItems())

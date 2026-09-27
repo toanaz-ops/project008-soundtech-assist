@@ -85,7 +85,7 @@ class VocabularyTermDialog(QDialog):
         self.kinds_list.setEnabled(not ignored)
         self.sets_list.setEnabled(not ignored)
 
-    def result(self) -> tuple[str, tuple[str, ...], tuple[str, ...], bool, str]:
+    def values(self) -> tuple[str, tuple[str, ...], tuple[str, ...], bool, str]:
         key = self.name_edit.text().strip() or (self._initial.key if self._initial else "")
         ignore = self.ignore_check.isChecked()
         kinds = () if ignore else tuple(item.text() for item in self.kinds_list.selectedItems())
