@@ -313,3 +313,32 @@ def test_a_404_wrong_model_is_classified_as_other_and_shows_the_status(panel, mo
     _try_with(panel, monkeypatch, _RaisingProvider(_StatusError(404, "model not found")))
     assert settle(lambda: "404" in panel.result_label.text())
     assert "model not found" in panel.result_label.text()
+
+
+# -- M7: grey out on an UNRECOVERABLE failure, recover on the next show ------
+
+
+def test_an_unrecoverable_failure_greys_the_button_and_recovers_on_next_show(
+        panel, monkeypatch, settle):
+    """Try AI must grey out after an UNRECOVERABLE failure (bad key, no
+    key, no network, missing SDK), consistent with the Vocabulary
+    Assistant's own `_failed` (vocabulary_assistant.py), and recover the
+    next time the panel is shown -- the same way a no-key/kill-switch
+    grey-out already does."""
+    from wing_parser.ui import key_status
+
+    _try_with(panel, monkeypatch, _RaisingProvider(_StatusError(401)))
+    assert settle(lambda: "rejected" in panel.result_label.text())
+    assert not panel.try_button.isEnabled()
+
+    monkeypatch.setattr(key_status, "key_configured", lambda: True)
+    panel.show()
+    assert panel.try_button.isEnabled()
+
+
+def test_a_recoverable_failure_leaves_the_button_enabled(panel, monkeypatch, settle):
+    """A 500/other-class failure is not UNRECOVERABLE -- retrying might
+    just work, so the button must stay enabled."""
+    _try_with(panel, monkeypatch, _RaisingProvider(_StatusError(500, "internal error")))
+    assert settle(lambda: "500" in panel.result_label.text())
+    assert panel.try_button.isEnabled()

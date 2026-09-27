@@ -48,6 +48,7 @@ from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.provider import resolve_config
 from wing_parser.showcontext.ingest import suggest
 from wing_parser.ui import key_status
+from wing_parser.ui import vocabulary_assistant_support as support
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.texts import text
 
@@ -158,6 +159,14 @@ class MappingTryAi(QWidget):
         self.proposal_view.setPlainText("\n".join(lines))
 
     def _failed(self, exc: Exception) -> None:
-        _code, message = provider_errors.classify(exc)
+        """M7: an UNRECOVERABLE failure (bad/missing key, no network, a
+        missing SDK) greys the button too, same as
+        VocabularyAssistant._failed -- nothing will succeed until
+        something OUTSIDE this panel changes. `_update_key_status`'s own
+        showEvent recheck is what recovers it, exactly like the no-key/
+        kill-switch grey-out already does."""
+        code, message = provider_errors.classify(exc)
         self.result_label.setText(message)
         self.proposal_view.setPlainText("")
+        if code in support.UNRECOVERABLE:
+            self.try_button.setEnabled(False)
