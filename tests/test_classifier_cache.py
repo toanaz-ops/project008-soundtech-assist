@@ -270,6 +270,22 @@ def test_read_raw_and_write_raw_round_trip_a_cuesheet_sets_entry(directory):
     assert reloaded["cuesheet_sets"]["drum kit"]["label"] == "Drum kit"
 
 
+def test_load_survives_a_hand_edited_null_cuesheet_entry(directory):
+    """M2: a hand-edited `foo:` with nothing typed after the colon parses
+    as None, not a mapping. `"kind" in entry` raised TypeError for it
+    (Doctor-side `cache.load`, unlike `vocabulary.py`'s own loader, which
+    never raises on a hand-edit mistake) -- it must be skipped instead,
+    same as any other entry missing kind/confidence."""
+    from wing_parser.classifier import cache
+
+    (directory / "classifier.yaml").write_text(
+        "channels: {}\nbuses: {}\ncuesheet:\n  foo:\ncuesheet_sets:\n  bar:\n",
+        encoding="utf-8",
+    )
+    loaded = cache.load(directory)  # must not raise
+    assert "foo" not in loaded["cuesheet"]
+
+
 def test_the_top_level_error_names_every_domain(tmp_path):
     """The message must not go stale when a domain is added.
 

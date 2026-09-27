@@ -1,6 +1,9 @@
 # Cached and manually declared classifications.
 #
-# Keys are normalized names (trimmed, whitespace-collapsed, casefolded).
+# channels/buses keys are normalized names (trimmed, whitespace-collapsed,
+# casefolded) -- see classifier/normalize.py:clean(). cuesheet/cuesheet_sets
+# keys keep exactly what was typed (W3, classifier/vocabulary_store.py):
+# folding there is for MATCHING identity only, never for what is stored.
 # Anything written here is read before the pattern matcher runs, so a
 # manual entry always wins and a name only ever costs one classification
 # in its lifetime.

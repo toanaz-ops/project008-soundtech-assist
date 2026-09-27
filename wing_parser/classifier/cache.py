@@ -25,7 +25,10 @@ DOMAINS = ("channels", "buses", "cuesheet", "cuesheet_sets")
 _SEED = """\
 # Cached and manually declared classifications.
 #
-# Keys are normalized names (trimmed, whitespace-collapsed, casefolded).
+# channels/buses keys are normalized names (trimmed, whitespace-collapsed,
+# casefolded) -- see classifier/normalize.py:clean(). cuesheet/cuesheet_sets
+# keys keep exactly what was typed (W3, classifier/vocabulary_store.py):
+# folding there is for MATCHING identity only, never for what is stored.
 # Anything written here is read before the pattern matcher runs, so a
 # manual entry always wins and a name only ever costs one classification
 # in its lifetime.
@@ -152,7 +155,10 @@ def load(directory: Path | None = None) -> dict[str, dict[str, Classification]]:
             result[domain] = {
                 key: _one(domain, key, entry, path)
                 for key, entry in raw.items()
-                if "kind" in entry and "confidence" in entry
+                # A hand-edited `foo:` with nothing after the colon parses
+                # as None, not a mapping (M2) -- `isinstance` first so
+                # `"kind" in entry` never runs on it and raises TypeError.
+                if isinstance(entry, dict) and "kind" in entry and "confidence" in entry
             }
     return result
 
