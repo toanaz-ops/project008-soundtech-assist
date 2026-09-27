@@ -11,7 +11,10 @@ D-41 v1's C1/I1/I2/M1 findings, **merged into `main`** via PR #9
 (`3c2cda9`), CI `test` green — measured there: **1790 passed / 3 skipped**.
 The release exe was rebuilt from `3c2cda9` with C1's decided extras
 (`.[ui,ingest,llm,llm-openai]`) — gap: Settings ▸ Test connection is still
-unexercised from the frozen exe (needs ToanAZ with a real key).
+unexercised from the frozen exe (needs ToanAZ with a real key). **GUI wave 4**
+(better cue-sheet import) is **code-complete on branch `feat/gui-import-wave4`
+(2026-09-27), awaiting PR/merge** — measured on the branch: **2088 passed /
+3 skipped**. See §4/§5 items 2 and 10.
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -155,8 +158,9 @@ The sequenced execution order for everything below lives in
 history, not a plan:** all three of its steps landed (G2b, the live-watch
 acceptance, the GUI). Since it was written the GUI has run three cycles of
 its own — waves 1/1b, 2 and 3, each on its own spec in §3's paperwork table
-— and **wave 4 is not scoped yet**: ToanAZ named three candidate directions
-to brainstorm from on 2026-09-25, listed in §5 item 10.
+— and **wave 4 (better cue-sheet import) is scoped, specced and built** on
+branch `feat/gui-import-wave4` (2026-09-27), awaiting PR/merge and the exe
+rebuild. See §5 items 2 and 10.
 
 G2a deliberately contained **no model call**. It reads a spreadsheet through a
 mapping file ToanAZ writes by hand, and resolves Vietnamese performer terms
@@ -217,7 +221,15 @@ supply. **Do not guess them.**
 2. **The `cuesheet:` vocabulary ships empty.** Only loanwords `patterns.yaml`
    already catches (`guitar`, `bass`, `piano`) resolve; everything else becomes
    a comment — correct, but a seed of the twenty terms he meets most would make
-   the first run useful. *(New 2026-08-22.)*
+   the first run useful. *(New 2026-08-22.)* **Closed 2026-09-27 by GUI wave 4**
+   (branch `feat/gui-import-wave4`, awaiting merge): shipped defaults
+   (`wing_parser/classifier/data/cuesheet_defaults.yaml`, sets + terms for both
+   corporate and concert cue sheets), editable in wing-ui's Vocabulary window,
+   with an AI assistant that proposes changes he approves. Acceptance on the
+   real files with the shipped defaults: VIVO 9/9 performer fragments resolved;
+   BIDV 31 fragments — 19 resolved, 8 ignored, 4 deliberately left unread
+   ("Đội", "nhóm", "mời lên SK", "Đoàn thanh niên BIDV TP. Hồ Chí Minh"). Spec:
+   `docs/superpowers/specs/2026-09-26-gui-import-wave4-design.md`.
 3. **The limiter `dyn.mdl` token.** Needs the **complete** list of
    limiter-capable models he would use; a missing member makes G7 fire on a
    protected IEM, the exact failure the rule exists to prevent. Closed as
@@ -293,18 +305,25 @@ supply. **Do not guess them.**
    that are not in the spec, and the 2026-09-25 answers:
    `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6.
 
-10. **Wave 4 is not scoped or brainstormed yet.** ToanAZ named three
-    candidate directions on 2026-09-25 to start that brainstorm from —
-    none of this is committed work:
+10. **Wave 4 (better cue-sheet import) is scoped, specced, planned and built**
+    on branch `feat/gui-import-wave4` (2026-09-27) — awaiting PR/merge and the
+    exe rebuild; nothing here is on `main` yet. Of the three candidate
+    directions ToanAZ named on 2026-09-25 to brainstorm from, this closes
+    direction 2 (the vocabulary seed from the old §5.2 above, done through a
+    shipped-defaults file plus an editable Vocabulary window and AI assistant
+    — see item 2 above). Spec: `docs/superpowers/specs/2026-09-26-gui-import-wave4-design.md`.
+    Full suite at code-complete: 2088 passed / 3 skipped (baseline on `main`
+    was 1790 passed / 3 skipped). Still open, not yet run: real-desk-style
+    acceptance from the exe (Try AI / the Assistant / Test connection with
+    ToanAZ's real DeepSeek key; a real cue sheet from his next show through
+    the wizard) — runbook `docs/acceptance/2026-09-wave4-import-acceptance.md`.
+    The other two directions remain for later waves, each its own
+    `superpowers:brainstorming` → spec cycle:
     1. A durable write log across sessions, plus a post-show report
        export. This will deliberately overturn W8 above when it lands (W8
        says exactly one new persisted key and no write log).
-    2. Better cue-sheet import: the vocabulary seed from §5.2 above, and a
-       live DeepSeek smoke test run inside the app rather than only from
-       the CLI.
     3. An advisory layer that encodes ToanAZ's own mixing judgement more
        directly.
-    Invoke `superpowers:brainstorming` on these before writing a spec.
 
 ## 6. Waiting on hardware — NOTHING
 

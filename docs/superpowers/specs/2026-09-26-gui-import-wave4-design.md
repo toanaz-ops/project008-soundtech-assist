@@ -1,6 +1,7 @@
 # GUI wave 4 — better cue-sheet import — design
 
-**Date:** 2026-09-26 · **Status:** draft, awaiting ToanAZ's read · **Cycle:** Đợt 4 (import) · **Follows:**
+**Date:** 2026-09-26 · **Status:** implemented on `feat/gui-import-wave4`
+(2026-09-27), awaiting merge · **Cycle:** Đợt 4 (import) · **Follows:**
 ROADMAP §5 item 10.2 and §5 item 2 ("the `cuesheet:` vocabulary ships empty").
 
 ToanAZ picked this direction first of the three he named on 2026-09-25 (the durable write log and the mixing-taste
@@ -38,6 +39,7 @@ full-sentence stage directions ("Mời BLĐ lên sân khấu quay số", "Trao g
 | F12 | Section 7 (editor + assistant) approved as presented in chat. | ToanAZ |
 | F13 | **Nested sets**: a set may contain other sets (Band contains Drum kit), so editing Drum kit changes Band too. Built now "because it will be needed". | ToanAZ |
 | F14 | Appendix A ships as drafted; he corrects defaults in the Vocabulary window afterwards (F9), so §A does not block task 2. | orchestrator, from F9 |
+| F15 | Settings ▸ Test connection honours `WING_DISABLE_LLM`, the same kill switch Try AI and the Assistant already respect. | ToanAZ, 2026-09-27 |
 | W1 | New UI strings are English, like every existing string in `texts*.py`; the AI-diagnosis reasons are plain-language English. *If overturned:* a Vietnamese string table is its own wave — every page would have to follow. | orchestrator |
 | W2 | Lint's **Fix** writes `<file>.bak` (overwriting an older `.bak`) before `apply_repairs`, which itself keeps no backup. *If overturned to "Save As":* one dialog more, no `.bak`. | orchestrator |
 | W3 | Diacritic folding applies to the match only; stored keys keep what the user typed. *If overturned:* keys stored folded, and the YAML stops being readable Vietnamese. | orchestrator |
