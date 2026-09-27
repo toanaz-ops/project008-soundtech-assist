@@ -81,14 +81,28 @@ def _contains_word(haystack: str, needle: str) -> bool:
 
 def match(text: str, terms: Sequence[Term]) -> Resolution:
     """Steps 1-2 of the lookup order (S3.3). Empty, non-ignored when
-    neither step hits -- the caller tries patterns.yaml next."""
+    neither step hits -- the caller tries patterns.yaml next.
+
+    Fix round, I3: an exact hit with no kinds AND not ignored is not a
+    real hit -- it is a pre-wave-4 cache entry below matcher.HIGH
+    (vocabulary_store.py's term_from_user), or a term whose sets were
+    all later deleted (vocabulary.py's effective() then expands it to no
+    kinds). Returning on it anyway used to cut the whole lookup short:
+    keyed to the entire fragment, it silently hid every default WORD
+    term matching inside that same fragment; keyed to the same folded
+    identity as another term, it replaced that term's own resolution
+    with nothing. Falling through here lets the word stage (below) still
+    run.
+    """
     folded_text = fold(text)
     if not folded_text:
         return Resolution((), False)
 
     for term in terms:
         if term.match == "exact" and fold(term.key) == folded_text:
-            return Resolution(term.kinds, term.ignored)
+            if term.kinds or term.ignored:
+                return Resolution(term.kinds, term.ignored)
+            continue
 
     word_hits = [
         term for term in terms
@@ -113,6 +127,12 @@ def match(text: str, terms: Sequence[Term]) -> Resolution:
     any_non_ignore = False
     for term in kept:
         if term.ignored:
+            continue
+        if not term.kinds:
+            # Same rule as the exact stage above: a non-ignore hit with no
+            # kinds contributes nothing, so it must not count as a hit --
+            # otherwise it wrongly blocks an ignore hit elsewhere in the
+            # same fragment from winning (I3).
             continue
         any_non_ignore = True
         for kind in term.kinds:

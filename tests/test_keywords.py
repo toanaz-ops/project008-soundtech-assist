@@ -112,3 +112,58 @@ def test_no_term_matches_at_all_is_an_empty_non_ignored_resolution():
 def test_an_empty_fragment_matches_nothing():
     assert match("   ", (Term(key="x", kinds=("a",), ignored=False, match="word"),)
                  ) == Resolution((), False)
+
+
+# -- fix round, I3: an exact hit with no kinds must not cut matching short --
+
+
+def test_a_weak_exact_entry_over_the_whole_fragment_does_not_block_word_terms():
+    """A pre-wave-4 cache entry below matcher.HIGH becomes an exact term
+    with kinds=() (vocabulary_store.py term_from_user). Keyed to the WHOLE
+    fragment, it used to return Resolution((), False) immediately, hiding
+    default word terms that also match inside that same fragment."""
+    terms = (
+        Term(key="Mời BLĐ lên sân khấu quay số", kinds=(), ignored=False, match="exact"),
+        Term(key="blđ", kinds=("speech.handheld",), ignored=False, match="word"),
+        Term(key="quay số", kinds=("speech.mc", "utility.playback"), ignored=False,
+             match="word"),
+    )
+    result = match("Mời BLĐ lên sân khấu quay số", terms)
+    assert "speech.handheld" in result.kinds
+    assert "speech.mc" in result.kinds
+
+
+def test_a_weak_exact_entry_sharing_a_defaults_own_key_still_lets_it_resolve():
+    """A weak entry whose folded key equals another term's key must not
+    replace it with nothing -- fall through to the word stage."""
+    terms = (
+        Term(key="quay số", kinds=(), ignored=False, match="exact"),
+        Term(key="quay số", kinds=("speech.mc",), ignored=False, match="word"),
+    )
+    result = match("Mời BLĐ lên sân khấu quay số", terms)
+    assert result.kinds == ("speech.mc",)
+
+
+def test_an_exact_term_with_no_kinds_and_not_ignored_resolves_to_nothing():
+    """An exact term whose sets were all deleted expands to no kinds
+    (vocabulary.py's effective()) -- it must fall through rather than
+    stop the fragment from ever reaching the word stage."""
+    terms = (Term(key="ca trống", kinds=(), ignored=False, match="exact"),)
+    assert match("ca trống", terms) == Resolution((), False)
+
+
+def test_an_exact_ignore_entry_still_returns_immediately():
+    """Ignored is still a real hit -- the fix must not touch this branch."""
+    terms = (Term(key="ca trống", kinds=(), ignored=True, match="exact"),)
+    assert match("ca trống", terms) == Resolution((), True)
+
+
+def test_a_word_hit_with_no_kinds_does_not_block_an_ignore_hit():
+    """Same rule as the exact stage, but in the word stage: a non-ignore
+    hit contributing no kinds must count as no hit at all, or it wrongly
+    blocks 'ignore wins only when nothing else matched' (S3.5)."""
+    terms = (
+        Term(key="trống", kinds=(), ignored=False, match="word"),
+        Term(key="hoa tươi", kinds=(), ignored=True, match="word"),
+    )
+    assert match("tặng hoa tươi và trống", terms) == Resolution((), True)
