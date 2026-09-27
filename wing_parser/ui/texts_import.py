@@ -101,6 +101,7 @@ IMPORT_TEXTS: dict[str, str] = {
     "import.lint.clean": "{count} segments, nothing to repair.",
     "import.lint.fixed": "fixed {n} item(s):",
     "import.lint.backup_failed": "Could not write a backup: {error}",
+    "import.lint.read_failed": "Could not read {path}: {error}",
     "import.lint.repair_failed": (
         "Could not write repairs (the .bak is still there): {error}"
     ),

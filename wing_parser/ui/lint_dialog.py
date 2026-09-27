@@ -10,10 +10,13 @@ re-lit the identical list, an infinite loop with no way out.
 
 Fix writes `<file>.bak` (overwriting an older one, W2) before
 `apply_repairs`, which itself keeps no backup of its own, then re-lints
-and shows what changed and what remains. Two distinct failures are each
-caught and reported, never left to raise inside this Qt slot (silent in
-the console=False release exe):
+and shows what changed and what remains. Three distinct failures are
+each caught and reported, never left to raise inside this Qt slot
+(silent in the console=False release exe):
 
+- A locked or permission-denied file: `load_show_context`'s own
+  `read_text` can raise `OSError` on top of the `ValueError` it raises
+  itself for a missing file or invalid YAML -- caught in `_lint`.
 - A failed backup write (a full disk, a read-only file) stops before
   `apply_repairs` ever runs -- writing repairs into a file this dialog
   could not first protect would defeat the whole point of W2.
@@ -81,6 +84,14 @@ class LintDialog(QDialog):
             context = load_show_context(self._path)
         except ValueError as exc:
             self.output.setPlainText(str(exc))
+            self.fix_button.setEnabled(False)
+            return
+        except OSError as exc:
+            # load_show_context's own read_text can raise this (a locked
+            # or permission-denied file) on top of the ValueError it
+            # raises itself for a missing file or bad YAML.
+            self.output.setPlainText(
+                text("import.lint.read_failed").format(path=self._path, error=exc))
             self.fix_button.setEnabled(False)
             return
         if not context.anomalies:

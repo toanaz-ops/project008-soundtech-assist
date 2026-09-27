@@ -32,6 +32,24 @@ A `CallTimedOut` is never classified here -- `ui/workers.py`'s
 it before any `on_error` callback runs, and every existing call site
 already shows one ruled sentence for it. See this file's own docstring
 in the plan for why that stays true after this task.
+
+Fix round 2: BAD_REPLY narrowed to failures ABOUT the reply itself --
+`vocab_changes.MalformedReplyError`; a bare `ProviderError` with no
+cause (the schema retry loop exhausted, `provider.py:70`); or a
+`ProviderError` whose cause is a `ValueError`/`TypeError` (a JSON parse
+failure -- `json.JSONDecodeError` subclasses `ValueError`, e.g.
+`provider_openai.py:80-84`'s "unparseable content"). Everything else a
+`ProviderError` wraps but `_classify_one` cannot name (a 404 wrong
+model, 400, 500, Anthropic's 529 overloaded, any other adapter
+`APIStatusError`/`APIError`) used to fall into the SAME BAD_REPLY
+bucket, which read as "the model's reply could not be read" for a
+failure that has nothing to do with the reply -- misleading on Try AI,
+Settings' Test connection and the Vocabulary Assistant alike. Such a
+cause is now OTHER, with that cause's OWN message (never the wrapping
+ProviderError's), `"HTTP <status_code>: "`-prefixed when the cause
+carries one -- human-readable, and never anything this module adds
+itself beyond that prefix (so never a key: neither `_other_text` nor
+its caller ever reads provider.yaml or an env var).
 """
 
 from __future__ import annotations
@@ -39,6 +57,7 @@ from __future__ import annotations
 from typing import Iterator
 
 from wing_parser.classifier.provider import ProviderError
+from wing_parser.classifier.vocab_changes import MalformedReplyError
 
 BAD_KEY = "bad_key"
 QUOTA = "quota"
@@ -55,6 +74,10 @@ _MESSAGES = {
     NO_NETWORK: "Could not reach the provider -- check the network.",
     SDK_MISSING: "The model SDK for this provider is not installed in this build.",
     BAD_REPLY: "The model's reply could not be read as the expected answer.",
+    # OTHER has no entry here on purpose: its text is the wrapped cause's
+    # own message (optionally HTTP-status-prefixed), computed in
+    # `_other_text` -- a static sentence would either repeat that message
+    # badly or hide it.
 }
 
 
@@ -95,15 +118,30 @@ def _classify_one(exc: BaseException) -> str | None:
     return None
 
 
+def _other_text(cause: BaseException) -> str:
+    """The OTHER-class text for a ProviderError wrapping an unclassified
+    cause: that cause's own message, HTTP-status-prefixed when it
+    carries one. Never touches provider.yaml or an env var -- there is
+    no key to leak here, only what the SDK/adapter itself said."""
+    status = getattr(cause, "status_code", None)
+    message = str(cause)
+    return f"HTTP {status}: {message}" if status is not None else message
+
+
 def classify(exc: Exception) -> tuple[str, str]:
     """(code, human-readable text)."""
-    saw_provider_error = False
+    provider_link: ProviderError | None = None
     for link in _chain(exc):
-        if isinstance(link, ProviderError):
-            saw_provider_error = True
+        if provider_link is None and isinstance(link, ProviderError):
+            provider_link = link
         code = _classify_one(link)
         if code is not None:
             return code, _MESSAGES[code]
-    if saw_provider_error:
+    if provider_link is None:
+        return OTHER, str(exc)
+    if isinstance(provider_link, MalformedReplyError):
         return BAD_REPLY, _MESSAGES[BAD_REPLY]
-    return OTHER, str(exc)
+    cause = provider_link.__cause__
+    if cause is None or isinstance(cause, (ValueError, TypeError)):
+        return BAD_REPLY, _MESSAGES[BAD_REPLY]
+    return OTHER, _other_text(cause)

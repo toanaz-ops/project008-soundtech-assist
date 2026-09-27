@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from wing_parser.classifier import provider_errors as pe
 from wing_parser.classifier.provider import ProviderError
+from wing_parser.classifier.vocab_changes import MalformedReplyError
 
 
 class _FakeStatusError(Exception):
@@ -226,3 +227,89 @@ def test_a_timeout_error_subclassing_a_connection_error_by_name_is_no_network():
 
 def test_a_wrapped_timeout_error_through_the_real_wrap_is_no_network():
     assert pe.classify(_through_the_real_wrap(_FakeAPITimeoutError("timed out")))[0] == pe.NO_NETWORK
+
+
+# -- fix round 2: BAD_REPLY narrowed to failures ABOUT the reply itself;
+# a ProviderError wrapping an unclassified cause (404 wrong model, 400,
+# 500, Anthropic's 529 overloaded, a generic APIError) is OTHER with
+# that cause's own message, not the misleading "reply could not be
+# read" sentence ------------------------------------------------------
+
+
+def test_a_provider_error_wrapping_a_value_error_is_still_bad_reply():
+    """A parse failure, even one not raised as MalformedReplyError --
+    json.JSONDecodeError is itself a ValueError subclass, so this also
+    covers provider_openai.py:80-84's own wrap."""
+    assert pe.classify(_wrap(ValueError("could not parse")))[0] == pe.BAD_REPLY
+
+
+def test_a_provider_error_wrapping_a_json_decode_error_is_bad_reply():
+    import json
+
+    try:
+        json.loads("not json")
+    except json.JSONDecodeError as exc:
+        wrapped = _wrap(exc)
+    assert pe.classify(wrapped)[0] == pe.BAD_REPLY
+
+
+def test_a_malformed_reply_error_with_a_json_decode_cause_is_bad_reply():
+    """vocab_changes.MalformedReplyError is its own explicit BAD_REPLY
+    trigger, independent of what its cause is -- this one happens to
+    also satisfy the "cause is a ValueError" rule, since
+    json.JSONDecodeError subclasses ValueError, but the class check is
+    what test_classifier_vocab_changes.py's own coverage relies on."""
+    import json
+
+    try:
+        json.loads("not json")
+    except json.JSONDecodeError as decode_exc:
+        try:
+            raise MalformedReplyError(f"bad json: {decode_exc}") from decode_exc
+        except MalformedReplyError as wrapped:
+            error = wrapped
+    assert pe.classify(error)[0] == pe.BAD_REPLY
+
+
+def test_a_bare_malformed_reply_error_with_no_cause_is_bad_reply():
+    assert pe.classify(MalformedReplyError("changes_json must decode to a JSON list"))[0] == pe.BAD_REPLY
+
+
+def test_a_wrapped_404_cause_classifies_as_other_and_shows_the_status():
+    code, text = pe.classify(_wrap(_FakeStatusError(404, "model not found")))
+    assert code == pe.OTHER
+    assert "404" in text
+    assert "model not found" in text
+
+
+def test_a_wrapped_500_cause_classifies_as_other():
+    code, text = pe.classify(_wrap(_FakeStatusError(500, "internal error")))
+    assert code == pe.OTHER
+    assert "500" in text
+
+
+def test_a_wrapped_529_overloaded_cause_classifies_as_other():
+    code, text = pe.classify(_wrap(_FakeStatusError(529, "overloaded_error")))
+    assert code == pe.OTHER
+    assert "529" in text
+
+
+def test_a_wrapped_cause_with_no_status_is_other_without_an_http_prefix():
+    """A generic APIError with no status_code at all -- OTHER, but never
+    an invented "HTTP None:" prefix."""
+    code, text = pe.classify(_wrap(RuntimeError("overloaded")))
+    assert code == pe.OTHER
+    assert text == "overloaded"
+    assert "HTTP" not in text
+
+
+def test_a_404_through_the_real_wrap_classifies_as_other_and_shows_the_status():
+    code, text = pe.classify(_through_the_real_wrap(_FakeStatusError(404, "model not found")))
+    assert code == pe.OTHER
+    assert "404" in text
+
+
+def test_a_500_through_the_real_wrap_classifies_as_other():
+    code, text = pe.classify(_through_the_real_wrap(_FakeStatusError(500, "internal error")))
+    assert code == pe.OTHER
+    assert "500" in text

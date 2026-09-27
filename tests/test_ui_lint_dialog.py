@@ -212,3 +212,23 @@ def test_a_read_only_source_reports_the_apply_repairs_failure_and_keeps_the_bak(
         assert "Could not write repairs" in dialog.output.toPlainText()
     finally:
         path.chmod(stat.S_IWRITE | stat.S_IREAD)
+
+
+def test_an_unreadable_file_reports_the_failure_not_a_crash(dialog, tmp_path, monkeypatch):
+    """Fix round 2, minor 2: load_show_context's own read_text can raise
+    OSError (a locked/permission-denied file), not only the ValueError
+    it raises itself for a missing file or bad YAML -- _lint must catch
+    that too instead of letting it escape the Qt slot."""
+    from wing_parser.ui import lint_dialog
+
+    path = tmp_path / "locked.yaml"
+    path.write_text(_fixable_yaml(), encoding="utf-8")
+
+    def _boom(_path):
+        raise PermissionError("Permission denied")
+
+    monkeypatch.setattr(lint_dialog, "load_show_context", _boom)
+    dialog.open_path(str(path))    # must not raise
+    assert "Could not read" in dialog.output.toPlainText()
+    assert "Permission denied" in dialog.output.toPlainText()
+    assert not dialog.fix_button.isEnabled()

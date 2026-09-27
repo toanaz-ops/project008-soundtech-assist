@@ -293,14 +293,23 @@ def test_a_reply_that_never_matches_the_schema_is_classified_as_bad_reply(panel,
     assert settle(lambda: "reply" in panel.result_label.text())
 
 
-def test_an_unmatched_exception_still_falls_back_to_bad_reply_not_other(panel, monkeypatch, settle):
-    """NOT the OTHER class (that's covered by
-    test_a_provider_factory_error_reaches_the_panel_without_crashing,
-    above): `provider.py`'s own `complete_json` wraps ANY adapter
-    exception into a `ProviderError` before `_failed` ever sees it
-    (`raise ProviderError(str(exc)) from exc`), and `classify()`'s own
-    fallback for "saw a ProviderError but no pattern matched" is
-    BAD_REPLY, never OTHER -- OTHER is reserved for a failure that
-    never went through `complete_json` at all."""
-    _try_with(panel, monkeypatch, _RaisingProvider(RuntimeError("weird failure")))
-    assert settle(lambda: "reply" in panel.result_label.text())
+def test_a_500_error_is_classified_as_other_not_bad_reply(panel, monkeypatch, settle):
+    """Fix round 2, flipped from this test's own previous self (named
+    test_an_unmatched_exception_still_falls_back_to_bad_reply_not_other):
+    a ProviderError wrapping an UNCLASSIFIED cause -- a 500, a 404 wrong
+    model, Anthropic's 529 overloaded, any other adapter APIError -- is
+    now OTHER with that cause's own message, never the misleading "the
+    model's reply could not be read" BAD_REPLY sentence (that sentence
+    is for a failure ABOUT the reply itself: MalformedReplyError, no
+    cause at all, or a ValueError/TypeError/JSONDecodeError parse
+    failure -- see provider_errors.py's own docstring and
+    test_provider_errors.py's fix-round-2 section)."""
+    _try_with(panel, monkeypatch, _RaisingProvider(_StatusError(500, "internal error")))
+    assert settle(lambda: "500" in panel.result_label.text())
+    assert "reply" not in panel.result_label.text()
+
+
+def test_a_404_wrong_model_is_classified_as_other_and_shows_the_status(panel, monkeypatch, settle):
+    _try_with(panel, monkeypatch, _RaisingProvider(_StatusError(404, "model not found")))
+    assert settle(lambda: "404" in panel.result_label.text())
+    assert "model not found" in panel.result_label.text()
