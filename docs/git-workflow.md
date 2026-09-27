@@ -96,6 +96,57 @@ Extra `mcp` **cố ý không cài**: `tests/test_mcp.py` có một test chỉ ch
 `importorskip("mcp")`. Cài thêm `mcp` không tăng số test chạy, chỉ đổi test
 nào bị skip.
 
+## CI cục bộ (`scripts/ci_local.py`)
+
+Chạy trước khi push nhánh và trước khi xin ToanAZ merge:
+
+```bash
+python scripts/ci_local.py
+```
+
+Chạy từ gốc worktree, bằng đúng python của venv dùng chung
+`D:\DEV CAVE EP3\PROJECT008-SOUNDTECH-ASSIST\.venv\Scripts\python.exe` — venv
+đó phải có đủ extra `dev,ui,ingest,llm,llm-openai` và KHÔNG có `mcp` (xem
+memory/MEMORY.md "PITFALL: venv phải cài đủ extras trước khi build exe").
+
+Năm bước — hỏng bước 1 thì dừng ngay, các bước sau cộng dồn rồi mới báo ở
+cuối:
+
+1. **Editable install** — `wing_parser.__file__` phải trỏ vào ĐÚNG checkout
+   đang đứng, không phải một worktree khác đang dùng chung venv (bẫy
+   `.venv` dùng chung, memory 2026-08-24 / 2026-09-18). Hỏng bước này là
+   FATAL, không chạy suite — script in sẵn lệnh `pip install -e` để sửa.
+2. **Extra CI** — `[dev,ui,ingest,llm,llm-openai]` phải import được, và
+   `mcp` phải VẮNG MẶT, đúng như `.github/workflows/ci.yml`.
+3. In `QT_QPA_PLATFORM` — cùng giá trị, cùng đường dẫn tương đối với CI.
+4. `python -m pytest -p no:faulthandler --junitxml=dist-reports/ci-local.xml`
+   — điểm số (tests/failures/errors/skipped) đọc TỪ FILE XML, không đọc
+   terminal: Qt teardown có thể ăn mất dòng tổng kết cuối cùng.
+5. Đối chiếu danh sách skip của lần chạy với registry `EXPECTED_SKIPS`
+   trong chính `scripts/ci_local.py`. Mỗi skip hợp lệ in một dòng
+   `BOQUA (ci): <nodeid> — <lý do>`. Một skip KHÔNG có trong registry, HOẶC
+   một mục registry không còn skip nữa (test đã sửa/xoá) — cả hai đều là
+   FAIL, để registry không mục nát âm thầm (luật PROJECT004, xem "Luật CI:
+   làm theo PROJECT004" phía trên trong file này).
+
+Dòng cuối là kết quả: `CI-LOCAL: DAT <n> tests, 0 fail, <k> skip (registry
+khớp)` (exit 0), hoặc `CI-LOCAL: HONG -- <lý do>` (exit 1).
+
+**Thêm một mục registry mới:** khi một skip mới hợp lệ xuất hiện (ví dụ một
+test đổi hành vi theo một extra mới), mở `scripts/ci_local.py`, thêm một
+dòng vào `EXPECTED_SKIPS` — key là nodeid `tests/<file>.py::<tên>[tham số
+nếu có]`, chép thẳng từ dòng `BOQUA (ci):` script vừa in; value là lý do,
+đủ để người đọc sau hiểu vì sao skip này được phép. Không sửa registry để
+CHE một skip không rõ nguyên do — mục tiêu là ngược lại.
+
+**Đây là lớp đầu, không thay lớp GitHub.** CI cục bộ xanh chỉ nói máy này
+xanh — venv dùng chung có thể lệch mà không ai để ý (ví dụ đã đo được lúc
+viết script này: `mcp` bị cài thừa và `pytest-cov` bị thiếu trong venv
+dùng chung, khiến bước 2 báo FAIL dù suite vẫn xanh). Check `test` trên
+GitHub Actions (`.github/workflows/ci.yml`) vẫn **bắt buộc** trước khi
+merge — nó chạy trên `windows-latest` sạch, đúng loại lỗi mà bước 1/2 ở
+trên tồn tại để phòng lại xuất hiện chính trên máy dev.
+
 ## Định nghĩa xong
 
 Một task chỉ được gọi là xong khi có đủ:

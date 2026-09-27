@@ -175,7 +175,9 @@ RÀNG, không skip âm thầm — mỗi suite bị skip in một dòng dạng
 `SKIP (ci): <name> — <lý do>` và liệt kê trong một registry có tên; (2) lỗi
 THẬT → sửa trên cùng nhánh, không được skip. P008 đã cố ý không cài `mcp`
 trong CI từ trước và có suite chỉ chạy khi `mcp` vắng mặt — luật mới không
-đổi điều đó.
+đổi điều đó. **(Cập nhật 2026-09-27):** luật này giờ có bản máy dev —
+`scripts/ci_local.py` (registry `EXPECTED_SKIPS` trong chính file đó), chạy
+trước khi push/merge; xem `docs/git-workflow.md` §"CI cục bộ".
 
 ## 2026-09-27 — GUI wave 4 (import) xây xong trên nhánh, chờ merge
 
@@ -209,12 +211,12 @@ W1–W6). Nợ mới: một mục ledger duy nhất trong `docs/tech-debt.md` (D
 gom các thiếu sót nhỏ hoãn lại — vocabulary.py 336 dòng, vài UI file chạm
 trần 200 dòng, và các trường hợp cạnh của Vocabulary editor).
 
-Còn treo: **exe CHƯA build lại** và **chưa có screenshot nào** (Task 10 của
-plan chạy sau khi merge vào `main`); nhánh **chưa có PR, chưa merge**; Try
-AI / Assistant / Test connection **chưa chạy với key DeepSeek thật** của
-ToanAZ từ bản exe; **chưa có cue sheet thật nào từ show tới đây** chạy qua
-cả wizard. Runbook nghiệm thu người dùng:
-`docs/acceptance/2026-09-wave4-import-acceptance.md`. **Bẫy đã ghi ở mục
-2026-08-24 phía trên vẫn áp dụng nguyên xi**: build exe PHẢI làm từ `main`
-sau khi merge (editable install trong `.venv` trỏ về checkout chính, không
-trỏ vào worktree) — không lặp lại chi tiết ở đây.
+**(Cập nhật 2026-09-27, đã merge):** nhánh merge qua PR #11 vào `main` tại
+`97d4ec5`. Exe đã build lại từ `main` sau merge (`dist\wing-ui.exe`,
+71.157.989 bytes, còn sống sau 8s, `.toc` có `cuesheet_defaults.yaml` và
+gói cả `anthropic`+`openai`; nén `dist\wing-ui-20260927.zip`; 11 screenshot
+`dist-shots\w4-*.png`). Còn treo cho ToanAZ: xem loạt screenshot đó, và
+chạy runbook `docs/acceptance/2026-09-wave4-import-acceptance.md` (Try AI /
+Assistant / Test connection với key DeepSeek thật, một cue sheet thật từ
+show tới đây qua cả wizard — chưa cái nào chạy qua exe thật). Bẫy đã ghi ở
+mục 2026-08-24 phía trên vẫn áp dụng nguyên xi cho lần build này.
