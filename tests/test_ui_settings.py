@@ -15,6 +15,10 @@ def knowledge(tmp_path, monkeypatch):
     # chdir out of the repo so a real checkout's git-ignored key file
     # (or a malformed one) can never leak into these tests.
     monkeypatch.chdir(tmp_path)
+    # The kill switch is env-global and every other test in this file
+    # exercises the probe path -- an ambient WING_DISABLE_LLM in the
+    # shell must never make those flip red.
+    monkeypatch.delenv("WING_DISABLE_LLM", raising=False)
     return tmp_path
 
 
@@ -30,6 +34,45 @@ def test_save_writes_yaml_and_pins_env(qt_app, knowledge, monkeypatch):
     assert os.environ["WING_PROVIDER_CONFIG"] == str(knowledge / "provider.yaml")
 
 
+# -- kill switch (Settings ▸ Test connection now honours it too) ------------
+
+
+def test_kill_switch_on_shows_the_message_and_never_calls_the_probe(
+        qt_app, knowledge, monkeypatch):
+    """ToanAZ's ruling: Test connection must honour WING_DISABLE_LLM the
+    same way Try AI and the Vocabulary Assistant already do -- same text
+    key, no probe call, no provider built."""
+    from wing_parser.ui.settings_dialog import SettingsDialog
+    from wing_parser.ui.texts import text
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    reached = []
+
+    dlg = SettingsDialog(probe=lambda cfg: reached.append(1) or (True, "ok"))
+    assert dlg.run_probe() is False
+    assert reached == []
+    assert dlg.status_label.text() == text("import.try_ai.kill_switch")
+
+
+def test_kill_switch_on_never_builds_a_provider(qt_app, knowledge, monkeypatch):
+    """Never build a provider either -- the kill switch is checked before
+    save()/resolve_config, so a provider config is never resolved at all
+    while the switch is on."""
+    from wing_parser.classifier import provider
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    built = []
+    monkeypatch.setattr(
+        provider, "resolve_config",
+        lambda directory: built.append(directory) or provider.ProviderConfig(
+            name="anthropic", model="x", base_url="", api_key="", api_key_env=""),
+    )
+    dlg = SettingsDialog()
+    assert dlg.run_probe() is False
+    assert built == []
+
+
 def test_probe_failure_is_reported_not_raised(qt_app, knowledge, settle):
     from wing_parser.ui.settings_dialog import SettingsDialog
 
@@ -41,6 +84,21 @@ def test_probe_failure_is_reported_not_raised(qt_app, knowledge, settle):
     assert settle(lambda: "no network here" in dlg.status_label.text())
     assert "no network here" in dlg.status_label.text()
     assert dlg.test_button.isEnabled()
+
+
+def test_a_401_from_the_probe_shows_the_shared_bad_key_message(qt_app, knowledge, settle):
+    from wing_parser.ui.settings_dialog import SettingsDialog
+
+    class _Unauthorized(Exception):
+        status_code = 401
+
+    def failing_probe(cfg):
+        raise _Unauthorized("nope")
+
+    dlg = SettingsDialog(probe=failing_probe)
+    assert dlg.run_probe()
+    assert settle(lambda: "rejected" in dlg.status_label.text())
+    assert "rejected" in dlg.status_label.text()
 
 
 def test_a_working_probe_reports_ok(qt_app, knowledge, settle):

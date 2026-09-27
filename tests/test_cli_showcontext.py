@@ -220,24 +220,69 @@ def test_a_syntax_error_in_the_classifier_file_is_an_error_too(
     assert "classifier.yaml" in err
 
 
+def test_vocabulary_problems_are_printed_as_warnings_before_the_summary(
+    tmp_path, capsys, monkeypatch
+):
+    """Vocabulary.load never raises on a hand-edit mistake -- an unknown
+    kind, a dangling set -- it reports it through .problems and excludes
+    the broken entry instead. That must not vanish silently: showcontext
+    import prints each problem as one warning line on stderr, before the
+    summary (fix round 1, controller ruling R2)."""
+    _knowledge(
+        tmp_path, monkeypatch,
+        "channels: {}\nbuses: {}\n"
+        "cuesheet:\n  bad term:\n    kinds: [nonexistent.kind]\n"
+        "    match: exact\n",
+    )
+    out = tmp_path / "tonight.yaml"
+    code = main([
+        "showcontext", "import",
+        str(DATA / "ingest-fixture.xlsx"),
+        "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(out),
+    ])
+    assert code == 0
+    err = capsys.readouterr().err
+    lines = err.splitlines()
+    warning_lines = [i for i, line in enumerate(lines) if line.startswith("warning:")]
+    summary_lines = [i for i, line in enumerate(lines) if line.startswith("wrote ")]
+    assert warning_lines, err
+    assert "bad term" in err and "unknown kind" in err
+    assert summary_lines, err
+    assert warning_lines[0] < summary_lines[0]
+
+
 def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
     tmp_path, monkeypatch
 ):
-    """classifier/resolve.py:31-40 measured this exact hazard: cache.lookup
-    re-reads and re-parses the whole file through a ruamel round-trip on
-    every call -- 3.4 s for 50 per-name lookups against 65 ms for one load
-    -- and the cuesheet domain grows one entry per term ever seen."""
+    """classifier/resolve.py:31-40 measured this exact hazard: re-reading
+    and re-parsing classifier.yaml through a ruamel round-trip on every
+    call costs 3.4 s for 50 per-name lookups against 65 ms for one load --
+    and the cuesheet domain grows one entry per term ever seen.
+
+    Task 3 wired build.py to `vocabulary.Vocabulary` instead of a raw
+    cache dict: the disk read now happens inside `Vocabulary.load()`
+    (called once by `showcontext_import`), and every per-fragment call is
+    `.effective()` working off the already-parsed, in-memory term list --
+    no further disk I/O.
+
+    Counts `cache._read` -- the function that actually touches disk --
+    rather than the thinner `cache.read_raw` wrapper (fix round 1,
+    controller ruling R4): `cache.load()` also calls `_read()` directly,
+    bypassing `read_raw` entirely, so counting only `read_raw` would miss
+    a regression that read classifier.yaml through THAT path instead.
+    Counting `_read` itself is the only way to catch any real disk read
+    on this path, whichever wrapper triggers it -- the original intent
+    behind this test's name."""
     from wing_parser.classifier import cache
 
-    loads: list[object] = []
-    real_load = cache.load
+    reads: list[object] = []
+    real_read = cache._read
 
     def counted(directory=None):
-        loads.append(directory)
-        return real_load(directory)
+        reads.append(directory)
+        return real_read(directory)
 
-    monkeypatch.setattr(cache, "load", counted)
-    monkeypatch.setattr(cache, "lookup", _refuse_a_per_name_read)
+    monkeypatch.setattr(cache, "_read", counted)
 
     out = tmp_path / "tonight.yaml"
     assert main([
@@ -245,11 +290,7 @@ def test_the_vocabulary_is_read_once_not_once_per_performer_fragment(
         str(DATA / "ingest-fixture.xlsx"),
         "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(out),
     ]) == 0
-    assert len(loads) == 1
-
-
-def _refuse_a_per_name_read(*args, **kwargs):
-    raise AssertionError("cache.lookup() re-reads the file on every call")
+    assert len(reads) == 1
 
 
 def test_a_column_with_a_blank_header_can_be_mapped_by_its_letter(

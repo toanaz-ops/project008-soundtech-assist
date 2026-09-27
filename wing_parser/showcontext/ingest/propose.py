@@ -62,3 +62,19 @@ def for_segments(result, scene) -> dict[str, tuple[str, ...]]:
         )
 
     return proposals
+
+
+def missing_for_segments(result, scene) -> dict[str, tuple[str, ...]]:
+    """What `for_segments` found nothing for: kinds a segment expects
+    that the scene has no confidently-classified channel of (design spec
+    §5). The same `channels_of` walk and the same HIGH threshold as
+    `for_segments`, so the two can never disagree about what "found"
+    means -- a kind missing here is exactly a kind that produced no
+    `--scene:` line there.
+    """
+    missing: dict[str, tuple[str, ...]] = {}
+    for built in result.segments:
+        gaps = tuple(kind for kind in built.segment.expects if not channels_of(scene, kind))
+        if gaps:
+            missing[built.segment.id] = gaps
+    return missing

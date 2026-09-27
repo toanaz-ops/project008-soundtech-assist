@@ -968,6 +968,55 @@ same loss that made D1-D18 a rescue job.
 
 ---
 
+## Opened by GUI wave 4 (better cue-sheet import), 2026-09-27
+
+- **D-56** Wave-4 minors deferred during implementation
+  - owner: mixed
+  - evidence: found during implementation of `feat/gui-import-wave4`
+    (HEAD `bd5efc2`, code-complete, not yet merged); recorded here as one
+    entry per the project's debt-ledger convention.
+    1. `wing_parser/classifier/vocabulary.py` is 336 lines (non-UI, so the
+       ~200-line ceiling does not apply, but it is still large) — move the
+       `dry_run_*` helpers into a new `vocabulary_checks` module.
+    2. `confirm_kind_drop` gives a false warning for a case-variant
+       hand-edited kind (e.g. a kind that differs from a known one only by
+       case reads as "will be dropped" when it would in fact resolve).
+    3. An entry carrying both a broken set reference AND an unknown kind
+       cannot be fixed from the Vocabulary UI — only **Delete** works on it;
+       the one-click "pick another set / drop the reference" fix (§8.1 of
+       the wave-4 spec) does not reach the unknown-kind half.
+    4. "Pick another set…" on the Sets tab offers the broken set itself as a
+       candidate replacement, and fixes only the **first** broken reference
+       per click (a term or set naming two broken references needs two
+       clicks).
+    5. The Assistant's reactive AI grey-out (shown when no provider key is
+       configured) clears on the next `showEvent` once a key exists — an
+       undocumented recovery path; it works, but nothing in the spec or the
+       UI states that reopening the window is what un-greys it.
+    6. The populate guard's early return (used when the Vocabulary window is
+       reopened before its previous load finished) leaves old rows on
+       screen; reachable only through a test seam today, not observed from
+       the real UI.
+    7. `wing_parser.classifier.build.resolve_fragment` rebuilds
+       `vocabulary.effective()` on every fragment instead of once per
+       import run — correct, not yet measured as slow enough to matter.
+    8. `wing_parser/classifier/provider_errors.py`'s `_MESSAGES` table is
+       English prose living outside `texts*.py` — a deliberate ruling (W1:
+       new UI strings stay English), revisit only if a future wave adds a
+       Vietnamese string table.
+    9. Four UI files sit at 198–200 of the 200-line ceiling:
+       `terms_row.py`, `scene_step.py`, `settings_dialog.py`,
+       `main_window.py` — the next change to any of them needs a split
+       first, not a line added.
+  - close: triage each sub-item on its own next touch; (1), (3), (4), (7)
+    are machine-doable; (2), (5), (6) need a decision on whether the
+    behaviour is acceptable as documented-then; (8) and (9) are tracked
+    here so the next file that grows past 200 or gains a Vietnamese string
+    is not a surprise.
+  - status: open
+
+---
+
 ## Appendix — rulings preserved, not debt
 
 These are decisions already taken and applied during wave-1 execution. They are

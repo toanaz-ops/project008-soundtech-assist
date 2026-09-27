@@ -206,6 +206,86 @@ def test_a_file_without_a_cuesheet_section_still_loads(tmp_path):
     assert loaded["cuesheet"] == {}
 
 
+@pytest.fixture
+def directory(tmp_path: Path) -> Path:
+    return tmp_path
+
+
+def test_domains_now_include_cuesheet_sets(directory):
+    from wing_parser.classifier import cache
+
+    assert cache.DOMAINS == ("channels", "buses", "cuesheet", "cuesheet_sets")
+    loaded = cache.load(directory)
+    assert loaded["cuesheet_sets"] == {}
+
+
+def test_load_does_not_choke_on_a_wave_4_shaped_cuesheet_term(directory):
+    """A term with `kinds:`/`match:` and no `confidence:` must not raise --
+    it is invisible to load()'s Classification view, not an error."""
+    from wing_parser.classifier import cache
+
+    doc = cache.read_raw(directory)
+    doc["cuesheet"]["trống"] = {"kinds": ["drums.kick"], "match": "word", "origin": "default"}
+    cache.write_raw(doc, directory)
+
+    loaded = cache.load(directory)  # must not raise
+    assert "trống" not in loaded["cuesheet"]
+
+
+def test_load_still_raises_on_a_malformed_channels_entry(directory):
+    """Unchanged strictness for the two original domains."""
+    from wing_parser.classifier import cache
+
+    doc = cache.read_raw(directory)
+    doc["channels"]["broken strip"] = {"kind": "instrument.guitar"}  # no confidence:
+    cache.write_raw(doc, directory)
+
+    with pytest.raises(ValueError, match="missing required key 'confidence'"):
+        cache.load(directory)
+
+
+def test_load_still_reads_an_old_shape_cuesheet_entry_as_classification(directory):
+    """The CLI wizard's guess.offer_terms keeps writing this shape forever
+    (out of scope, spec §11) -- load() must keep seeing it."""
+    from wing_parser.classifier import cache
+    from wing_parser.classifier.matcher import Classification
+
+    cache.remember("ca sĩ nữ", "cuesheet",
+                   Classification(kind="speech.vocal", confidence=0.9, origin="g2b-assisted"),
+                   directory=directory)
+    loaded = cache.load(directory)
+    assert loaded["cuesheet"]["ca sĩ nữ"].kind == "speech.vocal"
+
+
+def test_read_raw_and_write_raw_round_trip_a_cuesheet_sets_entry(directory):
+    from wing_parser.classifier import cache
+
+    doc = cache.read_raw(directory)
+    doc["cuesheet_sets"]["drum kit"] = {
+        "label": "Drum kit", "kinds": ["drums.kick.in", "drums.tom"], "origin": "manual",
+    }
+    cache.write_raw(doc, directory)
+
+    reloaded = cache.read_raw(directory)
+    assert reloaded["cuesheet_sets"]["drum kit"]["label"] == "Drum kit"
+
+
+def test_load_survives_a_hand_edited_null_cuesheet_entry(directory):
+    """M2: a hand-edited `foo:` with nothing typed after the colon parses
+    as None, not a mapping. `"kind" in entry` raised TypeError for it
+    (Doctor-side `cache.load`, unlike `vocabulary.py`'s own loader, which
+    never raises on a hand-edit mistake) -- it must be skipped instead,
+    same as any other entry missing kind/confidence."""
+    from wing_parser.classifier import cache
+
+    (directory / "classifier.yaml").write_text(
+        "channels: {}\nbuses: {}\ncuesheet:\n  foo:\ncuesheet_sets:\n  bar:\n",
+        encoding="utf-8",
+    )
+    loaded = cache.load(directory)  # must not raise
+    assert "foo" not in loaded["cuesheet"]
+
+
 def test_the_top_level_error_names_every_domain(tmp_path):
     """The message must not go stale when a domain is added.
 

@@ -7,6 +7,7 @@ seam a flat table of strings actually has.
 """
 
 from wing_parser.ui.texts_console import CONSOLE_TEXTS
+from wing_parser.ui.texts_import import IMPORT_TEXTS
 from wing_parser.ui.texts_write import WRITE_TEXTS
 
 TEXTS: dict[str, str] = {
@@ -91,7 +92,6 @@ TEXTS: dict[str, str] = {
     ),
     "import.back": "Back",
     "import.next": "Next",
-    "import.load_guesses": "Load guesses",
     "import.record": "Record",
     "import.skip": "Skip",
     "import.preview": "Preview",
@@ -100,9 +100,7 @@ TEXTS: dict[str, str] = {
         "Could not read that sheet — check the header row, "
         "then try again: {error}"
     ),
-    "import.needs_kind": "Type a kind before recording — never write a blank.",
     "import.proposing": "Reading the workbook with the model...",
-    "import.guessing": "Asking the model about each term...",
     "import.cancel": "Cancel",
     "import.cancelled": "Cancelled — nothing was applied.",
     "import.timeout": "The model did not answer within {seconds} s.",
@@ -115,6 +113,7 @@ TEXTS: dict[str, str] = {
     "menu.undo": "&Undo",
     "menu.knowledge": "Where my judgements are stored...",
     "menu.settings": "&Settings...",
+    "menu.vocabulary": "&Vocabulary...",
     "menu.reanalyse": "&Reanalyse",
     "menu.recent": "Open &Recent",
     "recent.missing.title": "File is gone",
@@ -159,6 +158,7 @@ TEXTS: dict[str, str] = {
     "settings.busy": "A connection test is already running.",
     **CONSOLE_TEXTS,
     **WRITE_TEXTS,
+    **IMPORT_TEXTS,
 }
 
 

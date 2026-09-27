@@ -12,7 +12,6 @@ import io
 import sys
 from pathlib import Path
 
-from wing_parser.classifier.normalize import clean
 from wing_parser.showcontext.ingest import build, emit, guess, mapping, propose, sheet
 
 
@@ -173,14 +172,21 @@ def _finish(xlsx, read, resolved, *, output, force, scene, print_fn,
             input_fn=input, knowledge_dir=None):
     # Mirrors commands.showcontext_import from vocabulary onward; kept here
     # so the wizard owns one flow instead of shelling back through argparse.
-    from wing_parser.classifier import cache
+    from wing_parser.classifier import vocabulary as vocab_module
 
     try:
-        vocabulary = cache.load().get("cuesheet", {})
+        vocabulary = vocab_module.Vocabulary.load(knowledge_dir)
+        # A hand-edit mistake in classifier.yaml (an unknown kind, a
+        # dangling set) is skipped and reported through vocabulary.problems,
+        # never raised -- surface it the same way commands.py's own
+        # showcontext import does (fix round, M1), or it silently changes
+        # what resolves without ToanAZ ever seeing why.
+        for problem in vocabulary.problems:
+            print_fn(f"warning: {problem}")
         result = build.build(
             read.rows,
             resolved,
-            lambda term: vocabulary.get(clean(term)),
+            vocabulary,
             blank_rows=read.blank_rows,
             headers=read.headers,
         )

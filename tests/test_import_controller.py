@@ -61,35 +61,15 @@ def test_context_for_collects_up_to_two_rows_per_term():
     assert hits[1].startswith("row 4:")
 
 
-def test_guesses_swallow_errors_per_term():
-    class DeadProvider:
-        def complete_json(self, system, user, schema):
-            raise RuntimeError("offline")
+def test_build_result_reads_the_vocabulary_from_the_given_directory(tmp_path):
+    """Fix round 1, controller ruling R1: a caller that already knows
+    which knowledge dir it is teaching into (the Terms step) can rebuild
+    against that SAME vocabulary, not whatever config.knowledge_dir()
+    resolves to process-wide."""
+    from wing_parser.classifier import vocabulary as vocab_module
 
-    guesses = ic.guesses_for(
-        ("ca trống",),
-        {"ca trống": ["row 1: ca trống"]},
-        lambda: DeadProvider(),
-    )
-    assert guesses == [("ca trống", None)]
-
-
-def test_guesses_respect_the_kill_switch(monkeypatch):
-    monkeypatch.setenv("WING_DISABLE_LLM", "1")
-
-    def forbidden():
-        raise AssertionError("provider must not be constructed")
-
-    assert ic.guesses_for(("ca trống",), {}, forbidden) == []
-
-
-def test_record_term_writes_through_cache(tmp_path):
-    from wing_parser.classifier import cache
-    from wing_parser.classifier.matcher import Classification
-
-    entry = Classification(kind="music.traditional", confidence=0.9,
-                           origin="g2b-assisted")
-    ic.record_term("ca trống", entry, directory=tmp_path)
-
-    stored = cache.load(directory=tmp_path)["cuesheet"]["ca trống"]
-    assert stored.kind == "music.traditional"
+    vocab_module.Vocabulary.load(tmp_path).put_term(
+        "ca trống", kinds=("speech.mc",), match="exact")
+    read, resolved = ic.read_with(BIDV, "KB 8.1", 5, _BIDV_COLUMNS, _BIDV_HEADERS)
+    result = ic.build_result(read, resolved, tmp_path)
+    assert "ca trống" not in ic.unresolved(result)

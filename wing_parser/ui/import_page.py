@@ -1,6 +1,6 @@
 """The Import page: an assisted ingest behind four buttons.
 
-Pick -> Mapping -> Terms -> Preview & Save, stacked in `step_area`;
+Pick -> Mapping -> Terms -> Scene -> Save, stacked in `step_area`;
 each step is built and advanced by `import_steps` (docs/tech-debt.md#d-29).
 Model calls (`proposal_for`, `guesses_for`) run on cancellable workers
 with ruled timeouts (task C, wave 1b) -- the page never blocks on the
@@ -10,7 +10,6 @@ network. Every failure degrades to a status label -- no tracebacks.
 from __future__ import annotations
 
 import zipfile
-from pathlib import Path
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
@@ -24,6 +23,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.ui import import_controller as ic
 from wing_parser.ui import import_steps
+from wing_parser.ui import key_status
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.key_status import KeyStatusLine
 from wing_parser.ui.step_rail import StepRail
@@ -32,7 +32,7 @@ from wing_parser.ui.workers import CallRunner
 
 FILTER = text("import.xlsx_filter")
 SAVE_FILTER = text("import.yaml_filter")
-STEPS = ("pick", "mapping", "vocabulary", "save")
+STEPS = ("pick", "mapping", "vocabulary", "scene", "save")
 
 
 class ImportPage(QWidget):
@@ -43,8 +43,14 @@ class ImportPage(QWidget):
         self._xlsx: str | None = None
         self._result = None
         self._rows: tuple = ()
+        # the sheet read and resolved mapping; import_steps.refresh_result
+        # rebuilds _result from these against the current vocabulary (R1).
+        self._read = None
+        self._resolved = None
         # record_term's write target; tests point this at tmp_path, None = cache default.
         self._directory = None
+        # the window's session -- Doctor's scene, offered to the Scene step.
+        self._session = None
 
         self.status = QLabel("")
         self.status.setWordWrap(True)
@@ -80,7 +86,8 @@ class ImportPage(QWidget):
         layout.addLayout(self.step_area)
 
     def set_session(self, session) -> None:
-        """Accepted but unused: import is scene-independent."""
+        """The window's session -- Doctor's scene, the Scene step's default."""
+        self._session = session
 
     @property
     def result(self):
@@ -92,12 +99,7 @@ class ImportPage(QWidget):
         self._directory = path
 
     def _provider_factory(self):
-        """The provider a real call uses -- `key_status` reads the same
-        resolver, and the two must never disagree (tech-debt.md#d-30)."""
-        from wing_parser import config
-        from wing_parser.classifier.provider import make_provider, resolve_config
-
-        return make_provider(resolve_config(config.knowledge_dir()))
+        return key_status.provider_factory()
 
     def _fail(self, exc: Exception) -> None:
         self.status.setText(text("import.error").format(error=exc))
@@ -163,14 +165,7 @@ class ImportPage(QWidget):
 
     def save_as(self, path: str) -> bool:
         """Public seam: write the preview as UTF-8, minus the dialog."""
-        try:
-            Path(path).write_text(
-                ic.preview_text(self._xlsx, self._result), encoding="utf-8"
-            )
-        except (OSError, ValueError) as exc:
-            self._fail(exc)
-            return False
-        return True
+        return import_steps.write_output(self, path)
 
     def _save_dialog(self) -> None:
         name, _ = QFileDialog.getSaveFileName(

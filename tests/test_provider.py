@@ -66,3 +66,36 @@ def test_adapter_exception_is_not_retried():
     with pytest.raises(ProviderError):
         complete_json(fake, "sys", "user", SCHEMA)
     assert len(fake.calls) == 1
+
+
+# -- fix round 1 (c): Settings' Test connection must use classify() in
+# production, not only when a test injects a raising probe. `ping()`
+# catches everything and used to return the raw `str(exc)` -- the ONE
+# production caller (`SettingsDialog._probe = probe or provider.ping`)
+# never raises, so `provider_errors.classify` was unreachable through it.
+# `ping()` now sources its failure message from the same classifier,
+# keeping its (ok, message) contract unchanged for that caller. --------
+
+
+def test_ping_failure_message_comes_from_classify(monkeypatch):
+    from wing_parser.classifier import provider, provider_errors
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    # No package import needed to reach this: AnthropicProvider checks
+    # for a usable key before ever touching the `anthropic` SDK.
+    ok, message = provider.ping(provider.ProviderConfig())
+    assert ok is False
+    assert message == provider_errors._MESSAGES[provider_errors.NO_KEY]
+
+
+def test_ping_still_reports_success_as_before(monkeypatch):
+    from wing_parser.classifier import provider
+
+    class _FakeProvider:
+        def complete_json(self, system, user, schema):
+            return {"ok": "yes"}
+
+    monkeypatch.setattr(provider, "make_provider", lambda cfg: _FakeProvider())
+    ok, message = provider.ping(provider.ProviderConfig(name="anthropic"))
+    assert ok is True
+    assert "anthropic" in message

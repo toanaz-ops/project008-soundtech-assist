@@ -127,7 +127,8 @@ def import_summary(destination, result) -> str:
         f"{result.expectations} expectation(s) from {result.data_rows} data "
         f"row(s), {result.comment_rows} row(s) and "
         f"{result.unreadable_performers} performer fragment(s) kept as "
-        f"comments. Only Q4 and Q5 fire until this file has real cues."
+        f"comments and {result.ignored_performers} ignored. Only Q4 and Q5 "
+        f"fire until this file has real cues."
     )
 
 

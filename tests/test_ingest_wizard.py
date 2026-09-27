@@ -180,7 +180,15 @@ def test_closed_input_is_one_line_and_a_clean_nonzero_exit(tmp_path, capsys, mon
 def test_kill_switch_skips_the_mapping_proposal(tmp_path, capsys, monkeypatch):
     """WING_DISABLE_LLM=1 must gate the wizard's model paths too, not only
     classifier/llm.py: no provider is ever constructed, one line, manual
-    questions with no defaults."""
+    questions with no defaults.
+
+    Only the mapping-proposal gate is checked here: with the wave-4
+    shipped cuesheet defaults (Task 2), every VIVO performer fragment now
+    resolves (measured in tests/test_g2b_acceptance.py -- 9 fragments, 9
+    resolved, 0 left unread), so this sheet no longer reaches the
+    term-guess gate at all. That second gated call site is proven
+    separately by test_kill_switch_skips_the_term_guess below, which
+    supplies a fragment ('tốp múa') no default names."""
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
 
     def forbidden(config):
@@ -209,16 +217,22 @@ def test_kill_switch_skips_the_mapping_proposal(tmp_path, capsys, monkeypatch):
         line for line in capsys.readouterr().out.splitlines()
         if "WING_DISABLE_LLM" in line
     ]
-    # One line per gated call site: the proposal and the term guess
-    # (the vivo sheet has unresolved performers, so both paths run).
     assert any("continuing manually" in line for line in lines)
-    assert any("stay as comments" in line for line in lines)
     assert out.exists()
 
 
 def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     """With the switch on, unresolved terms stay comments: no provider is
-    built and no Record question is ever asked."""
+    built, no Record question is ever asked, and the printed line names
+    that outcome explicitly ('stay as comments').
+
+    The performers column MUST actually be mapped (a header, 'Người',
+    pointing at column C) and MUST carry a fragment nothing resolves
+    ('tốp múa'), or guess.unresolved_terms(result) comes back empty and
+    wizard.py's term-guess gate (the `if terms:` block) is never reached
+    at all -- the earlier version of this test left the performers
+    header answer blank, so it only ever exercised the mapping-proposal
+    kill-switch line, not this one (fix round 1, IMPORTANT 1)."""
     from openpyxl import Workbook
 
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
@@ -234,13 +248,13 @@ def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     wb = Workbook()
     ws = wb.active
     ws.title = "Rundown"
-    ws.append(["No", "Nội dung"])
+    ws.append(["No", "Nội dung", "Người"])
     ws.append([1, "Đón khách", "tốp múa"])
     xlsx = tmp_path / "run.xlsx"
     wb.save(xlsx)
 
     asked = []
-    answers = iter(["Rundown", "1", "A", "", "B", "", "", "", "", ""])
+    answers = iter(["Rundown", "1", "A", "", "B", "Người", "", "", "", ""])
 
     def answer(prompt):
         asked.append(prompt)
@@ -260,6 +274,7 @@ def test_kill_switch_skips_the_term_guess(tmp_path, capsys, monkeypatch):
     captured = capsys.readouterr()
     assert not any(p.startswith("Record") for p in asked)
     assert "WING_DISABLE_LLM" in captured.out
+    assert "stay as comments" in captured.out
 
 
 class UnverifiedProvider:
@@ -383,6 +398,38 @@ def test_unresolved_performers_are_offered_a_guess_after_the_render(
     record = [p for p in asked if p.startswith("Record")]
     assert len(record) == 1
     assert "'tốp múa'" in record[0] and "speech.playback" in record[0]
+
+
+def test_vocabulary_problems_are_printed_as_warnings(tmp_path, monkeypatch):
+    """M1: the wizard's own `_finish` loads the vocabulary the same way
+    `commands.py`'s `showcontext import` does (cli/commands.py:313), but
+    never surfaced `vocabulary.problems` -- a hand-edit mistake (an
+    unknown kind here) was silently dropped with no diagnostic at all."""
+    _fake_provider(monkeypatch, VivoProvider())
+    monkeypatch.chdir(tmp_path)
+    knowledge = tmp_path / "knowledge"
+    knowledge.mkdir()
+    (knowledge / "classifier.yaml").write_text(
+        "channels: {}\nbuses: {}\n"
+        "cuesheet:\n  bad term:\n    kinds: [nonexistent.kind]\n"
+        "    match: exact\n",
+        encoding="utf-8",
+    )
+    messages = []
+    code = run_wizard(
+        VIVO,
+        input_fn=lambda *a, **k: "",
+        print_fn=messages.append,
+        output=str(tmp_path / "vivo.yaml"),
+        force=False,
+        scene=None,
+        one_shot=False,
+        knowledge_dir=knowledge,
+    )
+    assert code == 0
+    warnings = [m for m in messages if m.startswith("warning:")]
+    assert warnings, messages
+    assert "bad term" in warnings[0] and "unknown kind" in warnings[0]
 
 
 def test_cli_one_shot_flag_reaches_the_wizard(tmp_path, capsys, monkeypatch):

@@ -12,11 +12,9 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
-from wing_parser.classifier import cache
 from wing_parser.classifier.llm import kill_switch_on
-from wing_parser.classifier.normalize import clean
 from wing_parser.classifier.provider import ProviderError
-from wing_parser.showcontext.ingest import build, emit, guess, mapping, sheet
+from wing_parser.showcontext.ingest import build, emit, guess, mapping, propose, sheet
 from wing_parser.showcontext.ingest.sample import sample_workbook
 from wing_parser.showcontext.ingest.suggest import propose_mapping
 
@@ -64,53 +62,44 @@ def read_with(xlsx, sheet_name: str | None, header_row: int,
     return read, resolved
 
 
-def build_result(read, resolved):
-    """Rows and a resolved mapping become BuiltSegments, vocabulary first.
+def build_result(read, resolved, directory=None):
+    """Rows and a resolved mapping become BuiltSegments, the effective
+    cuesheet vocabulary (defaults + his edits, Task 2) first.
 
-    The cuesheet vocabulary is whatever `classifier.yaml` holds right
-    now (the autouse test fixture keeps that file off the real disk);
-    unresolved fragments stay comments, never guesses.
+    `Vocabulary.load(directory)` is called fresh on every call rather
+    than cached: the autouse test fixture points the default directory
+    at a throwaway path per test, and Settings/the Vocabulary window can
+    change what a real directory holds while the app is running.
+    `directory=None` resolves through `Vocabulary.load`'s own default
+    (`config.knowledge_dir()`), unchanged from before this parameter
+    existed; a caller that already knows which knowledge dir it is
+    teaching into -- the Terms step, via `page._directory` -- passes it
+    explicitly (fix round 1, controller ruling R1) so a Preview or Save
+    rebuilt after a Record/Ignore reflects the SAME vocabulary the
+    Terms step just wrote to, not whatever the process-wide default
+    happens to be.
     """
-    vocabulary = cache.load()["cuesheet"]
+    from wing_parser.classifier import vocabulary as vocab_module
+
+    vocabulary = vocab_module.Vocabulary.load(directory)
     return build.build(
-        read.rows,
-        resolved,
-        lambda term: vocabulary.get(clean(term)),
-        blank_rows=read.blank_rows,
-        headers=read.headers,
+        read.rows, resolved, vocabulary,
+        blank_rows=read.blank_rows, headers=read.headers,
     )
 
 
-def preview_text(xlsx, result) -> str:
-    """The rendered YAML document, under the workbook's stem as show name."""
-    return emit.render(Path(xlsx).stem, result, None)
+def preview_text(xlsx, result, scene=None) -> str:
+    """The rendered YAML document, under the workbook's stem as show
+    name. `scene`, given, adds the --scene cross-check proposals exactly
+    as the CLI's --scene does (design spec §5) -- commented-out cues,
+    never live ones."""
+    proposals = propose.for_segments(result, scene) if scene is not None else None
+    return emit.render(Path(xlsx).stem, result, proposals)
 
 
 def unresolved(result):
     """Terms the vocabulary could not read, deduplicated, first-seen order."""
     return guess.unresolved_terms(result)
-
-
-def guesses_for(terms, context_by_term, provider_factory):
-    """One model guess per term; per-term errors collapse to None entries.
-
-    The list of (term, Classification | None) pairs is the whole result:
-    the UI decides how to present a dead provider per term instead of
-    losing every other term to one failure. With WING_DISABLE_LLM set,
-    no provider is ever constructed and the answer is simply [].
-    """
-    if kill_switch_on():
-        return []
-    results = []
-    for term in terms:
-        try:
-            found = guess.propose_term(
-                term, context_by_term.get(term, []), provider_factory()
-            )
-        except Exception:  # noqa: BLE001 - degrade like every model path
-            found = None
-        results.append((term, found))
-    return results
 
 
 def context_for(terms, rows) -> dict[str, list[str]]:
@@ -136,8 +125,3 @@ def context_for(terms, rows) -> dict[str, list[str]]:
                     break
         context[term] = hits
     return context
-
-
-def record_term(term, classification, directory=None) -> None:
-    """Write through the same atomic cache path every classification takes."""
-    cache.remember(term, "cuesheet", classification, directory=directory)

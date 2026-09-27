@@ -112,3 +112,25 @@ def test_channels_of_is_public_and_the_private_name_is_gone():
 
     assert hasattr(view, "channels_of")
     assert not hasattr(view, "_channels_of")
+
+
+def test_missing_for_segments_is_empty_when_every_expectation_is_found(scene):
+    kind = _a_confident_kind(scene)
+    assert propose.missing_for_segments(_result((kind,)), scene) == {}
+
+
+def test_missing_for_segments_names_the_kind_with_no_confident_channel(scene):
+    result = _result(("instrument.theremin",))
+    assert propose.missing_for_segments(result, scene) == {"S1": ("instrument.theremin",)}
+
+
+def test_missing_for_segments_reports_only_the_gap_not_the_found_kind(scene):
+    kind = _a_confident_kind(scene)
+    result = _result((kind, "instrument.theremin"))
+    assert propose.missing_for_segments(result, scene) == {"S1": ("instrument.theremin",)}
+
+
+def test_missing_for_segments_omits_a_segment_with_no_gap_at_all(scene):
+    first, second = _two_confident_kinds(scene)
+    result = _results([("S1", (first,)), ("S2", (second, "instrument.theremin"))])
+    assert propose.missing_for_segments(result, scene) == {"S2": ("instrument.theremin",)}

@@ -605,13 +605,22 @@ repeated id would otherwise be refused by the loader on the very next
 `doctor --show`, and — with `--scene` — would print one segment's
 channels above another's.
 
-Vietnamese cue-sheet terms live in the `cuesheet:` section of
-`knowledge/toanaz/classifier.yaml`. The importer checks it before
-falling back to the pattern matcher; unlike channel and bus
-classification elsewhere in this tool, there is no LLM step here — the
-importer never calls a model. The section ships empty — add a term
-once and every later import knows it; whatever is not yet in it
-becomes a comment, not a guess.
+Vietnamese cue-sheet terms live in the `cuesheet:` domain of
+`knowledge/toanaz/classifier.yaml`, layered over shipped defaults in
+`wing_parser/classifier/data/cuesheet_defaults.yaml` — his own entry
+with the same key overrides a default, and deleting a default leaves a
+tombstone rather than reviving it on the next update. A `cuesheet_sets:`
+domain groups several kinds under one label (e.g. "Drum kit"), and a
+set may nest another. The importer checks the effective vocabulary
+(exact match, then whole-word) before falling back to the pattern
+matcher; unlike channel and bus classification elsewhere in this tool,
+there is no LLM step in that lookup — resolving a fragment never calls
+a model. He edits terms and sets from wing-ui's Vocabulary window
+(Tools ▸ Vocabulary), including through an AI assistant that proposes
+changes he approves; nothing is written on its own. Whatever is not
+covered becomes a comment, not a guess. (Ships on branch
+`feat/gui-import-wave4`, 2026-09-27, awaiting merge — see
+`docs/ROADMAP.md` §5 items 2 and 10.)
 
 ### Knowledge directory and search order
 

@@ -176,3 +176,45 @@ RÀNG, không skip âm thầm — mỗi suite bị skip in một dòng dạng
 THẬT → sửa trên cùng nhánh, không được skip. P008 đã cố ý không cài `mcp`
 trong CI từ trước và có suite chỉ chạy khi `mcp` vắng mặt — luật mới không
 đổi điều đó.
+
+## 2026-09-27 — GUI wave 4 (import) xây xong trên nhánh, chờ merge
+
+Đợt 4 (`feat/gui-import-wave4`, HEAD `bd5efc2`) đóng §5 mục 2 (từ vựng
+cuesheet rỗng) và mục 10.2 (import tốt hơn) của ROADMAP. Vocabulary không
+còn hard-code: defaults ship trong
+`wing_parser/classifier/data/cuesheet_defaults.yaml` (sets + terms, phủ cả
+rundown công ty lẫn concert), ông chỉnh đè/xoá qua `classifier.yaml` (domain
+`cuesheet`/`cuesheet_sets`, tombstone khi xoá default), **Set lồng Set**
+(Band chứa Drum kit — sửa Drum kit thì Band đổi theo), khớp từ khoá
+whole-word có gập dấu tiếng Việt. Cửa sổ **Vocabulary** (Tools ▸ Vocabulary,
+và từ bước Terms) có tab Sets/Terms, tìm kiếm, Reset to default, sửa
+reference gãy, và một **AI Assistant** chỉ **đề xuất** — ông duyệt từng đổi
+mới ghi (không bao giờ tự ghi). Bước Terms viết lại: rút gọn key, Record /
+Ignore (remember) / Skip, re-resolve ngay, từ vừa dạy áp dụng luôn vào
+Preview của lần import này — Save ghi đúng những gì đã Preview. Thêm bước
+**Scene cross-check** (nguồn: Doctor / file `.snap` / lần Pull gần nhất của
+trang Console), một dialog **lint** ở bước Pick (Fix ghi `.bak` trước), và
+**Try AI** ở bước Mapping. `provider_errors.classify` phân loại lỗi AI dùng
+chung ở mọi bề mặt — kể cả Settings ▸ Test connection, việc này (F15) do
+ToanAZ quyết 2026-09-27: Test connection giờ tôn trọng công tắc ngắt
+`WING_DISABLE_LLM` như Try AI và Assistant đã làm.
+
+Đo được: suite **2088 passed / 3 skipped** (`dist-reports/suite.xml`) —
+baseline trên `main` (`1b60da5`) là 1790 passed / 3 skipped. Nghiệm thu trên
+hai file thật, dùng defaults mặc định: VIVO 9/9 mảnh performer nhận diện
+được; BIDV 31 mảnh — 19 nhận diện, 8 ignore, 4 cố ý để chưa đọc ("Đội",
+"nhóm", "mời lên SK", "Đoàn thanh niên BIDV TP. Hồ Chí Minh"). Spec:
+`docs/superpowers/specs/2026-09-26-gui-import-wave4-design.md` (F1–F15,
+W1–W6). Nợ mới: một mục ledger duy nhất trong `docs/tech-debt.md` (D-56,
+gom các thiếu sót nhỏ hoãn lại — vocabulary.py 336 dòng, vài UI file chạm
+trần 200 dòng, và các trường hợp cạnh của Vocabulary editor).
+
+Còn treo: **exe CHƯA build lại** và **chưa có screenshot nào** (Task 10 của
+plan chạy sau khi merge vào `main`); nhánh **chưa có PR, chưa merge**; Try
+AI / Assistant / Test connection **chưa chạy với key DeepSeek thật** của
+ToanAZ từ bản exe; **chưa có cue sheet thật nào từ show tới đây** chạy qua
+cả wizard. Runbook nghiệm thu người dùng:
+`docs/acceptance/2026-09-wave4-import-acceptance.md`. **Bẫy đã ghi ở mục
+2026-08-24 phía trên vẫn áp dụng nguyên xi**: build exe PHẢI làm từ `main`
+sau khi merge (editable install trong `.venv` trỏ về checkout chính, không
+trỏ vào worktree) — không lặp lại chi tiết ở đây.

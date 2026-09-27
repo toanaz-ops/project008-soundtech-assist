@@ -27,7 +27,7 @@ def test_the_fixture_imports_to_exactly_this(tmp_path):
     assert [(s["id"], s["title"], tuple(s["expects"])) for s in doc["segments"]] == [
         ("1", "Đón khách", ()),
         ("2", "MC khai mạc", ("speech.mc",)),
-        ("3", "Tiết mục 3 — Guitar", ("instrument.guitar",)),
+        ("3", "Tiết mục 3 — Guitar", ("instrument.guitar", "speech.vocal")),
         ("5", "Tiết mục 5", ()),
     ]
 
@@ -54,8 +54,8 @@ def test_the_counts_reconcile_in_the_written_file(tmp_path):
           "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(out)])
     text = out.read_text(encoding="utf-8")
     assert "imported 5 data row(s) -> 4 segment(s)" in text
-    assert "carrying 2 expectation(s)" in text
-    assert "1 row(s) and 3 performer fragment(s) kept as comments" in text
+    assert "carrying 3 expectation(s)" in text
+    assert "1 row(s) and 2 performer fragment(s) kept as comments" in text
     assert "1 blank row(s) skipped" in text
 
 
@@ -85,7 +85,7 @@ def test_a_mapping_with_no_performers_is_visible_in_the_counts(tmp_path, capsys)
     correct = tmp_path / "tonight.yaml"
     main(["showcontext", "import", str(DATA / "ingest-fixture.xlsx"),
           "--map", str(DATA / "ingest-fixture-map.yaml"), "-o", str(correct)])
-    assert "4 segment(s) carrying 2 expectation(s)" in correct.read_text(
+    assert "4 segment(s) carrying 3 expectation(s)" in correct.read_text(
         encoding="utf-8"
     )
 
