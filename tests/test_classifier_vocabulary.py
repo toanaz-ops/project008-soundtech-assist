@@ -276,6 +276,43 @@ def test_effective_terms_are_ready_for_keywords_match(directory):
     assert "speech.mc" in result.kinds and "utility.playback" in result.kinds
 
 
+# -- I3 regression: deleting a set must not turn its terms into "ignored" ---
+
+
+def test_deleting_the_drum_kit_set_leaves_trong_unreadable_not_ignored(directory):
+    """End to end, the real path the coordinator's re-review named:
+    'trống'/'drum'/'dàn trống' resolve through `sets: [drum kit]`
+    (cuesheet_defaults.yaml); deleting that set expands them to kinds=()
+    via `effective()`, but they are STILL genuine word hits, not ignored.
+    A performer cell containing 'trống' must stay a 'could not read'
+    comment (unreadable_performers +1, a visible warning), never silently
+    swallowed as if the operator had asked to ignore it (F5)."""
+    from wing_parser.showcontext.ingest import build
+    from wing_parser.showcontext.ingest.mapping import SheetMapping
+    from wing_parser.showcontext.ingest.sheet import RawRow
+
+    v = vocab.Vocabulary.load(directory)
+    v.delete_set("drum kit")
+    v = vocab.Vocabulary.load(directory)  # fresh load, same as a real re-open
+
+    terms = {t.key: t for t in v.terms()}
+    assert terms["trống"].kinds == ()  # the set it named no longer exists
+
+    # "cây trống to" -- deliberately avoids every OTHER shipped default
+    # word (e.g. "tiết mục" is itself ignore: true) so the only thing this
+    # fragment can hit is "trống" itself.
+    mapping = SheetMapping(source="t", fields={"title": "C", "performers": "D"})
+    row = RawRow(number=7, cells={"C": "x", "D": "cây trống to"})
+    result = build.build([row], mapping, v)
+
+    assert result.segments[0].segment.expects == ()
+    assert result.unreadable_performers == 1
+    assert any(
+        "could not read performer" in c
+        for seg in result.segments for c in seg.comments
+    )
+
+
 # -- fix round 1 (review of 748b51a..912f125): identity bugs -----------------
 # CRITICAL 1: put/delete/reset must find an existing raw entry by FOLDED
 # identity, not by the exact string passed -- a raw key on disk keeps

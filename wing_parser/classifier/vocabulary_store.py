@@ -159,7 +159,8 @@ def term_from_user(key: str, raw: dict) -> TermEntry:
         # entry outright: it still identity-matches at match="exact" (so
         # it correctly shadows a default of the same key, if any), it
         # just contributes no kind, so keywords.match falls through to
-        # the pattern matcher exactly as the pre-wave-4 lookup did.
+        # the word stage and, if nothing there matches either, to the
+        # pattern matcher -- exactly as the pre-wave-4 lookup did.
         if "kind" not in raw:
             raise MalformedEntryError(f"term {key!r}: has confidence but no kind")
         confident = float(raw["confidence"]) >= HIGH

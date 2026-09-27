@@ -133,9 +133,14 @@ def test_a_weak_exact_entry_over_the_whole_fragment_does_not_block_word_terms():
     assert "speech.mc" in result.kinds
 
 
-def test_a_weak_exact_entry_sharing_a_defaults_own_key_still_lets_it_resolve():
-    """A weak entry whose folded key equals another term's key must not
-    replace it with nothing -- fall through to the word stage."""
+def test_an_exact_hit_with_no_kinds_falls_through_to_a_word_term_of_the_same_text():
+    """Unit-level only -- `match()` takes a flat term list and knows
+    nothing about identity; a real `Vocabulary.effective()` never hands
+    it two Term objects sharing one folded key (`Vocabulary._merge`
+    collapses default + override into a single dict entry per identity),
+    so this does not claim that scenario. It only proves the exact
+    stage's no-kinds fall-through (I3) does not stop a SEPARATE word-type
+    Term whose key happens to read the same."""
     terms = (
         Term(key="quay số", kinds=(), ignored=False, match="exact"),
         Term(key="quay số", kinds=("speech.mc",), ignored=False, match="word"),
@@ -167,3 +172,30 @@ def test_a_word_hit_with_no_kinds_does_not_block_an_ignore_hit():
         Term(key="hoa tươi", kinds=(), ignored=True, match="word"),
     )
     assert match("tặng hoa tươi và trống", terms) == Resolution((), True)
+
+
+# -- I3 regression: a kinds-less, non-ignore word hit must not be counted
+# as an "ignore" hit by `if kept: return Resolution((), True)` -----------
+
+
+def test_a_kinds_less_word_hit_alone_is_not_read_as_ignored():
+    """Real path: the default 'drum kit' set is deleted, so 'trống' (a
+    default term expanding via `sets: [drum kit]`) resolves to kinds=()
+    through `effective()` -- still a genuine word hit, still not ignored.
+    Before the fix, `kept` ended up non-empty from this term ALONE, and
+    `if kept: return Resolution((), True)` misread that as "ignore wins",
+    silently swallowing the fragment's own 'could not read' comment."""
+    terms = (Term(key="trống", kinds=(), ignored=False, match="word"),)
+    assert match("tiết mục trống hội", terms) == Resolution((), False)
+
+
+def test_a_kinds_less_longer_term_does_not_suppress_a_contained_shorter_one():
+    """Longest-wins containment (S3.5) must not let a now-empty term (its
+    kinds gone the same way, via a deleted set) drop a SHORTER contained
+    term that still has real kinds -- 'dàn trống' must not win over
+    'trống' just by being the longer string once it carries nothing."""
+    terms = (
+        Term(key="dàn trống", kinds=(), ignored=False, match="word"),
+        Term(key="trống", kinds=("drums.kick",), ignored=False, match="word"),
+    )
+    assert match("dàn trống điện tử", terms) == Resolution(("drums.kick",), False)

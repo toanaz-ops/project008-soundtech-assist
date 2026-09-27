@@ -1,7 +1,8 @@
 """The Scene cross-check step: a segment's `expects` against a scene,
 from one of three sources (design spec §5, F6). Read-only. `chosen_scene`
-is this widget's own record of the last Skip/Continue -- import_steps
-reads it from here when Save re-renders.
+is this widget's own record of the last Skip/Continue -- `import_finish.
+finish_scene` reads it from here to render the preview; Save (I2) writes
+exactly that rendered text back out, with no re-render of its own.
 """
 
 from __future__ import annotations

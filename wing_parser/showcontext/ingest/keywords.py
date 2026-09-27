@@ -108,6 +108,14 @@ def match(text: str, terms: Sequence[Term]) -> Resolution:
         term for term in terms
         if term.match == "word" and _contains_word(folded_text, fold(term.key))
     ]
+    # I3 regression: a non-ignore hit with no kinds (the same "sets all
+    # deleted" case as the exact stage above) contributes nothing, so it
+    # must be filtered out BEFORE containment -- left in, it could still
+    # win longest-match and wrongly suppress a shorter, contained term
+    # that DOES have kinds, and if it were the only hit left, the old
+    # `if kept: return Resolution((), True)` below misread its bare
+    # presence as "ignore wins", when nothing was ever ignored.
+    word_hits = [term for term in word_hits if term.kinds or term.ignored]
     if not word_hits:
         return Resolution((), False)
 
@@ -127,12 +135,6 @@ def match(text: str, terms: Sequence[Term]) -> Resolution:
     any_non_ignore = False
     for term in kept:
         if term.ignored:
-            continue
-        if not term.kinds:
-            # Same rule as the exact stage above: a non-ignore hit with no
-            # kinds contributes nothing, so it must not count as a hit --
-            # otherwise it wrongly blocks an ignore hit elsewhere in the
-            # same fragment from winning (I3).
             continue
         any_non_ignore = True
         for kind in term.kinds:
