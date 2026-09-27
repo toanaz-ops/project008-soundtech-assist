@@ -180,6 +180,14 @@ def validate(change: Change, vocabulary) -> Validated:
         match_raw = after.get("match", "exact")
         if match_raw not in VALID_MATCH:
             problems.append(f"match must be one of {VALID_MATCH}, got {match_raw!r}")
+    else:
+        # M4: `label: null`/absent means "no label given" (apply() then
+        # keeps the existing label on edit, or falls back to the key on
+        # add) -- anything else non-string is a real row problem, not
+        # something `str(...)` should silently coerce into "5" or "None".
+        label_raw = after.get("label")
+        if label_raw is not None and not isinstance(label_raw, str):
+            problems.append(f"label must be a string, got {type(label_raw).__name__}")
     if problems:
         return Validated(change, tuple(problems))
 
@@ -205,8 +213,19 @@ def apply(change: Change, vocabulary, *, origin: str = "ai-approved") -> None:
         return
     after = change.after or {}
     if change.target == "set":
+        label = after.get("label")
+        if label is None:
+            # M4: no label given -- keep whatever the entry already has on
+            # an edit (never the key: "Drum kit" must not become "drum
+            # kit" just because the model left `label` out), or fall back
+            # to the key on add, where there is nothing yet to keep.
+            if change.op == "edit":
+                current = current_before(change, vocabulary)
+                label = current.label if current is not None else change.key
+            else:
+                label = change.key
         vocabulary.put_set(
-            change.key, label=str(after.get("label", change.key)),
+            change.key, label=str(label),
             kinds=tuple(after.get("kinds", ())), sets=tuple(after.get("sets", ())),
             origin=origin,
         )

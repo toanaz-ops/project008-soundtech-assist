@@ -115,6 +115,49 @@ def test_validate_and_apply_agree_on_the_default_match(loaded, directory):
     assert {t.key: t for t in reloaded.terms()}["cajon"].match == "exact"
 
 
+def test_editing_a_set_with_no_label_keeps_the_existing_label(loaded, directory):
+    """M4: an AI set edit with no label used to fall back to the key
+    ('Drum kit' -> 'drum kit'), silently losing the human-authored
+    label. No label given must keep whatever the entry already has."""
+    change = vocab_changes.Change(
+        op="edit", target="set", key="band", before=None,
+        after={"kinds": ["speech.mc"], "sets": []}, reason="drop drum kit nesting")
+    assert vocab_changes.validate(change, loaded).valid
+    vocab_changes.apply(change, loaded)
+    reloaded = vocab.Vocabulary.load(directory)
+    assert {s.key: s for s in reloaded.sets()}["band"].label == "Band"
+
+
+def test_editing_a_set_with_an_explicit_null_label_keeps_the_existing_label(loaded, directory):
+    """M4: 'label': null used to become the literal string 'None'."""
+    change = vocab_changes.Change(
+        op="edit", target="set", key="band", before=None,
+        after={"label": None, "kinds": ["speech.mc"], "sets": []}, reason="oops")
+    assert vocab_changes.validate(change, loaded).valid
+    vocab_changes.apply(change, loaded)
+    reloaded = vocab.Vocabulary.load(directory)
+    assert {s.key: s for s in reloaded.sets()}["band"].label == "Band"
+
+
+def test_a_non_string_label_is_a_row_problem(loaded):
+    change = vocab_changes.Change(
+        op="edit", target="set", key="band", before=None,
+        after={"label": 5, "kinds": [], "sets": []}, reason="oops")
+    result = vocab_changes.validate(change, loaded)
+    assert not result.valid
+    assert any("label" in p for p in result.problems)
+
+
+def test_adding_a_set_with_no_label_still_falls_back_to_the_key(loaded, directory):
+    """Unchanged for `add`: there is no existing entry to preserve."""
+    change = vocab_changes.Change(
+        op="add", target="set", key="brand new set", before=None,
+        after={"kinds": ["speech.mc"], "sets": []}, reason="new")
+    vocab_changes.apply(change, loaded)
+    reloaded = vocab.Vocabulary.load(directory)
+    assert {s.key: s for s in reloaded.sets()}["brand new set"].label == "brand new set"
+
+
 def test_apply_writes_a_delete(loaded, directory):
     change = vocab_changes.Change(op="delete", target="term", key="hoa tươi",
                                   before=None, after=None, reason="unused")
