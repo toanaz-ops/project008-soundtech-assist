@@ -254,6 +254,28 @@ def test_a_snap_that_fails_to_load_does_not_name_the_file_twice(
     assert step.status_label.text().count(str(bad)) == 1
 
 
+def test_a_forward_slash_dialog_path_is_not_named_twice(step, monkeypatch, tmp_path):
+    """M8: QFileDialog can hand back a forward-slash path on Windows
+    (`path.as_posix()`); the loader's own error message names the file
+    with a native (backslash) Path string. Comparing the two without
+    normalising both sides names the file twice -- once per spelling."""
+    bad = tmp_path / "not_a_snap.snap"
+    bad.write_text('{"nope": true}', encoding="utf-8")
+    posix_path = bad.as_posix()
+
+    monkeypatch.setattr(
+        scene_step_module.QFileDialog, "getOpenFileName",
+        lambda *a, **k: (posix_path, ""))
+    step.set_result(_result(("speech.mc",)))
+    step.source_box.setCurrentIndex(step.source_box.findData("file"))
+
+    step._open_file()
+
+    text = step.status_label.text()
+    assert posix_path not in text
+    assert text.count(str(bad)) == 1
+
+
 # -- Skip / Continue --------------------------------------------------------
 
 
@@ -294,10 +316,11 @@ def _seeded_page(monkeypatch, tmp_path, session, result):
 
 def test_continue_puts_the_scene_marker_in_both_preview_and_the_saved_file(
         monkeypatch, tmp_path, vu_path, qt_app):
-    """Continue must thread scene= into BOTH ic.preview_text calls
-    (finish_scene's render and write_output's). Seeds a synthetic result
-    instead of relying on the BIDV workbook happening to match the
-    fixture scene's classified kinds."""
+    """Continue must thread scene= into finish_scene's ic.preview_text
+    render; Save (I2) then writes exactly that rendered text, with no
+    ic.preview_text call of its own. Seeds a synthetic result instead of
+    relying on the BIDV workbook happening to match the fixture scene's
+    classified kinds."""
     scene = WingScene.load(vu_path)
     kind = _confident_kind(scene)
     fake_session = type("FakeSession", (), {"scene": scene})()

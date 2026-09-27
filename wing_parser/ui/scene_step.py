@@ -7,6 +7,7 @@ reads it from here when Save re-renders.
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor
@@ -28,9 +29,12 @@ PULL = "pull"
 
 def _load_error_text(path: str, exc: Exception) -> str:
     """Name the file once -- parse_raw's own message may already start
-    with the path (loader.py); a bare JSON syntax error does not."""
+    with the path (loader.py); a bare JSON syntax error does not. M8:
+    the dialog can hand back a forward-slash path on Windows while the
+    loader names the file with a native (backslash) Path string --
+    `Path(path)` normalises before comparing so both spellings match."""
     message = str(exc)
-    if str(path) in message:
+    if str(Path(path)) in message:
         return text("import.scene.file_error_named").format(error=message)
     return text("import.scene.file_error").format(path=path, error=message)
 
