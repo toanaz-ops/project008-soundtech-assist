@@ -1015,6 +1015,32 @@ same loss that made D1-D18 a rescue job.
     is not a surprise.
   - status: open
 
+- **D-57** Vocabulary window's Sets tab: table does not stretch to width
+  - owner: machine-doable
+  - evidence: `dist-shots\w4-09-vocabulary-sets.png` (the same 2026-09-27
+    exe rebuild as D-55/D-56's screenshots). The Sets tab's table keeps a
+    fixed/content-sized column width instead of filling the window, so
+    Label, Kinds and Nested sets truncate -- e.g. `speech.mc, ...` and
+    `drum kit -> ...` -- which is exactly backwards for F13 (wave-4 spec),
+    whose whole point was making the expanded kinds *visible*.
+    Both the Sets tab (`wing_parser/ui/vocabulary_sets_tab.py`) and the
+    Terms tab (`wing_parser/ui/vocabulary_terms_tab.py`) build their table
+    through the one shared factory, `build_table()` in
+    `wing_parser/ui/vocabulary_tab_widgets.py`, which constructs a bare
+    `QTableWidget` and never calls `horizontalHeader().setSectionResizeMode`
+    or `setStretchLastSection` -- so the same truncation is almost
+    certainly also present on the Terms tab (`dist-shots\w4-10-...png`).
+    Not confirmed against that screenshot in this session (unverified from
+    the image itself), but confirmed from the shared code path: whatever
+    the fix, it belongs in `build_table()`, not duplicated per tab.
+  - close: give `build_table()`'s header a resize mode that fills the
+    available width (e.g. `Stretch` on the widest column, or
+    `ResizeToContents` elsewhere with `setStretchLastSection(True)`);
+    verify by regenerating `dist-shots\w4-09-vocabulary-sets.png` and
+    `w4-10-vocabulary-terms.png` and confirming neither truncates Label /
+    Kinds / Nested sets.
+  - status: open
+
 ---
 
 ## Appendix — rulings preserved, not debt
