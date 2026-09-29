@@ -5,7 +5,8 @@ tests / 0 fail / 3 skip. Review fixes: Settings probe goes through
 `provider.ping_raw` so AI errors reach the translated path; stray English
 literals (verdict bar, detail panel, findings headers) moved into
 `texts_moved*.py`. Still English by design: `data.py` Channels/Routing
-detail labels (B6).
+detail labels (B6). **Merged** PR #13 + polish PR #14 (`2830af6`); exe
+rebuilt from `main` 2026-09-29, shots `dist-shots/exe-en`, `exe-vi`.
 **Source:** ToanAZ 2026-09-29 — "Bao gồm hỗ trợ song ngữ anh/việt". This
 overturns wave-4 decision **W1** ("New UI strings are English… a Vietnamese
 string table is its own wave") — this is that wave.
