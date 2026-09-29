@@ -60,16 +60,12 @@ CI_EXTRAS = ("dev", "ui", "ingest", "llm", "llm-openai")
 QT_QPA_PLATFORM = "offscreen:configfile=.github/ci-offscreen-screen.json"
 JUNIT_PATH = ROOT / "dist-reports" / "ci-local.xml"
 
-# Measured directly from a real run of this exact suite (see report); when
-# the shared venv's `mcp` drift (checked below) is ever fixed, this ENTRY
-# changes: the mcp-happy-path test starts skipping instead and this line
-# must move to name it, or this registry goes stale on its own and step 5
-# will say so.
+# The skips of the CI environment (no `mcp`, checked below), measured on a
+# real run after the shared venv was cleaned 2026-09-29.
 EXPECTED_SKIPS = {
-    "tests/test_mcp.py::test_main_names_the_fix_when_the_mcp_extra_is_missing":
-        "mcp extra is installed in THIS shared venv today (see the extras "
-        "check above), so the mcp-happy-path test runs instead and this "
-        "message-when-missing test skips its own precondition.",
+    "tests/test_mcp.py::test_server_builds_when_the_mcp_package_is_installed":
+        "the mcp extra is deliberately absent, as in GitHub CI; "
+        "test_main_names_the_fix_when_the_mcp_extra_is_missing runs instead.",
     "tests/test_ui_keyboard.py::test_tab_order_stays_inside_each_page[overview]":
         "Overview page exposes fewer than two focus stops today (house "
         "style task 1b-18/1b-21, memory/MEMORY.md 2026-08-26).",
