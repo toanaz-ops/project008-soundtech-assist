@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 
 from wing_parser.advisory.models import Finding
 from wing_parser.edit import repairs
+from wing_parser.ui import token_labels
 from wing_parser.ui.texts import text
 
 
@@ -92,7 +93,8 @@ class DetailPanel(QWidget):
         rule = session.rule(finding.rule_id)
         self.title_label.setText(text("detail.title").format(
             rule=finding.rule_id, title=rule.title if rule else "",
-            severity=finding.severity, layer=finding.layer,
+            severity=token_labels.label("severity", finding.severity),
+            layer=token_labels.label("layer", finding.layer),
         ))
         self.message_label.setText(finding.message)
         self.rationale_label.setText(rule.rationale.strip() if rule else "")

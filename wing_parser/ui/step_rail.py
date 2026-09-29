@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
+from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import caption_font
 
 
@@ -23,8 +24,18 @@ class StepRail(QWidget):
 
         row = QHBoxLayout(self)
         row.setContentsMargins(0, 0, 0, 0)
+        # Wider than a word gap, plus a chevron: a multi-word step name
+        # ("SCENE CHECK") must not read as two neighbouring steps.
+        row.setSpacing(14)
         self.labels: list[QLabel] = []
-        for _, display in steps:
+        self.separators: list[QLabel] = []
+        for position, (_, display) in enumerate(steps):
+            if position:
+                separator = QLabel(text("import.step.separator"))
+                separator.setFont(caption_font())
+                separator.setEnabled(False)
+                row.addWidget(separator)
+                self.separators.append(separator)
             label = QLabel(display.upper())
             label.setFont(caption_font())
             row.addWidget(label)

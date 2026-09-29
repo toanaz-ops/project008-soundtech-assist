@@ -152,7 +152,8 @@ TEXTS: dict[str, str] = {
     "settings.model": "Model",
     "settings.base_url": "Base URL",
     "settings.api_key": "API key",
-    "settings.key_placeholder": (
+    "settings.key_placeholder": "Paste your key (kept on this machine)",
+    "settings.key_tooltip": (
         "Paste your own key — it stays in provider.yaml on this machine."
     ),
     "settings.api_key_env": "API key env var (optional)",

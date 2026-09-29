@@ -342,8 +342,12 @@ supply. **Do not guess them.**
     findings prose and Channels/Routing detail labels (analysis-layer
     output, B6), Qt's own dialog buttons (B7). Also closes D-57.
     Spec: `docs/superpowers/specs/2026-09-29-ui-bilingual-design.md`.
-    **Pending for ToanAZ:** look at `dist-shots\bi-vi-*.png` and judge the
-    Vietnamese wording.
+    Merged PR #13 (`bbb0ab9`). Follow-up PR #14 (`fix/bilingual-polish`)
+    from a self-check of both-language screenshots (`dist-shots\bi-en\`,
+    `dist-shots\bi-vi\`): Changes-dock write badges wrap on their own line
+    instead of being cut, Arm button fits its text, step-rail separators,
+    severity/layer/Mute/vocabulary-source values translated for display
+    only (filters compare raw tokens). ci_local DAT 2193 / 0 / 3.
 
 ## 6. Waiting on hardware — NOTHING
 

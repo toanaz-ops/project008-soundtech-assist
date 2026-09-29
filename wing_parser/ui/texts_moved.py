@@ -23,4 +23,21 @@ MOVED_TEXTS: dict[str, str] = {
     "findings.count_all": "{total} findings",
     "findings.count_some": "{shown} of {total} findings",
     "import.sample_sheet": "SHEET {name}",
+    # Display-only names for raw tokens (`token_labels.label`): the token
+    # itself stays the combo's itemData / the model's data.
+    "import.step.separator": "›",
+    "token.all": "all",
+    "token.severity.error": "error",
+    "token.severity.warning": "warning",
+    "token.severity.info": "info",
+    "token.layer.base": "base",
+    "token.layer.toanaz": "toanaz",
+    "token.layer.show": "show",
+    "token.muted.yes": "Yes",
+    "token.muted.no": "No",
+    "token.match.exact": "exact",
+    "token.match.word": "word",
+    "token.origin.default": "default",
+    "token.origin.manual": "manual",
+    "token.origin.default_edited": "default, edited",
 }

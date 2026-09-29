@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.cli.render import level
-from wing_parser.ui import data
+from wing_parser.ui import data, token_labels
 from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
@@ -96,7 +96,7 @@ class ChannelsPage(QWidget):
                 QStandardItem(row.kind),
                 QStandardItem(f"{row.confidence:.2f}"),
                 QStandardItem(level(row.fader_dB)),
-                QStandardItem(str(row.muted)),
+                QStandardItem(token_labels.yes_no(bool(row.muted))),
             ])
 
     def _clear_rows(self) -> None:

@@ -13,11 +13,12 @@ from __future__ import annotations
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QLabel, QListWidget, QListWidgetItem, QPushButton, QVBoxLayout, QWidget,
+    QLabel, QListWidgetItem, QPushButton, QVBoxLayout, QWidget,
 )
 
 from wing_parser.edit.journal import Patch
 from wing_parser.ui import write_apply
+from wing_parser.ui.changes_fit import FitList
 from wing_parser.ui.changes_ledger import SentLedger
 from wing_parser.ui.changes_send import SendRow
 from wing_parser.ui.texts import text
@@ -30,7 +31,7 @@ class ChangesPanel(QWidget):
         super().__init__()
         self._gate = None
         self._window = None
-        self.list = QListWidget()
+        self.list = FitList()
         self.status_label = QLabel("")
         self.ledger = SentLedger()
         self.undo_button = QPushButton(text("changes.undo"))
@@ -62,6 +63,7 @@ class ChangesPanel(QWidget):
             item.setSizeHint(row.sizeHint())
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
+        self.list.fit_all()
         self.undo_button.setEnabled(bool(patches))
 
     def record_sent(self, patch, record) -> None:
@@ -89,4 +91,5 @@ class ChangesPanel(QWidget):
             widget = self.list.itemWidget(self.list.item(index))
             if isinstance(widget, SendRow) and widget.patch == patch:
                 widget.set_badge(record)
+                self.list.fit_all()
                 return

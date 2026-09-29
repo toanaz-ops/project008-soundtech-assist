@@ -10,6 +10,7 @@ from __future__ import annotations
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from wing_parser.advisory.models import Finding
+from wing_parser.ui import token_labels
 from wing_parser.ui.texts import text
 
 #: Column keys; the header words come from `findings.col.<key>` when asked.
@@ -47,11 +48,11 @@ class FindingsModel(QAbstractTableModel):
             return None
         finding = self._rows[index.row()]
         return (
-            finding.severity,
+            token_labels.label("severity", finding.severity),
             finding.rule_id,
             finding.target,
             finding.message,
-            finding.layer,
+            token_labels.label("layer", finding.layer),
         )[index.column()]
 
     def headerData(
