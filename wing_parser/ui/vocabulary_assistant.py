@@ -47,6 +47,7 @@ from wing_parser.classifier.llm import kill_switch_on
 from wing_parser.classifier.matcher import known_kinds
 from wing_parser.ui import key_status
 from wing_parser.ui import vocabulary_assistant_support as support
+from wing_parser.ui.ai_error_text import ai_message
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
@@ -184,7 +185,7 @@ class VocabularyAssistant(QWidget):
 
     def _failed(self, exc: Exception) -> None:
         code, message = provider_errors.classify(exc)
-        self.status_label.setText(message)
+        self.status_label.setText(ai_message(code, message))
         if code in support.UNRECOVERABLE:
             self.propose_button.setEnabled(False)
             self.instruction_edit.setEnabled(False)

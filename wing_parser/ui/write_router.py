@@ -27,6 +27,7 @@ from PySide6.QtCore import QObject
 from wing_parser.net.address import osc_address
 from wing_parser.ui import live_write
 from wing_parser.ui.apply_level import ApplyLevel
+from wing_parser.ui.texts import text
 from wing_parser.ui.write_arm_dialog import arm_now
 from wing_parser.ui.write_delay_dialog import DelayedWriteDialog
 from wing_parser.ui.write_gate import GateClosed, WriteJob
@@ -120,7 +121,8 @@ def route_revert(gate, record, delay, parent=None, *, transport=None, timeout=No
     if not arm_now(gate, parent, transport=transport, timeout=timeout):
         return None
     patch = Patch(path=record.path, before=live_write.desk_now(record),
-                  after=record.desk_before, because="revert", label="Revert")
+                  after=record.desk_before, because="revert",
+                  label=text("console.write.revert"))
     if gate.arm.level is ApplyLevel.IMMEDIATE:
         ImmediateWrite(gate, patch, record.desk_before, transport=transport,
                        timeout=timeout, on_sent=on_sent, on_error=on_error,

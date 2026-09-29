@@ -251,6 +251,17 @@ _PING_SCHEMA = {
 }
 
 
+def ping_raw(cfg: ProviderConfig) -> None:
+    """The round-trip itself: returns on success, RAISES on any failure.
+
+    Split out of `ping` so the desktop UI can classify the failure
+    itself and show it in the UI language (`ui/settings_probe.py`);
+    `ping` below wraps it unchanged for everything that wants the
+    English `(ok, message)` pair."""
+    engine = make_provider(cfg)
+    complete_json(engine, "You reply ok.", "ping", _PING_SCHEMA)
+
+
 def ping(cfg: ProviderConfig) -> tuple[bool, str]:
     """One trivial round-trip; any failure's message comes from the same
     `provider_errors.classify` every other surface uses (fix round 1,
@@ -265,8 +276,7 @@ def ping(cfg: ProviderConfig) -> tuple[bool, str]:
     from wing_parser.classifier.provider_errors import classify
 
     try:
-        engine = make_provider(cfg)
-        complete_json(engine, "You reply ok.", "ping", _PING_SCHEMA)
+        ping_raw(cfg)
     except Exception as exc:  # noqa: BLE001 - every failure becomes a message
         return False, classify(exc)[1]
     return True, f"{cfg.name} replied"

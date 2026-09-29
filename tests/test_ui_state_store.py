@@ -20,7 +20,7 @@ from wing_parser.ui import state_store
 def test_save_then_load_round_trips_a_state(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
-        "consoles": [], "apply_delay": 5,
+        "consoles": [], "apply_delay": 5, "language": "en",
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -29,7 +29,7 @@ def test_save_then_load_round_trips_a_state(tmp_path):
 def test_load_without_a_file_yields_defaults(tmp_path):
     assert state_store.load(tmp_path) == {
         "geometry": None, "page": None, "recent": [], "consoles": [],
-        "apply_delay": 5,
+        "apply_delay": 5, "language": "en",
     }
 
 
@@ -48,7 +48,7 @@ def test_normalize_drops_junk_and_keeps_known_shape():
     clean = state_store.normalize(state)
     assert clean == {
         "geometry": None, "page": None, "recent": ["ok.snap"], "consoles": [],
-        "apply_delay": 5,
+        "apply_delay": 5, "language": "en",
     }
 
 
@@ -91,6 +91,7 @@ def test_consoles_survive_a_save_and_load_round_trip(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
         "consoles": ["192.168.1.10", "wing.local"], "apply_delay": 5,
+        "language": "en",
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -163,6 +164,39 @@ def test_a_state_file_without_apply_delay_degrades_to_the_default(tmp_path):
 ])
 def test_a_hand_edited_apply_delay_normalises_inside_three_to_sixty(stored, expected):
     assert state_store.normalize({"apply_delay": stored})["apply_delay"] == expected
+
+
+# -- language (bilingual UI) -----------------------------------------------
+
+
+def test_language_defaults_to_english():
+    assert state_store.DEFAULTS["language"] == "en"
+
+
+@pytest.mark.parametrize("stored,expected", [
+    ("en", "en"), ("vi", "vi"), ("fr", "en"), ("VI", "en"), ("", "en"),
+    (None, "en"), (7, "en"), (["vi"], "en"), (True, "en"),
+])
+def test_a_stored_language_outside_the_known_two_reads_as_english(stored, expected):
+    assert state_store.normalize({"language": stored})["language"] == expected
+
+
+def test_a_state_file_without_a_language_degrades_to_english(tmp_path):
+    (tmp_path / state_store.STATE_FILE).write_text(
+        json.dumps({"recent": []}), encoding="utf-8")
+    assert state_store.load(tmp_path)["language"] == "en"
+
+
+def test_save_language_keeps_every_other_field(tmp_path):
+    state_store.save(tmp_path, {
+        "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
+        "consoles": ["10.0.0.5"], "apply_delay": 12,
+    })
+    state_store.save_language(tmp_path, "vi")
+    assert state_store.load(tmp_path) == {
+        "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
+        "consoles": ["10.0.0.5"], "apply_delay": 12, "language": "vi",
+    }
 
 
 # -- window wiring ------------------------------------------------------

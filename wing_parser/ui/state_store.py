@@ -15,6 +15,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from wing_parser.ui.texts import LANGUAGES
+
 STATE_FILE = "ui-state.json"
 MAX_RECENT = 8
 
@@ -28,7 +30,7 @@ MIN_APPLY_DELAY = 3
 MAX_APPLY_DELAY = 60
 
 DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": [],
-                  "apply_delay": 5}
+                  "apply_delay": 5, "language": "en"}
 
 
 def normalize(state: dict) -> dict:
@@ -47,6 +49,7 @@ def normalize(state: dict) -> dict:
     if isinstance(delay, bool) or not isinstance(delay, int):
         delay = DEFAULTS["apply_delay"]
     delay = min(max(delay, MIN_APPLY_DELAY), MAX_APPLY_DELAY)
+    language = state.get("language")
     return {
         "geometry": geometry if isinstance(geometry, str) else None,
         "page": page if page in PAGE_KEYS else None,
@@ -57,6 +60,7 @@ def normalize(state: dict) -> dict:
             entry for entry in consoles if isinstance(entry, str)
         ][:MAX_RECENT],
         "apply_delay": delay,
+        "language": language if language in LANGUAGES else "en",
     }
 
 
@@ -79,6 +83,12 @@ def save(directory: Path, state: dict) -> None:
     path.write_text(
         json.dumps(clean, indent=2, ensure_ascii=False), encoding="utf-8"
     )
+
+
+def save_language(directory: Path, code: str) -> None:
+    """Change only the language: the Settings row writes it the moment
+    it changes, without waiting for (or clobbering) a close-time save."""
+    save(directory, dict(load(directory), language=code))
 
 
 def remember_recent(recents: list[str], path: str) -> list[str]:

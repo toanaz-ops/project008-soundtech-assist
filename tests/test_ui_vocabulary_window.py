@@ -839,3 +839,24 @@ class _ScriptedDialog:
 
     def values(self):
         return self._payloads.pop(0)
+
+
+def test_both_tables_stretch_their_text_heavy_columns(window):
+    """D-57: Kinds / Nested sets share the width; the rest fit contents."""
+    from PySide6.QtWidgets import QHeaderView
+
+    from wing_parser.ui.vocabulary_tab_widgets import STRETCH_COLUMNS
+
+    stretch = QHeaderView.ResizeMode.Stretch
+    contents = QHeaderView.ResizeMode.ResizeToContents
+    heavy_headings = {text(key) for key in STRETCH_COLUMNS}
+    for tab in (window.sets_tab, window.terms_tab):
+        header = tab.table.horizontalHeader()
+        seen = 0
+        for column in range(tab.table.columnCount()):
+            heading = tab.table.horizontalHeaderItem(column).text()
+            heavy = heading in heavy_headings
+            seen += heavy
+            assert header.sectionResizeMode(column) == (
+                stretch if heavy else contents), heading
+        assert seen == len(STRETCH_COLUMNS)

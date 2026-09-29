@@ -5,7 +5,7 @@ the repo. Saving writes that file and pins $WING_PROVIDER_CONFIG to it
 immediately, so the running process picks the new settings up without a
 restart; if the write fails, the previous env pin survives untouched.
 `Test connection` is injectable (`probe(cfg) -> (ok, message)`); the
-default is `provider.ping`, run on a cancellable worker under the ruled
+default is `settings_probe.probe`, run on a cancellable worker under the ruled
 30 s timeout (task C). Tests inject fakes -- no network here.
 """
 
@@ -29,9 +29,11 @@ from PySide6.QtWidgets import (
 from wing_parser import config
 from wing_parser.classifier import provider, provider_errors
 from wing_parser.classifier.llm import kill_switch_on
-from wing_parser.ui import state_store
+from wing_parser.ui import settings_probe, state_store
+from wing_parser.ui.ai_error_text import ai_message
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.settings_io import dump_yaml, mask, resolve_key
+from wing_parser.ui.settings_language import LanguageRow
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
 
@@ -39,7 +41,7 @@ from wing_parser.ui.workers import CallRunner
 class SettingsDialog(QDialog):
     def __init__(self, parent=None, *, probe=None) -> None:
         super().__init__(parent)
-        self._probe = probe or provider.ping
+        self._probe = probe or settings_probe.probe
         self.setWindowTitle(text("settings.title"))
         self.setMinimumWidth(460)
 
@@ -72,6 +74,7 @@ class SettingsDialog(QDialog):
         form.addRow(text("settings.api_key"), self.key_edit)
         form.addRow(text("settings.api_key_env"), self.env_edit)
         form.addRow(text("settings.apply_delay"), self.delay_spin)
+        form.addRow(text("settings.language"), LanguageRow(self))
 
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
@@ -173,12 +176,10 @@ class SettingsDialog(QDialog):
             "probe", self._probe, cfg, on_success=self._show_probe_result)
 
     def _show_probe_result(self, pair) -> None:
-        ok, message = pair
-        self._probe_line(ok, message)
+        self._probe_line(*pair)
 
     def _show_probe_error(self, exc) -> None:
-        _code, message = provider_errors.classify(exc)
-        self._probe_line(False, message)
+        self._probe_line(False, ai_message(*provider_errors.classify(exc)))
 
     def _probe_line(self, ok: bool, message: str) -> None:
         key = "settings.probe_ok" if ok else "settings.probe_fail"

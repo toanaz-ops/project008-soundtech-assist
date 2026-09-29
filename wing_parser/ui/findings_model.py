@@ -10,8 +10,10 @@ from __future__ import annotations
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from wing_parser.advisory.models import Finding
+from wing_parser.ui.texts import text
 
-COLUMNS: tuple[str, ...] = ("Severity", "Rule", "Target", "Message", "Layer")
+#: Column keys; the header words come from `findings.col.<key>` when asked.
+COLUMNS: tuple[str, ...] = ("severity", "rule", "target", "message", "layer")
 
 # Errors first: an error is a routing mistake that will be audible.
 _RANK = {"error": 0, "warning": 1, "info": 2}
@@ -62,4 +64,4 @@ class FindingsModel(QAbstractTableModel):
             return None
         if orientation != Qt.Orientation.Horizontal:
             return None
-        return COLUMNS[section]
+        return text(f"findings.col.{COLUMNS[section]}")

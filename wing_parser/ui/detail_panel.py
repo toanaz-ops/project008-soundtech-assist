@@ -25,8 +25,6 @@ from wing_parser.advisory.models import Finding
 from wing_parser.edit import repairs
 from wing_parser.ui.texts import text
 
-NO_REPAIR = text("detail.no_repair")
-
 
 def _wrapped(text: str = "") -> QLabel:
     label = QLabel(text)
@@ -71,9 +69,9 @@ class DetailPanel(QWidget):
         layout.addWidget(self.message_label)
         layout.addWidget(self.repair_button)
         layout.addWidget(self.no_repair_label)
-        layout.addWidget(_boxed("Why this rule exists", self.rationale_label))
-        layout.addWidget(_boxed("Source", self.source_label))
-        layout.addWidget(_boxed("Evidence", self.evidence_label))
+        layout.addWidget(_boxed(text("detail.why"), self.rationale_label))
+        layout.addWidget(_boxed(text("detail.source"), self.source_label))
+        layout.addWidget(_boxed(text("detail.evidence"), self.evidence_label))
         layout.addStretch()
 
         area = QScrollArea()
@@ -101,7 +99,7 @@ class DetailPanel(QWidget):
         self.source_label.setText(rule.source.strip() if rule else "")
         self.evidence_label.setText(
             "\n".join(f"{key} = {value!r}" for key, value in sorted(finding.evidence.items()))
-            or "none recorded"
+            or text("detail.none_recorded")
         )
 
         repair = repairs.load_repairs().get(finding.rule_id)
@@ -109,7 +107,7 @@ class DetailPanel(QWidget):
         self.repair_button.setEnabled(repair is not None)
         self.repair_button.setText(repair.label if repair else "")
         self.repair_button.setToolTip(repair.rationale.strip() if repair else "")
-        self.no_repair_label.setText("" if repair else NO_REPAIR)
+        self.no_repair_label.setText("" if repair else text("detail.no_repair"))
 
     def _clear(self) -> None:
         for label in (

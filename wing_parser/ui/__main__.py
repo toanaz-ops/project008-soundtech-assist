@@ -14,11 +14,17 @@ import sys
 from pathlib import Path
 
 from wing_parser import config
+from wing_parser.ui import state_store, texts
 
 MISSING_PYSIDE = (
     'error: the desktop app needs PySide6, which is an optional extra.\n'
     '       Install it with:  pip install -e ".[ui]"'
 )
+
+
+def resolve_language(flag: str | None, saved: str) -> str:
+    """`--lang` beats the saved Settings choice; both default to English."""
+    return flag or saved or "en"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -38,6 +44,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="apply one show profile from knowledge/toanaz/shows/<name>.yaml",
     )
+    parser.add_argument(
+        "--lang",
+        choices=texts.LANGUAGES,
+        default=None,
+        help="UI language for this run (overrides the Settings choice)",
+    )
     args = parser.parse_args(argv)
 
     # Before anything reads or writes it. In a packaged build the
@@ -51,6 +63,11 @@ def main(argv: list[str] | None = None) -> int:
     # names the directory instead, which is useful on every run rather
     # than only the first.
     config.seed_user_dir()
+
+    # Before any window or page is imported and built: `text()` reads the
+    # language at call time and every page builds its labels once.
+    saved = state_store.load(config.knowledge_dir())["language"]
+    texts.set_language(resolve_language(args.lang, saved))
 
     try:
         from PySide6.QtGui import QImage

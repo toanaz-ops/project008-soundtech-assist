@@ -116,7 +116,7 @@ class MainWindow(QMainWindow):
     def _build_changes_dock(self) -> None:
         self.changes_panel = ChangesPanel()
         self.changes_panel.undo_requested.connect(self.undo)
-        self._changes_dock = QDockWidget("Changes", self)
+        self._changes_dock = QDockWidget(text("changes.dock"), self)
         self._changes_dock.setWidget(self.changes_panel)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self._changes_dock)
         self._changes_dock.setVisible(False)

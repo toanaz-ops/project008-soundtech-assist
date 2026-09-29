@@ -220,3 +220,19 @@ chạy runbook `docs/acceptance/2026-09-wave4-import-acceptance.md` (Try AI /
 Assistant / Test connection với key DeepSeek thật, một cue sheet thật từ
 show tới đây qua cả wizard — chưa cái nào chạy qua exe thật). Bẫy đã ghi ở
 mục 2026-08-24 phía trên vẫn áp dụng nguyên xi cho lần build này.
+
+## 2026-09-29 — UI song ngữ Anh/Việt (lật W1 của wave 4)
+
+ToanAZ yêu cầu 2026-09-29. Settings ▸ Language (mặc định English, lưu
+`ui-state.json` khoá `language`, **áp dụng từ lần khởi động sau** — B1),
+`wing-ui --lang en|vi` cho một lần chạy (không bao giờ ghi vào state).
+Sáu cặp bảng chuỗi `texts*.py` / `texts*_vi.py`, test parity khoá +
+placeholder + conversion; thiếu khoá VI thì rơi về English. Danh từ mixer
+(Bus/Main/Fader/Mute/Scene…) giữ tiếng Anh như trên desk (B2). Lỗi AI dịch
+trong UI qua `ai_error.*`; Settings probe đi qua `provider.ping_raw` — CLI
+`ping` vẫn English. **Bẫy:** hằng số module-level dựng từ `text()` sẽ đóng
+băng English — mọi chuỗi phải tra lúc dùng; conftest có fixture autouse
+reset ngôn ngữ về "en". Font Saira thiếu ✓/● (chỉ dùng cho chữ, đã test).
+Còn English có chủ đích: prose Doctor, nhãn chi tiết Channels/Routing
+(`data.py`, B6), nút dialog của Qt (B7). Spec:
+`docs/superpowers/specs/2026-09-29-ui-bilingual-design.md`.

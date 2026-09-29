@@ -27,13 +27,15 @@ from PySide6.QtWidgets import (
 
 from wing_parser.advisory import feedback
 from wing_parser.advisory.models import Finding
-from wing_parser.ui.texts import text
+from wing_parser.ui.texts import TEXTS, text
 
-LABELS = {
-    "correct": "Correct",
-    "false-positive": "False positive",
-    "irrelevant": "Irrelevant",
-}
+
+
+def verdict_label(verdict: str) -> str:
+    """The button's words, looked up when the bar is built -- and the raw
+    verdict token for one this table has never heard of."""
+    key = f"verdict.{verdict.replace('-', '_')}"
+    return text(key) if key in TEXTS else verdict
 
 
 class VerdictBar(QWidget):
@@ -51,7 +53,7 @@ class VerdictBar(QWidget):
         buttons = QHBoxLayout()
         self.buttons: dict[str, QPushButton] = {}
         for verdict in feedback.VERDICTS:
-            button = QPushButton(LABELS.get(verdict, verdict))
+            button = QPushButton(verdict_label(verdict))
             button.clicked.connect(
                 lambda _checked=False, chosen=verdict: self.record(chosen)
             )
@@ -84,7 +86,7 @@ class VerdictBar(QWidget):
             return ""
         counts = feedback.summarise().get(finding.rule_id, {})
         if not counts:
-            return f"{finding.rule_id}: no verdict recorded yet"
+            return text("verdict.none_yet").format(rule=finding.rule_id)
         parts = ", ".join(f"{number} {verdict}" for verdict, number in sorted(counts.items()))
         return f"{finding.rule_id}: {parts}"
 

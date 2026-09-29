@@ -32,8 +32,6 @@ from wing_parser.ui.theme.widgets import set_style
 
 COLUMNS = ("path", "before", "after", "magnitude")
 
-FILTER = text("menu.scene_filter")   # same filter menus.py opens with
-
 # The magnitude visual is under review (ToanAZ, 2026-08-26): True ships
 # a 2px dim-to-accent bar beside each magnitude cell. --screenshot
 # captures the page with this on AND forced off (diff-b.png) so the two
@@ -160,7 +158,7 @@ class DiffPage(QWidget):
 
     def _choose_other(self) -> None:
         name, _ = QFileDialog.getOpenFileName(
-            self, text("diff.compare"), "", FILTER
+            self, text("diff.compare"), "", text("menu.scene_filter")
         )
         if name:
             self.compare_with(name)

@@ -7,7 +7,13 @@ itself)."""
 
 from __future__ import annotations
 
-from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QTableWidget
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QHeaderView,
+    QLineEdit,
+    QPushButton,
+    QTableWidget,
+)
 
 from wing_parser.showcontext.ingest import keywords
 from wing_parser.ui.texts import text
@@ -21,9 +27,23 @@ def build_search_edit(on_text_changed) -> QLineEdit:
     return edit
 
 
+#: The text-heavy columns (D-57): the kinds a term expands to and the sets
+#: nested inside a set are the whole point of the window (F13), so they
+#: share whatever width the table has instead of truncating; the short
+#: identifier/flag columns size to their contents.
+STRETCH_COLUMNS = ("vocabulary.col.kinds", "vocabulary.col.nested")
+
+
 def build_table(columns: tuple[str, ...], on_selection_changed) -> QTableWidget:
     table = QTableWidget(0, len(columns))
     table.setHorizontalHeaderLabels([text(key) for key in columns])
+    header = table.horizontalHeader()
+    for column, key in enumerate(columns):
+        header.setSectionResizeMode(
+            column,
+            QHeaderView.ResizeMode.Stretch if key in STRETCH_COLUMNS
+            else QHeaderView.ResizeMode.ResizeToContents,
+        )
     table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
     table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
     table.itemSelectionChanged.connect(on_selection_changed)
