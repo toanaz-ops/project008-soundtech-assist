@@ -348,6 +348,11 @@ supply. **Do not guess them.**
     instead of being cut, Arm button fits its text, step-rail separators,
     severity/layer/Mute/vocabulary-source values translated for display
     only (filters compare raw tokens). ci_local DAT 2193 / 0 / 3.
+    PR #14 merged (`2830af6`). Exe rebuilt from `main` 2026-09-29
+    (`dist\wing-ui.exe`, 71,189,674 bytes, alive after 8 s; toc has all
+    `texts_*_vi` modules + anthropic/openai; zip `dist\wing-ui-20260929.zip`);
+    page shots from the exe in `dist-shots\exe-en\` and `dist-shots\exe-vi\`.
+    Open for ToanAZ: judge the Vietnamese wording from those shots.
 
 ## 6. Waiting on hardware — NOTHING
 

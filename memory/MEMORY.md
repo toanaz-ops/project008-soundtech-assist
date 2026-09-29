@@ -236,3 +236,8 @@ reset ngôn ngữ về "en". Font Saira thiếu ✓/● (chỉ dùng cho chữ, 
 Còn English có chủ đích: prose Doctor, nhãn chi tiết Channels/Routing
 (`data.py`, B6), nút dialog của Qt (B7). Spec:
 `docs/superpowers/specs/2026-09-29-ui-bilingual-design.md`.
+**(Cập nhật 2026-09-29, đã merge):** PR #13 (`bbb0ab9`) + PR #14 polish
+(`2830af6`). Exe build lại từ `main`: 71.189.674 bytes, sống sau 8s, `.toc`
+có đủ `texts_*_vi` + anthropic/openai; zip `dist\wing-ui-20260929.zip`; ảnh
+từ exe `dist-shots\exe-en\`, `exe-vi\`. Chụp `--screenshot DIR --lang vi`
+chạy được thẳng từ exe. Còn treo: ToanAZ duyệt câu chữ tiếng Việt.
