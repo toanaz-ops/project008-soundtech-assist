@@ -305,20 +305,26 @@ supply. **Do not guess them.**
    that are not in the spec, and the 2026-09-25 answers:
    `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6.
 
-10. **Wave 4 (better cue-sheet import) is scoped, specced, planned and built**
-    on branch `feat/gui-import-wave4` (2026-09-27) — awaiting PR/merge and the
-    exe rebuild; nothing here is on `main` yet. Of the three candidate
-    directions ToanAZ named on 2026-09-25 to brainstorm from, this closes
-    direction 2 (the vocabulary seed from the old §5.2 above, done through a
-    shipped-defaults file plus an editable Vocabulary window and AI assistant
-    — see item 2 above). Spec: `docs/superpowers/specs/2026-09-26-gui-import-wave4-design.md`.
+10. **Wave 4 (better cue-sheet import) merged.** Branch
+    `feat/gui-import-wave4` went in as **PR #11**, merged into `main` at
+    `97d4ec5` (2026-09-27). The exe has been rebuilt from `main`:
+    `dist\wing-ui.exe`, 71,157,989 bytes, alive after 8s, `.toc` includes
+    `cuesheet_defaults.yaml` and bundles both `anthropic`+`openai`; zipped as
+    `dist\wing-ui-20260927.zip`; 11 screenshots captured under
+    `dist-shots\w4-*.png`. Of the three candidate directions ToanAZ named on
+    2026-09-25 to brainstorm from, this closes direction 2 (the vocabulary
+    seed from the old §5.2 above, done through a shipped-defaults file plus
+    an editable Vocabulary window and AI assistant — see item 2 above).
+    Spec: `docs/superpowers/specs/2026-09-26-gui-import-wave4-design.md`.
     Full suite at code-complete: 2088 passed / 3 skipped (baseline on `main`
-    was 1790 passed / 3 skipped). Still open, not yet run: real-desk-style
-    acceptance from the exe (Try AI / the Assistant / Test connection with
-    ToanAZ's real DeepSeek key; a real cue sheet from his next show through
-    the wizard) — runbook `docs/acceptance/2026-09-wave4-import-acceptance.md`.
-    The other two directions remain for later waves, each its own
-    `superpowers:brainstorming` → spec cycle:
+    was 1790 passed / 3 skipped). **Still pending for ToanAZ:** look at the
+    11 `dist-shots\w4-*.png` screenshots (wave 1's gate: no surface is done
+    until he has), and run the acceptance runbook
+    `docs/acceptance/2026-09-wave4-import-acceptance.md` (Try AI / the
+    Assistant / Test connection with his real DeepSeek key; a real cue sheet
+    from his next show through the wizard) — none of that has run against
+    the real exe yet. The other two directions remain for later waves, each
+    its own `superpowers:brainstorming` → spec cycle:
     1. A durable write log across sessions, plus a post-show report
        export. This will deliberately overturn W8 above when it lands (W8
        says exactly one new persisted key and no write log).
