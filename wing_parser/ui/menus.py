@@ -19,11 +19,6 @@ from wing_parser.ui.texts import text
 from wing_parser.ui.vocabulary_window import open_vocabulary as open_vocabulary_dialog
 from wing_parser.ui.window_state import adopt_session
 
-# Bound to a name because two call sites share it. The texts.py scan
-# cannot see a Name argument, so this one is kept honest by reading --
-# see tests/test_ui_texts.py's docstring on blind spots.
-FILTER = text("menu.scene_filter")
-
 
 def build_menus(window) -> None:
     file_menu = window.menuBar().addMenu(text("menu.file"))
@@ -78,7 +73,8 @@ def open_vocabulary(window) -> None:
 
 def open_file(window) -> None:
     name, _ = QFileDialog.getOpenFileName(
-        window, text("menu.open_title"), "", FILTER
+        window, text("menu.open_title"), "",
+        text("menu.scene_filter")
     )
     if not name:
         return
@@ -100,7 +96,8 @@ def save_as(window) -> None:
         window.session.path.with_name(window.session.path.stem + "-edited.snap")
     )
     name, _ = QFileDialog.getSaveFileName(
-        window, text("menu.save_title"), suggested, FILTER
+        window, text("menu.save_title"), suggested,
+        text("menu.scene_filter")
     )
     if not name:
         return

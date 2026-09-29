@@ -127,5 +127,9 @@ def save_on_close(window) -> None:
             "consoles": window._consoles,
             "apply_delay": getattr(window, "_apply_delay",
                                    state_store.DEFAULTS["apply_delay"]),
+            # Not the window's to own: Settings writes it live, and
+            # `--lang` overrides one run only -- re-read what is saved
+            # so closing never reverts a choice made this session.
+            "language": state_store.load(config.knowledge_dir())["language"],
         },
     )

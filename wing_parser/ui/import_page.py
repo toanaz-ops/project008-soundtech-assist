@@ -30,8 +30,6 @@ from wing_parser.ui.step_rail import StepRail
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
 
-FILTER = text("import.xlsx_filter")
-SAVE_FILTER = text("import.yaml_filter")
 STEPS = ("pick", "mapping", "vocabulary", "scene", "save")
 
 
@@ -106,7 +104,7 @@ class ImportPage(QWidget):
 
     def _choose_file(self) -> None:
         name, _ = QFileDialog.getOpenFileName(
-            self, text("import.pick"), "", FILTER
+            self, text("import.pick"), "", text("import.xlsx_filter")
         )
         if name:
             self.pick_file(name)
@@ -169,7 +167,7 @@ class ImportPage(QWidget):
 
     def _save_dialog(self) -> None:
         name, _ = QFileDialog.getSaveFileName(
-            self, text("import.save_as"), "", SAVE_FILTER
+            self, text("import.save_as"), "", text("import.yaml_filter")
         )
         if name:
             self.save_as(name)

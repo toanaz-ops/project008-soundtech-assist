@@ -83,6 +83,18 @@ def _isolated_knowledge_dir(tmp_path_factory):
         os.environ[config.ENV_VAR] = previous
 
 
+@pytest.fixture(autouse=True)
+def _english_ui_language():
+    """The UI language is a module global (`ui/texts.py`); reset it around
+    every test so a test that sets Vietnamese, or `__main__.main` reading
+    a saved choice, can never leak into the next one. Qt-free import."""
+    from wing_parser.ui import texts
+
+    texts.set_language("en")
+    yield
+    texts.set_language("en")
+
+
 @pytest.fixture
 def settle(qt_app):
     """Pump Qt events until predicate() holds; queued signals need this.

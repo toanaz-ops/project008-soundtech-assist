@@ -40,7 +40,7 @@ full-sentence stage directions ("Mời BLĐ lên sân khấu quay số", "Trao g
 | F13 | **Nested sets**: a set may contain other sets (Band contains Drum kit), so editing Drum kit changes Band too. Built now "because it will be needed". | ToanAZ |
 | F14 | Appendix A ships as drafted; he corrects defaults in the Vocabulary window afterwards (F9), so §A does not block task 2. | orchestrator, from F9 |
 | F15 | Settings ▸ Test connection honours `WING_DISABLE_LLM`, the same kill switch Try AI and the Assistant already respect. | ToanAZ, 2026-09-27 |
-| W1 | New UI strings are English, like every existing string in `texts*.py`; the AI-diagnosis reasons are plain-language English. *If overturned:* a Vietnamese string table is its own wave — every page would have to follow. | orchestrator |
+| W1 | New UI strings are English, like every existing string in `texts*.py`; the AI-diagnosis reasons are plain-language English. *If overturned:* a Vietnamese string table is its own wave — every page would have to follow. **Overturned 2026-09-29 by ToanAZ** — see `2026-09-29-ui-bilingual-design.md`. | orchestrator |
 | W2 | Lint's **Fix** writes `<file>.bak` (overwriting an older `.bak`) before `apply_repairs`, which itself keeps no backup. *If overturned to "Save As":* one dialog more, no `.bak`. | orchestrator |
 | W3 | Diacritic folding applies to the match only; stored keys keep what the user typed. *If overturned:* keys stored folded, and the YAML stops being readable Vietnamese. | orchestrator |
 | W4 | The Console "last Pull" source is in-memory only for this app run; nothing new is persisted. | orchestrator |

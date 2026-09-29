@@ -12,9 +12,10 @@ D-41 v1's C1/I1/I2/M1 findings, **merged into `main`** via PR #9
 The release exe was rebuilt from `3c2cda9` with C1's decided extras
 (`.[ui,ingest,llm,llm-openai]`) — gap: Settings ▸ Test connection is still
 unexercised from the frozen exe (needs ToanAZ with a real key). **GUI wave 4**
-(better cue-sheet import) is **code-complete on branch `feat/gui-import-wave4`
-(2026-09-27), awaiting PR/merge** — measured on the branch: **2088 passed /
-3 skipped**. See §4/§5 items 2 and 10.
+(better cue-sheet import) **merged via PR #11** (`97d4ec5`, 2026-09-27).
+**Bilingual UI (English / Tiếng Việt)** built on `feat/ui-bilingual`
+(2026-09-29) — ci_local DAT **2169 tests / 0 fail / 3 skip**. See §4/§5
+items 2, 10 and 11.
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -330,6 +331,19 @@ supply. **Do not guess them.**
        says exactly one new persisted key and no write log).
     3. An advisory layer that encodes ToanAZ's own mixing judgement more
        directly.
+
+11. **Bilingual UI (English / Tiếng Việt).** ToanAZ asked 2026-09-29;
+    overturns wave-4 W1. Settings ▸ Language (default English, saved in
+    `ui-state.json`, applies on next start), `wing-ui --lang en|vi` for one
+    run. Six EN/VI string-table pairs with a key + placeholder parity test,
+    English fallback, AI error classes translated in the UI (CLI stays
+    English), vendored-font glyph coverage test. Mixer nouns (Bus, Main,
+    Fader, Mute, Scene…) stay English as on the desk. Out of scope: Doctor
+    findings prose and Channels/Routing detail labels (analysis-layer
+    output, B6), Qt's own dialog buttons (B7). Also closes D-57.
+    Spec: `docs/superpowers/specs/2026-09-29-ui-bilingual-design.md`.
+    **Pending for ToanAZ:** look at `dist-shots\bi-vi-*.png` and judge the
+    Vietnamese wording.
 
 ## 6. Waiting on hardware — NOTHING
 

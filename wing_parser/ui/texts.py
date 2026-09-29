@@ -1,4 +1,10 @@
-"""Every UI string lives in one place for future language switching.
+"""Every UI string lives in one place, in English and Vietnamese.
+
+English is the source of truth: `TEXTS` is the English table and
+`text(key)` falls back to it when the current language lacks a key, so a
+gap never raises at a show (a parity test makes the gap a test failure
+instead). The language is chosen once at start-up (`__main__`) and
+`text()` reads it at call time -- nothing here retranslates live.
 
 The Console page's own strings live in `texts_console.py` and are
 merged in below: wave 2 pushed this file past the ~200-line ceiling
@@ -8,7 +14,12 @@ seam a flat table of strings actually has.
 
 from wing_parser.ui.texts_console import CONSOLE_TEXTS
 from wing_parser.ui.texts_import import IMPORT_TEXTS
+from wing_parser.ui.texts_lang import LANG_TEXTS
+from wing_parser.ui.texts_moved import MOVED_TEXTS
+from wing_parser.ui.texts_vi_all import VI
 from wing_parser.ui.texts_write import WRITE_TEXTS
+
+LANGUAGES = ("en", "vi")
 
 TEXTS: dict[str, str] = {
     "app.title": "wing",
@@ -55,6 +66,7 @@ TEXTS: dict[str, str] = {
     "routing.col.value": "Count",
     "routing.unclassified": "Unclassified",
     "diff.compare": "Compare with...",
+    "changes.dock": "Changes",
     "changes.undo": "Undo the last change",
     "changes.row": "{label}  —  {path}: {before!r} → {after!r}",
     "findings.severity": "Severity",
@@ -159,8 +171,25 @@ TEXTS: dict[str, str] = {
     **CONSOLE_TEXTS,
     **WRITE_TEXTS,
     **IMPORT_TEXTS,
+    **LANG_TEXTS,
+    **MOVED_TEXTS,
 }
+
+_TABLES = {"en": TEXTS, "vi": VI}
+_language = "en"
+
+
+def set_language(code: str) -> None:
+    """Unknown codes fall back to English rather than raising."""
+    global _language
+    _language = code if code in _TABLES else "en"
+
+
+def current_language() -> str:
+    return _language
 
 
 def text(key: str) -> str:
-    return TEXTS[key]
+    """The current language's string, else English; KeyError if neither."""
+    table = _TABLES[_language]
+    return table[key] if key in table else TEXTS[key]

@@ -49,6 +49,7 @@ from wing_parser.classifier.provider import resolve_config
 from wing_parser.showcontext.ingest import suggest
 from wing_parser.ui import key_status
 from wing_parser.ui import vocabulary_assistant_support as support
+from wing_parser.ui.ai_error_text import ai_message
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.texts import text
 
@@ -166,7 +167,7 @@ class MappingTryAi(QWidget):
         showEvent recheck is what recovers it, exactly like the no-key/
         kill-switch grey-out already does."""
         code, message = provider_errors.classify(exc)
-        self.result_label.setText(message)
+        self.result_label.setText(ai_message(code, message))
         self.proposal_view.setPlainText("")
         if code in support.UNRECOVERABLE:
             self.try_button.setEnabled(False)

@@ -1,0 +1,154 @@
+"""Vietnamese mirror of the base `TEXTS` literal in `texts.py`.
+
+Only the keys defined directly there (not the merged CONSOLE/IMPORT/WRITE
+tables). Key and placeholder parity with English is enforced by a test.
+"""
+
+VI_TEXTS: dict[str, str] = {
+    "app.title": "wing",
+    "window.title": "{app} — {file}{profile}{mark}",
+    "page.doctor": "Doctor",
+    "page.overview": "Tổng quan",
+    "page.channels": "Channel",
+    "page.routing": "Routing",
+    "page.diff": "So sánh",
+    "page.import": "Nhập",
+    "page.console": "Console",
+    "empty.open_hint": "Mở một file scene để bắt đầu.",
+    "empty.open_button": "Mở scene...",
+    "overview.counts": "Số lượng trong scene",
+    "overview.channels": "Channel",
+    "overview.buses": "Bus",
+    "overview.mains": "Main",
+    "overview.matrices": "Matrix",
+    "overview.live": "Channel đang dùng",
+    "overview.named": "Channel có tên",
+    "overview.anomalies": "Bất thường",
+    "overview.table": "Channel",
+    "overview.col.number": "Số",
+    "overview.col.name": "Tên",
+    "overview.col.fader": "Fader",
+    "overview.col.kind": "Loại",
+    "channels.table": "Channel",
+    "channels.col.number": "Số",
+    "channels.col.name": "Tên",
+    "channels.col.kind": "Loại",
+    "channels.col.confidence": "Độ tin cậy",
+    "channels.col.fader": "Fader",
+    "channels.col.muted": "Mute",
+    "channels.detail_empty": "",
+    "channels.title": "Channel {number}: {name}",
+    "detail.title": "{rule} — {title}   [{severity} · {layer}]",
+    "detail.no_repair": (
+        "Rule này không có cách sửa một cú bấm: nó nêu một khoảng hoặc "
+        "một số lượng, nên không suy ra được một giá trị duy nhất. Hãy "
+        "chỉnh tay trên console."
+    ),
+    "routing.summary": "Tóm tắt routing",
+    "routing.col.label": "Mục",
+    "routing.col.value": "Số lượng",
+    "routing.unclassified": "Chưa phân loại",
+    "diff.compare": "So sánh với...",
+    "changes.dock": "Thay đổi",
+    "changes.undo": "Hoàn tác thay đổi gần nhất",
+    "changes.row": "{label}  —  {path}: {before!r} → {after!r}",
+    "findings.severity": "Mức độ",
+    "findings.layer": "Lớp",
+    "diff.clear": "Xoá",
+    "diff.table": "Khác biệt",
+    "diff.col.path": "Đường dẫn",
+    "diff.col.before": "Trước",
+    "diff.col.after": "Sau",
+    "diff.col.magnitude": "Độ lệch",
+    "diff.no_session": "Hãy mở một scene trước — nó là vế bên trái của phép so sánh.",
+    "diff.error": "Không đọc được file đó: {error}",
+    "import.pick": "Chọn rundown (.xlsx)...",
+    "import.xlsx_filter": "Bảng tính Excel (*.xlsx)",
+    "import.yaml_filter": "YAML (*.yaml);;Tất cả file (*)",
+    "import.sample_pane": "Nội dung workbook này",
+    "import.resting": (
+        "Chọn một workbook rundown (.xlsx) — các sheet và vài dòng đầu "
+        "sẽ hiện ở đây, sau đó trình hướng dẫn đưa bạn sang bước Ánh xạ cột."
+    ),
+    "import.step.pick": "Chọn",
+    "import.step.mapping": "Ánh xạ cột",
+    "import.step.vocabulary": "Từ vựng",
+    "import.step.save": "Lưu",
+    "import.no_key": (
+        "Chưa cấu hình API key cho model — gợi ý từ khoá bằng AI cần có key."
+    ),
+    "import.open_settings": "Mở Cài đặt…",
+    "import.sheet": "Sheet",
+    "import.header_row": "Dòng tiêu đề",
+    "import.verified": "Đề xuất của model đã được kiểm chứng",
+    "import.unverified": "Đề xuất của model chưa được kiểm chứng",
+    "import.manual_hint": (
+        "Không có AI hỗ trợ — hãy tự chọn sheet, dòng tiêu đề và các cột."
+    ),
+    "import.back": "Quay lại",
+    "import.next": "Tiếp",
+    "import.record": "Ghi nhận",
+    "import.skip": "Bỏ qua",
+    "import.preview": "Preview",
+    "import.save_as": "Lưu thành...",
+    "import.error": (
+        "Không đọc được sheet đó — kiểm tra dòng tiêu đề rồi thử lại: "
+        "{error}"
+    ),
+    "import.proposing": "Đang đọc workbook bằng model...",
+    "import.cancel": "Huỷ",
+    "import.cancelled": "Đã huỷ — chưa áp dụng gì.",
+    "import.timeout": "Model không trả lời trong {seconds} s.",
+    "import.busy": "Đang có một yêu cầu tới model — hãy huỷ hoặc chờ.",
+    "menu.open": "&Mở...",
+    "menu.open_title": "Mở một scene WING",
+    "menu.save_title": "Lưu scene đã chỉnh sửa",
+    "menu.scene_filter": "Scene WING (*.snap);;Tất cả file (*)",
+    "menu.save_as": "Lưu &thành...",
+    "menu.undo": "&Hoàn tác",
+    "menu.knowledge": "Nơi lưu các nhận định của tôi...",
+    "menu.settings": "&Cài đặt...",
+    "menu.vocabulary": "&Từ vựng...",
+    "menu.reanalyse": "Phân tích &lại",
+    "menu.recent": "Mở &gần đây",
+    "recent.missing.title": "File không còn",
+    "recent.missing.body": (
+        "{file} không còn trên đĩa — đã được xoá khỏi danh sách này."
+    ),
+    "menu.file": "&File",
+    "menu.edit": "&Sửa",
+    "menu.tools": "&Công cụ",
+    "menu.help": "Trợ &giúp",
+    "error.open": "Không mở được file đó",
+    "error.save": "Không lưu được",
+    "save.done": "Đã lưu",
+    "save.body": "Đã ghi {file}",
+    "knowledge.title": "Thư mục knowledge",
+    "knowledge.body": (
+        "Verdict, nguyên tắc và profile show được lưu tại:\n\n{directory}\n\n"
+        "feedback.jsonl chứa mọi verdict đã ghi ở đây.\n"
+        "principles.yaml và shows/ là của bạn để chỉnh sửa."
+    ),
+    "verdict.note": "Ghi chú (tuỳ chọn)",
+    "settings.title": "Cài đặt",
+    "settings.provider": "Provider",
+    "settings.model": "Model",
+    "settings.base_url": "Base URL",
+    "settings.api_key": "API key",
+    "settings.key_placeholder": (
+        "Dán key của riêng bạn — nó chỉ nằm trong provider.yaml trên máy này."
+    ),
+    "settings.api_key_env": "Biến môi trường chứa API key (tuỳ chọn)",
+    "settings.apply_delay": "Độ trễ áp dụng mặc định (s)",
+    "settings.save": "Lưu",
+    "settings.cancel": "Huỷ",
+    "settings.test": "Thử kết nối",
+    "settings.close": "Đóng",
+    "settings.probe_ok": "Kết nối OK — {message}",
+    "settings.probe_fail": "Kết nối THẤT BẠI — {message}",
+    "settings.save_failed": "Không ghi được {path}: {error}",
+    "settings.probing": "Đang thử kết nối...",
+    "settings.cancelled": "Đã huỷ thử kết nối.",
+    "settings.timeout": "Không có phản hồi trong {seconds} s — kiểm tra base URL.",
+    "settings.busy": "Đang có một phép thử kết nối.",
+}

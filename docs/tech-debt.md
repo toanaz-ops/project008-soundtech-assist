@@ -1039,7 +1039,14 @@ same loss that made D1-D18 a rescue job.
     verify by regenerating `dist-shots\w4-09-vocabulary-sets.png` and
     `w4-10-vocabulary-terms.png` and confirming neither truncates Label /
     Kinds / Nested sets.
-  - status: open
+  - status: closed 2026-09-29 (bilingual branch, `feat/ui-bilingual`) --
+    `build_table()` now sets each column's resize mode: `Kinds` and `Nested
+    sets` (`STRETCH_COLUMNS`) are `Stretch`, every other column
+    `ResizeToContents`, so the two text-heavy columns share the table's
+    width on both tabs. Pinned by
+    `tests/test_ui_vocabulary_window.py::test_both_tables_stretch_their_text_heavy_columns`.
+    The `dist-shots` regeneration named above is not done in this branch --
+    the exe rebuild after merge covers it.
 
 ---
 

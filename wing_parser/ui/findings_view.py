@@ -97,8 +97,10 @@ class FindingsView(QWidget):
         self._model.set_findings(shown)
         total = len(self._all)
         self._count.setText(
-            f"{total} findings" if len(shown) == total
-            else f"{len(shown)} of {total} findings"
+            text("findings.count_all").format(total=total)
+            if len(shown) == total
+            else text("findings.count_some").format(
+                shown=len(shown), total=total)
         )
         self._table.resizeColumnsToContents()
 

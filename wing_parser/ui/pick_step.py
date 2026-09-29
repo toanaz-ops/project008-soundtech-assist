@@ -53,6 +53,7 @@ class PickStep(QWidget):
     def show_samples(self, samples) -> None:
         """Each sheet's name and first lines, as a what-is-in-here pane."""
         self.sample_pane.setPlainText("\n\n".join(
-            f"SHEET {sample.name}\n" + "\n".join(sample.lines)
+            text("import.sample_sheet").format(name=sample.name)
+            + "\n" + "\n".join(sample.lines)
             for sample in samples
         ))
