@@ -135,7 +135,8 @@ VI_TEXTS: dict[str, str] = {
     "settings.model": "Model",
     "settings.base_url": "Base URL",
     "settings.api_key": "API key",
-    "settings.key_placeholder": (
+    "settings.key_placeholder": "Dán key của bạn (chỉ lưu trên máy này)",
+    "settings.key_tooltip": (
         "Dán key của riêng bạn — nó chỉ nằm trong provider.yaml trên máy này."
     ),
     "settings.api_key_env": "Biến môi trường chứa API key (tuỳ chọn)",

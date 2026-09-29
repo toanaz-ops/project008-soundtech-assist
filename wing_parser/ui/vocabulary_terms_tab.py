@@ -19,6 +19,7 @@ from PySide6.QtWidgets import QTableWidgetItem, QVBoxLayout, QWidget
 
 from wing_parser.classifier.matcher import known_kinds
 from wing_parser.showcontext.ingest import keywords
+from wing_parser.ui import token_labels
 from wing_parser.ui import vocabulary_broken_ref as broken_ref
 from wing_parser.ui import vocabulary_tab_support as support
 from wing_parser.ui import vocabulary_tab_widgets as widgets
@@ -80,8 +81,9 @@ class VocabularyTermsTab(QWidget):
                          else ", ".join(entry.kinds))
             nested = widgets.render_nested_sets(entry.sets, identities)
             source = (text("vocabulary.source.default_deleted") if is_deleted
-                     else entry.display_origin)
-            values = (entry.key, kinds_text, nested, entry.match, source)
+                     else token_labels.label("origin", entry.display_origin))
+            values = (entry.key, kinds_text, nested,
+                      token_labels.label("match", entry.match), source)
             for column, value in enumerate(values):
                 item = QTableWidgetItem(value)
                 if is_deleted:

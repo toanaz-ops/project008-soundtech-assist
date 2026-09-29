@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QComboBox, QHBoxLayout, QLabel, QPushButton, QSplitter, QVBoxLayout, QWidget,
+    QComboBox, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSplitter,
+    QVBoxLayout, QWidget,
 )
 
 from wing_parser.ui.apply_level import ApplyLevel
@@ -81,11 +82,18 @@ class DoctorPage(QWidget):
                            (ApplyLevel.DELAYED, "delayed"),
                            (ApplyLevel.IMMEDIATE, "immediate")):
             self.level_box.addItem(text(f"console.write.{key}"), level)
+        # The selector may shrink below its longest item; the Arm button,
+        # which names the desk, may not (see `_follow_gate`).
+        self.level_box.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self.level_box.setMinimumContentsLength(6)
         self.arm_button = QPushButton(text("console.write.arm"))
         bar = QHBoxLayout()
         bar.addWidget(QLabel(text("console.write.level")))
         bar.addWidget(self.level_box)
         bar.addWidget(self.arm_button)
+        self.arm_button.setSizePolicy(QSizePolicy.Policy.Minimum,
+                                      QSizePolicy.Policy.Fixed)
         bar.addStretch(1)
         right_layout.insertLayout(0, bar)
         self.detail_panel.send_requested.connect(self.send_requested)
@@ -138,6 +146,10 @@ class DoctorPage(QWidget):
         self.arm_button.setText(
             text("console.write.armed").format(name=self._gate.arm.identity.name)
             if armed else text("console.write.arm"))
+        # The button is the one thing in this bar that must never be
+        # clipped: it carries the desk name. Size it to its new text and
+        # let the label / combo give way instead.
+        self.arm_button.setMinimumWidth(self.arm_button.sizeHint().width())
 
     def _level_picked(self) -> None:
         self._gate.arm.level = self.level_box.currentData()

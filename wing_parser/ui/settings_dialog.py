@@ -60,6 +60,7 @@ class SettingsDialog(QDialog):
         self.key_edit = QLineEdit(self._loaded_mask)
         self.key_edit.setEchoMode(QLineEdit.EchoMode.Password)
         self.key_edit.setPlaceholderText(text("settings.key_placeholder"))
+        self.key_edit.setToolTip(text("settings.key_tooltip"))
         self.env_edit = QLineEdit(cfg.api_key_env)
         self.delay_spin = QSpinBox()
         self.delay_spin.setRange(state_store.MIN_APPLY_DELAY,

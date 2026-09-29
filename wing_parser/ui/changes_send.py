@@ -15,10 +15,11 @@ numbers are.
 from __future__ import annotations
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from wing_parser.ui import live_write, write_router
 from wing_parser.ui.texts import text
+from wing_parser.ui.theme import tokens
 
 
 def badge_text(record) -> str:
@@ -47,15 +48,23 @@ class SendRow(QWidget):
         self.label = QLabel(text("changes.row").format(
             label=patch.label, path=patch.path,
             before=patch.before, after=patch.after))
+        self.label.setWordWrap(True)
+        # The badge is the outcome of a live write: it sits on its own line
+        # under the label, wraps, and is never cut (full text = tooltip).
         self.badge = QLabel("")
+        self.badge.setWordWrap(True)
+        self.badge.setVisible(False)
         self.send_button = QPushButton(text("console.write.send"))
         self.send_button.clicked.connect(self._send)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.label, 1)
+        top = QHBoxLayout()
+        top.addWidget(self.label, 1)
+        top.addWidget(self.send_button)
+        layout = QVBoxLayout(self)
+        # A gap under each row so a badge reads as its own row's outcome.
+        layout.setContentsMargins(0, 0, 0, tokens.METRICS["unit"] * 3)
+        layout.addLayout(top)
         layout.addWidget(self.badge)
-        layout.addWidget(self.send_button)
         self.refresh()
 
     def refresh(self) -> None:
@@ -69,7 +78,10 @@ class SendRow(QWidget):
         self.send_button.setToolTip("" if enabled else text("console.write.blocked"))
 
     def set_badge(self, record) -> None:
-        self.badge.setText(badge_text(record))
+        shown = badge_text(record)
+        self.badge.setText(shown)
+        self.badge.setToolTip(shown)
+        self.badge.setVisible(bool(shown))
 
     def _send(self) -> None:
         self.send_requested.emit(self.patch)

@@ -23,7 +23,9 @@ from PySide6.QtWidgets import (
 from wing_parser.advisory.models import LAYERS, SEVERITIES, Finding
 from wing_parser.ui.elide import MonoDelegate
 from wing_parser.ui.findings_model import FindingsModel
+from wing_parser.ui import token_labels
 from wing_parser.ui.texts import text
+from wing_parser.ui.theme import tokens
 
 ALL = "all"
 
@@ -36,12 +38,12 @@ class FindingsView(QWidget):
         self._all: list[Finding] = []
         self._model = FindingsModel()
 
-        self._severity = QComboBox()
-        self._severity.addItems([ALL, *SEVERITIES])
-        self._layer = QComboBox()
-        self._layer.addItems([ALL, *LAYERS])
+        # Display text is translated; the raw token is the itemData and
+        # the only thing filtering ever compares.
+        self._severity = self._token_box("severity", SEVERITIES)
+        self._layer = self._token_box("layer", LAYERS)
         for box in (self._severity, self._layer):
-            box.currentTextChanged.connect(self._apply_filters)
+            box.currentIndexChanged.connect(self._apply_filters)
 
         self._count = QLabel("")
 
@@ -70,6 +72,14 @@ class FindingsView(QWidget):
         layout.addLayout(bar)
         layout.addWidget(self._table)
 
+    @staticmethod
+    def _token_box(kind: str, tokens) -> QComboBox:
+        box = QComboBox()
+        box.addItem(token_labels.all_label(), ALL)
+        for token in tokens:
+            box.addItem(token_labels.label(kind, token), token)
+        return box
+
     def set_findings(self, findings: list[Finding]) -> None:
         self._all = list(findings)
         self._apply_filters()
@@ -84,7 +94,7 @@ class FindingsView(QWidget):
         selection.blockSignals(was_blocked)
 
     def visible_findings(self) -> list[Finding]:
-        severity, layer = self._severity.currentText(), self._layer.currentText()
+        severity, layer = self._severity.currentData(), self._layer.currentData()
         return [
             finding
             for finding in self._all
@@ -103,6 +113,14 @@ class FindingsView(QWidget):
                 shown=len(shown), total=total)
         )
         self._table.resizeColumnsToContents()
+        # `MonoDelegate` paints inside `width - 2 * unit`, but the default
+        # size hint knows nothing of that pad: a translated cell ("cơ bản")
+        # wider than its header was elided. Give every fixed column the pad.
+        pad = tokens.METRICS["unit"] * 2
+        for column in range(self._model.columnCount()):
+            if column != 3:                 # the stretch (message) column
+                self._table.setColumnWidth(
+                    column, self._table.columnWidth(column) + pad)
 
     def _emit_selection(self) -> None:
         rows = self._table.selectionModel().selectedRows()
