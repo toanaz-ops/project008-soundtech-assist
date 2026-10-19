@@ -503,6 +503,12 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     placeholder for the next page that arrives over several tasks. Do not
     half-delete: `test_ui_texts.py::test_known_keys_resolve` asserts
     `empty.open_hint` resolves.
+  - status: closed 2026-10-19 (fix/docs-deadcode-debt) -- deleted (orchestrator
+    decision): `wing_parser/ui/page_base.py` removed, `empty.open_hint` /
+    `empty.open_button` removed from `texts.py` and `texts_vi.py`, the console
+    test now uses a plain `QWidget`, `test_known_keys_resolve` no longer asserts
+    the key. Verified: `grep -rn "page_base\|EmptyState\|empty\.open_"
+    wing_parser tests packaging` prints nothing.
   - status: open
 
 - **D-41** A live pull walks the schema twice
@@ -760,12 +766,14 @@ same loss that made D1-D18 a rescue job.
   - close: add a `## Deviations recorded 2026-09-18` block to the spec, the
     way the wave-2 spec carries one, listing the four modules and the ruling
     that produced each; `ls wing_parser/ui/write_*.py`
-  - status: open, and **two more deviations joined it at task 16**, both
-    recorded in `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §12
-    rather than in the spec: `revert_confirmation` (spec §, plan lines
-    1247/1399) was **deleted** in favour of `write_records.desk_now`, and the
-    W4 allow-list is keyed on the path **relative to the scan root**, not on
-    `path.name` (plan line 70/971/996). The block should list six, not four.
+  - status: closed 2026-10-19 (fix/docs-deadcode-debt) -- the spec now ends
+    with `## Deviations recorded 2026-09-18` listing all six (write_records,
+    write_gate, write_apply, write_router, `revert_confirmation` deleted for
+    `write_records.desk_now`, W4 allow-list keyed on the scan-root-relative
+    path). Verified: `ls wing_parser/ui/write_*.py` shows the four modules;
+    current line counts 168/150/54/160 (the entry's 160/132/54/146 were
+    from `f56813c`). Earlier note kept: the deviations beyond the first
+    four were recorded in the wave-3 handoff section 12.
 
 - **D-49** `SentWrite` carries both spellings of the same leaf
   - owner: deliberate-no -- recorded so the duplication is not mistaken for
@@ -964,7 +972,17 @@ same loss that made D1-D18 a rescue job.
     two never share horizontal space regardless of text length; verify by
     regenerating `dist-shots/07-changes-dock-badges.png` and confirming the
     overlap is gone.
-  - status: open
+  - status: closed 2026-10-19 (fix/docs-deadcode-debt) -- already fixed by
+    PR #14 (`229471a`, "badges wrap on their own line"): `SendRow` puts a
+    word-wrapped, tooltipped badge on its own layout row below the label
+    (`changes_send.py:52-67`) and `FitList` (`changes_fit.py`) re-fits row
+    heights on resize; `tests/test_ui_bilingual_polish.py::
+    test_every_badge_is_fully_visible_and_wrapped` pins it at 760 and 480 px in
+    both languages. Re-rendered a ChangesPanel at 420 px with a sent badge:
+    `sent ✓ the desk holds PRE` sits on its own line under the row text,
+    nothing overlaps (screenshot `.superpowers/d55-changes-dock.png`,
+    gitignored, regenerate with the ChangesPanel + `_badge` recipe in that
+    test).
 
 ---
 

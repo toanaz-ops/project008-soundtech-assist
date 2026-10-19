@@ -31,8 +31,6 @@ TEXTS: dict[str, str] = {
     "page.diff": "Diff",
     "page.import": "Import",
     "page.console": "Console",
-    "empty.open_hint": "Open a scene file to begin.",
-    "empty.open_button": "Open a scene...",
     "overview.counts": "Scene counts",
     "overview.channels": "Channels",
     "overview.buses": "Buses",
