@@ -241,3 +241,17 @@ Còn English có chủ đích: prose Doctor, nhãn chi tiết Channels/Routing
 có đủ `texts_*_vi` + anthropic/openai; zip `dist\wing-ui-20260929.zip`; ảnh
 từ exe `dist-shots\exe-en\`, `exe-vi\`. Chụp `--screenshot DIR --lang vi`
 chạy được thẳng từ exe. Còn treo: ToanAZ duyệt câu chữ tiếng Việt.
+
+## 2026-10-19 — Dọn nợ kỹ thuật song song + chặn trần PySide6 <6.12
+
+Ba lane sub-agent song song, mỗi lane một worktree và một PR, đều đã merge:
+#16 (D-32/33/34/35/37), #17 (D-56 mục 1/2/3/4/7), #18 (D-40 xoá
+`EmptyState`, D-48, D-55), cùng #19 chặn trần. Main hiện ở `63a5e44`.
+**Bẫy 1:** CI không ghim phiên bản nên tự kéo PySide6 6.12.0. Trên bản
+này mọi test vẫn qua nhưng tiến trình thoát với mã 1 sau dòng tổng kết
+của pytest. Vì vậy extra `ui` giờ là `PySide6>=6.11,<6.12`; venv trên máy
+và exe đều ở 6.11.2. Muốn gỡ trần thì trước hết phải tìm gốc lỗi lúc
+teardown trên 6.12. **Bẫy 2:** chạy ba suite cùng lúc trên máy này sinh lỗi
+`settle`/timeout giả trong test_ui_console và test_ui_changes_send, nên
+chạy `ci_local` của các lane lần lượt từng cái một. Exe chưa build lại sau
+đợt này. Handoff: `D:\DEV CAVE EP3\shared\handoff\handoff-20261019-p008-debt-lanes.md`.
