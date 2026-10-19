@@ -132,9 +132,11 @@ def main(argv: list[str] | None = None) -> int:
                 # bar forced off, so ToanAZ can judge the option.
                 from wing_parser.ui import diff_page
                 diff_page.SHOW_MAGNITUDE_BAR = False
-                window.render(frame)
-                frame.save(str(directory / "diff-b.png"))
-                diff_page.SHOW_MAGNITUDE_BAR = True
+                try:
+                    window.render(frame)
+                    frame.save(str(directory / "diff-b.png"))
+                finally:
+                    diff_page.SHOW_MAGNITUDE_BAR = True
         return 0
     return application.exec()
 

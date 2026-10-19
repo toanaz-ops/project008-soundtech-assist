@@ -374,7 +374,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     missing face returns `QFont().family()` instead of failing; the
     `failed() == ()` test is the only guard.
   - close: raise or return a guaranteed-absent name; keep the failed() pin.
-  - status: open
+  - status: closed 2026-10-19 (fix/ui-theme-debt) -- `_family_for` returns `fonts.MISSING_FAMILY`; pinned by `test_a_missing_face_never_resolves_to_the_system_family` (tests/test_ui_theme_debt.py).
 
 - **D-33** `theme/install.py` bypasses the stylesheet cache; qtawesome
   ImportError degrades silently
@@ -384,7 +384,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     `except ImportError: pass` around qtawesome means missing icon dep ships
     unstyled icons with no log.
   - close: route through load_stylesheet(); log once on qtawesome miss.
-  - status: open
+  - status: closed 2026-10-19 (fix/ui-theme-debt) -- apply() uses `load_stylesheet()` and logs once on qtawesome miss; `test_apply_uses_the_cached_stylesheet`, `test_missing_qtawesome_is_logged_once` (tests/test_ui_theme_debt.py).
 
 - **D-34** Magnitude-bar peak cache keyed on row count only
   - owner: machine-doable (parked — latent)
@@ -392,7 +392,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     same row count with different data scales bars against a stale peak.
     Latent because compare rebuilds rows wholesale.
   - close: invalidate on model reset / dataChanged.
-  - status: open
+  - status: closed 2026-10-19 (fix/ui-theme-debt) -- peak cache invalidated on dataChanged/modelReset/layoutChanged/rows*; `test_bar_peak_follows_data_changes_at_the_same_row_count`, `test_bar_peak_follows_a_model_reset`.
 
 - **D-35** `SHOW_MAGNITUDE_BAR` restore in --screenshot is not exception-safe
   - owner: machine-doable (parked — process exits anyway)
@@ -400,7 +400,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     a raise between flag-off and flag-on leaves it off. Impact nil (screenshot
     mode exits); corroborated by the offscreen COM banner there.
   - close: wrap in try/finally on next touch of that block.
-  - status: open
+  - status: closed 2026-10-19 (fix/ui-theme-debt) -- restore moved into try/finally; `test_screenshot_restores_the_bar_flag_after_a_failure`.
 
 - **D-36** `tests/test_ui_elide.py` shipped with a UTF-8 BOM
   - owner: machine-doable
@@ -415,7 +415,7 @@ by the command shown. The wave-1 / wave-1b closures below were written on
   - evidence: final review 2026-08-26, tests/test_ui_elide.py paint smoke —
     renders but no assertion; bar tests carry real pixel assertions.
   - close: one pixel-differs-vs-untruncated assertion.
-  - status: open
+  - status: closed 2026-10-19 (fix/ui-theme-debt) -- narrow vs wide cell pixels compared; `test_painting_elides_a_value_that_does_not_fit` (tests/test_ui_elide.py).
 
 - **D-38** Spec text still promises the removed QFluentWidgets shell
   - owner: machine-doable

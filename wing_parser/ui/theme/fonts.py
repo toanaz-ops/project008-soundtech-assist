@@ -29,6 +29,8 @@ _FACES = (
     "IBMPlexMono-Medium.ttf",
 )
 
+MISSING_FAMILY = "wing-parser-missing-face"
+
 _families: dict[str, str] = {}
 _missed: list[str] = []
 
@@ -51,11 +53,16 @@ def failed() -> tuple[str, ...]:
 
 
 def _family_for(face: str) -> str:
-    """Never hardcode a family string; read it back from what loaded."""
+    """Never hardcode a family string; read it back from what loaded.
+
+    A face that did not load yields MISSING_FAMILY, never the system
+    default: the miss is already in failed(), and a name no font carries
+    cannot pass for a house face in a test or a screenshot.
+    """
     for family, name in _families.items():
         if name == face:
             return family
-    return QFont().family()
+    return MISSING_FAMILY
 
 
 def legend_font(size: float, bold: bool = True,

@@ -108,22 +108,31 @@ def test_mono_without_right_alignment_is_available_for_technical_text(qt_app):
     assert not bool(option.displayAlignment & Qt.AlignmentFlag.AlignRight)
 
 
-def test_painting_elides_a_value_that_does_not_fit(qt_app):
+def _cell_pixels(delegate, model, width):
     from PySide6.QtCore import QRect
     from PySide6.QtGui import QImage, QPainter
     from PySide6.QtWidgets import QStyleOptionViewItem
 
+    image = QImage(240, 24, QImage.Format.Format_ARGB32_Premultiplied)
+    image.fill(0)
+    painter = QPainter(image)
+    option = QStyleOptionViewItem()
+    option.rect = QRect(0, 0, width, 24)
+    delegate.paint(painter, option, model.index(0, 0))
+    painter.end()
+    return image.constBits().tobytes()
+
+
+def test_painting_elides_a_value_that_does_not_fit(qt_app):
+    """A cell too narrow for its text paints differently from a wide one."""
     from wing_parser.ui.elide import MonoDelegate
 
     delegate = MonoDelegate()
     model = _model_row(qt_app)
-
-    image = QImage(60, 24, QImage.Format.Format_ARGB32_Premultiplied)
-    painter = QPainter(image)
-    option = QStyleOptionViewItem()
-    option.rect = QRect(0, 0, 30, 24)
-    delegate.paint(painter, option, model.index(0, 0))
-    painter.end()
+    narrow = _cell_pixels(delegate, model, 30)
+    wide = _cell_pixels(delegate, model, 240)
+    assert narrow != wide, "elision must change the painted pixels"
+    assert any(narrow), "the narrow cell still paints something"
 
 
 # -- the magnitude bar -------------------------------------------------

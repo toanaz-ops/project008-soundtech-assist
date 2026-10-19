@@ -84,6 +84,7 @@ class MonoDelegate(QStyledItemDelegate):
         self._bar_enabled = bar_enabled
         self._bar_rows = -1
         self._bar_peak = 0.0
+        self._bar_model = None
 
     def initStyleOption(self, option: QStyleOptionViewItem, index) -> None:
         super().initStyleOption(option, index)
@@ -121,9 +122,24 @@ class MonoDelegate(QStyledItemDelegate):
         band = option.rect.adjusted(0, tokens.METRICS["unit"], 0, -tokens.METRICS["unit"])
         painter.fillRect(band.left(), band.top(), 2, band.height(), colour)
 
+    def _watch(self, model) -> None:
+        """Drop the cached peak whenever `model`'s data can have changed."""
+        if model is self._bar_model:
+            return
+        self._bar_model = model
+        self._bar_rows = -1
+        for signal in (model.dataChanged, model.modelReset,
+                       model.layoutChanged, model.rowsInserted,
+                       model.rowsRemoved):
+            signal.connect(self._invalidate_peak)
+
+    def _invalidate_peak(self, *_args) -> None:
+        self._bar_rows = -1
+
     def _bar_fraction(self, index):
-        """|value| against the column's largest, cached per row count."""
+        """|value| against the column's largest, cached until the model changes."""
         model = index.model()
+        self._watch(model)
         rows = model.rowCount()
         if rows != self._bar_rows:
             peak = 0.0
