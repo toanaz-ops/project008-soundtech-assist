@@ -978,17 +978,36 @@ same loss that made D1-D18 a rescue job.
     1. `wing_parser/classifier/vocabulary.py` is 336 lines (non-UI, so the
        ~200-line ceiling does not apply, but it is still large) — move the
        `dry_run_*` helpers into a new `vocabulary_checks` module.
+       **CLOSED 2026-10-19 (`fix/vocabulary-debt`):** the rules now live in
+       `vocabulary_checks.dry_run_set/dry_run_term/term_shape_problem`;
+       `Vocabulary.dry_run_*` stay as thin delegators (335 -> 305 lines).
+       Covered by the existing `test_dry_run_*` tests in
+       `tests/test_classifier_vocabulary.py`.
     2. `confirm_kind_drop` gives a false warning for a case-variant
        hand-edited kind (e.g. a kind that differs from a known one only by
        case reads as "will be dropped" when it would in fact resolve).
+       **CLOSED 2026-10-19 (`fix/vocabulary-debt`):** `support.dropped_kinds`
+       compares by folded identity, like the dialog's pre-select. Test:
+       `test_kind_drop_not_reported_for_a_case_variant_kind`.
     3. An entry carrying both a broken set reference AND an unknown kind
        cannot be fixed from the Vocabulary UI — only **Delete** works on it;
        the one-click "pick another set / drop the reference" fix (§8.1 of
        the wave-4 spec) does not reach the unknown-kind half.
+       **CLOSED 2026-10-19 (`fix/vocabulary-debt`):** both fix actions now
+       write through `support.repair_kinds` (confirm, then drop unknown /
+       canonicalise case-variant kinds). Tests:
+       `test_one_click_fix_reaches_a_term_with_broken_set_and_unknown_kind`,
+       `test_one_click_fix_reaches_a_set_with_broken_nesting_and_unknown_kind`,
+       `test_declining_the_kind_drop_leaves_the_entry_untouched`.
     4. "Pick another set…" on the Sets tab offers the broken set itself as a
        candidate replacement, and fixes only the **first** broken reference
        per click (a term or set naming two broken references needs two
        clicks).
+       **CLOSED 2026-10-19 (`fix/vocabulary-debt`):** broken names are
+       excluded from the choices and every broken reference on the row is
+       fixed at once (pick and drop). Tests:
+       `test_pick_another_set_never_offers_the_broken_set_and_fixes_every_reference`,
+       `test_drop_reference_removes_every_broken_reference_on_the_row`.
     5. The Assistant's reactive AI grey-out (shown when no provider key is
        configured) clears on the next `showEvent` once a key exists — an
        undocumented recovery path; it works, but nothing in the spec or the
@@ -1000,6 +1019,12 @@ same loss that made D1-D18 a rescue job.
     7. `wing_parser.classifier.build.resolve_fragment` rebuilds
        `vocabulary.effective()` on every fragment instead of once per
        import run — correct, not yet measured as slow enough to matter.
+       **CLOSED 2026-10-19 (`fix/vocabulary-debt`):** `build()` computes
+       `effective()` once and passes `terms=` through; `resolve_fragment`
+       keeps its old behaviour when `terms` is omitted (the UI's
+       single-fragment callers). Tests:
+       `test_build_computes_the_effective_vocabulary_once_per_run`,
+       `test_resolve_fragment_accepts_precomputed_terms`.
     8. `wing_parser/classifier/provider_errors.py`'s `_MESSAGES` table is
        English prose living outside `texts*.py` — a deliberate ruling (W1:
        new UI strings stay English), revisit only if a future wave adds a
@@ -1008,8 +1033,7 @@ same loss that made D1-D18 a rescue job.
        `terms_row.py`, `scene_step.py`, `settings_dialog.py`,
        `main_window.py` — the next change to any of them needs a split
        first, not a line added.
-  - close: triage each sub-item on its own next touch; (1), (3), (4), (7)
-    are machine-doable; (2), (5), (6) need a decision on whether the
+  - close: sub-items 1, 2, 3, 4, 7 closed 2026-10-19; remaining: (5), (6) need a decision on whether the
     behaviour is acceptable as documented-then; (8) and (9) are tracked
     here so the next file that grows past 200 or gains a Vietnamese string
     is not a surprise.

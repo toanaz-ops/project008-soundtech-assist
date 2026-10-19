@@ -860,3 +860,111 @@ def test_both_tables_stretch_their_text_heavy_columns(window):
             assert header.sectionResizeMode(column) == (
                 stretch if heavy else contents), heading
         assert seen == len(STRETCH_COLUMNS)
+
+
+# -- D-56 closeout (2026-10-19) ------------------------------------------------
+
+
+def _inject_raw(window, domain: str, key: str, body: dict) -> None:
+    from wing_parser.classifier import cache
+
+    doc = cache.read_raw(window._directory)
+    doc.setdefault(domain, {})[key] = body
+    cache.write_raw(doc, window._directory)
+    window._reload()
+
+
+def test_kind_drop_not_reported_for_a_case_variant_kind(window, monkeypatch):
+    """D-56 item 2: the dialog pre-selects kinds by folded identity, so a
+    kind differing from a known one only by case is kept, not dropped."""
+    from wing_parser.ui import vocabulary_terms_tab
+
+    _inject_raw(window, "cuesheet", "case term",
+                {"kinds": ["Speech.MC"], "match": "word", "origin": "manual"})
+    calls = _stub_confirm(monkeypatch, yes=False)
+    dialog = _ScriptedDialog(("case term", ("speech.mc",), (), False, "word"))
+    monkeypatch.setattr(vocabulary_terms_tab, "VocabularyTermDialog", lambda *a, **k: dialog)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["case term"])
+    window.terms_tab._edit()
+
+    assert calls == []
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert {t.key: t for t in v.terms()}["case term"].kinds == ("speech.mc",)
+
+
+def test_one_click_fix_reaches_a_term_with_broken_set_and_unknown_kind(window, monkeypatch):
+    """D-56 item 3: Drop the reference also has to cope with the unknown kind."""
+    _inject_raw(window, "cuesheet", "double term",
+                {"kinds": ["speech.mc", "no.such.kind"], "sets": ["ghost set"],
+                 "match": "word", "origin": "manual"})
+    calls = _stub_confirm(monkeypatch, yes=True)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["double term"])
+    window.terms_tab._drop_reference()
+
+    assert len(calls) == 1 and "no.such.kind" in str(calls[0])
+    v = vocab_module.Vocabulary.load(window._directory)
+    term = {t.key: t for t in v.terms()}["double term"]
+    assert term.sets == () and term.kinds == ("speech.mc",)
+
+
+def test_one_click_fix_reaches_a_set_with_broken_nesting_and_unknown_kind(window, monkeypatch):
+    _inject_raw(window, "cuesheet_sets", "double kit",
+                {"label": "Double kit", "kinds": ["drums.pad", "no.such.kind"],
+                 "sets": ["ghost set"], "origin": "manual"})
+    _stub_confirm(monkeypatch, yes=True)
+    rows = _rows_by_key(window.sets_tab.table)
+    window.sets_tab.table.selectRow(rows["Double kit"])
+    window.sets_tab._drop_reference()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    entry = {s.key: s for s in v.sets()}["double kit"]
+    assert entry.sets == () and entry.kinds == ("drums.pad",)
+
+
+def test_declining_the_kind_drop_leaves_the_entry_untouched(window, monkeypatch):
+    _inject_raw(window, "cuesheet", "double term",
+                {"kinds": ["speech.mc", "no.such.kind"], "sets": ["ghost set"],
+                 "match": "word", "origin": "manual"})
+    _stub_confirm(monkeypatch, yes=False)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["double term"])
+    window.terms_tab._drop_reference()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert {t.key: t for t in v.terms()}["double term"].sets == ("ghost set",)
+
+
+def test_pick_another_set_never_offers_the_broken_set_and_fixes_every_reference(
+        window, monkeypatch):
+    """D-56 item 4."""
+    _inject_raw(window, "cuesheet", "two ghosts",
+                {"kinds": ["speech.mc"], "sets": ["ghost a", "Ghost B"],
+                 "match": "word", "origin": "manual"})
+    offered: list = []
+
+    def _get_item(parent, title, label, choices, *a, **k):
+        offered.extend(choices)
+        return "band", True
+
+    monkeypatch.setattr(QInputDialog, "getItem", _get_item)
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["two ghosts"])
+    window.terms_tab._pick_another_set()
+
+    assert "ghost a" not in offered and "Ghost B" not in offered
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert {t.key: t for t in v.terms()}["two ghosts"].sets == ("band",)
+
+
+def test_drop_reference_removes_every_broken_reference_on_the_row(window):
+    _inject_raw(window, "cuesheet", "two ghosts",
+                {"kinds": ["speech.mc"], "sets": ["ghost a", "band", "ghost b"],
+                 "match": "word", "origin": "manual"})
+    rows = _rows_by_key(window.terms_tab.table)
+    window.terms_tab.table.selectRow(rows["two ghosts"])
+    window.terms_tab._drop_reference()
+
+    v = vocab_module.Vocabulary.load(window._directory)
+    assert {t.key: t for t in v.terms()}["two ghosts"].sets == ("band",)

@@ -60,14 +60,18 @@ class BuildResult:
         return sum(len(built.segment.expects) for built in self.segments)
 
 
-def resolve_fragment(fragment: str, vocabulary) -> keywords.Resolution:
+def resolve_fragment(fragment: str, vocabulary, *,
+                     terms: tuple[keywords.Term, ...] | None = None) -> keywords.Resolution:
     """Vocabulary first (exact, then word -- keywords.match's own two
-    steps), pattern matcher second, nothing third."""
+    steps), pattern matcher second, nothing third. `terms` is the
+    vocabulary's `effective()` computed once by the caller for a whole
+    run; omitted, it is built here (single-fragment callers)."""
     target = clean(fragment)
     if not target:
         return keywords.Resolution((), False)
 
-    found = keywords.match(fragment, vocabulary.effective())
+    found = keywords.match(
+        fragment, vocabulary.effective() if terms is None else terms)
     if found.kinds or found.ignored:
         return found
 
@@ -85,7 +89,7 @@ def _cell(row, mapping, field: str) -> str:
     return row.cells.get(letter, "")
 
 
-def _expectations(text: str, vocabulary, row_number: int) -> tuple[
+def _expectations(text: str, vocabulary, row_number: int, terms=None) -> tuple[
         tuple[str, ...], tuple[str, ...], int]:
     kinds: list[str] = []
     comments: list[str] = []
@@ -94,7 +98,7 @@ def _expectations(text: str, vocabulary, row_number: int) -> tuple[
         stripped = fragment.strip()
         if not stripped:
             continue
-        resolution = resolve_fragment(stripped, vocabulary)
+        resolution = resolve_fragment(stripped, vocabulary, terms=terms)
         if resolution.ignored and not resolution.kinds:
             ignored += 1
             continue
@@ -144,6 +148,7 @@ def build(rows, mapping, vocabulary, blank_rows: int = 0,
     ignored_total = 0
     generated = 0
     used: set[str] = set()
+    terms = None   # built on the first row that has performers, then reused
 
     for row in rows:
         title = _cell(row, mapping, "title").strip()
@@ -172,7 +177,9 @@ def build(rows, mapping, vocabulary, blank_rows: int = 0,
             )
             continue
 
-        kinds, comments, ignored = _expectations(performers, vocabulary, row.number)
+        if terms is None and performers.strip():
+            terms = vocabulary.effective()
+        kinds, comments, ignored = _expectations(performers, vocabulary, row.number, terms)
         unreadable += len(comments)
         ignored_total += ignored
         notes = list(comments)
