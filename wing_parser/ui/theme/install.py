@@ -15,12 +15,16 @@ QApplication across many tests.
 
 from __future__ import annotations
 
+import logging
+
 from PySide6.QtWidgets import QApplication
 
-from wing_parser.ui.theme import fonts, palette, qss, tokens
+from wing_parser.ui.theme import fonts, palette, tokens
 from wing_parser.ui.theme.proxy_style import HouseStyle
 
 _GUARD = "_wing_theme_applied"
+_LOG = logging.getLogger(__name__)
+_icons_warned = False
 
 
 def apply(app: QApplication) -> None:
@@ -32,10 +36,17 @@ def apply(app: QApplication) -> None:
     fonts.load()
     app.setFont(fonts.base_font(tokens.BASE_SIZE))
     app.setPalette(palette.build())
+    global _icons_warned
     try:
         import qtawesome
 
         qtawesome.set_global_defaults(color=tokens.hex_str("dim"))
     except ImportError:
-        pass
-    app.setStyleSheet(qss.build())
+        if not _icons_warned:
+            _icons_warned = True
+            _LOG.warning("qtawesome is not installed; sidebar icons are unstyled")
+    # Lazy: the package __init__ imports this module, so a top-level
+    # import would be circular.
+    from wing_parser.ui import theme
+
+    app.setStyleSheet(theme.load_stylesheet())
