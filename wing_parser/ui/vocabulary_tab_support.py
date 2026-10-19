@@ -52,6 +52,8 @@ def write_or_report(parent, action) -> bool:
     dialog to re-show (Delete, Reset, a broken-reference fix)."""
     try:
         action()
+    except UserDeclined:
+        return False
     except (ValueError, OSError) as exc:
         QMessageBox.warning(parent, text("vocabulary.title"), _message(exc))
         return False
@@ -73,6 +75,23 @@ def check_new_key(key: str, existing_identities) -> None:
         raise ValueError(text("vocabulary.name_required"))
     if folded in existing_identities:
         raise ValueError(text("vocabulary.name_exists"))
+
+
+def dropped_kinds(kinds, known) -> tuple[str, ...]:
+    """Kinds the dialog cannot show: it pre-selects by FOLDED identity
+    (D-56 item 2), so a kind differing from a known one only by case is
+    kept, not dropped."""
+    identities = {keywords.fold(k) for k in known}
+    return tuple(k for k in kinds if keywords.fold(k) not in identities)
+
+
+def repair_kinds(parent, kinds, known) -> tuple[str, ...]:
+    """The kinds a one-click reference fix writes back (D-56 item 3): each
+    known kind in its canonical spelling, the unknown ones dropped -- after
+    `confirm_kind_drop` names them. Raises `UserDeclined` on No."""
+    confirm_kind_drop(parent, dropped_kinds(kinds, known))
+    canonical = {keywords.fold(k): k for k in known}
+    return tuple(canonical[keywords.fold(k)] for k in kinds if keywords.fold(k) in canonical)
 
 
 def confirm_kind_drop(parent, dropped: tuple[str, ...]) -> None:

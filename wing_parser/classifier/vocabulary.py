@@ -233,57 +233,28 @@ class Vocabulary:
         checks.check_kinds(key, kinds, frozenset(known_kinds("channels")))
 
     def _check_sets(self, key: str, set_keys) -> None:
-        visible = frozenset(k for k, s in self._sets.items() if not s.deleted)
-        checks.check_sets(key, set_keys, visible)
+        checks.check_sets(key, set_keys, self._visible_set_identities())
 
     def _check_cycle(self, key: str, nested_sets: tuple[str, ...]) -> None:
         checks.check_cycle(self._sets, key, nested_sets)
 
+    def _visible_set_identities(self) -> frozenset[str]:
+        return frozenset(k for k, s in self._sets.items() if not s.deleted)
+
     def dry_run_set(self, key: str, *, kinds: tuple[str, ...] = (),
                     sets: tuple[str, ...] = ()) -> tuple[str, ...]:
-        """Every problem `put_set(key, ...)` would raise, without writing --
-        vocab_changes.validate calls this to decide whether an AI-proposed
-        set change could be written. Same order as put_set: an unknown
-        kind/set is worth reporting even when a cycle is ALSO present, but
-        a cycle check only makes sense once kinds/sets are themselves
-        known-good (check_cycle walks `sets`, which an unknown-set problem
-        already flagged as untrustworthy)."""
-        problems: list[str] = []
-        try:
-            self._check_kinds(key, kinds)
-        except UnknownKindError as exc:
-            problems.append(str(exc))
-        try:
-            self._check_sets(key, sets)
-        except UnknownSetError as exc:
-            problems.append(str(exc))
-        if not problems:
-            try:
-                self._check_cycle(key, sets)
-            except CycleError as exc:
-                problems.append(str(exc))
-        return tuple(problems)
+        """Every problem `put_set` would raise, without writing (the
+        rules live in `vocabulary_checks.dry_run_set`)."""
+        return checks.dry_run_set(self._sets, key, kinds, sets,
+                                  frozenset(known_kinds("channels")),
+                                  self._visible_set_identities())
 
     def dry_run_term(self, key: str, *, kinds: tuple[str, ...] = (),
                      sets: tuple[str, ...] = (), ignore: bool = False) -> tuple[str, ...]:
-        """Every problem `put_term(key, ...)` would raise, without writing.
-        The two `put_term` shape rules (ignore XOR kinds/sets; at least one
-        of them) are reported as their own single problem, same wording
-        `put_term` itself raises, before the per-kind/per-set checks run."""
-        if ignore and (kinds or sets):
-            return (f"term {key!r}: ignore: true OR kinds/sets, not both",)
-        if not ignore and not kinds and not sets:
-            return (f"term {key!r}: needs kinds and/or sets, or ignore: true",)
-        problems: list[str] = []
-        try:
-            self._check_kinds(key, kinds)
-        except UnknownKindError as exc:
-            problems.append(str(exc))
-        try:
-            self._check_sets(key, sets)
-        except UnknownSetError as exc:
-            problems.append(str(exc))
-        return tuple(problems)
+        """Every problem `put_term` would raise, without writing."""
+        return checks.dry_run_term(key, kinds, sets, ignore,
+                                   frozenset(known_kinds("channels")),
+                                   self._visible_set_identities())
 
     # -- writing (validated here, mutated in vocabulary_store.py) -----------
 
@@ -298,10 +269,9 @@ class Vocabulary:
     def put_term(self, key: str, *, kinds: tuple[str, ...] = (),
                  sets: tuple[str, ...] = (), ignore: bool = False,
                  match: str = "exact", origin: str = "manual") -> None:
-        if ignore and (kinds or sets):
-            raise ValueError(f"term {key!r}: ignore: true OR kinds/sets, not both")
-        if not ignore and not kinds and not sets:
-            raise ValueError(f"term {key!r}: needs kinds and/or sets, or ignore: true")
+        shape = checks.term_shape_problem(key, kinds, sets, ignore)
+        if shape is not None:
+            raise ValueError(shape)
         self._check_kinds(key, kinds)
         self._check_sets(key, sets)
         store.put_term(self._directory, key, kinds=kinds, sets=sets, ignore=ignore,

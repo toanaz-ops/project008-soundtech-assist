@@ -22,28 +22,38 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QInputDialog, QMessageBox
 
+from wing_parser.showcontext.ingest import keywords
 from wing_parser.ui import vocabulary_tab_support as support
 from wing_parser.ui.texts import text
 
 
-def pick_another_set(parent, vocabulary, current_sets, broken_name, write, on_changed) -> None:
-    choices = tuple(s.key for s in vocabulary.sets())
+def pick_another_set(parent, vocabulary, current_sets, broken_names, write, on_changed) -> None:
+    """Replace EVERY broken name on the row with one chosen set. The broken
+    names themselves are never offered (D-56 item 4)."""
+    broken = {keywords.fold(n) for n in broken_names}
+    choices = tuple(s.key for s in vocabulary.sets() if keywords.fold(s.key) not in broken)
     if not choices:
         QMessageBox.warning(parent, text("vocabulary.title"), text("vocabulary.no_sets_to_pick"))
         return
     chosen, ok = QInputDialog.getItem(
         parent, text("vocabulary.title"),
-        text("vocabulary.pick_set_prompt").format(name=broken_name),
+        text("vocabulary.pick_set_prompt").format(name=", ".join(broken_names)),
         choices, 0, False,
     )
     if not ok:
         return
-    new_sets = tuple(chosen if s == broken_name else s for s in current_sets)
-    if support.write_or_report(parent, lambda: write(new_sets)):
+    new_sets: list[str] = []
+    for s in current_sets:
+        replacement = chosen if keywords.fold(s) in broken else s
+        if replacement not in new_sets:
+            new_sets.append(replacement)
+    if support.write_or_report(parent, lambda: write(tuple(new_sets))):
         on_changed()
 
 
-def drop_reference(parent, current_sets, broken_name, write, on_changed) -> None:
-    new_sets = tuple(s for s in current_sets if s != broken_name)
+def drop_reference(parent, current_sets, broken_names, write, on_changed) -> None:
+    """Drop EVERY broken reference on the row in one action."""
+    broken = {keywords.fold(n) for n in broken_names}
+    new_sets = tuple(s for s in current_sets if keywords.fold(s) not in broken)
     if support.write_or_report(parent, lambda: write(new_sets)):
         on_changed()

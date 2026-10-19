@@ -143,3 +143,61 @@ def compute_problems(sets: dict[str, SetEntry], terms: dict[str, TermEntry],
         problems.append("set cycle: " + " → ".join(sets[node].key for node in cycle))
 
     return tuple(problems)
+
+
+# -- dry-run validation (what a write WOULD raise, without writing) ---------
+
+
+def term_shape_problem(key: str, kinds, sets, ignore: bool) -> str | None:
+    """The two `put_term` shape rules (ignore XOR kinds/sets; at least one
+    of them), as the one message `put_term` raises -- or None."""
+    if ignore and (kinds or sets):
+        return f"term {key!r}: ignore: true OR kinds/sets, not both"
+    if not ignore and not kinds and not sets:
+        return f"term {key!r}: needs kinds and/or sets, or ignore: true"
+    return None
+
+
+def _kind_and_set_problems(key: str, kinds, set_keys, known_kinds: frozenset[str],
+                           visible_set_identities: frozenset[str]) -> list[str]:
+    problems: list[str] = []
+    try:
+        check_kinds(key, kinds, known_kinds)
+    except UnknownKindError as exc:
+        problems.append(str(exc))
+    try:
+        check_sets(key, set_keys, visible_set_identities)
+    except UnknownSetError as exc:
+        problems.append(str(exc))
+    return problems
+
+
+def dry_run_set(sets: dict[str, SetEntry], key: str, kinds, set_keys,
+                known_kinds: frozenset[str],
+                visible_set_identities: frozenset[str]) -> tuple[str, ...]:
+    """Every problem `put_set(key, ...)` would raise, without writing --
+    vocab_changes.validate decides through this whether an AI-proposed
+    set change could be written. Same order as put_set: an unknown
+    kind/set is worth reporting even when a cycle is ALSO present, but
+    a cycle check only makes sense once kinds/sets are themselves
+    known-good (check_cycle walks `sets`, which an unknown-set problem
+    already flagged as untrustworthy)."""
+    problems = _kind_and_set_problems(key, kinds, set_keys, known_kinds,
+                                      visible_set_identities)
+    if not problems:
+        try:
+            check_cycle(sets, key, tuple(set_keys))
+        except CycleError as exc:
+            problems.append(str(exc))
+    return tuple(problems)
+
+
+def dry_run_term(key: str, kinds, set_keys, ignore: bool, known_kinds: frozenset[str],
+                 visible_set_identities: frozenset[str]) -> tuple[str, ...]:
+    """Every problem `put_term(key, ...)` would raise, without writing.
+    A shape problem is reported alone, before the per-kind/per-set checks."""
+    shape = term_shape_problem(key, kinds, set_keys, ignore)
+    if shape is not None:
+        return (shape,)
+    return tuple(_kind_and_set_problems(key, kinds, set_keys, known_kinds,
+                                        visible_set_identities))

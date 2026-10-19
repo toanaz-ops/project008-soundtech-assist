@@ -142,7 +142,7 @@ class VocabularyTermsTab(QWidget):
 
     def _apply_edit(self, entry, known, result) -> None:
         key, kinds, sets_, ignore, match = result
-        support.confirm_kind_drop(self, tuple(k for k in entry.kinds if k not in known))
+        support.confirm_kind_drop(self, support.dropped_kinds(entry.kinds, known))
         self._vocabulary.put_term(key, kinds=kinds, sets=sets_, ignore=ignore, match=match)
 
     def _delete(self) -> None:
@@ -164,9 +164,11 @@ class VocabularyTermsTab(QWidget):
             self._on_changed()
 
     def _write_term(self, entry):
-        return lambda new_sets: self._vocabulary.put_term(
-            entry.key, kinds=entry.kinds, sets=new_sets,
-            ignore=entry.ignore, match=entry.match)
+        def write(new_sets):
+            kinds = support.repair_kinds(self, entry.kinds, known_kinds("channels"))
+            self._vocabulary.put_term(entry.key, kinds=kinds, sets=new_sets,
+                                      ignore=entry.ignore, match=entry.match)
+        return write
 
     def _pick_another_set(self) -> None:
         selection = self._selected()
@@ -174,7 +176,7 @@ class VocabularyTermsTab(QWidget):
         broken = self._broken(entry) if entry else ()
         if not broken:
             return
-        broken_ref.pick_another_set(self, self._vocabulary, entry.sets, broken[0],
+        broken_ref.pick_another_set(self, self._vocabulary, entry.sets, broken,
                                     self._write_term(entry), self._on_changed)
 
     def _drop_reference(self) -> None:
@@ -183,5 +185,5 @@ class VocabularyTermsTab(QWidget):
         broken = self._broken(entry) if entry else ()
         if not broken:
             return
-        broken_ref.drop_reference(self, entry.sets, broken[0],
+        broken_ref.drop_reference(self, entry.sets, broken,
                                   self._write_term(entry), self._on_changed)

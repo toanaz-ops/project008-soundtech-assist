@@ -282,3 +282,29 @@ def test_without_headers_nothing_folds_into_comments():
     built = result.segments[0]
     assert built.comments == ("row 2: time '19:00'",)
     assert built.segment.sound == ""
+
+
+def test_build_computes_the_effective_vocabulary_once_per_run():
+    """D-56 item 7: `effective()` was rebuilt for every fragment."""
+
+    class Counting(_FakeVocabulary):
+        calls = 0
+
+        def effective(self):
+            type(self).calls += 1
+            return super().effective()
+
+    counting = Counting(lookup.effective())
+    rows = [row(5, C="Một", D="trống, ca sĩ nữ"), row(6, C="Hai", D="trống")]
+    result = builder.build(rows, MAPPING, counting)
+    assert Counting.calls == 1
+    assert result.segments[0].segment.expects == ("drums.kick", "speech.vocal")
+
+
+def test_resolve_fragment_accepts_precomputed_terms():
+    class Boom(_FakeVocabulary):
+        def effective(self):
+            raise AssertionError("must not be called when terms are supplied")
+
+    found = builder.resolve_fragment("trống", Boom(()), terms=lookup.effective())
+    assert found.kinds == ("drums.kick",)
