@@ -14,8 +14,6 @@ VI_TEXTS: dict[str, str] = {
     "page.diff": "So sánh",
     "page.import": "Nhập",
     "page.console": "Console",
-    "empty.open_hint": "Mở một file scene để bắt đầu.",
-    "empty.open_button": "Mở scene...",
     "overview.counts": "Số lượng trong scene",
     "overview.channels": "Channel",
     "overview.buses": "Bus",

@@ -740,22 +740,20 @@ def test_wiring_a_page_without_the_signals_connects_nothing(
     """The no-op branch of the all-or-none contract.
 
     Task 13 filled the Console slot with a real `ConsolePage`, so the
-    page this branch was written for -- task 8's `EmptyState` -- is no
-    longer in the window. The branch itself still has to hold: a widget
-    with none of the three signals must return quietly rather than raise
-    on the first missing one. `EmptyState` is still the widget it is
-    checked with, because that is the one this guard was measured
-    against.
+    placeholder this branch was written for is gone. The branch itself
+    still has to hold: a widget with none of the three signals must
+    return quietly rather than raise on the first missing one. A plain
+    `QWidget` is such a widget.
     """
     monkeypatch.setenv("WING_DISABLE_LLM", "1")
     from wing_parser.ui import live_wiring
     from wing_parser.ui.console_page import ConsolePage
     from wing_parser.ui.main_window import MainWindow
-    from wing_parser.ui.page_base import EmptyState
+    from PySide6.QtWidgets import QWidget
 
     window = MainWindow(None)
     assert isinstance(window.pages["console"], ConsolePage)
-    assert live_wiring.wire_console(window, EmptyState("x")) is None
+    assert live_wiring.wire_console(window, QWidget()) is None
     assert window.session is None
 
 

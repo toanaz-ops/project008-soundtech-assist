@@ -551,3 +551,30 @@ cut so no file crosses the 200-line ceiling. Re-measure the suite on this wave's
 durable write log (W8). Remembered arm state across runs. A watch-list editor (wave 2 D12). Auto-connect (wave 2 §11 q3,
 still no). Metering and the native transport. Subscription (a closed negative on the real desk, 2026-08-23). Language
 switching. Mac packaging.
+
+## Deviations recorded 2026-09-18
+
+The body above is left as designed and reviewed; this section records where the
+shipped code diverges from it (closes tech-debt D-48). Section 4's table lists ten new
+modules; fourteen landed. Rulings are in the SDD ledger (gitignored) and in
+`docs/handoff/2026-09-18-gui-write-wave3-complete.md` section 6.4 and section 12.
+Line counts are as of 2026-10-19 (`wc -l wing_parser/ui/write_*.py`).
+
+- **`wing_parser/ui/write_records.py` (168 lines) split out of `live_write.py`.**
+  Task 4: `live_write.py` hit 220 lines. `WriteConfirmation`, `SentWrite`,
+  `scene_value`, `Outcome`, `outcome`, `settle_scene` moved here; `live_write.py`
+  keeps transport / preflight / send and re-exports.
+- **`wing_parser/ui/write_gate.py` (150 lines) split out of `live_wiring.py`.**
+  Task 11: `WriteGate`, `WriteJob`, `GateClosed` moved out and are re-exported.
+- **`wing_parser/ui/write_apply.py` (54 lines).** Task 13: `apply_result` /
+  `apply_revert` (what a result does to the scene) moved to a non-Qt module.
+- **`wing_parser/ui/write_router.py` (160 lines)** is the routing layer section 4
+  folded into prose: `route_repair` lives here, not in `live_write.py`.
+- **`revert_confirmation` was deleted** (task 16; spec/plan had it as a
+  `write_records` function). Nothing in production called it and `route_revert` had
+  its own copy of the rule. The single rule is now `write_records.desk_now`
+  (`desk_before = readback`, falling back to the written value when the readback is
+  `None`).
+- **W4's allow-list is keyed on the path relative to the scan root**, not on
+  `path.name` (task 16): a bare file name would have handed the one permitted door's
+  rights to any same-named file elsewhere in the tree.

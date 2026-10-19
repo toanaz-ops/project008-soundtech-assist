@@ -52,7 +52,6 @@ def test_known_keys_resolve():
     assert text("page.diff") == "Diff"
     assert text("page.import") == "Import"
     assert text("page.console") == "Console"
-    assert text("empty.open_hint")
 
 
 def test_missing_key_is_loud():

@@ -52,7 +52,7 @@ def wire_console(window, page) -> None:
     the same idiom `MainWindow._refresh` uses for `set_session`
     (`main_window.py:176-178`), and existed for the same reason: the
     Console page arrived over several tasks, and until task 13 the slot
-    held task 8's `EmptyState`, which has none of the three. The branch
+    held a placeholder widget, which has none of the three. The branch
     is still live and still pinned -- any widget without them reaches
     here. Deliberately only the first signal is guarded: a page carrying
     `session_pulled` but missing one of the other two is a half-built
