@@ -758,6 +758,12 @@ by the command shown. The wave-1 / wave-1b closures below were written on
 ---
 
 ## Opened by GUI wave 3 (write to a live console), 2026-09-18
+  - correction 2026-10-21 (wave 5, PySide6 6.12): a silent `exit 1` with no
+    summary and a *Garbage-collecting* dump in `_settle` is NOT D-47; it was a
+    real `Fatal Python error: Aborted` -- a test fixture dropped a runner whose
+    cancelled/timed-out `QThread` was still running (`CallRunner._retired`).
+    Join workers (`worker.wait()`) in fixture teardown; see `panel` in
+    `tests/test_ui_mapping_try_ai.py`.
 
 Numbering continues from D-47. Each was verified by the command shown, on
 branch `feat/gui-write-wave3` at `f56813c`, unless marked *(inherited)*.
