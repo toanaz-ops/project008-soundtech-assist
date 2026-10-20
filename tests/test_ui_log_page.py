@@ -72,6 +72,15 @@ def test_choosing_a_show_fills_the_entries_table_in_time_order(page, knowledge):
     assert model.columnCount() == 11
 
 
+def test_the_newest_show_is_selected_by_default(page, knowledge):
+    writelog.append(_entry("AZ-1", ts="2026-10-01T10:00:00.000+07:00"), knowledge)
+    writelog.append(_entry("AZ-2", ts="2026-10-20T10:00:00.000+07:00"), knowledge)
+    page.refresh()
+    assert page.current_code() == "AZ-2"
+    assert page.entries_model.rowCount() == 1
+    assert page.export_button.isEnabled() is True
+
+
 def test_the_page_re_reads_the_folder_each_time_it_is_shown(page, knowledge):
     page.refresh()
     assert page.shows_list.count() == 0
@@ -159,9 +168,8 @@ def test_skipped_lines_raise_a_warning(page, knowledge):
     path = writelog.log_dir(knowledge) / "AZ-1501.jsonl"
     with path.open("a", encoding="utf-8") as handle:
         handle.write("{not json\n")
-    page.refresh()
     with pytest.warns(UserWarning):
-        page.shows_list.setCurrentRow(0)
+        page.refresh()                      # selects the newest show
     assert "1" in page.warning_label.text()
     assert not page.warning_label.isHidden()
 

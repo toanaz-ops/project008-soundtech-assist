@@ -54,6 +54,7 @@ class LogPage(QWidget):
         self.entries_table.setItemDelegate(
             MonoDelegate(numeric_columns=NUMERIC, mono_columns=MONO))
         self.entries_table.verticalHeader().setVisible(False)
+        self.entries_table.setColumnWidth(0, 230)           # the full timestamp
         self.entries_table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.export_button = QPushButton(text("log.export"))
         self.folder_button = QPushButton(text("log.open_folder"))
@@ -76,11 +77,12 @@ class LogPage(QWidget):
         right.addWidget(Caption(text("log.entries_heading")))
         right.addWidget(self.entries_table)
         splitter = QSplitter()
-        for side, stretch in ((left, 1), (right, 3)):
+        for side, stretch in ((left, 2), (right, 3)):
             holder = QWidget()
             holder.setLayout(side)
             splitter.addWidget(holder)
             splitter.setStretchFactor(splitter.count() - 1, stretch)
+        splitter.setSizes([440, 760])
         layout = QVBoxLayout(self)
         layout.addLayout(buttons)
         layout.addWidget(self.warning_label)
@@ -136,7 +138,7 @@ class LogPage(QWidget):
                 self.shows_list.setCurrentRow(row)
                 break
         else:
-            self.shows_list.setCurrentRow(-1)
+            self.shows_list.setCurrentRow(0 if shows else -1)   # newest show
         self._load(self.current_code())
 
     def _row_changed(self, _row: int) -> None:
