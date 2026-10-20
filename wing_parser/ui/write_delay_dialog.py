@@ -56,6 +56,7 @@ class DelayedWriteDialog(QDialog):
         self._transport = transport or live_write.REAL
         self._address, self._after = live_write.plan_write(patch, revert_record)
         self.desk_before = None     #: the pre-flight read, NORMALISED (kept as a value)
+        self.identity = self.show = None    #: W13: copied at submit, see `_apply`
         self._settled = self._sent = self._expired = False
         self.remaining = self._total = int(seconds)
 
@@ -159,10 +160,12 @@ class DelayedWriteDialog(QDialog):
         self._sent = True
         for button in (self.apply_button, self.extend_button, self.cancel_button):
             button.setEnabled(False)
+        arm = self._gate.arm
+        self.identity, self.show = arm.identity, dict(arm.show) if arm.show else None
         self._gate.submit(WriteJob(
             live_write.confirmation_for(
                 self._gate.host(), self._address, self._after,
-                self._gate.arm.identity, self.desk_before),
+                self.identity, self.desk_before),
             self._outcome.done, self._outcome.failed,
         ))
 

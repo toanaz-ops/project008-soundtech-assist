@@ -34,10 +34,11 @@ from wing_parser.ui.write_gate import GateClosed, WriteJob
 from wing_parser.ui.workers import CallRunner
 
 
-def _record(path, desk_before, written, result) -> live_write.SentWrite:
+def _record(path, desk_before, written, result, identity=None,
+            show=None) -> live_write.SentWrite:
     return live_write.SentWrite(address=osc_address(path), path=path,
                                 desk_before=desk_before, written=written,
-                                result=result)
+                                result=result, identity=identity, show=show)
 
 
 class ImmediateWrite(QObject):
@@ -67,10 +68,13 @@ class ImmediateWrite(QObject):
             self._on_error(GateClosed(text("console.write.gate_closed")))
             return
         self._desk_before = desk_before
+        # W13: copied NOW; `gate.close()` clears both before this settles.
+        self._identity = self._gate.arm.identity
+        self._show = dict(self._gate.arm.show) if self._gate.arm.show else None
         self._gate.submit(WriteJob(
             live_write.WriteConfirmation(
                 host=self._gate.host(), address=self._address,
-                after=self._after, identity=self._gate.arm.identity,
+                after=self._after, identity=self._identity,
                 desk_before=desk_before),
             self._done, self._on_error,
         ))
@@ -78,7 +82,7 @@ class ImmediateWrite(QObject):
     def _done(self, result) -> None:
         self._on_sent(self._patch,
                       _record(self._patch.path, self._desk_before,
-                              self._after, result))
+                              self._after, result, self._identity, self._show))
 
 
 def route_repair(gate, patch, delay, parent=None, *, transport=None, timeout=None,
@@ -151,7 +155,8 @@ def _countdown(gate, patch, after, delay, parent, *, transport, timeout,
                                 timeout=timeout, revert_record=revert_record)
     if on_sent is not None:
         dialog.applied.connect(lambda result: on_sent(
-            patch, _record(patch.path, dialog.desk_before, after, result)))
+            patch, _record(patch.path, dialog.desk_before, after, result,
+                           dialog.identity, dialog.show)))
     if on_error is not None:
         dialog.failed.connect(on_error)
     if on_cancelled is not None:
