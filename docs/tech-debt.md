@@ -1140,9 +1140,15 @@ same loss that made D1-D18 a rescue job.
     **Residual, accepted by the orchestrator:** a worker still running past
     the 2 s quit bound is destroyed at interpreter teardown, and 6.12 may
     still abort then. State is saved and log lines are flushed before quit,
-    so only the exit code or a crash dump is affected. Still open: step (3),
-    building the exe on 6.12 and running it. The 6.11.2 pin stays until
-    then.
+    so only the exit code or a crash dump is affected. Step (3), on
+    2026-10-21: an exe was built from `0378dca` with PySide6 6.12.0 in a
+    throwaway venv (67,989,027 bytes, not released). It was still alive
+    after 8 s, and `--screenshot` exited 0 in both EN and VI. The Log and
+    Import pages rendered. **Still not exercised:** quitting from the
+    window on 6.12, and above all quitting while a model call hangs.
+    `taskkill` without `/F` did not close the onefile process, and it was
+    force-killed. The release keeps the 6.11.2 pin until someone closes the
+    6.12 exe by hand mid-call and it exits cleanly.
 
 ---
 
