@@ -20,7 +20,7 @@ from wing_parser.ui import state_store
 def test_save_then_load_round_trips_a_state(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
-        "consoles": [], "apply_delay": 5, "language": "en",
+        "consoles": [], "apply_delay": 5, "language": "en", "last_show": None,
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -29,7 +29,7 @@ def test_save_then_load_round_trips_a_state(tmp_path):
 def test_load_without_a_file_yields_defaults(tmp_path):
     assert state_store.load(tmp_path) == {
         "geometry": None, "page": None, "recent": [], "consoles": [],
-        "apply_delay": 5, "language": "en",
+        "apply_delay": 5, "language": "en", "last_show": None,
     }
 
 
@@ -48,7 +48,7 @@ def test_normalize_drops_junk_and_keeps_known_shape():
     clean = state_store.normalize(state)
     assert clean == {
         "geometry": None, "page": None, "recent": ["ok.snap"], "consoles": [],
-        "apply_delay": 5, "language": "en",
+        "apply_delay": 5, "language": "en", "last_show": None,
     }
 
 
@@ -91,7 +91,7 @@ def test_consoles_survive_a_save_and_load_round_trip(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
         "consoles": ["192.168.1.10", "wing.local"], "apply_delay": 5,
-        "language": "en",
+        "language": "en", "last_show": None,
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -195,8 +195,34 @@ def test_save_language_keeps_every_other_field(tmp_path):
     state_store.save_language(tmp_path, "vi")
     assert state_store.load(tmp_path) == {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
-        "consoles": ["10.0.0.5"], "apply_delay": 12, "language": "vi",
+        "consoles": ["10.0.0.5"], "apply_delay": 12, "language": "vi", "last_show": None,
     }
+
+
+# -- last show (wave 5, W8') ------------------------------------------------
+
+
+def test_last_show_defaults_to_none():
+    assert state_store.DEFAULTS["last_show"] is None
+
+
+def test_last_show_round_trips_through_save_and_load(tmp_path):
+    show = {"code": "AZ-1501", "name": "BIDV Gala", "venue": "GEM Center"}
+    state_store.save(tmp_path, {"last_show": show})
+    assert state_store.load(tmp_path)["last_show"] == show
+
+
+@pytest.mark.parametrize("stored", [
+    "AZ-1", 7, ["AZ-1"], {"name": "x"}, {"code": 5}, {"code": None}, None,
+])
+def test_a_junk_last_show_reads_as_none(stored):
+    assert state_store.normalize({"last_show": stored})["last_show"] is None
+
+
+def test_last_show_clamps_name_and_venue_to_eighty_and_drops_junk_keys():
+    clean = state_store.normalize({"last_show": {
+        "code": "AZ-1", "name": "n" * 200, "venue": 3, "extra": True}})
+    assert clean["last_show"] == {"code": "AZ-1", "name": "n" * 80, "venue": ""}
 
 
 # -- window wiring ------------------------------------------------------
