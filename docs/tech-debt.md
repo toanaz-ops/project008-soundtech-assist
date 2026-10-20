@@ -509,7 +509,6 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     test now uses a plain `QWidget`, `test_known_keys_resolve` no longer asserts
     the key. Verified: `grep -rn "page_base\|EmptyState\|empty\.open_"
     wing_parser tests packaging` prints nothing.
-  - status: open
 
 - **D-41** A live pull walks the schema twice
   - owner: machine-doable, deferred to wave 3 (it is a `net/` change)
@@ -1049,7 +1048,7 @@ same loss that made D1-D18 a rescue job.
        reopened before its previous load finished) leaves old rows on
        screen; reachable only through a test seam today, not observed from
        the real UI.
-    7. `wing_parser.classifier.build.resolve_fragment` rebuilds
+    7. `wing_parser.showcontext.ingest.build.resolve_fragment` rebuilds
        `vocabulary.effective()` on every fragment instead of once per
        import run — correct, not yet measured as slow enough to matter.
        **CLOSED 2026-10-19 (`fix/vocabulary-debt`):** `build()` computes
@@ -1062,9 +1061,9 @@ same loss that made D1-D18 a rescue job.
        English prose living outside `texts*.py` — a deliberate ruling (W1:
        new UI strings stay English), revisit only if a future wave adds a
        Vietnamese string table.
-    9. Four UI files sit at 198–200 of the 200-line ceiling:
+    9. Five UI files sit at 198–200 of the 200-line ceiling:
        `terms_row.py`, `scene_step.py`, `settings_dialog.py`,
-       `main_window.py` — the next change to any of them needs a split
+       `live_events_view.py`, `main_window.py` — the next change to any of them needs a split
        first, not a line added.
   - close: sub-items 1, 2, 3, 4, 7 closed 2026-10-19; remaining: (5), (6) need a decision on whether the
     behaviour is acceptable as documented-then; (8) and (9) are tracked
