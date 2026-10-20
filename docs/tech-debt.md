@@ -1110,6 +1110,29 @@ same loss that made D1-D18 a rescue job.
     The `dist-shots` regeneration named above is not done in this branch --
     the exe rebuild after merge covers it.
 
+## Opened by GUI wave 5 (write log), 2026-10-21
+
+- **D-58** The app itself is unproven on PySide6 6.12 — release exe pinned to 6.11.2
+  - owner: machine-doable (needs an app-level check, not more test fixes)
+  - evidence: two separate 6.12 aborts were found and fixed in tests, not in
+    production code. PR #21: tests dropped top-level widgets, fixed in
+    `tests/conftest.py::_shut_down_qt`. PR #23 (`de5207c`):
+    `tests/test_ui_mapping_try_ai.py` let its `panel` fixture destroy a
+    `FunctionWorker` QThread that was still running after a cancel or
+    timeout. PySide6 6.12 aborts the process when a running QThread is
+    destroyed. The same pattern can happen in the real app: `CallRunner`
+    keeps cancelled workers in `_retired` (`wing_parser/ui/workers.py:107,176-177`),
+    so closing a window or a dialog while a model call is still hanging
+    could destroy one. CI now runs 6.12, and pyproject allows it
+    (`PySide6>=6.11`). The 2026-10-21 exe is built with
+    `PySide6==6.11.2`, pinned on purpose.
+  - close: (1) make every owner of a `CallRunner` wait for or detach its
+    retired and active workers on close (or give the workers an app-lifetime
+    parent); (2) prove it with a test that closes the import wizard and the
+    Settings dialog mid-call on 6.12; (3) build the exe on 6.12 and run it.
+    Only then drop the 6.11.2 pin from the release build.
+  - status: open
+
 ---
 
 ## Appendix — rulings preserved, not debt
