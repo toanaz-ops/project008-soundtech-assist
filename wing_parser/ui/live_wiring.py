@@ -23,7 +23,7 @@ from wing_parser.ui.write_gate import GateClosed, WriteGate, WriteJob  # noqa: F
 # GateClosed, WriteJob` -- those names must already be bound in this
 # module's namespace by the time that import runs, or it is a circular
 # ImportError on a partially-initialised module.
-from wing_parser.ui import write_router
+from wing_parser.ui import write_log_sink, write_router
 
 
 def adopt_pulled_session(window, session) -> None:
@@ -96,6 +96,8 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
         changes.attach_gate(gate)          # task 12 gives ChangesPanel this
         if hasattr(changes, "attach_window"):
             changes.attach_window(window)  # task 13: the ledger needs it too
+        if hasattr(changes, "sent"):
+            write_log_sink.install(window, changes)    # wave 5: the durable log
     doctor = getattr(window, "pages", {}).get("doctor")
     if doctor is not None and hasattr(doctor, "attach_gate"):
         doctor.attach_gate(gate)

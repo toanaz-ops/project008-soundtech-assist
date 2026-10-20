@@ -110,6 +110,7 @@ def test_choosing_vietnamese_saves_it_and_shows_the_restart_note(knowledge):
     assert saved == {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
         "consoles": ["10.0.0.5"], "apply_delay": 12, "language": "vi",
+        "last_show": None,
     }
     dialog.show()
     assert note.isVisible()

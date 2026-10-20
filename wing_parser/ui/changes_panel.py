@@ -26,6 +26,9 @@ from wing_parser.ui.texts import text
 
 class ChangesPanel(QWidget):
     undo_requested = Signal()
+    #: (Patch, SentWrite), emitted at the END of `record_sent` -- after the
+    #: badge, the ledger row and the scene correction (wave 5, spec section 4).
+    sent = Signal(object, object)
 
     def __init__(self) -> None:
         super().__init__()
@@ -33,6 +36,9 @@ class ChangesPanel(QWidget):
         self._window = None
         self.list = FitList()
         self.status_label = QLabel("")
+        self.log_warning_label = QLabel("")
+        self.log_warning_label.setWordWrap(True)
+        self.log_warning_label.setVisible(False)
         self.ledger = SentLedger()
         self.undo_button = QPushButton(text("changes.undo"))
         self.undo_button.clicked.connect(self.undo_requested.emit)
@@ -40,6 +46,7 @@ class ChangesPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(self.list)
         layout.addWidget(self.status_label)
+        layout.addWidget(self.log_warning_label)
         layout.addWidget(self.ledger)
         layout.addWidget(self.undo_button)
         self.set_changes(())
@@ -71,6 +78,12 @@ class ChangesPanel(QWidget):
         write_apply.apply_result(self._window, patch, record)
         self.ledger.add(record)
         self._badge(patch, record)
+        self.sent.emit(patch, record)
+
+    def set_log_warning(self, message: str) -> None:
+        """A write-log failure (W3), kept on screen for the session."""
+        self.log_warning_label.setText(message)
+        self.log_warning_label.setVisible(bool(message))
 
     def report_write_error(self, exc) -> None:
         self.status_label.setText(text("console.write.refused").format(error=exc))
