@@ -10,7 +10,7 @@ from pathlib import Path
 from wing_parser import config
 
 from .codes import normalize_code
-from .entry import ENTRY_VERSION, LogEntry
+from .entry import ENTRY_VERSION, LogEntry, ts_key
 
 
 @dataclass
@@ -87,7 +87,7 @@ def list_shows(directory: Path | None = None) -> list[ShowSummary]:
         entries, skipped = read_show(code, directory)
         if not entries and not skipped:
             continue
-        stamps = sorted(e.ts for e in entries)
+        stamps = sorted((e.ts for e in entries), key=ts_key)
         named = next((e for e in reversed(entries) if e.show or e.venue), None)
         shows.append(ShowSummary(
             code=code,
@@ -102,5 +102,5 @@ def list_shows(directory: Path | None = None) -> list[ShowSummary]:
             reverts=sum(e.kind == "revert" for e in entries),
             skipped=skipped,
         ))
-    shows.sort(key=lambda s: s.last_ts, reverse=True)
+    shows.sort(key=lambda s: ts_key(s.last_ts), reverse=True)
     return shows

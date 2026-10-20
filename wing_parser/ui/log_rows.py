@@ -13,9 +13,8 @@ from PySide6.QtGui import QStandardItem
 from PySide6.QtWidgets import QListWidgetItem
 
 from wing_parser.ui.texts import text
+from wing_parser.writelog import COLUMNS, OUTCOME_BADGE
 
-COLUMNS = ("time", "desk", "address", "label", "finding", "file_before",
-           "desk_before", "written", "readback", "outcome", "kind")
 NUMERIC = {5, 6, 7, 8}
 MONO = {0, 2, 4}
 
@@ -42,7 +41,7 @@ def entry_row(entry) -> list[QStandardItem]:
     kind = (text(f"log.report.kind.{entry.kind}")
             if entry.kind in ("repair", "revert") else entry.kind)
     outcome = (text(f"log.outcome.{entry.outcome}")
-               if entry.outcome in ("sent", "clamped", "no_reply")
+               if entry.outcome in OUTCOME_BADGE
                else entry.outcome)
     return [_cell(v) for v in (
         entry.ts, desk.get("name") or desk.get("serial"), entry.address,

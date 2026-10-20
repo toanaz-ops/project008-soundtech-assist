@@ -25,9 +25,10 @@ from PySide6.QtWidgets import (
 from wing_parser import writelog
 from wing_parser.ui import log_rows
 from wing_parser.ui.elide import MonoDelegate
-from wing_parser.ui.log_rows import COLUMNS, MONO, NUMERIC
+from wing_parser.ui.log_rows import MONO, NUMERIC
 from wing_parser.ui.texts import text
 from wing_parser.ui.theme.widgets import Caption
+from wing_parser.writelog import COLUMNS, ts_key
 
 
 def choose_save_path(parent, title, suggested, file_filter) -> str:
@@ -127,18 +128,22 @@ class LogPage(QWidget):
     def refresh(self) -> None:
         keep = self.current_code()
         shows = writelog.list_shows(self._directory)
+        # Signals stay blocked through setCurrentRow: the one _load below is
+        # the only load, so a refresh never reads the chosen show twice.
         self.shows_list.blockSignals(True)
-        self.shows_list.clear()
-        for show in shows:
-            self.shows_list.addItem(log_rows.show_item(show))
-        self.shows_list.blockSignals(False)
-        self.empty_label.setVisible(not shows)
-        for row, show in enumerate(shows):
-            if show.code == keep:
-                self.shows_list.setCurrentRow(row)
-                break
-        else:
-            self.shows_list.setCurrentRow(0 if shows else -1)   # newest show
+        try:
+            self.shows_list.clear()
+            for show in shows:
+                self.shows_list.addItem(log_rows.show_item(show))
+            self.empty_label.setVisible(not shows)
+            for row, show in enumerate(shows):
+                if show.code == keep:
+                    self.shows_list.setCurrentRow(row)
+                    break
+            else:
+                self.shows_list.setCurrentRow(0 if shows else -1)   # newest show
+        finally:
+            self.shows_list.blockSignals(False)
         self._load(self.current_code())
 
     def _row_changed(self, _row: int) -> None:
@@ -150,7 +155,7 @@ class LogPage(QWidget):
         self._skip_warning = ""
         if code is not None:
             entries, skipped = writelog.read_show(code, self._directory)
-            for entry in sorted(entries, key=lambda e: e.ts):
+            for entry in sorted(entries, key=lambda e: ts_key(e.ts)):
                 self.entries_model.appendRow(log_rows.entry_row(entry))
             if skipped:
                 self._skip_warning = text("log.warning.skipped").format(
