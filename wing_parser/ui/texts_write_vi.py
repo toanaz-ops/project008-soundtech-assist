@@ -98,4 +98,13 @@ WRITE_TEXTS_VI: dict[str, str] = {
     "console.write.revert_failed": (
         "Lượt revert đã dừng: {error}. Phần còn lại được giữ nguyên."
     ),
+
+    # -- show của lượt arm này (wave 5, W9/W12) ---------------------------
+    "console.write.arm_code_label": "Mã show",
+    "console.write.arm_code_hint": (
+        "Dùng mã job của văn phòng: AZ-1501 hoặc AZA-000123."
+    ),
+    "console.write.arm_adhoc": "Chưa có mã (tạm)",
+    "console.write.arm_name_label": "Tên show (không bắt buộc)",
+    "console.write.arm_venue_label": "Địa điểm (không bắt buộc)",
 }

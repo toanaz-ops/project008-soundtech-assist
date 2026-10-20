@@ -52,6 +52,7 @@ step 4.
 | Action | Expected result |
 |---|---|
 | Click **Arm**. | `ArmWriteDialog` opens and re-queries identity fresh; it names the desk **with the serial**, matching P3. |
+| Fill **Show code** (wave 5): type `AZ-1501`, or tick **No code (ad-hoc)**. Leave it empty or type `ABC-1` to check Arm stays disabled. | A valid code (or the ad-hoc tick, which fills `ADHOC-YYYYMMDD-HHMM`) is required before Arm can enable. Name and venue are optional and prefilled from the last arming. |
 | Type the wrong name, e.g. `WING-GIAQUI` (note the swapped letters). | Arm button stays disabled, `console.write.name_wrong` shown. |
 | Correct the name, but leave the "this desk is NOT running a show" latch **unticked**. | Arm button still disabled. |
 | Tick the latch and type the exact correct name. | Arm enables. Click it. |
@@ -113,6 +114,18 @@ step 4.
 | Pick one ledger row from the writes made in steps 3–5 and click **Revert**. | The desk returns to the value captured as "before" for that row. One countdown if the current level is Delayed; instant if Immediate. |
 | Build up **five or more** ledger rows (repeat repairs as needed), then click **Revert all**. | Rows revert in **reverse order** (last written, first undone). A progress line counts up, e.g. `3/7`. **WING-Edit never shows two parameters moving at the same time.** In Delayed, this means **one countdown dialog per parameter**, not one for the whole batch (per ToanAZ's 2026-09-25 answer to spec §11 q2). |
 | Mid-run, click **Stop**. | The run ends after the parameter currently in flight completes; the remaining rows are visibly left un-reverted. |
+
+**Result:** ☐ PASS ☐ FAIL
+**Notes:** _______________________________________________
+
+### 6b — Write log and post-show report (wave 5)
+
+| Action | Expected result |
+|---|---|
+| After the repairs and reverts above, open **Log** (Ctrl+8). | The show code you armed with is listed on the left, newest first, with its write count and the sent / clamped / no-reply counts. Pick it: every write and revert from steps 3–6 is on the right, in time order, with the desk name, the Doctor finding, file-before, desk-before, written, read-back and outcome. |
+| Close the app, reopen it, open **Log** again. | The same rows are still there — the log survives a restart. |
+| Click **Export report…**, accept the default name `<CODE>-report.html`, open the file in a browser. | One self-contained page: show code, name, venue, date, desk (name / serial / firmware), a summary with counts, one row per write, and the ✓ / ⚠ / ✗ footnote. Print preview fits on A4. |
+| Switch Settings ▸ Language to Tiếng Việt, restart, export again. | The labels in the report are Vietnamese; mixer nouns stay English. |
 
 **Result:** ☐ PASS ☐ FAIL
 **Notes:** _______________________________________________

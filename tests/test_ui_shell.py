@@ -13,11 +13,11 @@ def window(qt_app, monkeypatch):
     return MainWindow(None)
 
 
-def test_sidebar_lists_seven_pages_in_order(window):
+def test_sidebar_lists_eight_pages_in_order(window):
     from wing_parser.ui.main_window import PAGE_ORDER
 
     assert PAGE_ORDER == ["doctor", "overview", "channels", "routing",
-                          "diff", "import_", "console"]
+                          "diff", "import_", "console", "log"]
 
 
 def test_ctrl_7_switches_to_the_console_page(window):
@@ -29,6 +29,24 @@ def test_ctrl_7_switches_to_the_console_page(window):
     )
     shortcut.activated.emit()
     assert window.stack.currentWidget() is window.pages["console"]
+
+
+def test_last_show_survives_a_close(qt_app, monkeypatch, tmp_path):
+    """Wave 5: `save_on_close` builds its dict from a literal; `last_show`
+    (written live by the Arm dialog) must be carried or every quit erases it."""
+    from wing_parser import config
+    from wing_parser.ui import state_store
+    from wing_parser.ui.main_window import MainWindow
+
+    monkeypatch.setenv(config.ENV_VAR, str(tmp_path))
+    monkeypatch.setenv("WING_DISABLE_LLM", "1")
+    show = {"code": "AZ-1501", "name": "BIDV Gala", "venue": "GEM"}
+    state_store.save_last_show(tmp_path, show)
+
+    window = MainWindow(None)
+    window.close()
+
+    assert state_store.load(tmp_path)["last_show"] == show
 
 
 def test_switching_changes_the_visible_page(window):

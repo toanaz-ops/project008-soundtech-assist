@@ -75,6 +75,7 @@ def test_the_name_alone_does_not_enable_arm(qt_app, settle):
     dlg, _g, _d = _arm_dialog(qt_app)
     settle(lambda: NAME in dlg.status_label.text())
     dlg.name_edit.setText(NAME)
+    dlg.show_fields.code_edit.setText("AZ-1")
     assert dlg.arm_button.isEnabled() is False
 
 
@@ -83,6 +84,7 @@ def test_both_together_enable_arm(qt_app, settle):
     settle(lambda: NAME in dlg.status_label.text())
     dlg.latch.setChecked(True)
     dlg.name_edit.setText(NAME)
+    dlg.show_fields.code_edit.setText("AZ-1")
     assert dlg.arm_button.isEnabled() is True
 
 
@@ -109,6 +111,7 @@ def test_typing_the_name_before_identity_arrives_shows_pending_not_wrong(qt_app,
     dlg, _g, _d = _arm_dialog(qt_app)
     dlg.latch.setChecked(True)
     dlg.name_edit.setText(NAME)
+    dlg.show_fields.code_edit.setText("AZ-1")
     assert dlg.name_hint.text() == text("console.write.name_pending")
     assert dlg.arm_button.isEnabled() is False
 
@@ -129,6 +132,7 @@ def test_an_identity_failure_leaves_arm_dead_for_this_dialogs_life(qt_app, settl
     assert "not armed" in dlg.status_label.text()
     dlg.latch.setChecked(True)
     dlg.name_edit.setText(NAME)
+    dlg.show_fields.code_edit.setText("AZ-1")
     assert dlg.arm_button.isEnabled() is False
 
 
@@ -140,6 +144,7 @@ def test_arming_arms_the_gate_and_announces_the_identity(qt_app, settle):
     gate.changed.connect(lambda: seen.append("changed"))
     dlg.latch.setChecked(True)
     dlg.name_edit.setText(NAME)
+    dlg.show_fields.code_edit.setText("AZ-1")
     dlg.arm_button.click()
 
     assert gate.arm.armed() is True

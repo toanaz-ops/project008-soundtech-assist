@@ -21,7 +21,7 @@ STATE_FILE = "ui-state.json"
 MAX_RECENT = 8
 
 PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_",
-             "console")
+             "console", "log")
 
 #: F6: the countdown a Delayed apply opens at. Clamped rather than
 #: rejected -- a hand-edited 0 or 999 is a typo, not a reason to lose the
@@ -29,8 +29,21 @@ PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_",
 MIN_APPLY_DELAY = 3
 MAX_APPLY_DELAY = 60
 
+#: Wave 5 (W8'): the show last armed for, so the Arm dialog can prefill it.
+MAX_SHOW_TEXT = 80
+
 DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": [],
-                  "apply_delay": 5, "language": "en"}
+                  "apply_delay": 5, "language": "en", "last_show": None}
+
+
+def _last_show(raw) -> dict | None:
+    """`{code, name, venue}` of strings, or `None` for anything else."""
+    if not isinstance(raw, dict) or not isinstance(raw.get("code"), str):
+        return None
+    def clip(key: str) -> str:
+        value = raw.get(key)
+        return value[:MAX_SHOW_TEXT] if isinstance(value, str) else ""
+    return {"code": raw["code"], "name": clip("name"), "venue": clip("venue")}
 
 
 def normalize(state: dict) -> dict:
@@ -61,6 +74,7 @@ def normalize(state: dict) -> dict:
         ][:MAX_RECENT],
         "apply_delay": delay,
         "language": language if language in LANGUAGES else "en",
+        "last_show": _last_show(state.get("last_show")),
     }
 
 
@@ -89,6 +103,12 @@ def save_language(directory: Path, code: str) -> None:
     """Change only the language: the Settings row writes it the moment
     it changes, without waiting for (or clobbering) a close-time save."""
     save(directory, dict(load(directory), language=code))
+
+
+def save_last_show(directory: Path, show: dict) -> None:
+    """Change only the last show: the Arm dialog writes it the moment the
+    operator arms, without waiting for a close-time save."""
+    save(directory, dict(load(directory), last_show=show))
 
 
 def remember_recent(recents: list[str], path: str) -> list[str]:

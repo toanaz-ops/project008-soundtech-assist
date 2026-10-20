@@ -36,10 +36,15 @@ class ArmState:
 
     def __init__(self) -> None:
         self.identity: Any | None = None
+        #: Wave 5 (W13): `{code, name, venue}` this arming is for. Each write
+        #: copies it at submit time -- never read at settle time, because
+        #: `disarm()` below clears it while a write can still be in flight.
+        self.show: dict | None = None
         self.level: ApplyLevel = ApplyLevel.MANUAL
 
-    def arm(self, identity: Any) -> None:
+    def arm(self, identity: Any, show: dict | None = None) -> None:
         self.identity = identity
+        self.show = dict(show) if show else None
 
     def armed(self) -> bool:
         return self.identity is not None
@@ -52,6 +57,7 @@ class ArmState:
         the truth rather than the level he picked before the cable went.
         """
         self.identity = None
+        self.show = None
         self.level = ApplyLevel.MANUAL
 
 

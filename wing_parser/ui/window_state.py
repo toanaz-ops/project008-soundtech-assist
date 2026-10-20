@@ -131,5 +131,7 @@ def save_on_close(window) -> None:
             # `--lang` overrides one run only -- re-read what is saved
             # so closing never reverts a choice made this session.
             "language": state_store.load(config.knowledge_dir())["language"],
+            # Written live by the Arm dialog; re-read so close never drops it.
+            "last_show": state_store.load(config.knowledge_dir())["last_show"],
         },
     )

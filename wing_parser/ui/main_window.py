@@ -9,45 +9,20 @@ chain into `focus_chain.py`, keeping every file under the cap.
 
 from __future__ import annotations
 
-import qtawesome as qta
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QComboBox,
     QDockWidget,
     QHBoxLayout,
-    QListWidget,
-    QListWidgetItem,
     QMainWindow,
-    QScrollArea,
-    QStackedWidget,
     QWidget,
 )
 
-from wing_parser.ui import live_wiring, menus, state_store, window_state
+from wing_parser.ui import live_wiring, menus, window_pages, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
-from wing_parser.ui.console_page import ConsolePage
-from wing_parser.ui.channels_page import ChannelsPage
-from wing_parser.ui.diff_page import DiffPage
-from wing_parser.ui.doctor_page import DoctorPage
-from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops
-from wing_parser.ui.import_page import ImportPage
-from wing_parser.ui.overview_page import OverviewPage
-from wing_parser.ui.routing_page import RoutingPage
+from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops  # noqa: F401 -- _tab_stops re-export
 from wing_parser.ui.session import Session
-from wing_parser.ui.theme.widgets import caption_font
 from wing_parser.ui.texts import text
-
-PAGE_ORDER = list(state_store.PAGE_KEYS)
-
-PAGE_ICONS = {
-    "doctor": "fa5s.stethoscope",
-    "overview": "fa5s.chart-bar",
-    "channels": "fa5s.sliders-h",
-    "routing": "fa5s.project-diagram",
-    "diff": "fa5s.code-branch",
-    "import_": "fa5s.file-import",
-    "console": "fa5s.network-wired",
-}
+from wing_parser.ui.window_pages import PAGE_ICONS, PAGE_ORDER  # noqa: F401 -- re-export
 
 
 class MainWindow(QMainWindow):
@@ -67,32 +42,9 @@ class MainWindow(QMainWindow):
     # -- construction ---------------------------------------------------
 
     def _build_body(self) -> None:
-        self.pages: dict[str, QWidget] = {"doctor": DoctorPage()}
-        self.pages["doctor"].repaired.connect(self._refresh)
-        self.pages["overview"] = OverviewPage()
-        self.pages["channels"] = ChannelsPage()
-        self.pages["routing"] = RoutingPage()
-        self.pages["diff"] = DiffPage()
-        self.pages["import_"] = ImportPage()
-        self.pages["import_"].open_settings_requested.connect(self.open_settings)
-        self.pages["console"] = ConsolePage()
-        live_wiring.wire_console(self, self.pages["console"])
-        self.pages["console"].session_pulled.connect(
-            self.pages["import_"].scene_step.set_pulled_session)
-
-        self.stack = QStackedWidget()
-        for key in PAGE_ORDER:
-            self.stack.addWidget(self.pages[key])
-
-        self.sidebar = QListWidget()
-        self.sidebar.setObjectName("sidebar")
-        self.sidebar.setFont(caption_font())
-        for key in PAGE_ORDER:
-            label = text(f"page.{key.removesuffix('_')}")
-            item = QListWidgetItem(qta.icon(PAGE_ICONS[key]), label.upper())
-            self.sidebar.addItem(item)
-        self.sidebar.currentRowChanged.connect(self.stack.setCurrentIndex)
-        self.sidebar.setCurrentRow(0)
+        self.pages: dict[str, QWidget] = window_pages.build_pages(self)
+        self.stack = window_pages.build_stack(self.pages)
+        self.sidebar = window_pages.build_sidebar(self.stack)
 
         body = QHBoxLayout()
         body.addWidget(self.sidebar)

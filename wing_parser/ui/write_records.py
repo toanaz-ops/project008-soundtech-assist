@@ -45,6 +45,12 @@ class SentWrite:
 
     `result` is a `wing_parser.net.write.SetResult`, typed `Any` here for
     the reason in this module's docstring.
+
+    **Wave 5, W13:** `identity` (the `WingIdentity` armed for) and `show`
+    (`{code, name, venue}`) are copied at SUBMIT time and travel with the
+    row to the write log. Nothing may read them from the gate when the
+    write settles: `WriteGate.close()` disarms and clears both while an
+    in-flight write can still settle afterwards.
     """
 
     address: str
@@ -52,6 +58,8 @@ class SentWrite:
     desk_before: Any | None
     written: Any
     result: Any
+    identity: Any | None = None
+    show: dict | None = None
 
 
 def scene_value(parts: Sequence[str], readback: Any) -> Any:
