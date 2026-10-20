@@ -84,13 +84,20 @@ class ChangesPanel(QWidget):
         self.undo_button.setEnabled(bool(patches))
 
     def record_sent(self, patch, record) -> None:
-        """One result: the badge, the scene (F8) and one ledger row."""
-        write_apply.apply_result(self._window, patch, record)
+        """One result: one ledger row, the badge, the scene (F8).
+
+        The ledger row goes first: the packet has left, so a scene
+        correction that raises must not also lose the row (and with it
+        Revert). `sent` still fires -- the write log owes the line -- and
+        the exception then propagates as before."""
         self.ledger.add(record)
         self._sent_rows = [(p, r) for p, r in self._sent_rows if p != patch]
         self._sent_rows.append((patch, record))
         self._badge(patch, record)
-        self.sent.emit(patch, record)
+        try:
+            write_apply.apply_result(self._window, patch, record)
+        finally:
+            self.sent.emit(patch, record)
 
     def set_log_warning(self, message: str) -> None:
         """A write-log failure (W3), kept on screen for the session."""
