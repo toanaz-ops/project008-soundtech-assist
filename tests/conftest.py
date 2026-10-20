@@ -36,6 +36,27 @@ def vu_path() -> Path:
     return USER_FILES / "example-Vu.snap"
 
 
+def _shut_down_qt(app) -> None:
+    """Destroy every widget while the QApplication is still alive.
+
+    Tests build top-level widgets and drop the Python reference without
+    closing them. Left to interpreter shutdown, PySide6 6.12 destroys the
+    QApplication first and then crashes (exit 0xC0000409) finishing off
+    the orphaned widgets. Deleting them here, in order, avoids that.
+    """
+    import gc
+
+    from PySide6.QtCore import QCoreApplication, QEvent
+
+    gc.collect()
+    for widget in app.topLevelWidgets():
+        widget.close()
+        widget.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    app.processEvents()
+    gc.collect()
+
+
 @pytest.fixture(scope="session")
 def qt_app():
     """One QApplication for the whole run; Qt permits only one.
@@ -45,7 +66,9 @@ def qt_app():
     with no GUI installed at all.
     """
     widgets = pytest.importorskip("PySide6.QtWidgets")
-    return widgets.QApplication.instance() or widgets.QApplication([])
+    app = widgets.QApplication.instance() or widgets.QApplication([])
+    yield app
+    _shut_down_qt(app)
 
 
 @pytest.fixture(scope="session", autouse=True)

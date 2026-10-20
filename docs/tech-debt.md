@@ -739,6 +739,21 @@ by the command shown. The wave-1 / wave-1b closures below were written on
     the XML at that commit carried `tests="1764" failures="0" errors="0"
     skipped="3"`, i.e. 1761 passed / 3 skipped, which is the number the
     wave-3 ROADMAP row and handoff quote.
+  - correction 2026-10-20 (PySide6 6.12.0): **the exception did become a real
+    crash.** On 6.12.0 the suite printed its summary and then the process
+    exited `-1073740791` (0xC0000409; sometimes 0xC0000005); 6.11.2 exited 0.
+    Bisected by running each `test_ui_*.py` file, then each test, in its own
+    process: `test_ui_doctor.py` (4 tests, deterministic) and
+    `test_ui_widgets.py` (intermittent) each crash alone. Root cause: tests
+    build top-level widgets (`DoctorPage()`, `MainWindow(...)`) and drop the
+    Python reference without closing them. At interpreter shutdown 6.12
+    destroys the session `QApplication` first and then crashes finishing off
+    the orphaned widgets. Fix: the session `qt_app` fixture in
+    `tests/conftest.py` now yields and, on teardown, runs `_shut_down_qt`
+    (`gc.collect`, close + `deleteLater` every top-level widget, flush
+    `DeferredDelete`, `processEvents`) while the app is still alive. With it
+    each of those files exits 0 repeatedly, and the `<6.12` cap on the `ui`
+    extra (PR #19) is removed.
   - status: open (parked)
 
 ---
