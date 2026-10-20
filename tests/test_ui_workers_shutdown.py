@@ -23,7 +23,7 @@ from wing_parser.ui.workers import CallRunner
 app = QApplication([])
 gate = threading.Event()
 owner = QWidget()
-runner = CallRunner(owner)
+runner = CallRunner()          # parentless: dropping it frees the C++ side
 runner.start("probe", lambda: gate.wait(5), on_success=lambda r: None,
              on_failure=lambda e: None)
 """
@@ -37,18 +37,22 @@ def _run(body: str):
                           cwd=os.getcwd(), check=False)
 
 
-def test_owner_destroyed_with_a_hung_active_worker_does_not_abort():
+def test_quit_with_a_hanging_worker_waits_for_it_instead_of_aborting():
+    # The worker needs ~1 s; the event loop quits at once. On main the process
+    # then tears down with the QThread still running and aborts (exit code
+    # 3221226505); the aboutToQuit hook waits (bounded) for it instead.
     out = _run("""
-        runner.cancel()                 # settled, thread still hanging in gate.wait
+        import time
+        runner.cancel()
         del runner
-        owner.close(); owner.deleteLater(); del owner
-        app.processEvents(); gc.collect()
-        gate.set()
-        from wing_parser.ui.workers import shutdown_all
-        shutdown_all(5000)
+        gc.collect()
+        threading.Timer(1.0, gate.set).start()
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(50, app.quit)
+        app.exec()
         print("SURVIVED")
     """)
-    assert out.returncode == 0 and "SURVIVED" in out.stdout, out.stderr[-500:]
+    assert out.returncode == 0 and "SURVIVED" in out.stdout, (out.returncode, out.stderr[-300:])
 
 
 def test_shutdown_is_bounded_and_keeps_stragglers_alive():

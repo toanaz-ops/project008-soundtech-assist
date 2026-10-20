@@ -43,6 +43,12 @@ def shutdown_all(timeout_ms: int = 2000) -> None:
 
     Stragglers (a hung HTTP call) stay in the keep-alive set, so they are
     never destroyed while running.
+
+    Documented residual (accepted, D-58): a straggler still running after
+    this bound (a hung HTTP call at quit) is destroyed at interpreter
+    teardown, and PySide6 6.12 may still abort then -- after the window is
+    gone. State is saved and log lines are flushed before quit, so only the
+    process exit code or a crash dump is affected.
     """
     for worker in list(_LIVE):
         worker.cancel()

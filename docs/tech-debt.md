@@ -1112,6 +1112,17 @@ same loss that made D1-D18 a rescue job.
 
 ---
 
+## D-58 note — worker threads vs PySide6 6.12 (PR #32)
+
+Status: **partially closed.** The production fix landed in PR #32
+(`ui/worker_registry.py` keep-alive set, `CallRunner.shutdown`, `aboutToQuit`
+hook), so a cancelled or timed-out worker is never destroyed while running.
+**Residual, accepted:** a straggler still running past the 2 s quit bound is
+destroyed at interpreter teardown and 6.12 may still abort then — state is
+saved and logs are flushed before quit, so only the exit code or a crash dump
+is affected. The released exe is still built on PySide6 6.11.2; D-58 stays
+open until the app has run on 6.12.
+
 ## Appendix — rulings preserved, not debt
 
 These are decisions already taken and applied during wave-1 execution. They are
