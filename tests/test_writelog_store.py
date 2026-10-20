@@ -119,3 +119,16 @@ def test_writelog_never_imports_net():
                 names = ["." * node.level + (node.module or "")]
             for n in names:
                 assert "wing_parser.net" not in n and not n.lstrip(".").startswith("net"), (f, n)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("desk", "WING"), ("ts", 1), ("show_code", None), ("kind", 3), ("outcome", [])])
+def test_from_json_rejects_wrongly_typed_values(field, value):
+    from wing_parser.writelog import LogEntry
+
+    data = {f: None for f in LogEntry.__dataclass_fields__}
+    data.update(v=1, ts="t", show_code="AZ-1", kind="repair", outcome="sent",
+                desk=None, label="l", address="a", path="p", app="x")
+    data[field] = value
+    with pytest.raises(TypeError):
+        LogEntry.from_json(data)

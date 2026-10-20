@@ -43,4 +43,9 @@ class LogEntry:
         names = {f.name for f in fields(cls)}
         if not isinstance(data, dict) or set(data) != names:
             raise TypeError("log entry keys do not match LogEntry")
+        for key in ("ts", "show_code", "kind", "outcome"):
+            if not isinstance(data[key], str):
+                raise TypeError(f"log entry field {key!r} must be a string")
+        if data["desk"] is not None and not isinstance(data["desk"], dict):
+            raise TypeError("log entry field 'desk' must be an object or null")
         return cls(**data)

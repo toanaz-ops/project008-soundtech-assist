@@ -46,6 +46,7 @@ class ShowFields(QWidget):
             self.code_edit.setText(last_show.get("code", ""))
             self.name_edit.setText(last_show.get("name", ""))
             self.venue_edit.setText(last_show.get("venue", ""))
+        self._code_before_adhoc = ""
         self.code_edit.textChanged.connect(self._code_changed)
         self.adhoc.toggled.connect(self._adhoc_toggled)
 
@@ -67,7 +68,8 @@ class ShowFields(QWidget):
 
     def _adhoc_toggled(self, on: bool) -> None:
         if on:
+            self._code_before_adhoc = self.code_edit.text()
             self.code_edit.setText(writelog.adhoc_code(datetime.now()))
         else:
-            self.code_edit.setText("")
+            self.code_edit.setText(self._code_before_adhoc)
         self.code_edit.setEnabled(not on)

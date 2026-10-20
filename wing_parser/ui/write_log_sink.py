@@ -67,8 +67,8 @@ class WriteLogSink(QObject):
 
     def on_reverted(self, record, _result) -> None:
         original = self._labels.get(record.path)
-        label = f"Revert: {original}" if original else "Revert"
-        self._log("revert", record, self._findings.get(record.path), label, None)
+        self._log("revert", record, self._findings.get(record.path),
+                  original or "", None)
 
     # -- the one write, fenced (W3) ----------------------------------------
 

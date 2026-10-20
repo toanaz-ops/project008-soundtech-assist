@@ -174,6 +174,23 @@ def test_skipped_lines_raise_a_warning(page, knowledge):
     assert not page.warning_label.isHidden()
 
 
+@pytest.mark.parametrize("field,value", [("desk", "WING"), ("ts", 1)])
+def test_a_wrongly_typed_line_is_skipped_not_fatal(page, knowledge, field, value):
+    import json
+
+    writelog.append(_entry(), knowledge)
+    path = writelog.log_dir(knowledge) / "AZ-1501.jsonl"
+    bad = _entry().to_json()
+    bad[field] = value
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(bad) + chr(10))
+    with pytest.warns(UserWarning):
+        page.refresh()
+    assert page.entries_model.rowCount() == 1
+    assert "1" in page.warning_label.text()
+    assert not page.warning_label.isHidden()
+
+
 def test_a_sink_failure_shows_on_the_page(qt_app, page):
     from wing_parser.ui.write_log_sink import WriteLogSink
 

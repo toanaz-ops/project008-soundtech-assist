@@ -161,6 +161,108 @@ def test_a_revert_writes_a_revert_line_with_the_repairs_finding(
     assert revert.desk["serial"] == "01009Y90604AAE"
     assert revert.show_code == "AZ-1501"
     assert revert.outcome == "sent"
+    assert revert.label == repair.label, "the original label, not a prefixed one"
+
+
+PATH2 = "ae_data.ch.2.send.8.mode"
+OSC2 = "/ch/2/send/8/mode"
+
+
+def _two_repairs_then_revert_all(rig, settle, qt_app):
+    """Drive two repairs and `revert_all()` through the real router, pressing
+    Apply now on every countdown dialog that opens."""
+    from PySide6.QtWidgets import QApplication
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.write_delay_dialog import DelayedWriteDialog
+
+    def press_apply():
+        dialogs = [w for w in QApplication.topLevelWidgets()
+                   if isinstance(w, DelayedWriteDialog) and w.isVisible()
+                   and w.apply_button.isEnabled()]
+        for dialog in dialogs:
+            dialog.apply_button.click()
+        return bool(dialogs)
+
+    second = rig.window.session.record_value(
+        PATH2, "PRE", label="Set the send to PRE (ch.2.send.8)", because="G8:ch.2")
+    for patch in (rig.patch, second):
+        before = len(rig.panel.ledger.records())
+        route = (write_router.send_manually
+                 if rig.gate.arm.level is ApplyLevel.MANUAL
+                 else write_router.route_repair)
+        dialog = route(rig.gate, patch, 5, transport=rig.transport, timeout=2,
+                       on_sent=rig.panel.record_sent,
+                       on_error=rig.panel.report_write_error)
+        if dialog is not None:
+            assert settle(lambda: dialog.apply_button.isEnabled())
+            dialog.apply_button.click()
+        assert settle(lambda: len(rig.panel.ledger.records()) == before + 1,
+                      limit_s=4)
+    rig.panel.ledger.revert_all()
+    def done():
+        press_apply()
+        return rig.sink_lines() >= 4
+
+    assert settle(done, limit_s=10)
+
+
+@pytest.mark.parametrize("level", ["MANUAL", "DELAYED", "IMMEDIATE"])
+def test_revert_all_logs_two_repairs_then_two_reverts_in_reverse(
+        qt_app, settle, knowledge, vu_path, level):
+    desk = FakeDesk(identity=_identity(), leaves={
+        OSC: OscMessage(OSC, "s", ("POST",)),
+        OSC2: OscMessage(OSC2, "s", ("POST",))})
+    rig = _Rig(vu_path, desk, level)
+    rig.sink_lines = lambda: len(writelog.read_show("AZ-1501", knowledge)[0])
+    _two_repairs_then_revert_all(rig, settle, qt_app)
+
+    first, second, undo_second, undo_first = _entries(knowledge)
+    assert (first.kind, second.kind) == ("repair", "repair")
+    assert (undo_second.kind, undo_first.kind) == ("revert", "revert")
+    assert (undo_second.path, undo_first.path) == (PATH2, PATH)
+    assert undo_first.finding == BECAUSE and undo_second.finding == "G8:ch.2"
+    assert undo_first.written == first.desk_before
+    assert undo_second.written == second.desk_before
+    assert rig.sink.warning == ""
+
+
+def test_a_log_failure_during_revert_all_does_not_stop_the_run(
+        qt_app, settle, knowledge, vu_path, monkeypatch):
+    desk = FakeDesk(identity=_identity(), leaves={
+        OSC: OscMessage(OSC, "s", ("POST",)),
+        OSC2: OscMessage(OSC2, "s", ("POST",))})
+    rig = _Rig(vu_path, desk, "IMMEDIATE")
+    rig.sink_lines = lambda: len(writelog.read_show("AZ-1501", knowledge)[0])
+    real = writelog.append
+    reverts = []
+
+    def flaky(entry, directory=None):
+        if entry.kind == "revert":
+            reverts.append(entry.path)
+            raise RuntimeError("disk on fire")
+        return real(entry, directory)
+
+    monkeypatch.setattr(writelog, "append", flaky)
+    finished = []
+    rig.panel.ledger.run_finished.connect(lambda: finished.append(1))
+    from wing_parser.ui import write_router
+
+    second = rig.window.session.record_value(
+        PATH2, "PRE", label="x", because="G8:ch.2")
+    for patch in (rig.patch, second):
+        before = len(rig.panel.ledger.records())
+        write_router.route_repair(
+            rig.gate, patch, 5, transport=rig.transport, timeout=2,
+            on_sent=rig.panel.record_sent)
+        assert settle(lambda: len(rig.panel.ledger.records()) == before + 1,
+                      limit_s=4)
+    rig.panel.ledger.revert_all()
+    assert settle(lambda: bool(finished), limit_s=8)
+
+    assert reverts == [PATH2, PATH], "both reverts ran, in reverse"
+    assert "disk on fire" in rig.sink.warning
+    assert not rig.panel.log_warning_label.isHidden()
 
 
 def test_a_revert_of_an_unknown_path_has_a_null_finding(

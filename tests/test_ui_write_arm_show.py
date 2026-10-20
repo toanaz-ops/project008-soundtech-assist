@@ -89,6 +89,17 @@ def test_the_adhoc_tick_fills_a_generated_code(qt_app, settle, knowledge):
     assert dlg.arm_button.isEnabled() is False
 
 
+def test_unticking_adhoc_restores_the_prefilled_code(qt_app, settle, knowledge):
+    from wing_parser.ui.write_arm_show import ShowFields
+
+    fields = ShowFields({"code": "AZ-1501", "name": "n", "venue": "v"})
+    fields.adhoc.setChecked(True)
+    assert fields.code_edit.text().startswith("ADHOC-")
+    fields.adhoc.setChecked(False)
+    assert fields.code_edit.text() == "AZ-1501"
+    assert fields.code_edit.isEnabled()
+
+
 def test_name_and_venue_are_capped_at_eighty(qt_app, settle, knowledge):
     dlg, _gate = _dialog(settle, knowledge)
     dlg.show_fields.name_edit.setText("n" * 200)
