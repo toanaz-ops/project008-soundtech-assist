@@ -13,11 +13,11 @@ def window(qt_app, monkeypatch):
     return MainWindow(None)
 
 
-def test_sidebar_lists_seven_pages_in_order(window):
+def test_sidebar_lists_eight_pages_in_order(window):
     from wing_parser.ui.main_window import PAGE_ORDER
 
     assert PAGE_ORDER == ["doctor", "overview", "channels", "routing",
-                          "diff", "import_", "console"]
+                          "diff", "import_", "console", "log"]
 
 
 def test_ctrl_7_switches_to_the_console_page(window):

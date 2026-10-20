@@ -21,7 +21,7 @@ STATE_FILE = "ui-state.json"
 MAX_RECENT = 8
 
 PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_",
-             "console")
+             "console", "log")
 
 #: F6: the countdown a Delayed apply opens at. Clamped rather than
 #: rejected -- a hand-edited 0 or 999 is a typo, not a reason to lose the
