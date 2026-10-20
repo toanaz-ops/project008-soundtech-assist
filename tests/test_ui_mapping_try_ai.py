@@ -46,14 +46,6 @@ def panel(qt_app):
     runner = CallRunner()
     widget = MappingTryAi(runner, lambda: object(), lambda: "some.xlsx")
     yield widget
-    # A cancelled / timed-out call is "settled" while its QThread is still
-    # running. Dropping the runner then destroys a running QThread, which
-    # aborts the process (PySide6 6.12). Join every worker first.
-    workers = list(runner._retired)
-    if runner._active is not None:
-        workers.append(runner._active["worker"])
-    for worker in workers:
-        worker.wait(10_000)
     widget.close()
     widget.deleteLater()
 
