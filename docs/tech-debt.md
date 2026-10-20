@@ -1131,20 +1131,20 @@ same loss that made D1-D18 a rescue job.
     parent); (2) prove it with a test that closes the import wizard and the
     Settings dialog mid-call on 6.12; (3) build the exe on 6.12 and run it.
     Only then drop the 6.11.2 pin from the release build.
-  - status: open
+  - status: partially closed 2026-10-21 -- steps (1) and (2) landed in PR #32
+    (`0378dca`). `ui/worker_registry.py` keeps every started worker alive
+    until it stops, `CallRunner.shutdown(timeout_ms)` exists, and
+    `aboutToQuit` waits up to 2 s for stragglers. Pinned by
+    `tests/test_ui_workers_shutdown.py` (runs in a subprocess; red on
+    main's `workers.py` with exit 3221226505, green with the fix).
+    **Residual, accepted by the orchestrator:** a worker still running past
+    the 2 s quit bound is destroyed at interpreter teardown, and 6.12 may
+    still abort then. State is saved and log lines are flushed before quit,
+    so only the exit code or a crash dump is affected. Still open: step (3),
+    building the exe on 6.12 and running it. The 6.11.2 pin stays until
+    then.
 
 ---
-
-## D-58 note — worker threads vs PySide6 6.12 (PR #32)
-
-Status: **partially closed.** The production fix landed in PR #32
-(`ui/worker_registry.py` keep-alive set, `CallRunner.shutdown`, `aboutToQuit`
-hook), so a cancelled or timed-out worker is never destroyed while running.
-**Residual, accepted:** a straggler still running past the 2 s quit bound is
-destroyed at interpreter teardown and 6.12 may still abort then — state is
-saved and logs are flushed before quit, so only the exit code or a crash dump
-is affected. The released exe is still built on PySide6 6.11.2; D-58 stays
-open until the app has run on 6.12.
 
 ## Appendix — rulings preserved, not debt
 
