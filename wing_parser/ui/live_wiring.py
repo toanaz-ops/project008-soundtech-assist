@@ -93,23 +93,17 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
         panel.failed.connect(lambda _exc: gate.close())
     changes = getattr(window, "changes_panel", None)
     if changes is not None:
-        changes.attach_gate(gate)          # task 12 gives ChangesPanel this
-        if hasattr(changes, "attach_window"):
-            changes.attach_window(window)  # task 13: the ledger needs it too
-        if hasattr(changes, "sent"):
-            write_log_sink.install(window, changes)    # wave 5: the durable log
+        changes.attach_gate(gate)
+        changes.attach_window(window)      # the ledger needs it too
+        write_log_sink.install(window, changes)    # wave 5: the durable log
     doctor = getattr(window, "pages", {}).get("doctor")
-    if doctor is not None and hasattr(doctor, "attach_gate"):
+    if doctor is not None:
         doctor.attach_gate(gate)
-        # Guarded until task 12 lands `record_sent`/`report_write_error` on
-        # ChangesPanel -- `hasattr(None, ...)` is also False, so this stays
-        # a no-op for as long as `changes` above does too.
-        if hasattr(changes, "record_sent"):
+        if changes is not None:
             doctor.send_requested.connect(lambda patch: write_router.route_repair(
                 gate, patch, getattr(window, "_apply_delay", 5), window,
                 on_sent=lambda p, record: changes.record_sent(p, record),
                 on_error=lambda exc: changes.report_write_error(exc)))
-        if changes is not None:
             changes.ledger.run_started.connect(
                 lambda: doctor.set_controls_enabled(False))
             changes.ledger.run_finished.connect(

@@ -86,20 +86,6 @@ def _read(host: str, path: str) -> Any | None:
 REAL = WriteTransport(identity=query_identity, read=_read, set=write.set)
 
 
-def preflight(host: str, path: str,
-              transport: WriteTransport = REAL) -> tuple[WingIdentity, Any | None]:
-    """A fresh identity and the desk's CURRENT value for `path`.
-
-    Identity is re-queried every time, never reused from the earlier
-    connect: `net_commands._echo_identity_before_write`
-    (`net_commands.py:79-85`) does exactly this before every CLI write, and
-    `identity.py:10-14` says why -- the caller is about to trust "this is
-    the console I meant to write to". Both errors propagate untranslated.
-    """
-    identity = transport.identity(host)
-    return identity, transport.read(host, path)
-
-
 def send(confirmation: WriteConfirmation,
          transport: WriteTransport = REAL) -> SetResult:
     """Write one leaf, read it back, and hand the caller `write.py`'s own

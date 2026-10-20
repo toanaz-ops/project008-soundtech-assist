@@ -49,6 +49,7 @@ class ArmWriteDialog(QDialog):
         self._transport = transport or live_write.REAL
         self._identity = None
         self._identity_pending = True
+        self._host = gate.host()        #: the desk this dialog identifies (and arms for)
         self.setWindowTitle(text("console.write.arm_title"))
         self.setWindowModality(Qt.WindowModality.ApplicationModal)     # W11
 
@@ -87,7 +88,7 @@ class ArmWriteDialog(QDialog):
 
         self._runner = CallRunner(self)
         self._runner.start(
-            "connect", self._transport.identity, gate.host(),
+            "connect", self._transport.identity, self._host,
             on_success=self._identified, on_failure=self._identity_failed,
             timeout=timeout,
         )
@@ -137,7 +138,7 @@ class ArmWriteDialog(QDialog):
             state_store.save_last_show(config.knowledge_dir(), show)
         except OSError:
             pass            # a prefill convenience; never blocks arming
-        self._gate.arm.arm(self._identity, show)
+        self._gate.arm.arm(self._identity, show, host=self._host)
         self._gate.changed.emit()
         self.armed.emit(self._identity)
         self.accept()
