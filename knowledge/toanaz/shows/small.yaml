@@ -24,9 +24,8 @@ rules:
       Probed 2026-08-17 from user-files/example-Vu.snap: of 34 named
       channels not one classifies as utility.ambient, and no channel name
       contains "amb", "audience" or "room mic" in any case. ToanAZ
-      delegated this call in the 2026-08-17 session rather than answering
-      it directly -- confirm with him before treating it as standing
-      practice on every small show.
+      delegated this call in the 2026-08-17 session; on 2026-10-20 he
+      confirmed it: keep G10 suppressed on small shows.
     rationale: >
       G10 states the generic rule correctly: an IEM performer with no room
       ambience is acoustically isolated and over-sings. But on a rig that

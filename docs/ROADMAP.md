@@ -235,17 +235,23 @@ supply. **Do not guess them.**
    limiter-capable models he would use; a missing member makes G7 fire on a
    protected IEM, the exact failure the rule exists to prevent. Closed as
    underivable offline after three probes
-   (`docs/handoff/2026-08-17-limiter-token-probe.md`).
+   (`docs/handoff/2026-08-17-limiter-token-probe.md`). *(2026-10-20: ToanAZ —
+   later; G7 unchanged until he supplies the list.)*
 4. **Is G10's suppression his standing practice?** `shows/small.yaml` supersedes
    it, but the rule's own `source:` records that he *delegated* the call.
+   **FIXED (ToanAZ 2026-10-20): keep G10 suppressed under `--profile small`.**
 5. **Should any advisory rule read `$fdr` instead of `fdr`?** `fdr` is the
    strip's own position (*intent*); `$fdr` is the value after DCA contribution
    and mute-override fold in (*result*). A rule about what the audience actually
-   hears may want the second.
+   hears may want the second. **FIXED (ToanAZ 2026-10-20): rules about what
+   the audience hears read `$fdr`; rules about strip configuration read `fdr`.**
+   Apply when such a rule is next written or touched.
 6. **Should a gate's `1:3` ratio be modelled as a number?** `Dyn.ratio` is
    `float | None` and `None` for the `a:b` form. Nothing reads it. Latent.
+   **FIXED (ToanAZ 2026-10-20): leave as is.**
 7. **`expects:` accepts pattern-derived kinds only.** A kind declared by hand in
    `knowledge/toanaz/classifier.yaml` would be refused. Latent.
+   **FIXED (ToanAZ 2026-10-20): leave as is.**
 8. **GUI wave 2's design questions were all decided by the orchestrator, ASSUMED
    for ToanAZ — he has not looked at any of them.** Spec rulings D1 (read-only,
    no write path), D6 (a desk is "lost" after 3 silent rounds), D9 (Console is

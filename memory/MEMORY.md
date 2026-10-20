@@ -255,3 +255,10 @@ teardown trên 6.12. **Bẫy 2:** chạy ba suite cùng lúc trên máy này sin
 `settle`/timeout giả trong test_ui_console và test_ui_changes_send, nên
 chạy `ci_local` của các lane lần lượt từng cái một. Exe chưa build lại sau
 đợt này. Handoff: `D:\DEV CAVE EP3\shared\handoff\handoff-20261019-p008-debt-lanes.md`.
+**(Cập nhật 2026-10-20):** trần `<6.12` ĐÃ GỠ (PR #21, `7a839e9`): gốc lỗi là test
+bỏ rơi cửa sổ cấp trên cùng, PySide6 6.12 huỷ `QApplication` trước rồi crash;
+sửa bằng `tests/conftest.py::_shut_down_qt` (teardown của fixture `qt_app`).
+Extra `ui` giờ là `PySide6>=6.11`. Exe build lại từ `7a839e9`: 71.192.399 bytes,
+sống sau 8s, venv build vẫn 6.11.2; zip `dist\wing-ui-20261020.zip`; ảnh
+`dist-shots\exe-20261020-en\`, `exe-20261020-vi\`. ToanAZ 2026-10-20 cho
+phép tự merge PR khi CI `test` xanh (đỏ thì sửa rồi merge).

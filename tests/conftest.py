@@ -43,6 +43,8 @@ def _shut_down_qt(app) -> None:
     closing them. Left to interpreter shutdown, PySide6 6.12 destroys the
     QApplication first and then crashes (exit 0xC0000409) finishing off
     the orphaned widgets. Deleting them here, in order, avoids that.
+    close() runs MainWindow.closeEvent, which saves ui-state.json: this is
+    safe only while `_isolated_knowledge_dir` outlives this fixture.
     """
     import gc
 
