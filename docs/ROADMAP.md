@@ -360,6 +360,24 @@ supply. **Do not guess them.**
     page shots from the exe in `dist-shots\exe-en\` and `dist-shots\exe-vi\`.
     Open for ToanAZ: judge the Vietnamese wording from those shots.
 
+12. **Wave 5 (durable write log + post-show report) — built on a branch,
+    not merged.** Direction chosen by ToanAZ 2026-10-20; overturns wave-3
+    W8. Every settled write and revert is appended to
+    `<knowledge_dir>/write-log/<SHOW-CODE>.jsonl` (non-UI package
+    `wing_parser/writelog/`); the Arm dialog now asks for a show code
+    (`AZ-n` / `AZA-NNNNNN`, or the ad-hoc tick), name and venue, prefilled
+    from `last_show` in `ui-state.json`; desk identity and show are copied
+    at submit (W13) so a write that settles after a disconnect still names
+    its desk. New 8th page **Log** (Ctrl+8): shows on the left, writes on
+    the right, **Export report…** renders one self-contained HTML file in
+    the UI language. A log failure never blocks a desk write (W3); it shows
+    as a warning on the Log page and in the Changes dock. Branch
+    `feat/gui-write-log-wave5`. Spec:
+    `docs/superpowers/specs/2026-10-20-gui-write-log-wave5-design.md`.
+    Open for ToanAZ: acceptance step 6b on the real desk
+    (`docs/acceptance/2026-09-wave3-desk-acceptance.md`), and a look at the
+    page and the report from the exe.
+
 ## 6. Waiting on hardware — NOTHING
 
 **Closed 2026-08-23**, one sitting with the console back from its show
