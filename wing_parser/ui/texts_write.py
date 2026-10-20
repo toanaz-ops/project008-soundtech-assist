@@ -106,4 +106,13 @@ WRITE_TEXTS: dict[str, str] = {
     "console.write.revert_failed": (
         "The revert run stopped: {error}. The rest were left as they are."
     ),
+
+    # -- the show this arming is for (wave 5, W9/W12) ---------------------
+    "console.write.arm_code_label": "Show code",
+    "console.write.arm_code_hint": (
+        "Use the job code from the office: AZ-1501 or AZA-000123."
+    ),
+    "console.write.arm_adhoc": "No code (ad-hoc)",
+    "console.write.arm_name_label": "Show name (optional)",
+    "console.write.arm_venue_label": "Venue (optional)",
 }

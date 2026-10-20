@@ -33,9 +33,11 @@ from PySide6.QtWidgets import (
     QCheckBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout,
 )
 
-from wing_parser.ui import live_write
+from wing_parser import config
+from wing_parser.ui import live_write, state_store
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
+from wing_parser.ui.write_arm_show import ShowFields
 
 
 class ArmWriteDialog(QDialog):
@@ -57,12 +59,15 @@ class ArmWriteDialog(QDialog):
         self.latch_why.setWordWrap(True)
         self.name_edit = QLineEdit()
         self.name_hint = QLabel("")
+        self.show_fields = ShowFields(
+            state_store.load(config.knowledge_dir())["last_show"])
         self.arm_button = QPushButton(text("console.write.arm"))
         self.arm_button.setEnabled(False)
         self.cancel_button = QPushButton(text("console.write.cancel"))
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.status_label)
+        layout.addWidget(self.show_fields)
         layout.addWidget(self.latch)
         layout.addWidget(self.latch_why)
         layout.addWidget(QLabel(text("console.write.name_prompt")))
@@ -76,6 +81,7 @@ class ArmWriteDialog(QDialog):
 
         self.latch.toggled.connect(self._refresh)
         self.name_edit.textChanged.connect(self._refresh)
+        self.show_fields.changed.connect(self._refresh)
         self.arm_button.clicked.connect(self._arm)
         self.cancel_button.clicked.connect(self.reject)
 
@@ -119,12 +125,19 @@ class ArmWriteDialog(QDialog):
         matches = self._identity is not None and typed == self._identity.name
         self.name_hint.setText(
             "" if matches or not typed else text("console.write.name_wrong"))
-        self.arm_button.setEnabled(bool(self.latch.isChecked() and matches))
+        self.arm_button.setEnabled(bool(
+            self.latch.isChecked() and matches
+            and self.show_fields.code() is not None))
 
     def _arm(self) -> None:
-        if self._identity is None:
+        if self._identity is None or self.show_fields.code() is None:
             return
-        self._gate.arm.arm(self._identity)
+        show = self.show_fields.show_dict()
+        try:
+            state_store.save_last_show(config.knowledge_dir(), show)
+        except OSError:
+            pass            # a prefill convenience; never blocks arming
+        self._gate.arm.arm(self._identity, show)
         self._gate.changed.emit()
         self.armed.emit(self._identity)
         self.accept()
