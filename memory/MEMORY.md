@@ -282,3 +282,19 @@ abort khi một QThread còn chạy bị huỷ. Đã sửa hai lần trong test
 (`_shut_down_qt`; fixture `panel` của try_ai); bản thân app còn rủi ro này
 (D-58). Còn treo cho ToanAZ: bước 6b của runbook desk thật, và xem trang
 Log từ exe.
+
+## 2026-10-22 — Chuẩn bị wave 6 đã merge; P008 TẠM NGƯNG
+
+Theo lệnh chủ dự án (qua DEV MASTER, 22/10): làm xong phase đang dở rồi dừng,
+không mở wave/phase mới. Đã merge PR #24–#40; main `7dfa3c8`, CI xanh (`test`
+và `qt-latest`). Gồm: các bản sửa từ audit của Fable (#24/#25/#27–#31, trong
+đó #24 lỡ merge vào nhánh base cũ nên PR #40 merge lại vào main); #32 sửa
+worker QThread cho PySide6 6.12 (D-58 mới đóng một phần); #36 ghim job CI
+`test` ở 6.11.2 và thêm job `qt-latest` được phép đỏ; #35 tài liệu phương án
+(`docs/proposals/2026-10-21-fable-options.md`); #37 gói nghiệm thu desk
+(`docs/acceptance/2026-10-desk-session-pack.md`); #38 probe13 tên phi-ASCII
+(chỉ đọc); #39 bộ câu hỏi gu mix (`docs/proposals/2026-10-22-mix-taste-prep.md`).
+Exe phát hành vẫn là bản build từ `17b8867`, CHƯA build lại sau các merge này.
+Mở lại khi chủ dự án cho phép. Chờ chủ dự án: nghiệm thu trên desk thật, câu
+hỏi trong #35 và #39, và tự tay thoát exe 6.12 khi model call đang treo.
+Handoff: `D:\DEV CAVE EP3\shared\handoff\handoff-20261022-p008-paused.md`.
