@@ -38,7 +38,11 @@ def _encode_string(text: str) -> bytes:
 def _read_string(data: bytes, offset: int) -> tuple[str, int]:
     """Read one NUL-terminated, 4-byte-padded string starting at offset."""
     end = data.index(b"\x00", offset)
-    text = data[offset:end].decode("ascii")
+    # errors="replace": a non-ASCII channel name (the encoding the console
+    # really emits is unmeasured -- neither sample .snap has one) must read as
+    # a name with a replacement character, not abort a whole pull. Sending
+    # stays ASCII-only (`_encode_string`).
+    text = data[offset:end].decode("utf-8", errors="replace")
     raw_len = end - offset
     padded_len = (raw_len // 4 + 1) * 4  # +1 for the mandatory terminator
     return text, offset + padded_len

@@ -262,3 +262,23 @@ Extra `ui` giờ là `PySide6>=6.11`. Exe build lại từ `7a839e9`: 71.192.399
 sống sau 8s, venv build vẫn 6.11.2; zip `dist\wing-ui-20261020.zip`; ảnh
 `dist-shots\exe-20261020-en\`, `exe-20261020-vi\`. ToanAZ 2026-10-20 cho
 phép tự merge PR khi CI `test` xanh (đỏ thì sửa rồi merge).
+
+## 2026-10-21 — GUI wave 5: sổ ghi bền theo mã show + báo cáo HTML (đã merge)
+
+PR #23 (`17b8867`). Mỗi lần ghi ra desk (Repair ở cả ba mức, Revert,
+Revert all) được append vào `<knowledge_dir>/write-log/<MÃ SHOW>.jsonl`.
+Mã show lấy từ PRJ012/ClickUp: `AZ-<n>` hoặc `AZA-NNNNNN`; show chưa có mã
+thì tick ad-hoc, máy sinh `ADHOC-YYYYMMDD-HHMM`. Bước Arm bắt nhập mã, điền
+sẵn từ `last_show` (lật W8 của wave 3). Thông tin desk và show được lưu
+**ngay lúc gửi** (`SentWrite.identity/show`), nên mất kết nối giữa chừng vẫn
+ghi đúng desk. Ghi sổ lỗi thì không bao giờ chặn lần ghi. Trang thứ 8 là
+**Log/Nhật ký** (Ctrl+8): danh sách show, các lần ghi, Export report… ra
+một file HTML. Spec: `docs/superpowers/specs/2026-10-20-gui-write-log-wave5-design.md`.
+Fable review cả spec lẫn code, mọi phát hiện đã sửa. Suite 2291 / 0 / 3.
+Exe build lại từ `17b8867` (PySide6 **ghim 6.11.2**, xem D-58): 71.228.436
+bytes, sống sau 8s; zip `dist\wing-ui-20261021.zip`; ảnh
+`dist-shots\exe-20261021-en\`, `exe-20261021-vi\`. **Bẫy:** PySide6 6.12
+abort khi một QThread còn chạy bị huỷ. Đã sửa hai lần trong test
+(`_shut_down_qt`; fixture `panel` của try_ai); bản thân app còn rủi ro này
+(D-58). Còn treo cho ToanAZ: bước 6b của runbook desk thật, và xem trang
+Log từ exe.

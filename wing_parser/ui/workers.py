@@ -20,6 +20,8 @@ import threading
 
 from PySide6.QtCore import QObject, QTimer, QThread, Signal
 
+from wing_parser.ui.worker_registry import register, shutdown_all, wait_all  # noqa: F401
+
 #: Ruled per-call budgets in seconds; a call past its budget is failed
 #: with :class:`CallTimedOut` while the UI stays responsive.
 #:
@@ -150,6 +152,7 @@ class CallRunner(QObject):
         worker.finished_cancelled.connect(cancelled)
         timer.timeout.connect(timed_out)
         timer.start(seconds * 1000)
+        register(worker)
         worker.start()
         return True
 
@@ -160,6 +163,19 @@ class CallRunner(QObject):
             return
         if active["on_cancel"] is not None:
             active["on_cancel"]()
+
+    def shutdown(self, timeout_ms: int = 2000) -> None:
+        """Owner is closing: cancel, wait a bounded time for this runner's
+        workers. Stragglers remain parked in the module keep-alive set."""
+        active = self._active
+        workers = list(self._retired)
+        if active is not None:
+            workers.append(active["worker"])
+            self.cancel()
+        for worker in workers:
+            worker.cancel()
+        wait_all(workers, timeout_ms)
+        self._retired[:] = [w for w in self._retired if w.isRunning()]
 
     # -- internals ------------------------------------------------------
 

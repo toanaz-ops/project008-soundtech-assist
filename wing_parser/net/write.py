@@ -13,8 +13,9 @@ out on a bare socket -- WingClient's reply-matching and socket rotation
 have nothing to do. Everything that does expect a reply, including the
 node-write acknowledgement and every read-back, goes through WingClient
 so it keeps that recovery. Sec
-6: dry-run (default) touches no socket; `confirm=True` echoes identity,
-refuses on a `WING_WRITE_ALLOW_SERIAL` mismatch, reads every write back.
+6: dry-run (default) touches no socket; `confirm=True` refuses on a
+`WING_WRITE_ALLOW_SERIAL` mismatch (and sends no `WING?` at all while that
+variable is unset -- callers echo identity themselves), reads every write back.
 """
 
 from __future__ import annotations
@@ -95,9 +96,16 @@ def _values_match(expected: Any, readback: Any) -> bool:
     return str(expected) == str(readback)
 
 def _authorize(host: str, identity_port: int, timeout: float) -> None:
-    identity = query_identity(host, identity_port, timeout=timeout)
+    # Env var first: with no pin there is nothing to compare an identity
+    # against, so the `WING?` round trip would be pure overhead (and one more
+    # way for a correct write to time out). The CLI echoes identity on its
+    # own (`net_commands._echo_identity_before_write`); the UI re-checks the
+    # serial in `live_write.send`.
     allowed = os.environ.get(_SERIAL_ENV_VAR)
-    if allowed and allowed != identity.serial:
+    if not allowed:
+        return
+    identity = query_identity(host, identity_port, timeout=timeout)
+    if allowed != identity.serial:
         raise SerialMismatchError(
             f"refusing to write to {identity.name!r} (serial {identity.serial!r}): "
             f"{_SERIAL_ENV_VAR}={allowed!r} does not match"

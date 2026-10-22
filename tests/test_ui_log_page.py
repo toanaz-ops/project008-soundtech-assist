@@ -221,6 +221,20 @@ def test_refresh_keeps_the_chosen_show(page, knowledge):
     assert page.shows_list.currentItem().data(0x0100) == chosen
 
 
+def test_refresh_loads_the_chosen_show_once(page, knowledge, monkeypatch):
+    writelog.append(_entry("AZ-1", ts="2026-10-01T10:00:00.000+07:00"), knowledge)
+    writelog.append(_entry("AZ-2", ts="2026-10-20T10:00:00.000+07:00"), knowledge)
+    page.refresh()
+    loads = []
+    original = page._load
+    monkeypatch.setattr(page, "_load", lambda code: (loads.append(code), original(code)))
+    page.refresh()                                  # keeps the chosen show
+    assert loads == ["AZ-2"]
+    loads.clear()
+    page.shows_list.setCurrentRow(1)                # the user's click still loads
+    assert loads == ["AZ-1"]
+
+
 # -- the window: eighth page, Ctrl+8, Tab order ----------------------------
 
 

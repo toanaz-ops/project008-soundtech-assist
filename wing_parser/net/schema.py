@@ -117,7 +117,11 @@ def _expand(replies: dict[str, OscMessage], leaves: dict[str, str]) -> list[str]
     returning the next level's node addresses to query."""
     next_frontier: list[str] = []
     for address, message in replies.items():
-        (text,) = message.args  # a ,s ? reply is always one string blob (S2.3)
+        if len(message.args) != 1 or not isinstance(message.args[0], str):
+            # A ,s ? reply is always one string blob (S2.3); an address-only
+            # reply (which `decode` tolerates) names no children.
+            continue
+        (text,) = message.args
         for name, is_node, type_text in _parse_lines(text):
             if name.startswith("$"):
                 continue  # S2.2: read-only, absent from .snap

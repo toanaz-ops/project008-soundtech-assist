@@ -41,7 +41,7 @@ def build_menus(window) -> None:
 
 
 def build_accelerators(window) -> None:
-    """The ruled map: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / Ctrl+1..7 / F5.
+    """The ruled map: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / Ctrl+1..8 / F5.
 
     Menu labels stay clean — the shortcut is bound with setShortcut,
     never appended to the text. Page keys are QShortcuts so they do
@@ -53,8 +53,9 @@ def build_accelerators(window) -> None:
     window._save_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
     window._undo_action.setShortcut(QKeySequence("Ctrl+Z"))
     window._reanalyse_action.setShortcut(QKeySequence("F5"))
-    # PAGE_KEYS is seven long since GUI wave 2 added Console, so this
-    # loop binds Ctrl+1..Ctrl+7 -- it follows PAGE_KEYS, never a literal.
+    # PAGE_KEYS is eight long since wave 5 added Log (wave 2 added Console
+    # as the seventh), so this loop binds Ctrl+1..Ctrl+8 -- it follows
+    # PAGE_KEYS, never a literal.
     for index, key in enumerate(PAGE_KEYS, start=1):
         shortcut = QShortcut(QKeySequence(f"Ctrl+{index}"), window)
         shortcut.activated.connect(

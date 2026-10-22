@@ -7,8 +7,9 @@ this module is the ONLY place under `wing_parser/ui/` that says `net`,
 and a test can drive the whole page against an in-memory desk
 (`tests/fake_desk.py`) with no socket anywhere (spec S7.1, S9.1).
 
-That the seam names six *read-only* calls and no others is how spec S8
-makes a write impossible in this wave: `net/write.py` has no way in.
+That the seam names six *read-only* calls and no others keeps this module
+read-only. Writing is not reached through it: since wave 3 the one door to
+`net/write.py` is `ui/live_write.py`, behind `WriteGate` (spec S8).
 
 Failures pass through untouched: `query_identity`'s `TimeoutError`
 naming the host and the 2.0 s it waited (`identity.py:83`), and its
