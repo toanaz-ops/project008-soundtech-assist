@@ -28,6 +28,7 @@ Two request shapes, both built on `codec.encode`/`codec.decode`:
 from __future__ import annotations
 
 import socket
+import struct
 from dataclasses import dataclass
 from typing import Any, Iterable, Sequence
 
@@ -150,7 +151,15 @@ class WingClient:
             data, _ = self._sock.recvfrom(_RECV_BUFSIZE)
         except socket.timeout:
             return None
-        return decode(data)
+        except OSError:
+            # Windows raises ConnectionResetError (WinError 10054) from
+            # recvfrom after an ICMP port-unreachable for an earlier send:
+            # nothing came back, which is a miss like any other.
+            return None
+        try:
+            return decode(data)
+        except (ValueError, struct.error):
+            return None  # a malformed or truncated datagram is a miss too
 
     # -- pipelined batch, with retry-on-rotated-socket -----------------------
 
@@ -239,13 +248,29 @@ class WingClient:
             self._sock.sendto(encode(address, typetag, args), (self._host, self._port))
 
         self._sock.settimeout(self._idle_timeout)
+        resets = 0
         try:
             while wanted:
                 try:
                     data, _ = self._sock.recvfrom(_RECV_BUFSIZE)
                 except socket.timeout:
                     break  # idle gap: nothing more is coming for this chunk
-                message = decode(data)
+                except ConnectionResetError:
+                    # An earlier send drew an ICMP port-unreachable (WinError
+                    # 10054); the replies behind it may still be queued, so
+                    # keep reading -- but bounded, one reset per send at most.
+                    resets += 1
+                    if resets > len(chunk):
+                        break
+                    continue
+                except OSError:
+                    break  # the socket is unusable: whatever is left is a miss
+                try:
+                    message = decode(data)
+                except (ValueError, struct.error):
+                    # One bad datagram must not abort the whole pull: its
+                    # address stays in `wanted` and is retried / reported.
+                    continue
                 wanted.discard(message.address)
                 replies[message.address] = message
         finally:
