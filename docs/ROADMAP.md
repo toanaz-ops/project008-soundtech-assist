@@ -305,7 +305,8 @@ supply. **Do not guess them.**
    4. **Spec §9.3's acceptance list against the real desk** (WING-GIAQUY,
       `192.168.128.28`, WING-Edit connected throughout) — **still not run**,
       scheduled as its own session when ToanAZ is at the desk. Runbook:
-      `docs/acceptance/2026-09-wave3-desk-acceptance.md`. Plus the
+      `docs/acceptance/2026-09-wave3-desk-acceptance.md`; one-page desk
+      carry sheet: `docs/acceptance/2026-10-desk-session-pack.md`. Plus the
       screenshots: wave 1's gate says no surface is done until ToanAZ has
       looked at them.
    Full list with evidence, the seven rulings made during implementation

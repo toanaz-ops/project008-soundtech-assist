@@ -1,5 +1,7 @@
 # GUI wave 4 — cue-sheet import acceptance runbook
 
+> One-page Vietnamese carry sheet for the desk session: [2026-10-desk-session-pack.md](2026-10-desk-session-pack.md).
+
 **Build:** the release exe, rebuilt from `main` after `feat/gui-import-wave4`
 merges (see `docs/ROADMAP.md` §5 item 10) — do not run this against a dev
 checkout; the point is what ships to a venue. **Operator:** ToanAZ. Nothing

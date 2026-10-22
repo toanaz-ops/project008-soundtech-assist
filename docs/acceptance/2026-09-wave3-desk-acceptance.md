@@ -1,5 +1,7 @@
 # GUI wave 3 — real-desk acceptance runbook
 
+> One-page Vietnamese carry sheet for the desk session: [2026-10-desk-session-pack.md](2026-10-desk-session-pack.md).
+
 **Console:** WING-GIAQUY, `192.168.128.28` · **Operator:** ToanAZ ·
 **WING-Edit connected throughout** — this is a standing constraint, not a
 nice-to-have; if WING-Edit drops during a step, stop, reconnect it, and
