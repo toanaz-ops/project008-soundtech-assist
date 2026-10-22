@@ -39,7 +39,6 @@ tool đang là "textbook + vài quyết định về mức độ", chưa phải 
   (`show.small.post-monitors-are-deliberate` supersedes G8;
   `show.small.no-ambient-mic-is-the-rig` supersedes G10, ông xác nhận 2026-10-20).
 - `knowledge/toanaz/feedback.jsonl`: 0 dòng (chưa verdict nào được ghi).
-- `knowledge/toanaz/classifier.yaml`: từ vựng phân loại nguồn, không phải rule.
 
 **Vòng feedback hôm nay** (`wing_parser/advisory/feedback.py`): log append-only, mỗi dòng
 gồm `finding_id` (`<rule>:<target>`), `verdict` in `correct | false-positive | irrelevant`,
@@ -51,13 +50,12 @@ bus), rồi NGƯỜI viết principle; Claude chỉ đọc log và đề xuất.
 thành rule; mọi bước sau verdict là làm tay.
 
 **Giới hạn đã biết:** `$fdr` vs `fdr` (ROADMAP §5.5, ông chốt 2026-10-20: rule về cái khán
-giả nghe đọc `$fdr`, rule về cấu hình strip đọc `fdr`); danh sách limiter `dyn.mdl` còn
-"later" (§5.3, `docs/handoff/2026-08-17-limiter-token-probe.md`) nên G7 chưa tin được.
+giả nghe đọc `$fdr`, về cấu hình strip đọc `fdr`); limiter `dyn.mdl` còn "later" (§5.3,
+`docs/handoff/2026-08-17-limiter-token-probe.md`) nên G7 chưa tin được.
 
 ## 2. Câu hỏi cho ToanAZ (14 câu; ★ = 5 câu quan trọng nhất)
 
 Mỗi câu trả lời được trong 1-2 câu, tại bàn hoặc qua điện thoại.
-
 **A. Inputs (tool được nhìn gì)**
 1. ★ Trong `.snap`, thứ gì ông tin được (gain, fader, HPF/EQ, dyn, sends) và thứ gì ông luôn
    chỉnh LẠI tại show nên giá trị lưu sẵn vô nghĩa (vd gain)?
@@ -128,9 +126,9 @@ principles:
       Channel {channel.number} ({channel.name}): kick HPF is {channel.filter.low_cut_hz} Hz.
 ```
 
-Override: `supersedes` tắt rule base cùng chủ đề (cơ chế y như `show.small.*` tắt G8/G10). Thêm
-mới: rule không `supersedes` thì chạy cạnh base. `source:` nên luôn là câu ông nói kèm ngày,
-đúng convention của `knowledge/toanaz/shows/small.yaml`, để rule kiểm lại được.
+Override: `supersedes` tắt rule base cùng chủ đề (như `show.small.*` tắt G8/G10); không
+`supersedes` thì rule chạy cạnh base. `source:` = câu ông nói kèm ngày (convention của
+`knowledge/toanaz/shows/small.yaml`).
 
 ## 4. Agent làm được khi chưa có ông, và không làm được
 
@@ -141,13 +139,12 @@ mới: rule không `supersedes` thì chạy cạnh base. `source:` nên luôn l�
 - Validator + test ép rule lớp `toanaz` phải có `source:` dạng `ToanAZ <date>: <quote>` (chống
   rule bịa "của ông" mà không có lời ông).
 - Biến transcript voice note thành DRAFT YAML (đánh dấu draft, không tự bật), chạy dry-run
-  trên `tests/data/*.snap` để ông thấy rule sẽ bắn gì trước khi duyệt.
-- Doctor prose tiếng Việt (ROADMAP B6) và các phần kỹ thuật không phụ thuộc gu.
+  trên các scene `.snap` mẫu để ông thấy rule sẽ bắn gì trước khi duyệt.
+- Doctor prose tiếng Việt (ROADMAP B6) và các phần không phụ thuộc gu.
 
 **Không làm được (chặn ở ông):**
 - Mọi con số và `source:` / `rationale:` thật. Không bịa, không suy từ sách rồi gán cho ông
   (ràng buộc "Never fabricate", ROADMAP §2). Câu 4-10 phải do ông trả lời.
 - Danh sách limiter `dyn.mdl` (câu 6): không suy ra được offline (3 probe đã thử).
-- Biết rule nào ông coi là "ngu" khi chưa có verdict thật: `feedback.jsonl` đang 0 dòng.
-- Chọn cách dạy (câu 13) và mức severity: đó là lựa chọn của người dùng cuối.
-- Tự bật bất kỳ principle nào làm đổi finding của show thật khi ông chưa duyệt.
+- Biết rule nào ông coi là "ngu": `feedback.jsonl` đang 0 dòng. Cách dạy (câu 13), severity: ông chọn.
+- Tự bật principle làm đổi finding của show thật khi ông chưa duyệt.
