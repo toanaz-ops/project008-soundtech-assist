@@ -1,0 +1,6 @@
+# Qt pins for the required `test` check: the versions the release exe ships.
+# Bump together with the exe build venv -- see docs/git-workflow.md "Ghim Qt".
+PySide6==6.11.2
+PySide6_Essentials==6.11.2
+PySide6_Addons==6.11.2
+shiboken6==6.11.2

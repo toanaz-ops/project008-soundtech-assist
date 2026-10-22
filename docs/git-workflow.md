@@ -96,6 +96,24 @@ Extra `mcp` **cố ý không cài**: `tests/test_mcp.py` có một test chỉ ch
 `importorskip("mcp")`. Cài thêm `mcp` không tăng số test chạy, chỉ đổi test
 nào bị skip.
 
+## Ghim Qt (`ci/constraints-qt.txt`)
+
+Check bắt buộc `test` cài với `-c ci/constraints-qt.txt` (PySide6 /
+PySide6_Essentials / PySide6_Addons / shiboken6 cùng một phiên bản) — đúng
+phiên bản exe phát hành đang đóng gói, để Qt mới ra không làm đỏ CI khi code
+không đổi (6.12 đã làm vậy ba lần). `pyproject.toml` KHÔNG đổi (`PySide6>=6.11`),
+nên người dùng cài từ source và bản thử 6.12 không bị ảnh hưởng.
+
+Job `qt-latest` cài y hệt nhưng không ràng buộc, `continue-on-error: true`,
+chạy trên mỗi PR và hằng tuần (thứ Hai 05:00 UTC). Nó là chuông báo sớm,
+không phải check bắt buộc; tên check `test` giữ nguyên vì branch protection
+dựa vào nó. `scripts/ci_local.py` không đọc workflow và không áp ràng buộc
+này; muốn khớp CI thì thêm `-c ci/constraints-qt.txt` vào lệnh pip.
+
+Nâng phiên bản: đổi bốn dòng trong `ci/constraints-qt.txt` CÙNG LÚC với venv
+build exe (cùng PR hoặc PR liền sau), rồi build lại exe. Hai bên phải luôn
+cùng phiên bản Qt.
+
 ## CI cục bộ (`scripts/ci_local.py`)
 
 Chạy trước khi push nhánh và trước khi xin ToanAZ merge:
