@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from html import escape
 
-from .entry import LogEntry
+from .entry import LogEntry, ts_key
+from .layout import COLUMNS, OUTCOME_BADGE
 from .store import ShowSummary
 
 REPORT_LABEL_KEYS: tuple[str, ...] = (
@@ -41,8 +42,6 @@ REPORT_LABEL_KEYS: tuple[str, ...] = (
     "log.report.footnote.clamped",
     "log.report.footnote.no_reply",
 )
-
-_BADGE = {"sent": ("✓", "ok"), "clamped": ("⚠", "warn"), "no_reply": ("✗", "bad")}
 
 _CSS = """
 body{font:14px/1.45 system-ui,Segoe UI,Arial,sans-serif;color:#111;margin:24px;max-width:1200px}
@@ -113,12 +112,10 @@ def render_html(
     sum_html = "".join(f'<dt>{lab(k)}</dt><dd class="n {c}">{_e(v)}</dd>' for k, v, c in summary_rows)
     sum_html += f"<dt>{lab('log.report.findings')}</dt><dd class=\"mono\">{_e(', '.join(findings))}</dd>"
 
-    cols = ["time", "desk", "address", "label", "finding", "file_before", "desk_before",
-            "written", "readback", "outcome", "kind"]
-    th = "".join(f"<th>{lab('log.report.col.' + c)}</th>" for c in cols)
+    th = "".join(f"<th>{lab('log.report.col.' + c)}</th>" for c in COLUMNS)
     rows = []
-    for e in sorted(entries, key=lambda x: x.ts):
-        glyph, cls = _BADGE.get(e.outcome, ("?", ""))
+    for e in sorted(entries, key=lambda x: ts_key(x.ts)):
+        glyph, cls = OUTCOME_BADGE.get(e.outcome, ("?", ""))
         rows.append(
             "<tr>"
             f'<td class="n">{_e(e.ts)}</td><td>{_e(_desk(e.desk))}</td>'
@@ -132,7 +129,7 @@ def render_html(
         )
     foot = "".join(
         f'<p class="foot"><span class="badge {cls}">{glyph}</span> {lab("log.report.footnote." + key)}</p>'
-        for key, (glyph, cls) in _BADGE.items()
+        for key, (glyph, cls) in OUTCOME_BADGE.items()
     )
     title = f"{lab('log.report.title')} {_e(summary.code)}"
     return (

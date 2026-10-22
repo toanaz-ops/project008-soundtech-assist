@@ -14,6 +14,19 @@ def now_ts() -> str:
     return datetime.now().astimezone().isoformat(timespec="milliseconds")
 
 
+def ts_key(ts: str) -> tuple[int, float, str]:
+    """Sort key for stored timestamps: chronological, not lexical.
+
+    ``2026-10-20T23:00+07:00`` and ``2026-10-20T20:00+00:00`` are different
+    instants whose strings order the other way round. A stamp that does not
+    parse sorts before every parseable one, by its raw text.
+    """
+    try:
+        return (1, datetime.fromisoformat(ts).astimezone().timestamp(), "")
+    except (TypeError, ValueError, OverflowError, OSError):
+        return (0, 0.0, str(ts))
+
+
 @dataclass(frozen=True)
 class LogEntry:
     v: int
