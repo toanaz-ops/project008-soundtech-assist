@@ -178,6 +178,49 @@ def test_read_back_mismatch_is_reported_not_swallowed():
     assert result.matched is False
 
 
+def test_a_readback_that_raises_after_the_send_is_a_no_reply_not_a_failure(monkeypatch):
+    """The datagram has left: if the read-back blows up (WinError 10054 after an
+    ICMP port-unreachable, an undecodable reply), `set` must still hand the
+    caller a result -- the desk may have changed, and the ledger needs the row."""
+    from wing_parser.net.client import WingClient
+
+    address = "/ch/40/fdr"
+
+    def _boom(self, *args, **kwargs):
+        raise ConnectionResetError(10054, "connection reset")
+
+    with FakeWing() as fake:
+        fake.register(encode(address, "s", ("-6.0",)), None)
+        host, osc_port, identity_port = _addrs(fake)
+        monkeypatch.setattr(WingClient, "request", _boom)
+        before = fake.osc_packets_received
+
+        result = write.set(host, address, -6.0, osc_port=osc_port,
+                           identity_port=identity_port, confirm=True, **_FAST)
+
+        # the SET really went out (give the fake's thread a moment)
+        for _ in range(50):
+            if fake.osc_packets_received > before:
+                break
+            import time
+            time.sleep(0.02)
+        assert fake.osc_packets_received == before + 1
+
+    assert result.dry_run is False
+    assert result.readback is None and result.matched is False
+    assert "ConnectionResetError" in result.error
+
+
+def test_a_failing_authorize_still_raises_before_anything_is_sent(monkeypatch):
+    monkeypatch.setenv("WING_WRITE_ALLOW_SERIAL", "NOT-THIS-ONE")
+    with FakeWing() as fake:
+        host, osc_port, identity_port = _addrs(fake)
+        with pytest.raises(write.SerialMismatchError):
+            write.set(host, "/ch/40/fdr", -6.0, osc_port=osc_port,
+                      identity_port=identity_port, confirm=True, **_FAST)
+        assert fake.osc_packets_received == 0
+
+
 # -- toggle(): ,i -1, no target value to match -------------------------------
 
 

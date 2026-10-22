@@ -18,11 +18,9 @@ from __future__ import annotations
 from wing_parser.ui import window_state
 from wing_parser.ui.write_gate import GateClosed, WriteGate, WriteJob  # noqa: F401 -- re-export (Task 11 escape hatch)
 
-# Imported AFTER the re-export above, not before: `write_router` pulls in
-# `write_delay_dialog`, which does `from wing_parser.ui.live_wiring import
-# GateClosed, WriteJob` -- those names must already be bound in this
-# module's namespace by the time that import runs, or it is a circular
-# ImportError on a partially-initialised module.
+# `write_router` -> `write_delay_dialog` take `GateClosed` / `WriteJob` from
+# `write_gate` directly and never import this module, so the position of
+# this import relative to the re-export above no longer matters.
 from wing_parser.ui import write_log_sink, write_router
 
 

@@ -174,8 +174,13 @@ class DelayedWriteDialog(QDialog):
 
     def reject(self) -> None:
         """Esc/X: refused outright while `_sent` (a packet on the wire cannot
-        be un-sent); else settles the runner and stops the countdown."""
+        be un-sent); else it is the Cancel button, so inside a revert run
+        `cancelled` fires and the run ends (W12) -- a bare close would
+        strand "Reverting k/n" with the Doctor controls dead (W14)."""
         if self._sent:
+            return
+        if not self._settled:
+            cancel(self)               # emits `cancelled`, then calls reject() again
             return
         self._timer.stop()
         self._runner.cancel()

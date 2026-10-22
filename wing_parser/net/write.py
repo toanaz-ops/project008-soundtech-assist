@@ -13,8 +13,9 @@ out on a bare socket -- WingClient's reply-matching and socket rotation
 have nothing to do. Everything that does expect a reply, including the
 node-write acknowledgement and every read-back, goes through WingClient
 so it keeps that recovery. Sec
-6: dry-run (default) touches no socket; `confirm=True` echoes identity,
-refuses on a `WING_WRITE_ALLOW_SERIAL` mismatch, reads every write back.
+6: dry-run (default) touches no socket; `confirm=True` refuses on a
+`WING_WRITE_ALLOW_SERIAL` mismatch (and sends no `WING?` at all while that
+variable is unset -- callers echo identity themselves), reads every write back.
 """
 
 from __future__ import annotations
@@ -44,6 +45,10 @@ class SetResult:
     dry_run: bool
     readback: Any
     matched: bool | None  # None only for a dry run: nothing was read
+    # Set only when the packet LEFT but the read-back raised (reset socket,
+    # undecodable reply, ...): the desk may have changed, so this is a
+    # NO_REPLY result, not a refusal. None in every other case.
+    error: str | None = None
 
 @dataclass(frozen=True)
 class NodeWriteResult:
@@ -91,9 +96,16 @@ def _values_match(expected: Any, readback: Any) -> bool:
     return str(expected) == str(readback)
 
 def _authorize(host: str, identity_port: int, timeout: float) -> None:
-    identity = query_identity(host, identity_port, timeout=timeout)
+    # Env var first: with no pin there is nothing to compare an identity
+    # against, so the `WING?` round trip would be pure overhead (and one more
+    # way for a correct write to time out). The CLI echoes identity on its
+    # own (`net_commands._echo_identity_before_write`); the UI re-checks the
+    # serial in `live_write.send`.
     allowed = os.environ.get(_SERIAL_ENV_VAR)
-    if allowed and allowed != identity.serial:
+    if not allowed:
+        return
+    identity = query_identity(host, identity_port, timeout=timeout)
+    if allowed != identity.serial:
         raise SerialMismatchError(
             f"refusing to write to {identity.name!r} (serial {identity.serial!r}): "
             f"{_SERIAL_ENV_VAR}={allowed!r} does not match"
@@ -116,10 +128,17 @@ def _set_leaf(host: str, address: str, tag: str, args: tuple, sent: str, expecte
         return SetResult(address, expected, sent, True, None, None)
     _authorize(host, identity_port, timeout)
     _fire_and_forget(host, osc_port, address, tag, args)
-    with WingClient(host, osc_port, timeout=timeout) as client:
-        reply = client.request(address)
-    readback = leaf_value(reply)[0] if reply is not None else None
-    matched = readback is not None and (expected is None or _values_match(expected, readback))
+    # From here the datagram has left: the desk may already have changed. A
+    # failing read-back must not turn into a refusal -- the caller would lose
+    # the ledger row and the write-log line for a write that happened.
+    try:
+        with WingClient(host, osc_port, timeout=timeout) as client:
+            reply = client.request(address)
+        readback = leaf_value(reply)[0] if reply is not None else None
+        matched = readback is not None and (expected is None or _values_match(expected, readback))
+    except Exception as exc:  # noqa: BLE001 - every post-send failure is a NO_REPLY
+        return SetResult(address, expected, sent, False, None, False,
+                         error=f"{type(exc).__name__}: {exc}")
     return SetResult(address, expected, sent, False, readback, matched)
 
 def set(host: str, address: str, value: Any, *, typetag: str | None = None, osc_port: int = OSC_PORT,

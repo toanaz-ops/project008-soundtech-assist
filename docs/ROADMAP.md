@@ -1,7 +1,8 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-09-25, GUI wave 3 decisions resolved and its debt
-cleanup merged. GUI wave 2 (live console page) **merged into `main`** via
+**Last updated:** 2026-10-21 (§3 "Done" now runs through GUI wave 5; the
+paragraph below is the older wave 2/3 history it grew from).
+GUI wave 3 decisions were resolved 2026-09-25 and its debt cleanup merged. GUI wave 2 (live console page) **merged into `main`** via
 PR #1–#4 (`bedad80`, `00949c4`, `56d5114`, `dcf897a`) — measured at
 `dcf897a`: **1580 passed / 3 skipped**. GUI wave 3 (write to a live
 console) **merged into `main`** via PR #8 (`68c0982`) — measured at merge:
@@ -13,9 +14,10 @@ The release exe was rebuilt from `3c2cda9` with C1's decided extras
 (`.[ui,ingest,llm,llm-openai]`) — gap: Settings ▸ Test connection is still
 unexercised from the frozen exe (needs ToanAZ with a real key). **GUI wave 4**
 (better cue-sheet import) **merged via PR #11** (`97d4ec5`, 2026-09-27).
-**Bilingual UI (English / Tiếng Việt)** built on `feat/ui-bilingual`
-(2026-09-29) — ci_local DAT **2169 tests / 0 fail / 3 skip**. See §4/§5
-items 2, 10 and 11.
+**Bilingual UI (English / Tiếng Việt)** merged via PR #13–#15 (2026-09-29;
+ci_local DAT 2193 / 0 / 3). **GUI wave 5** (durable write log + post-show
+report) **merged via PR #23** (`17b8867`, 2026-10-21; suite 2291 / 0 / 3).
+See §3 and §5 items 2, 10, 11 and 12.
 
 This file is the **single source of truth** for what this project has built and
 what is left. It exists because the roadmap was previously re-derived from
@@ -92,6 +94,9 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 1b | **House style + hardening** | Sodium Rack dark theme from a 19-token table generating the QSS (zero colour literals outside `theme/`, vendored OFL fonts, mono numerals), ruled keyboard map + tab order + focus ring, cancellable model-call workers with timeouts, remembered geometry/page/recents, ledger debt cleanup, and the packaged `.exe` screenshot-verified page by page. Wave-1b plan plus Task C. | **1433** (3 skipped) |
 | GUI 2 | **Live console page** | A seventh sidebar page, **Console** (Ctrl+7): connect to a live desk (`net/identity`), discover its schema (`net/watch/list`), pull the whole scene (`net/snapshot`) with Export to `.snap` and Open Doctor, and start a live watch (`net/watch/poller`) with its events in a table — all read-only, no write path reachable from the UI (proven by `tests/test_ui_live_is_read_only.py`). *(That last clause described wave 2 and stopped being true on 2026-09-18: GUI 3 below opens one door, `wing_parser/ui/live_write.py`, and the same test now enforces an allow-list of that one module instead of a blanket ban. The Console page itself is still read-only — the write is reached from Doctor.)* Packaged `.exe` rebuilt and screenshot-verified for all seven pages. Tasks 1-15 of the wave-2 plan; merged into `main` 2026-09-17 via PR #1–#4 (`dcf897a`). | **1580** (3 skipped), measured at `dcf897a` |
 | GUI 3 | **Write to a live console** | The Doctor page's **Repair** button can now reach the desk, one OSC leaf per transmission: three apply levels (Manual / Delayed / Immediate) behind a per-connection arming step, a countdown with Apply now / +5 s / Cancel (expiry applies), read-back reporting that moves the scene three different ways (sent / clamped / no reply), and a session ledger with per-row Revert and a sequential reverse-order Revert all. `net set/toggle/push/get` stay CLI-only, deliberately; the read-only AST scan became an **allow-list of one module** (`tests/test_ui_live_is_read_only.py`). Tasks 1-15 of the wave-3 plan, plus D-41 (partial) and D-42. **Merged into `main` 2026-09-18 via PR #8 (`68c0982`).** All 19 decisions pending ToanAZ (three open questions, fifteen `W…` rulings, C1) were answered 2026-09-25 — see §5 item 9 below and `docs/handoff/2026-09-18-gui-write-wave3-complete.md` §6. Debt riding along (D-41 fully closed, D-50, D-54, four `D-52` minors) **merged into `main` 2026-09-25 via PR #9 (`3c2cda9`)**, plus a same-day fresh-review fix round that refuted D-41 v1's C1/I1/I2/M1 findings. **Real-desk acceptance (spec §9.3) still pending** — scheduled as its own session; runbook at `docs/acceptance/2026-09-wave3-desk-acceptance.md`. **The release exe was rebuilt from `main` (`3c2cda9`) on 2026-09-25** with C1's decided extras (`anthropic`, `openai`) — gap: Settings ▸ Test connection is not yet exercised from the frozen exe. | **1761** (3 skipped) at merge (`68c0982`); **1790** (3 skipped) on `main` at `3c2cda9` after PR #9 |
+| GUI 4 | **Better cue-sheet import** | Shipped cue-sheet vocabulary defaults (`cuesheet_defaults.yaml`) for corporate and concert sheets, an editable Vocabulary window (Tools ▸ Vocabulary) and an AI assistant that proposes vocabulary changes he approves; Settings ▸ Test connection honours `WING_DISABLE_LLM`. Closes the old §5 item 2. **Merged into `main` 2026-09-27 via PR #11 (`97d4ec5`).** Acceptance runbook `docs/acceptance/2026-09-wave4-import-acceptance.md` still pending with ToanAZ's real key. | **2088** (3 skipped) at code-complete |
+| UI i18n | **Bilingual UI** | Settings ▸ Language (English default / Tiếng Việt, applies on next start) and `wing-ui --lang en\|vi`; six EN/VI string-table pairs with a key + placeholder parity test; mixer nouns stay English. **Merged 2026-09-29 via PR #13 (`bbb0ab9`), polish PR #14, exe docs PR #15.** | **2193** (3 skipped) |
+| GUI 5 | **Durable write log + post-show report** | Every settled write and revert is appended to `<knowledge_dir>/write-log/<SHOW-CODE>.jsonl` (non-UI package `wing_parser/writelog/`); the Arm dialog asks for a show code, name and venue; desk identity and show are copied at submit (W13). An eighth page, **Log** (Ctrl+8), lists shows and writes and exports a self-contained HTML report. A log failure never blocks a desk write (W3). Overturns wave-3 W8. **Merged into `main` 2026-10-21 via PR #23 (`17b8867`).** Real-desk acceptance step 6b still pending with ToanAZ. | **2291** (3 skipped) |
 
 ### Where each one's paperwork lives
 
@@ -110,6 +115,9 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 1b | `2026-08-25-gui-parity-design.md` §house-style + the wave-1b plan's own bindings | `2026-08-26-gui-house-style-wave1b.md` | `2026-08-26-gui-house-style-complete.md` |
 | GUI 2 | `2026-09-15-gui-live-console-wave2-design.md` | `2026-09-15-gui-live-console-wave2.md` | `2026-09-16-gui-live-console-wave2-complete.md` |
 | GUI 3 | `2026-09-17-gui-write-wave3-design.md` | `2026-09-17-gui-write-wave3.md` | `2026-09-18-gui-write-wave3-complete.md` |
+| GUI 4 | `2026-09-26-gui-import-wave4-design.md` | `2026-09-26-gui-import-wave4.md` | — (`memory/MEMORY.md`) |
+| UI i18n | `2026-09-29-ui-bilingual-design.md` | — | — (§5 item 11) |
+| GUI 5 | `2026-10-20-gui-write-log-wave5-design.md` | — | — (`memory/MEMORY.md`) |
 
 Specs are in `docs/superpowers/specs/`, plans in `docs/superpowers/plans/`,
 handoffs in `docs/handoff/`.
@@ -159,9 +167,8 @@ The sequenced execution order for everything below lives in
 history, not a plan:** all three of its steps landed (G2b, the live-watch
 acceptance, the GUI). Since it was written the GUI has run three cycles of
 its own — waves 1/1b, 2 and 3, each on its own spec in §3's paperwork table
-— and **wave 4 (better cue-sheet import) is scoped, specced and built** on
-branch `feat/gui-import-wave4` (2026-09-27), awaiting PR/merge and the exe
-rebuild. See §5 items 2 and 10.
+— and **wave 4 (better cue-sheet import) is built and merged** (PR #11,
+2026-09-27). See §5 items 2 and 10.
 
 G2a deliberately contained **no model call**. It reads a spreadsheet through a
 mapping file ToanAZ writes by hand, and resolves Vietnamese performer terms
@@ -223,7 +230,7 @@ supply. **Do not guess them.**
    already catches (`guitar`, `bass`, `piano`) resolve; everything else becomes
    a comment — correct, but a seed of the twenty terms he meets most would make
    the first run useful. *(New 2026-08-22.)* **Closed 2026-09-27 by GUI wave 4**
-   (branch `feat/gui-import-wave4`, awaiting merge): shipped defaults
+   (branch `feat/gui-import-wave4`, merged as PR #11): shipped defaults
    (`wing_parser/classifier/data/cuesheet_defaults.yaml`, sets + terms for both
    corporate and concert cue sheets), editable in wing-ui's Vocabulary window,
    with an AI assistant that proposes changes he approves. Acceptance on the
@@ -360,8 +367,8 @@ supply. **Do not guess them.**
     page shots from the exe in `dist-shots\exe-en\` and `dist-shots\exe-vi\`.
     Open for ToanAZ: judge the Vietnamese wording from those shots.
 
-12. **Wave 5 (durable write log + post-show report) — built on a branch,
-    not merged.** Direction chosen by ToanAZ 2026-10-20; overturns wave-3
+12. **Wave 5 (durable write log + post-show report) — merged (PR #23,
+    `17b8867`, 2026-10-21).** Direction chosen by ToanAZ 2026-10-20; overturns wave-3
     W8. Every settled write and revert is appended to
     `<knowledge_dir>/write-log/<SHOW-CODE>.jsonl` (non-UI package
     `wing_parser/writelog/`); the Arm dialog now asks for a show code
@@ -372,7 +379,7 @@ supply. **Do not guess them.**
     the right, **Export report…** renders one self-contained HTML file in
     the UI language. A log failure never blocks a desk write (W3); it shows
     as a warning on the Log page and in the Changes dock. Branch
-    `feat/gui-write-log-wave5`. Spec:
+    `feat/gui-write-log-wave5` (merged). Spec:
     `docs/superpowers/specs/2026-10-20-gui-write-log-wave5-design.md`.
     Open for ToanAZ: acceptance step 6b on the real desk
     (`docs/acceptance/2026-09-wave3-desk-acceptance.md`), and a look at the

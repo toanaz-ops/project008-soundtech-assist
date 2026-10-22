@@ -16,6 +16,8 @@ from wing_parser.writelog import (
     normalize_code,
     now_ts,
     read_show,
+    render_html,
+    ts_key,
 )
 
 
@@ -104,6 +106,24 @@ def test_list_shows_tallies(tmp_path):
     assert (s.writes, s.sent, s.clamped, s.no_reply, s.reverts) == (4, 2, 1, 1, 1)
     assert s.first_ts.startswith("2026-10-20T10") and s.last_ts.startswith("2026-10-20T12:30")
     assert s.show == "BIDV Gala" and s.venue == "GEM" and s.skipped == 0
+
+
+def test_timestamps_order_by_instant_across_utc_offsets(tmp_path):
+    # 23:00+07:00 is 16:00Z, earlier than 20:00+00:00, yet sorts later as text.
+    early = "2026-10-20T23:00:00.000+07:00"
+    late = "2026-10-20T20:00:00.000+00:00"
+    assert early > late                                    # the string trap
+    assert sorted([early, late], key=ts_key) == [early, late]
+    assert sorted(["junk", late, early], key=ts_key) == ["junk", early, late]
+    append(make(ts=early), tmp_path)
+    append(make(ts=late), tmp_path)
+    # 01:00+07:00 on the 21st is 18:00Z on the 20th: between the two above
+    append(make(code="AZ-1502", ts="2026-10-21T01:00:00.000+07:00"), tmp_path)
+    shows = list_shows(tmp_path)
+    assert [s.code for s in shows] == ["AZ-1501", "AZ-1502"]
+    assert (shows[0].first_ts, shows[0].last_ts) == (early, late)
+    html = render_html(shows[0], read_show("AZ-1501", tmp_path)[0], {}, "t")
+    assert html.index(early) < html.index(late)
 
 
 def test_writelog_never_imports_net():

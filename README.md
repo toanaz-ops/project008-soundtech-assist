@@ -47,7 +47,7 @@ or `python -m wing_parser.ui user-files\example-Vu.snap`. Both accept
 installed the command prints one line naming the extra and exits 1; the
 CLI and the engine are unaffected by its absence.
 
-The window is a sidebar plus seven pages. **Doctor** is the advisory
+The window is a sidebar plus eight pages. **Doctor** is the advisory
 report: findings fill the left pane, errors first, filterable by
 severity and by layer. Selecting one shows, on the right, the rule's
 title, the message, the rule's **rationale and source verbatim**, and
@@ -65,7 +65,10 @@ from Doctor**, where **Repair** can send one OSC leaf to the desk once
 the connection has been armed, at one of three apply levels (Manual /
 Delayed / Immediate), with a countdown, a read-back badge and a
 session ledger you can revert row by row. `net set` / `toggle` / `push`
-/ `get` stay CLI-only, deliberately. Both halves are in
+/ `get` stay CLI-only, deliberately. Every write the app sends or reverts
+is also appended to a durable log per show code, and **Log** (Ctrl+8)
+lists those shows and writes and exports a post-show report as one HTML
+file. Both halves are in
 [docs/user-manual/03-console-truc-tiep.md](docs/user-manual/03-console-truc-tiep.md).
 
 Model assist is opt-in per machine: **Tools ▸ Settings** takes your own
@@ -77,7 +80,7 @@ The look is one house style: a 19-token dark palette generates the
 stylesheet (no colour literal lives outside `wing_parser/ui/theme/`),
 the typefaces ship inside the app, numbers read in a mono face, and the
 sidebar marks the live page with an orange edge rather than a slab.
-Keyboard: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5, Ctrl+1…7 for the pages,
+Keyboard: Ctrl+O / Ctrl+Shift+S / Ctrl+Z / F5, Ctrl+1…8 for the pages,
 Esc, and a tab order that stays inside the visible page — pinned by
 `tests/test_ui_keyboard.py`. Model calls (mapping proposal, vocabulary
 guess) run on cancellable workers with a timeout, so a slow provider
@@ -619,7 +622,7 @@ a model. He edits terms and sets from wing-ui's Vocabulary window
 (Tools ▸ Vocabulary), including through an AI assistant that proposes
 changes he approves; nothing is written on its own. Whatever is not
 covered becomes a comment, not a guess. (Ships on branch
-`feat/gui-import-wave4`, 2026-09-27, awaiting merge — see
+`feat/gui-import-wave4`, merged 2026-09-27 as PR #11 — see
 `docs/ROADMAP.md` §5 items 2 and 10.)
 
 ### Knowledge directory and search order
