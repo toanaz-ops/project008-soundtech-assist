@@ -64,7 +64,6 @@ class ImmediateWrite(QObject):
 
     def _write(self, desk_before) -> None:
         if not self._gate.ready():                          # GATE 4 (§8.4)
-            from wing_parser.ui.texts import text
             self._on_error(GateClosed(text("console.write.gate_closed")))
             return
         self._desk_before = desk_before
@@ -72,10 +71,9 @@ class ImmediateWrite(QObject):
         self._identity = self._gate.arm.identity
         self._show = dict(self._gate.arm.show) if self._gate.arm.show else None
         self._gate.submit(WriteJob(
-            live_write.WriteConfirmation(
-                host=self._gate.host(), address=self._address,
-                after=self._after, identity=self._identity,
-                desk_before=desk_before),
+            live_write.confirmation_for(
+                self._gate.host(), self._address, self._after,
+                self._identity, desk_before),
             self._done, self._on_error,
         ))
 

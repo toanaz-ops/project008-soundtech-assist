@@ -34,6 +34,10 @@ class ChangesPanel(QWidget):
         super().__init__()
         self._gate = None
         self._window = None
+        #: (Patch, SentWrite) for every row whose Send completed, so a rebuilt
+        #: list (`set_changes` runs after every Repair, Undo and revert) can
+        #: put the badge back instead of showing an unsent-looking Send.
+        self._sent_rows: list[tuple[Patch, object]] = []
         self.list = FitList()
         self.status_label = QLabel("")
         self.log_warning_label = QLabel("")
@@ -60,6 +64,9 @@ class ChangesPanel(QWidget):
         self.ledger.attach(self._gate, window)
 
     def set_changes(self, patches: tuple[Patch, ...]) -> None:
+        # A patch that left the journal (Undo) loses its record: re-repairing
+        # it builds an equal Patch that has NOT been sent.
+        self._sent_rows = [(p, r) for p, r in self._sent_rows if p in patches]
         self.list.clear()
         for patch in patches:
             item = QListWidgetItem()
@@ -67,6 +74,9 @@ class ChangesPanel(QWidget):
                           getattr(self._window, "_apply_delay", 5))
             row.sent.connect(self.record_sent)
             row.send_error.connect(self.report_write_error)
+            for sent_patch, sent_record in self._sent_rows:
+                if sent_patch == patch:
+                    row.set_badge(sent_record)
             item.setSizeHint(row.sizeHint())
             self.list.addItem(item)
             self.list.setItemWidget(item, row)
@@ -77,6 +87,8 @@ class ChangesPanel(QWidget):
         """One result: the badge, the scene (F8) and one ledger row."""
         write_apply.apply_result(self._window, patch, record)
         self.ledger.add(record)
+        self._sent_rows = [(p, r) for p, r in self._sent_rows if p != patch]
+        self._sent_rows.append((patch, record))
         self._badge(patch, record)
         self.sent.emit(patch, record)
 

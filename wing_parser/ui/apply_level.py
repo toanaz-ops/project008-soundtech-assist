@@ -40,11 +40,17 @@ class ArmState:
         #: copies it at submit time -- never read at settle time, because
         #: `disarm()` below clears it while a write can still be in flight.
         self.show: dict | None = None
+        #: The address the identity was read from. While armed, every write
+        #: and pre-flight read goes here -- not to whatever the (still
+        #: editable) address box says by then.
+        self.host: str | None = None
         self.level: ApplyLevel = ApplyLevel.MANUAL
 
-    def arm(self, identity: Any, show: dict | None = None) -> None:
+    def arm(self, identity: Any, show: dict | None = None,
+            host: str | None = None) -> None:
         self.identity = identity
         self.show = dict(show) if show else None
+        self.host = host
 
     def armed(self) -> bool:
         return self.identity is not None
@@ -58,6 +64,7 @@ class ArmState:
         """
         self.identity = None
         self.show = None
+        self.host = None
         self.level = ApplyLevel.MANUAL
 
 

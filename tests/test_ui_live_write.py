@@ -47,20 +47,20 @@ def _confirmation(desk, path, after, desk_before=None):
         identity=_identity(), desk_before=desk_before)
 
 
-# -- preflight ----------------------------------------------------------
+# -- the transport's read and identity ---------------------------------
 
 
-def test_preflight_returns_the_identity_and_the_desks_current_value():
+def test_the_transport_reads_the_desks_current_value_normalised():
     desk = _desk(leaves={BOOL_OSC: _sfi(BOOL_OSC, "1", 1)})
-    identity, current = live_write.preflight(HOST, BOOL_PATH, desk.write_transport())
-    assert identity.name == "WING-GIAQUY"
-    assert current is True
+    transport = desk.write_transport()
+    assert transport.identity(HOST).name == "WING-GIAQUY"
+    assert transport.read(HOST, BOOL_PATH) is True
 
 
 def test_a_timeout_from_identity_propagates_untranslated():
     desk = FakeDesk(identity=TimeoutError("no reply from 192.168.128.28"))
     with pytest.raises(TimeoutError):
-        live_write.preflight(HOST, BOOL_PATH, desk.write_transport())
+        desk.write_transport().identity(HOST)
 
 
 # -- normalisation, one test per JSON type (§4) -------------------------
@@ -69,7 +69,7 @@ def test_a_timeout_from_identity_propagates_untranslated():
 @pytest.mark.parametrize("native,expected", [(1, True), (0, False)])
 def test_a_boolean_shape_reads_back_as_a_bool_not_an_int(native, expected):
     desk = _desk(leaves={BOOL_OSC: _sfi(BOOL_OSC, str(native), native)})
-    _identity_, current = live_write.preflight(HOST, BOOL_PATH, desk.write_transport())
+    current = desk.write_transport().read(HOST, BOOL_PATH)
     assert current is expected
     assert current == expected, "a journal `before` of True/False must compare equal"
     assert not isinstance(current, int) or isinstance(current, bool)
@@ -78,21 +78,21 @@ def test_a_boolean_shape_reads_back_as_a_bool_not_an_int(native, expected):
 def test_a_non_boolean_sfi_leaf_stays_an_int():
     path, osc = "ae_data.ch.1.dyn.ratio", "/ch/1/dyn/ratio"
     desk = _desk(leaves={osc: _sfi(osc, "3", 2)})
-    _i, current = live_write.preflight(HOST, path, desk.write_transport())
+    current = desk.write_transport().read(HOST, path)
     assert current == 3 and isinstance(current, int) and not isinstance(current, bool)
 
 
 def test_an_sff_leaf_stays_a_float():
     path, osc = "ae_data.ch.1.fdr", "/ch/1/fdr"
     desk = _desk(leaves={osc: _sff(osc, "-6.0", -6.0)})
-    _i, current = live_write.preflight(HOST, path, desk.write_transport())
+    current = desk.write_transport().read(HOST, path)
     assert current == pytest.approx(-6.0) and isinstance(current, float)
 
 
 def test_an_s_leaf_stays_a_str():
     path, osc = "ae_data.ch.1.send.8.mode", "/ch/1/send/8/mode"
     desk = _desk(leaves={osc: OscMessage(osc, "s", ("POST",))})
-    _i, current = live_write.preflight(HOST, path, desk.write_transport())
+    current = desk.write_transport().read(HOST, path)
     assert current == "POST" and isinstance(current, str)
 
 
@@ -150,7 +150,7 @@ def test_send_refuses_when_the_desk_serial_changed_since_preflight():
 
     desk = _desk(leaves={BOOL_OSC: _sfi(BOOL_OSC, "1", 1)})
     transport = desk.write_transport()
-    identity, _current = live_write.preflight(HOST, BOOL_PATH, transport)
+    identity = transport.identity(HOST)
 
     desk.identity = dataclasses.replace(
         identity, name="WING-OTHER", serial="02FEEDFACE0000")

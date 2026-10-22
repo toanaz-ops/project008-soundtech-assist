@@ -84,7 +84,10 @@ class WriteGate(QObject):
         return self.can_write() and self.arm.armed()
 
     def host(self) -> str:
-        return self._page.connect_bar.host()
+        """The address armed for while armed (captured by `ArmState.arm`),
+        else the address box's current text. Editing the box after arming
+        must not retarget a countdown that is already running."""
+        return self.arm.host or self._page.connect_bar.host()
 
     @property
     def transport(self):
