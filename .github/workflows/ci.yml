@@ -59,7 +59,7 @@ jobs:
           python -m pip install --upgrade pip
           # Qt is pinned to the version the release exe ships
           # (ci/constraints-qt.txt); pyproject's range is unchanged.
-          pip install -c ci/constraints-qt.txt -e ".[dev,ui,ingest,llm,llm-openai]"
+          pip install -c ci/constraints-qt.txt -e ".[dev,ui,ingest,llm,llm-openai,library-web]"
 
       - name: Run the test suite
         # -q already comes from [tool.pytest.ini_options] in pyproject.toml.
@@ -103,7 +103,7 @@ jobs:
         # that test when `mcp` is installed. Adding it runs no extra test.
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,ui,ingest,llm,llm-openai]"
+          pip install -e ".[dev,ui,ingest,llm,llm-openai,library-web]"
 
       - name: Run the test suite
         # -q already comes from [tool.pytest.ini_options] in pyproject.toml.

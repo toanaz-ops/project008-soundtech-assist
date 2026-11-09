@@ -1,0 +1,90 @@
+id: speech-lectern-mic
+title: "Lectern and gooseneck mic: placement, filtering, EQ and gain before feedback"
+title_vi: "Micro bục phát biểu (gooseneck): vị trí, lọc, EQ và gain trước hú"
+topic: speech
+tags:
+  instrument: [gooseneck-mic, lectern-mic]
+  genre: []
+  technique: [mic-placement, hpf, eq, gain-before-feedback]
+  event: [corporate, conference, ceremony]
+summary: |
+  A lectern mic gets its best intelligibility and most gain before feedback from a close, steady
+  distance and a sensible speech filter and EQ. Most of the work happens before the fader: aim,
+  distance, and teaching the speaker to stay in the pickup zone.
+body: |
+  **Placement beats processing.** For a gooseneck mic, aim for a few fingers to a hand's width
+  from the speaker's mouth (roughly 15-25 cm) and slightly off-axis to one side or below mouth
+  height, so breath and "p/b" plosives do not hit the capsule head-on. Because level follows the
+  inverse square law, halving the distance gives about +6 dB and doubling it about -6 dB, so a
+  speaker who leans back or turns to the screen changes level a lot. A close placement also gives
+  more gain before feedback, because the voice is louder than the room and the loudspeakers at the
+  capsule. Mike Senior's companion text makes the same point about small distance changes causing
+  large level changes.
+
+  **Pattern and proximity.** A cardioid or supercardioid gooseneck will show proximity effect if
+  the speaker leans in (see `vocal-proximity-effect`), so be ready for boomy low end on a close
+  talker. A hypercardioid pattern tolerates slightly more distance but is more sensitive to what
+  is behind the capsule, such as a monitor wedge or a lectern speaker.
+
+  **High-pass filter.** Speech has little useful information below about 100 Hz for most voices,
+  and bass adds nothing to clarity. Start with an HPF around 100 Hz (raise it for a thin-voiced
+  speaker or a boomy room; lower it only if a deep voice is losing weight). On a WING, use the
+  channel's low-cut and listen with the speaker talking, not in solo with a test tone.
+
+  **EQ for intelligibility.** DPA's speech-intelligibility notes put the important consonant
+  region at about 2-4 kHz, with 1-4 kHz carrying most of the intelligibility. A gentle broad
+  lift of a few dB in the 2-4 kHz area helps a mumbling speaker; a gentle cut around 200-500 Hz
+  removes boxiness if the lectern or room adds it. Use narrow cuts only on feedback-prone
+  frequencies, and watch sibilance when lifting above 4 kHz. Do not make big moves: speech
+  EQ should be small and wide.
+
+  **Gain before feedback.** Set gain with the real speaker at the real distance, then raise
+  the fader until feedback starts to ring, and back off by a few dB. Keep loudspeakers
+  forward of the mic (pointing away from it), avoid placing a floor monitor at the lectern unless
+  needed, and consider a narrow cut on the first ringing frequency. If the speaker is too quiet
+  without ringing, the fix is usually closer placement, not more fader.
+
+  **Coaching.** Ask presenters to keep the same distance, speak across the mic rather than into
+  it, and tell you if they step away. A short walk-through with the actual presenter before
+  doors beats any fix mid-speech.
+
+  **Common mistakes:** gooseneck pointed at the forehead, a mic too far (the speaker is then
+  a quiet source in a loud room), over-boosting 3-5 kHz until the voice sounds sharp, and
+  leaving a lectern mic open with no speaker (adds noise and eats gain before feedback).
+rule:
+  applies_to: {source_type: [speech.lectern], event: [corporate, conference]}
+  params:
+    mic_distance_cm: [15, 25]
+    hpf_hz: [80, 120]
+    presence_boost_db: [1, 4]
+    presence_region_hz: [2000, 4000]
+  notes: "Starting points only. Distance and HPF figures are common practice; the 2-4 kHz region is from DPA's intelligibility notes."
+sources:
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
+    accessed: "2026-11-09"
+    locator: "Frequency ranges; EQ suggestions"
+  - title: "Mixing Secrets for the Small Studio, companion text - Chapter 2, Studio Gear (microphones)"
+    publisher: "Mike Senior"
+    kind: book
+    url: "https://cmtext.com/studio/chapter2_mics2.php"
+    accessed: "2026-11-09"
+    locator: "Proximity Effect; inverse square law"
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=NBwd5HJe3ig"
+    title: "How to Avoid Plosives When Recording"
+    channel: "Shure Creators"
+    caption: "Short Shure video on how placement reduces plosives (shown with a different mic; the principle applies to a gooseneck)."
+  - kind: video
+    url: "https://www.youtube.com/watch?v=_SMtL6tEfKk"
+    title: "How to EQ MC Microphones | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Live sound tutorial on EQ for speech microphones (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

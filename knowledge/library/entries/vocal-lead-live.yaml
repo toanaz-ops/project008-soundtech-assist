@@ -1,0 +1,115 @@
+id: vocal-lead-live
+title: "Lead vocal in live sound: mic, filters, EQ, compression, de-essing, fader riding"
+title_vi: "Giọng hát chính khi mix live: micro, lọc, EQ, nén, de-ess và kéo fader"
+topic: vocals
+tags:
+  instrument: [vocal, lead-vocal]
+  genre: [pop, rock]
+  technique: [hpf, eq, compression, de-essing, fader-riding]
+  event: [concert, band]
+summary: |
+  A practical starting chain for a lead vocal on a live desk: clean gain, a high-pass filter,
+  gentle low-mid and harshness control, light compression, de-essing only as needed, and the
+  fader as the final dynamics tool. Every number is a starting point to be corrected by ear.
+body: |
+  **Start with the source, not the processing.** A dynamic or condenser handheld that the singer
+  actually holds close and steady beats any plug-in repair. Set gain with the singer performing
+  at full effort (not a polite "check, one two"), leave headroom for the loudest chorus, then
+  build the vocal on top of the rhythm section before touching effects.
+
+  **High-pass filter.** The low cut removes stage rumble, handling noise and plosive energy, and
+  it tames the bass tip-up of a close cardioid (see `vocal-proximity-effect`). A common live
+  window is roughly 80-125 Hz. One approach from Sound On Sound is to raise the cutoff until the
+  tone of the voice just starts to change, then back off a touch. Live engineers often go higher
+  than a studio engineer would, because a singer moving on and off the mic makes the low end
+  unstable. A male lead with a deep voice needs the lower end of the window; a thin voice may
+  need almost none.
+
+  **EQ problem areas.** Think in zones rather than magic numbers. Below about 300 Hz the voice
+  gets boomy when the singer leans in. Around 200 Hz to 1 kHz a broad, small cut clears "mud"
+  without making the voice sterile, and Waves suggests a small cut near 200 Hz. Cut first, boost
+  last: a broad boost in the presence region is better than a narrow one, and boosting a lot
+  above 3 kHz makes a vocal harsh before it makes it airy. Keep the monitors in mind: every dB
+  of boost in the mic's feedback-prone region costs gain before feedback.
+
+  **Compression.** The aim is to catch the loudest phrases, not to flatten the singer. Start with
+  a modest ratio (around 2:1 to 4:1), a medium attack so the front of each syllable still cuts
+  through, and a release that follows the phrasing. Heavy gain reduction raises the noise floor
+  and stage spill, which hurts you in a small room. Multiband compression on the very low and
+  very high bands can calm the timbre changes caused by head movement.
+
+  **De-essing.** Compression pushes sibilance up, so de-ess after it, and only if "s" and "sh"
+  are actually harsh. Sibilance usually lives in the upper mids and highs (very roughly 4-8
+  kHz; find it by sweeping a narrow boost). Sound On Sound also notes that "k", "f" and "t"
+  harshness often responds better to a dynamic EQ band or transient control than to a de-esser.
+  Over-doing it gives a lisp; back off the threshold.
+
+  **The fader is the real compressor.** No processing replaces riding the vocal: pull it down on
+  a shouted phrase, push it up in a whispered verse, and ride the effect return too so reverb
+  does not wash over quiet passages. On a WING, putting the vocal on its own fader layer with
+  the channel compressor feeding a vocal bus keeps one hand free for riding.
+
+  **Common mistakes:** over-aggressive HPF that thins the voice, boosting highs to "cut through"
+  instead of fixing the mix around it, de-essing before compression, and setting everything
+  during sound check and never revisiting it between songs.
+rule:
+  applies_to: {source_type: [vocal.lead], genre: [pop, rock]}
+  params:
+    hpf_hz: [80, 125]
+    low_mid_cut_hz: [200, 400]
+    comp_ratio: [2, 4]
+    deess_region_hz: [4000, 8000]
+  notes: "Starting windows only. HPF higher for a singer who works the mic hard; check sibilance region by ear. Source numbers: HPF about 100-125 Hz (Sound On Sound, Waves); de-ess region is a typical range, not quoted from the cited pages."
+sources:
+  - title: "Mixing Pop Vocals"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/mixing-pop-vocals"
+    accessed: "2026-11-09"
+    locator: "Vocal EQ; Compression; De-essing and consonant control; Level automation"
+  - title: "Vocal Mix Prep"
+    publisher: "Sound On Sound"
+    kind: article
+    author: "Mike Senior"
+    year: 2022
+    url: "https://www.soundonsound.com/techniques/vocal-mix-prep"
+    accessed: "2026-11-09"
+    locator: "Equaliser Sharpshooting; Inconsistent Vocal Timbre"
+  - title: "Mixing live vocals on the fly"
+    publisher: "Waves Audio"
+    kind: article
+    url: "https://waves.com/mixing-live-vocals-on-the-fly"
+    accessed: "2026-11-09"
+    locator: "High-pass filter and low-end cleanup; EQ problem areas; De-essing"
+media:
+  - kind: diagram
+    path: vocal-lead-zones.png
+    caption: "Frequency zones to think about on a lead vocal: proximity/plosive region, low-mid mud, and presence."
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=wUTJTNgXUys"
+    title: "Microphone Selection & Placement for Houses of Worship"
+    channel: "Shure"
+    caption: "Vocal mic choice and placement basics from a Shure training session (general, not WING-specific)."
+  - kind: video
+    url: "https://www.youtube.com/watch?v=ey715RqVozk"
+    title: "Vocal EQ - How to Mix Live Vocals (feat. Jon Thurlow \"Shout Your Name\")"
+    channel: "Attaway Audio"
+    caption: "Vocal EQ for live vocals (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=8BLsze-hE10"
+    title: "Understanding Compression on Live Vocals"
+    channel: "Attaway Audio"
+    caption: "Compression on live vocals (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=r6Sy7u3pCEo"
+    title: "How to EQ a Vocal - Behringer X32"
+    channel: "Drew Brashler"
+    caption: "EQ of a vocal on a digital desk from low cut to air (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

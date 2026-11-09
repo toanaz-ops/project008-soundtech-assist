@@ -355,6 +355,23 @@ CI 2405 / 0 / 3. Exe phát hành (6.11.2) từ `52d9c0d`: `dist\w11\wing-ui.exe`
 (71.421.585 bytes, zip `dist\wing-ui-20261109f.zip`, ảnh `--lang vi` ở
 `dist-shots\exe-20261109-w11-vi\`). Câu VI chờ ông duyệt.
 
+## 2026-11-09 — Thư viện kiến thức mix (trang Library + web + artifact)
+
+Kho `knowledge/library/` (một YAML/mục, lịch sử JSONL, `SCHEMA.md` là nguồn
+duy nhất, đã thống nhất với lane automix: `rule.kind`, tag genre chung).
+Hai lớp: **shipped** (repo, đóng vào exe) và **user** (`~/.config/wing-skill/library/`,
+`WING_LIBRARY_DIR`); ghi luôn vào lớp user. Không nguồn = chặn lưu; nhà xuất
+bản ngoài `sources.yaml` = cảnh báo. Đọc/ghi qua `wing_parser.library` hoặc
+`wing library …` — agent ghi `--author agent:<tên>`, không sửa tay `history/`.
+Web: một SPA dùng hai kiểu — `export-web --artifact` (artifact riêng
+https://claude.ai/artifact/BybrQHwxSg34fR3mgf7Rv5, xuất lại + publish khi kho đổi)
+và `wing-library-web` trên VPS sau login PRJ012 (AP-237; token Supabase từ
+localStorage, server hỏi `GET /api/v1/me/permissions?codes=…`, không tự kiểm JWT).
+**Bẫy:** host artifact chặn iframe và chỉ nhận hash dạng `#name` — export
+artifact dùng link YouTube + `#e-<id>`. Biểu đồ do `scripts/library_diagrams.py`
+vẽ (SVG thuần + PNG qua QtSvg lúc dev), không cần matplotlib. Quyết định:
+`docs/proposals/2026-11-09-knowledge-library-decisions.md`; câu hỏi HW-204.Q1–Q4.
+
 ## 2026-11-09 — Fable review cả phase wave 8–11 → PR #56 (đã merge)
 
 Luật mới của chủ dự án (09/11): đóng phase lớn phải qua review Fable chỉ-đọc

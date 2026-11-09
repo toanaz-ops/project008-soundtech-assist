@@ -1,0 +1,91 @@
+id: speech-playback-and-walk-in-music
+title: "Playback, walk-in music and ducking under an MC"
+title_vi: "Nhạc nền, nhạc chào đón và ducking khi MC nói"
+topic: speech
+tags:
+  instrument: [playback, music-bed, emcee]
+  genre: []
+  technique: [ducking, sidechain, level-balance, eq]
+  event: [corporate, conference, ceremony]
+summary: |
+  Music under speech should sit well below the voice and out of the 1-4 kHz consonant band. Ducking
+  (a sidechain compressor keyed by the MC mic) lowers the music while the MC talks and returns it
+  afterwards, but the depth and timing are your call.
+body: |
+  **Two jobs, two levels.** At a corporate event, playback has two roles: walk-in or interval music
+  that you want people to hear, and background music under speech that must not fight the words.
+  Set them as separate groups or VCAs so the second can be pulled down without touching the first.
+
+  **Keep it below the voice.** DPA's speech-intelligibility notes recommend keeping background
+  level well below the dialogue, aiming for roughly 15 dB signal-to-noise ratio, and cutting
+  the music about 5-10 dB with a parametric EQ in the 1-4 kHz range so the consonants of the
+  voice stay clear. Do this EQ on the music bus (or on the playback stereo group), not on the
+  speech mic. Background noise, including music under dialogue, is one of the things that
+  makes speech harder to follow.
+
+  **What ducking is.** Harman describes ducking as a form of sidechain compression: a control
+  channel, such as a microphone, triggers a compressor on a separate channel. When the control signal
+  rises above a set level, the music is reduced; when it falls back, the music returns. It is
+  popular for events, speeches and fitness classes. The article only discusses the
+  threshold setting, and gives no numbers; the rest is up to you.
+
+  **Starting values (a suggestion, not from the cited pages).** A modest dip of about 6-12 dB is
+  enough for most events; deeper (20 dB or more) makes the music nearly vanish. Use a fast
+  attack (tens of milliseconds, so the first word is not covered), a hold of a fraction of a
+  second so brief pauses do not make the music "breathe", and a release of about 0.5-1.5 s so
+  the music comes back smoothly. Set the threshold so the MC mic triggers the duck but room noise
+  and background chatter on that mic do not.
+
+  **On a WING.** Check the dynamics section of the music bus or channel for a key/sidechain source
+  and an expander or ducker mode (verify the exact mode name in the WING manual), set the key to
+  the MC mic, then set depth/ratio, attack, hold and release. If the desk's key source is not
+  usable, ride the music fader on a VCA by hand: it is simple, and often better than automation
+  with a nervous MC.
+
+  **Walk-in and interval music.** Set it at a level that lets people talk (a background level
+  you agree with the client), and keep it away from the stage zone to avoid feedback into
+  MC mics. When the MC starts, either duck automatically or fade manually to about 6-10 dB
+  lower, never muting abruptly. At the end of a speech, bring it up slowly.
+
+  **Common mistakes:** a ducker keyed by a mic with a lot of room noise (so the music keeps
+  pumping), a very deep duck that makes the music feel like a gate, attack too slow (first word is
+  masked), and using the same level for walk-in music and underscore.
+rule:
+  applies_to: {source_type: [playback.music], event: [corporate, conference, ceremony]}
+  params:
+    music_eq_cut_db: [5, 10]
+    music_eq_cut_region_hz: [1000, 4000]
+    duck_depth_db: [6, 12]
+    duck_hold_ms: [200, 500]
+    duck_release_ms: [500, 1500]
+  notes: "EQ cut and region from DPA. Duck depth, hold and release are starting suggestions from the author, not quoted from the cited pages; adjust by ear and by checking the MC's first word."
+sources:
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
+    accessed: "2026-11-09"
+    locator: "Music under speech"
+  - title: "What Is Ducking and How Can It Help You Sound Better Live?"
+    publisher: "Harman Professional"
+    kind: article
+    url: "https://pro.harman.com/insights/av/what-is-ducking-and-how-can-it-help-you-sound-better-live/"
+    accessed: "2026-11-09"
+    locator: "How it works"
+media:
+  - kind: diagram
+    path: ducking-chain.png
+    caption: "Ducking signal flow: the MC mic keys a compressor on the music bus."
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=vVqQh3On69o"
+    title: "From Cue to Speakers - the audio signal path in QLab 5"
+    channel: "Figure 53"
+    caption: "Audio path from cue to speakers in QLab (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

@@ -1,0 +1,91 @@
+id: vocal-backing-and-choir
+title: "Backing vocals and choir: keeping them behind the lead"
+title_vi: "Hát bè và dàn hợp xướng: giữ bè nằm sau giọng chính"
+topic: vocals
+tags:
+  instrument: [vocal, backing-vocal, choir]
+  genre: [pop, rock]
+  technique: [eq, compression, grouping, gain-sharing]
+  event: [concert, band]
+summary: |
+  Backing vocals should support the lead rather than compete with it. Group them, thin their low
+  end, control their level with a shared compressor, and be careful about running many open
+  singer mics, since every extra open mic costs gain before feedback.
+body: |
+  **Mix for the lead first.** Set vocal levels while the singers perform at full volume, with the
+  lead on top of the band. Only then bring the backing singers in behind. Check the balance
+  from where the audience sits, not only from the desk, and set the house mix before the stage
+  monitor mixes so that stage spill does not trick you into over-turning the bè.
+
+  **Group them.** Send the backing mics to a group or bus. One fader and one compressor on the
+  group give you a quick way to ride the whole harmony together, and a shared compressor glues
+  separate voices into one section. Keep each singer's own channel for gain, HPF and a rough
+  EQ.
+
+  **Thin the low end.** Voices stack up in the low mids. A male backing singer under a female
+  lead sounds thicker than the lead, so Carvin's live-vocals guide suggests reducing the lows of
+  the backing so it blends better. Raise the HPF on backing channels above the lead's HPF
+  (typical starting range 100-150 Hz, by ear) and cut before you boost: a stray high boost is the
+  usual cause of feedback on a vocal mic.
+
+  **Dynamics.** Backing singers often sing softer on verses and push on choruses. A gentle
+  compressor on the group (around 2:1 to 3:1) evens that out. If there is no compressor on a
+  channel, the singers themselves can manage level by working the mic: closer for soft phrases,
+  farther back for loud ones, which keeps the bè behind the lead naturally.
+
+  **Choir mics and automix.** A choir uses several mics at once, so total open-mic gain matters.
+  Dan Dugan's manual describes a "Music System" with gain limiting for singing voices and
+  instruments, and a "Speech System" that spreads the gain of one open mic across all. A
+  gain-sharing speech mixer is not made for a sung choir: it hands the gain to whichever
+  mic is loudest, which is wrong when everyone sings together. If you want gain limiting on a
+  choir, use a gating/NOM-limit style approach rather than a speech-style mix, and set the
+  threshold so the mics do not appear to be gated on and off during a song.
+
+  **Effects.** Backing vocals usually take more reverb than the lead, which pushes them back.
+  A tight, short plate or room keeps the lyrics readable; long tails smear the harmony. Ride the
+  effect return as well as the fader.
+
+  **Common mistakes:** same HPF as the lead (the bè gets muddy), no group bus, forgetting that
+  more open mics means less gain before feedback, and using a speech automixer on a choir.
+rule:
+  applies_to: {source_type: [vocal.backing, vocal.choir], genre: [pop, rock]}
+  params:
+    hpf_hz: [100, 150]
+    group_comp_ratio: [2, 3]
+  notes: "Starting points. Backing HPF slightly above the lead's; choir gain-sharing is not recommended, gating/NOM limit is closer to the intended use."
+sources:
+  - title: "Mixing lead and backing vocals live"
+    publisher: "Carvin Audio"
+    kind: article
+    url: "https://carvinaudio.com/blogs/audio-education/mixing-lead-and-backing-vocals-live"
+    accessed: "2026-11-09"
+    locator: "Mix For Vocals On Top; Controlling Vocal Dynamics; Blend with EQ"
+  - title: "Dugan Automatic Mixer Model D and D-1 Manual"
+    publisher: "Dan Dugan Sound Design"
+    kind: manual
+    url: "https://dandugan.com/Assets/manuals/Model-D-and-D-1-Manual.html"
+    accessed: "2026-11-09"
+    locator: "When to use each system"
+  - title: "Mixing pop vocals"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/mixing-pop-vocals"
+    accessed: "2026-11-09"
+    locator: "Effects automation"
+media:
+  - kind: diagram
+    path: backing-vocal-chain.png
+    caption: "Backing vocal signal flow: channel HPF/EQ into a group with its own compressor and fader."
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lNrXewr0tto"
+    title: "8 Microphone Demo - Live Choir"
+    channel: "Ballast Media"
+    caption: "Choir microphone comparison in a live setting (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

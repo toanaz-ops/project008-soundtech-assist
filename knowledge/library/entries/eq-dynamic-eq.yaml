@@ -1,0 +1,64 @@
+id: eq-dynamic-eq
+title: "Dynamic EQ: a band that reacts to level"
+title_vi: "EQ động: băng tần thay đổi theo mức tín hiệu"
+topic: eq
+tags:
+  instrument: [vocal, kick, bass]
+  genre: []
+  technique: [eq, dynamic-eq, de-essing]
+  event: []
+summary: "A dynamic EQ band changes its gain only when the signal in that region crosses a threshold, so a problem is treated only while it occurs."
+body: |
+  A static EQ band always applies the same gain. A dynamic EQ band moves its gain with the level of the signal: when the band's region gets loud, the band cuts (or boosts); when it is quiet, the band leaves the sound alone. It behaves like a very narrow multiband compressor or expander that is easier to think about, because you pick a frequency, a width and a range.
+
+  ## Typical controls
+  - **Frequency, Q, shape** like a normal band (bell or shelf).
+  - **Threshold:** the level at which the processing starts. Some units have an automatic threshold mode.
+  - **Range:** how far the band may move, in dB. In one popular plug-in, a negative range compresses and a positive one expands.
+  - **Attack and release:** how fast it reacts; very fast settings can sound edgy.
+  - **Trigger:** the band's own region, or an external side-chain signal.
+
+  ## Where it earns its place live
+  - **Sibilance:** a narrow dynamic cut around the harsh "s" region acts only when a harsh syllable comes through, unlike a static cut that dulls the whole vocal.
+  - **Proximity boom or resonance** that appears only on certain notes.
+  - **Kick and bass:** duck a bass band on the kick's trigger so the kick can punch through without cutting the bass permanently.
+  - **Hi-hat bleed or harsh cymbals:** tame only the peaks.
+
+  ## How to set it
+  1. Find the problem with a short sweep, put a normal band there.
+  2. Turn it dynamic, set the threshold so it reacts only to the bad moments.
+  3. Limit the range to what is needed; a few dB is enough.
+  4. Bypass and listen at performance level.
+
+  ## Cautions
+  - It is processing: extra latency and CPU can appear, especially if the unit also runs in linear phase (some plug-ins limit dynamic bands when the highest linear-phase resolution is chosen).
+  - Settings that work in rehearsal can misbehave when the singer leans in or the band gets louder; leave margin.
+  - Fix the cause first if you can: mic position, technique or mic choice.
+
+  ## On the WING
+  Check what your firmware offers (dynamic EQ or multiband/de-esser modules) in the WING manual; the principle is the same as above.
+rule:
+  applies_to: {source_type: [vocal.lead, kick, bass]}
+  params:
+    dyn_range_db: [-3, -8]
+    dyn_q: [2, 6]
+  notes: "Starting points; threshold set so the band acts only on bad moments."
+sources:
+  - {title: "Pro-Q: Dynamic EQ", publisher: "FabFilter", kind: manual, url: "https://fabfilter.com/help/pro-q/using/dynamic-eq", accessed: "2026-11-09", locator: "How Dynamic EQ Works; Uses; Linear Phase Limitation"}
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Vocals (sibilance 7-12 kHz)"}
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=IXWkViqU2K8"
+    title: "Introduction to FabFilter Pro-Q 4"
+    channel: "FabFilter"
+    caption: "FabFilter overview of an EQ with dynamic bands (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=6kXHJr2zYiA"
+    title: "Fix a Ringing Snare with Dynamic EQ on the Behringer WING"
+    channel: "Drew Brashler"
+    caption: "Dynamic EQ on the Behringer WING taming a ringing snare (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

@@ -1,0 +1,74 @@
+id: instrument-overheads-cymbals
+title: "Overheads, hi-hat and ride: when and how to mic cymbals live"
+title_vi: "Overhead, hi-hat và ride: mic cymbal khi chơi live"
+topic: instruments
+tags:
+  instrument: [overheads, cymbals, hi-hat]
+  genre: [rock, pop]
+  technique: [mic-placement, eq, polarity]
+  event: [concert]
+summary: "Overheads only earn their place on quieter stages; otherwise use close mics. A spaced pair with a high-pass near 250 Hz and gentle cuts handles most cases."
+body: |
+  ## Do you need overheads?
+
+  Overheads sit about four feet above the snare, so they hear the whole stage: guitar amps, bass, and vocals leak into them. Burton's advice is to use them only when the stage is fairly quiet. On loud stages, close mics on snare, kick, toms and a ride mic give more control. Overheads also feed spill-driven phase trouble; they are the part of the kit that suffers most when stage volume is high.
+
+  ## Placement
+
+  - **Spaced pair:** two mics equidistant from the snare, either side of the kit. The easy and most common method, workable on two tall stands.
+  - **Coincident (X/Y) pair:** better imaging, but needs a heavy, tall stand.
+  - Large-diaphragm and pencil condensers both work; good placement matters more than a pricey mic. Shure's drummers favour condenser pairs such as KSM32 with the low end rolled off, kept wide rather than coincident.
+  - **Ride:** a small-diaphragm condenser six to twelve inches from the cymbal; watch for cymbals swinging into the mic.
+  - **Hi-hat:** often skip a dedicated mic if the snare mic picks up enough; add one only if the drummer plays them softly.
+
+  ## Starting EQ
+
+  - High-pass hard enough to clear the low end: about 250 Hz in one live guide, around 112 Hz in another (gentle slope), and iZotope flags anything under 150 Hz as low-end conflict with the kick and bass.
+  - 300-600 Hz: small cut to reduce snare and tom bleed.
+  - Around 4 kHz: small cut if cymbals sound abrasive; iZotope puts harshness here and on hi-hats at 3-7 kHz, and suggests panning, level, polarity or sidechain compression before EQ.
+  - 8-12 kHz is air; trim 8-10 kHz if the crash sounds splashy.
+
+  ## Dynamics
+
+  Compression on the overheads usually pumps the whole kit. A bus compressor on the full drum group is also less successful live, according to Burton. Better: fix spill and balance first.
+
+  ## Common problems
+
+  - **Overheads flatten the snare:** polarity to the snare mic is wrong, or the pair is not equidistant from the snare.
+  - **Cymbals too bright in the PA:** pull the fader, not just the EQ.
+  - **Vocals in the overheads:** drop to close mics on a loud stage.
+
+  ## Live and WING tips
+
+  Pan overheads moderately so kit width does not collapse for off-axis seats. Build the mix with overheads first if the stage allows, then add kick and snare as needed. Try polarity flips on the snare channel against the overheads and keep the fuller one.
+rule:
+  applies_to: {source_type: [drums.overhead, drums.hihat, drums.ride], genre: [rock, pop]}
+  params:
+    hpf_hz: [110, 250]
+    bleed_cut_hz: [300, 600]
+    harsh_cut_hz: [3000, 4000]
+    air_hz: [8000, 12000]
+  notes: "Starting points; overhead high-pass depends on how much kick/snare you want in the overheads."
+sources:
+  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Overheads; Hi-Hat and Ride"}
+  - {title: "Engineering Drums Live: Part Two", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/node/4905769", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Compression"}
+  - {title: "How to EQ Drums Live", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/eq-drums-live/", accessed: "2026-11-09", locator: "Overhead (Cymbal) EQ"}
+  - {title: "How to EQ Live Drums", publisher: "mixingaband.com", kind: article, url: "https://mixingaband.com/how-to-eq-live-drums/", author: "Simon Crome", year: 2020, accessed: "2026-11-09", locator: "Overheads"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Cymbals, overheads, and hi-hats"}
+media:
+  - {kind: diagram, path: overheads-eq.png, caption: "Starting EQ for a spaced overhead pair", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=q2ccgv4jaiE"
+    title: "Basic Drum Miking: The Overheads"
+    channel: "Audio-Technica USA"
+    caption: "Audio-Technica basics of drum overhead miking (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=449mDvB_tzc"
+    title: "Recording Drums: The Overhead Mic Techniques You Need to Know"
+    channel: "SonicScoop"
+    caption: "Overhead mic techniques compared (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

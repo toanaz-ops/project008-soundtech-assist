@@ -1,0 +1,84 @@
+id: wing-automix
+title: "WING automix: two groups, post-insert slot"
+title_vi: "Automix trên WING: hai nhóm, vị trí post-insert"
+topic: wing-console
+tags:
+  instrument: [microphone]
+  genre: []
+  technique: [automix]
+  event: [corporate, panel, conference]
+summary: "On WING, up to 16 channels can use automix in two groups, A and B, placed in the channel's post-insert slot. Only these facts come from the manual excerpt opened; weighting, algorithm type and menu paths are unverified."
+body: |
+  ## What the manual says (verified)
+
+  An excerpt of the WING manual (SETUP > Audio and the HOME screen sections) states that automix regulates the level of several sources so that the output level stays uniform, with the example of several people speaking on stage at once. It says up to 16 channels can use automix, in two groups (A/B), and that the automix sits in the post-insert slot. That slot is the second insert, which the manual describes as fixed after the fader and after the processing; it can hold an effect or one of the two automix groups, which share gain across the channels assigned to them.
+
+  ## What is NOT verified
+
+  - **Algorithm.** The excerpt does not say whether WING uses gain-sharing (Dugan-style) or gating, or whether any numbers such as response time exist. Do not assume either.
+  - **Weight.** Other consoles (for example Yamaha and Midas) have a per-channel weight or priority; the opened WING excerpt does not mention one. Check the full manual.
+  - **Naming.** A retailer guide (seen only in search results) calls the groups Auto-X and Auto-Y, while the manual excerpt says A/B. Check the label on your firmware.
+  - **Menu paths and meters.** Not read.
+
+  ## How to apply it, using general automix behaviour
+
+  The following comes from general automixer descriptions, not from a WING page:
+
+  - Assign only the microphones that really share a speaking role, such as panel or table mics, into one group. Keep music inputs, playback and effects returns out of it.
+  - Because the slot is after the fader, an idle channel with its fader down is seen at a lower level by the automixer. Yamaha advises the post-insert position (POST ON) for the same reason: it keeps idle channels from pulling gain and lets you favour a speaker with the fader.
+  - Treat automix as a gain manager, not as a gate. Mute mics that are not in use.
+  - Test with two people talking at once and with silence in the room before the show.
+  - Use the second group for a separate set of mics (for example the presenters vs the audience Q&A mics) so one group does not penalise the other.
+
+  ## Next step
+
+  Open the full WING manual's automix section and record the algorithm, any weight control and the on-screen meters; then promote this entry from draft.
+rule:
+  applies_to:
+    console: [wing]
+    source_type: [speech.panel]
+  params:
+    automix_max_channels: [16, 16]
+    automix_groups: [2, 2]
+  notes: "Counts come from the opened WING manual mirror excerpt (SETUP > Audio). Weighting and algorithm unverified."
+sources:
+  - title: "Behringer WING RACK manual (mirror), SETUP > Audio: AUTOMIX"
+    publisher: "ManualsLib (mirror of Behringer WING Rack manual)"
+    kind: manual
+    url: "https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html"
+    accessed: "2026-11-09"
+    locator: "SETUP > Audio, AUTOMIX; post-fader insert"
+  - title: "Theory of Automixer operation (RIVAGE PM series)"
+    publisher: "Yamaha"
+    kind: manual
+    url: "https://manual.yamaha.com/pa/mixers/RIVAGE_PM_series/en-US/5462888203.html"
+    accessed: "2026-11-09"
+    locator: "Level-Based Priority (general automixer behaviour, not WING-specific)"
+  - title: "Gain Sharing vs. Gating Automixer"
+    publisher: "Biamp"
+    kind: article
+    url: "https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer"
+    accessed: "2026-11-09"
+    locator: "Choosing Between Them (general background)"
+media:
+  - kind: diagram
+    path: wing-automix-position.png
+    caption: "Where automix sits in a WING channel (post-fader insert slot), per the manual excerpt"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=3SNuOdb62xY"
+    title: "Wing How To: Episode 14 - Automix"
+    channel: "Behringer Knowledge Base"
+    caption: "Behringer WING how-to episode on automix (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=kB6P-AaiCjI"
+    title: "How to Use the Automixer on the Behringer Wing"
+    channel: "Drew Brashler"
+    caption: "Using the automixer on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

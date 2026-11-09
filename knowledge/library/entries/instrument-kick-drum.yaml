@@ -1,0 +1,76 @@
+id: instrument-kick-drum
+title: "Kick drum: mic choice, placement and EQ starting points"
+title_vi: "Trống kick: chọn mic, đặt mic và điểm khởi đầu EQ"
+topic: instruments
+tags:
+  instrument: [kick, drums]
+  genre: [rock, pop]
+  technique: [mic-placement, eq, gating]
+  event: [concert]
+summary: "Where to put the mic on a live kick (inside for attack, outside for weight), a conservative starting EQ, and gate/phase habits that keep the kick tight."
+body: |
+  ## Mic choice and placement
+
+  A live kick has two jobs: low-end weight and beater attack. One mic position rarely does both, so engineers pick a position for the job the mix needs most.
+
+  - **Inside the drum** (mic pointing at the batter head, a few inches from the beater) gives a tight, punchy attack and rejects spill from the rest of the kit.
+  - **Just outside the resonant head or at the port hole** sounds warmer and fuller with less click.
+  - Many shows use **both**: an inside mic for attack and an outside large-diaphragm dynamic for weight. Shure's drummer interviews describe exactly this pairing of two different mics on one drum.
+  - Avoid a pedal-side position; drummers kick the stand and pedal squeak leaks in.
+
+  ## Starting EQ (not a recipe)
+
+  Sources disagree, and every kick differs, so treat these as places to start listening:
+
+  - High-pass about 40 Hz to drop sub-rumble the PA cannot use (one guide goes as low as 20 Hz to be conservative).
+  - A few dB of boost around 60 Hz for the fundamental; iZotope puts the punch region at 60-80 Hz.
+  - A cut somewhere between 150 and 500 Hz removes box and cardboard. For an outside mic Burton scoops 200-400 Hz.
+  - A little 2-5 kHz for beater click if the kick is lost behind guitars.
+  - One article also boosts 50-100 Hz and cuts 80-120 Hz; these overlap, so sweep and listen rather than apply both.
+
+  ## Dynamics
+
+  Gate the kick so open-mic spill (toms, floor wash) stays out. Burton keys the gate from a filtered signal near the beater frequency, uses a short attack, and lets the gate close by about 20-30 dB rather than fully, so the drum never sounds chopped. Compress after the gate to even out hits and protect the system; the same article gives no ratios.
+
+  ## Common problems
+
+  - **Thin low end with two kick mics:** the mics are partly out of polarity. Flip polarity on one and keep the fuller one.
+  - **Boomy, one-note kick:** the resonant head is tuned low or the mic sits in a standing-wave spot; move it before reaching for EQ.
+  - **Clicky but weak:** you only have the inside mic; blend in the outside one.
+
+  ## Live and WING tips
+
+  On a WING use the channel high-pass for the rumble cut, one EQ band for the body boost and one for the box cut, and the channel gate with its key filter set to the beater. Check polarity with a spare ear in the room, not only on headphones. Keep gains so faders sit near the unity mark for resolution.
+rule:
+  applies_to: {source_type: [drums.kick], genre: [rock, pop]}
+  params:
+    hpf_hz: [20, 40]
+    boost_hz: [50, 80]
+    boost_gain_db: [3, 6]
+    cut_hz: [150, 500]
+    click_boost_hz: [2000, 5000]
+    gate_range_db: [-30, -20]
+  notes: "Starting points only. Sources disagree between boost and cut in 50-120 Hz; sweep by ear."
+sources:
+  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Kick Drum"}
+  - {title: "Engineering Drums Live: Part Two", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/node/4905769", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "EQ, Gating, Compression"}
+  - {title: "Beyond the Basics: Drum Miking", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking", accessed: "2026-11-09", locator: "Kick sections"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Kick drum"}
+  - {title: "Live Kick Drum EQ", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/live-kick-drum-eq/", accessed: "2026-11-09", locator: "Live Kick Drum EQ Settings"}
+media:
+  - {kind: diagram, path: kick-eq.png, caption: "Typical starting EQ for a live kick (values from the cited sources)", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=fU1a_fZvzs0"
+    title: "How to Mic a Kick Drum, by Sweetwater"
+    channel: "Sweetwater"
+    caption: "Sweetwater on miking a kick drum (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=fFtMa5jfUMQ"
+    title: "Quick Tip: Define the Sound of Your Kick Drum Using Mic Placement"
+    channel: "PSL LAB"
+    caption: "How mic position changes the kick sound (title and channel confirmed on YouTube; not watched in full)"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

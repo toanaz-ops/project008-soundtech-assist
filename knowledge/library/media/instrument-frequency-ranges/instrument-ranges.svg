@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Fundamental playing ranges and common problem regions</text>
+<rect x="90" y="80" width="830" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="90.0" y1="80.0" x2="90.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="90.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20</text>
+<line x1="200.1" y1="80.0" x2="200.1" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="200.1" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">50</text>
+<line x1="283.4" y1="80.0" x2="283.4" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="283.4" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">100</text>
+<line x1="366.7" y1="80.0" x2="366.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="366.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">200</text>
+<line x1="476.8" y1="80.0" x2="476.8" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="476.8" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">500</text>
+<line x1="560.0" y1="80.0" x2="560.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="560.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">1k</text>
+<line x1="643.3" y1="80.0" x2="643.3" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="643.3" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">2k</text>
+<line x1="753.4" y1="80.0" x2="753.4" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="753.4" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">5k</text>
+<line x1="836.7" y1="80.0" x2="836.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="836.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">10k</text>
+<line x1="920.0" y1="80.0" x2="920.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="920.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20k</text>
+<text x="505.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Frequency (Hz)</text>
+<rect x="126.1" y="86.1" width="606.0" height="21.5" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="134.1" y="101.8" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Piano</text>
+<rect x="176.3" y="119.7" width="215.8" height="21.5" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="184.3" y="135.5" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Double bass</text>
+<rect x="231.6" y="153.3" width="278.3" height="21.5" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="239.6" y="169.1" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Cello</text>
+<rect x="364.2" y="187.0" width="312.3" height="21.5" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="372.2" y="202.7" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Violin</text>
+<rect x="259.5" y="220.6" width="208.8" height="21.5" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="267.5" y="236.4" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Tenor trombone</text>
+<rect x="343.6" y="254.2" width="208.0" height="21.5" rx="3" fill="#c9d1d9" fill-opacity="0.85"/>
+<text x="351.6" y="270.0" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Bb trumpet</text>
+<rect x="399.1" y="287.9" width="249.7" height="21.5" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="407.1" y="303.6" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Flute</text>
+<rect x="366.7" y="321.5" width="110.1" height="21.5" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="374.7" y="337.3" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">mud 200-500</text>
+<rect x="476.8" y="355.1" width="56.5" height="21.5" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="541.2" y="370.9" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">brass honk 500-800</text>
+<rect x="560.0" y="388.8" width="193.4" height="21.5" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="568.0" y="404.5" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">harshness 1-5k</text>
+<rect x="809.9" y="422.4" width="48.7" height="21.5" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="866.6" y="438.2" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">air 8-12k</text>
+</svg>

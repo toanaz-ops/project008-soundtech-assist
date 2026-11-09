@@ -1,0 +1,20 @@
+# From the repo root: docker compose -f deploy/library-web/docker-compose.yml up -d --build
+services:
+  library-web:
+    build:
+      context: ../..
+      dockerfile: deploy/library-web/Dockerfile
+    image: wing-library-web:latest
+    container_name: wing-library-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8731:8731"   # loopback only; PRJ012's nginx is the public door
+    environment:
+      WING_LIBRARY_DIR: /data/library
+      WING_LIBRARY_SHIPPED_DIR: /app/knowledge/library
+      WING_LIBRARY_AUTH_BASE: https://master.azsoundtech.com
+    volumes:
+      - library_user:/data/library   # user layer: edits + history
+
+volumes:
+  library_user:

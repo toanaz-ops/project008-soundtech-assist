@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Compressor ratio starting windows</text>
+<rect x="250" y="80" width="670" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="250.0" y1="80.0" x2="250.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="250.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">1</text>
+<line x1="417.5" y1="80.0" x2="417.5" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="417.5" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">2</text>
+<line x1="585.0" y1="80.0" x2="585.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="585.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">3</text>
+<line x1="752.5" y1="80.0" x2="752.5" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="752.5" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">4</text>
+<line x1="920.0" y1="80.0" x2="920.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="920.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">5</text>
+<text x="585.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Ratio (x:1)</text>
+<text x="238.0" y="105.6" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">keys</text>
+<rect x="384.0" y="88.2" width="117.2" height="24.7" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="509.2" y="105.6" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">1.8 to 2.5:1</text>
+<text x="238.0" y="146.7" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">electric guitar</text>
+<rect x="417.5" y="129.3" width="335.0" height="24.7" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="760.5" y="146.7" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">2 to 4:1</text>
+<text x="238.0" y="187.8" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">acoustic guitar</text>
+<rect x="501.2" y="170.4" width="150.8" height="24.7" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="660.0" y="187.8" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">2.5 to 3.4:1</text>
+<text x="238.0" y="228.9" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">bass</text>
+<rect x="518.0" y="211.6" width="234.5" height="24.7" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="760.5" y="228.9" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">2.6 to 4:1</text>
+<text x="238.0" y="270.0" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">lead speech/vocal</text>
+<rect x="417.5" y="252.7" width="335.0" height="24.7" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="760.5" y="270.0" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">2 to 4:1</text>
+<text x="238.0" y="311.1" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">backing vocals</text>
+<rect x="585.0" y="293.8" width="167.5" height="24.7" rx="3" fill="#c9d1d9" fill-opacity="0.85"/>
+<text x="760.5" y="311.1" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">3 to 4:1</text>
+<text x="238.0" y="352.2" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">MC</text>
+<rect x="585.0" y="334.9" width="167.5" height="24.7" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="760.5" y="352.2" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">3 to 4:1</text>
+<text x="238.0" y="393.3" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">kick</text>
+<rect x="668.8" y="376.0" width="83.8" height="24.7" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="760.5" y="393.3" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">3.5 to 4:1</text>
+<text x="238.0" y="434.4" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">snare</text>
+<rect x="668.8" y="417.1" width="83.8" height="24.7" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="760.5" y="434.4" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">3.5 to 4:1</text>
+</svg>

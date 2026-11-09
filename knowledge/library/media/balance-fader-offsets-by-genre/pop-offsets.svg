@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Pop starting offsets relative to the lead vocal (0 dB)</text>
+<rect x="250" y="80" width="670" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="250.0" y1="80.0" x2="250.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="250.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">-20</text>
+<line x1="417.5" y1="80.0" x2="417.5" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="417.5" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">-15</text>
+<line x1="585.0" y1="80.0" x2="585.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="585.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">-10</text>
+<line x1="752.5" y1="80.0" x2="752.5" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="752.5" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">-5</text>
+<line x1="920.0" y1="80.0" x2="920.0" y2="450.0" stroke="#2b2f37" stroke-width="1"/>
+<text x="920.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">0</text>
+<text x="585.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Offset vs lead vocal (dB)</text>
+<text x="238.0" y="101.8" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">backing vocals</text>
+<rect x="752.5" y="86.7" width="167.5" height="20.2" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="912.0" y="101.8" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-5 to 0 dB</text>
+<text x="238.0" y="135.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">bass</text>
+<rect x="685.5" y="120.4" width="234.5" height="20.2" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="912.0" y="135.5" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-7 to 0 dB</text>
+<text x="238.0" y="169.1" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">keys</text>
+<rect x="652.0" y="154.0" width="268.0" height="20.2" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="912.0" y="169.1" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-8 to 0 dB</text>
+<text x="238.0" y="202.7" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">acoustic guitar</text>
+<rect x="652.0" y="187.6" width="268.0" height="20.2" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="912.0" y="202.7" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-8 to 0 dB</text>
+<text x="238.0" y="236.4" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">electric guitar</text>
+<rect x="618.5" y="221.3" width="301.5" height="20.2" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="912.0" y="236.4" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-9 to 0 dB</text>
+<text x="238.0" y="270.0" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">horns</text>
+<rect x="618.5" y="254.9" width="301.5" height="20.2" rx="3" fill="#c9d1d9" fill-opacity="0.85"/>
+<text x="912.0" y="270.0" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-9 to 0 dB</text>
+<text x="238.0" y="303.6" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">kick</text>
+<rect x="585.0" y="288.5" width="335.0" height="20.2" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="912.0" y="303.6" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-10 to 0 dB</text>
+<text x="238.0" y="337.3" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">snare</text>
+<rect x="585.0" y="322.2" width="335.0" height="20.2" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="912.0" y="337.3" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-10 to 0 dB</text>
+<text x="238.0" y="370.9" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">toms</text>
+<rect x="518.0" y="355.8" width="402.0" height="20.2" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="912.0" y="370.9" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-12 to 0 dB</text>
+<text x="238.0" y="404.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">overheads</text>
+<rect x="451.0" y="389.5" width="469.0" height="20.2" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="912.0" y="404.5" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-14 to 0 dB</text>
+<text x="238.0" y="438.2" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">hi-hat</text>
+<rect x="317.0" y="423.1" width="603.0" height="20.2" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="912.0" y="438.2" font-size="13" fill="#0a0b0d" text-anchor="end" font-weight="bold">-18 to 0 dB</text>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Ducking: MC mic keys the music bus compressor</text>
+<rect x="40.0" y="200" width="194.5" height="110" rx="8" fill="#1b1e24" stroke="#ff9f1c" stroke-width="2"/>
+<text x="137.2" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">MC mic</text>
+<text x="137.2" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">control (key) signal</text>
+<line x1="238.5" y1="255.0" x2="260.5" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="268.5,255.0 258.5,249.0 258.5,261.0" fill="#868d98"/>
+<rect x="268.5" y="200" width="194.5" height="110" rx="8" fill="#1b1e24" stroke="#5fc9ff" stroke-width="2"/>
+<text x="365.8" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Sidechain input</text>
+<text x="365.8" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">threshold</text>
+<line x1="467.0" y1="255.0" x2="489.0" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="497.0,255.0 487.0,249.0 487.0,261.0" fill="#868d98"/>
+<rect x="497.0" y="200" width="194.5" height="110" rx="8" fill="#1b1e24" stroke="#6ee7a0" stroke-width="2"/>
+<text x="594.2" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Music bus compressor</text>
+<text x="594.2" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">depth, hold, release</text>
+<line x1="695.5" y1="255.0" x2="717.5" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="725.5,255.0 715.5,249.0 715.5,261.0" fill="#868d98"/>
+<rect x="725.5" y="200" width="194.5" height="110" rx="8" fill="#1b1e24" stroke="#ff5a4e" stroke-width="2"/>
+<text x="822.8" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Main mix</text>
+</svg>

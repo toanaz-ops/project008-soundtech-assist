@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Thư viện Mix</title>
+<link rel="stylesheet" href="static/app.css">
+</head>
+<body>
+<div id="app" class="app">
+  <header class="top">
+    <button id="menu-btn" class="icon-btn" aria-label="Menu" type="button">&#9776;</button>
+    <a class="brand" href="#">Thư viện Mix</a>
+    <span class="spacer"></span>
+    <button id="new-btn" class="btn primary" type="button" hidden></button>
+    <button id="lang-btn" class="btn" type="button">EN</button>
+  </header>
+  <aside id="side" class="side">
+    <input id="q" type="search" autocomplete="off">
+    <div class="row">
+      <select id="group-by"></select>
+      <label class="check"><input id="show-retired" type="checkbox"> <span id="retired-label"></span></label>
+    </div>
+    <nav id="tree" class="tree"></nav>
+  </aside>
+  <main id="view" class="view" tabindex="-1"></main>
+</div>
+<!--LIBRARY_DATA-->
+<script src="static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+id: genre-edm-playback-hybrid
+title: "EDM and playback-hybrid shows: tracks plus live, sub management"
+title_vi: "EDM và show lai playback: track kết hợp live, quản lý sub"
+topic: genre
+tags:
+  instrument: [playback, subwoofer, bass, vocal]
+  genre: [edm]
+  technique: [playback-management, sub-management, low-cut, phase-check]
+  event: [concert, festival, club]
+summary: "Hybrid shows run tracks or stems alongside live performers. The mixer's job is a reliable playback feed, a controlled low end through a proper sub system, and keeping live parts audible over dense backing."
+body: |
+  ## What is different
+
+  Electronic and hybrid shows carry much of the sound on playback, so the FOH job shifts from balancing instruments to managing sources: how the tracks arrive, how loud they are against live parts, and how much low end reaches the room. Sourcing here is thin. The best sources I could open are two general Sound On Sound pieces on playback and live bass, so this entry sticks to what they support and gives no EDM-specific numbers.
+
+  ## Playback
+
+  Paul White describes a band that feeds backing material from CD to the PA in stereo, with live effects on the backing parts, and records that laptops had crashed in his experience, which is why he used CDs. He also reports a Mac laptop feeding the PA cleanly on battery but buzzing on mains power. Both points still apply to modern rigs: treat the playback source as a risk, test it with the PA on and the charger connected, and have a backup. Keep playback on its own stereo channels so you can ride it against live parts and apply a high-pass or EQ without touching the live mic.
+
+  ## Low end and subwoofers
+
+  Electronic drum parts carry heavy low-frequency energy, so low-end power and headroom matter (White). Feed the sub from a proper system with a crossover, not from an aux send: the aux approach leaves the main speakers carrying bass they should not. Use high-pass filters on channels that do not need low end so the sub is not overloaded (White; Burton). Sub position is less critical than for monitors, and a wall or corner can add output.
+
+  Jon Burton quotes engineers noting that artists often do not want a lot of sub rattling the stage, so check what the performers need on stage before you push the system.
+
+  ## Balancing live against tracks
+
+  A live vocal over dense tracks needs the same fix as in pop: bright playback can mask it, so high-shelf or otherwise EQ the track and give the live voice its own space. See the live pop entry. Walk the room: Burton notes the mix position, often near a back wall in small venues, can mislead you about bass.
+
+  ## Effects
+
+  Effects are usually baked into the tracks; add delay or reverb to the live parts only, and keep returns high-passed so they do not add sub-level energy.
+
+  ## Common mistakes
+
+  - Trusting a laptop feed without a backup path.
+  - Letting sub-bass tracks and a live bass double each other.
+  - Boosting deep bass to impress and overloading the PA.
+
+  I found no reputable source that gives a crossover frequency, sub level or loudness target for EDM live shows, so none is given. Measure with a real analyser in the room.
+rule:
+  applies_to:
+    source_type: [playback, subwoofer]
+    genre: [edm]
+  params: {}
+  notes: "No numeric guidance sourced. Structural rules only: sub fed via crossover not aux; check playback and sub phase."
+sources:
+  - title: "Getting Your 'Studio Sound' Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/getting-your-studio-sound-live"
+    author: "Paul White"
+    year: 2003
+    accessed: "2026-11-09"
+    locator: "Playback and Backing Tracks; Sub and Low End"
+  - title: "Engineering Bass Guitars Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live"
+    author: "Jon Burton"
+    year: 2014
+    accessed: "2026-11-09"
+    locator: "Sub Feeds; Practical Tips"
+  - title: "Mixing Pop Vocals for Live Concerts"
+    publisher: "Harman Professional"
+    kind: article
+    url: "https://pro.harman.com/insights/?p=9222"
+    author: "Vincent Casamatta"
+    year: 2020
+    accessed: "2026-11-09"
+    locator: "Playback tracks"
+media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=yyfaHGCLxFA"
+    title: "Seperate Click+Guide to IEM Through Playback App"
+    channel: "Lenny Scolaro"
+    caption: "Sending click and guide to in-ear monitors from a playback app (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

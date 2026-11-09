@@ -1,0 +1,108 @@
+id: mic-phase-and-polarity
+title: "Phase, polarity and comb filtering with multiple mics"
+title_vi: "Phase, polarity và comb filter khi dùng nhiều micro"
+topic: mic-technique
+tags:
+  instrument: [drums, kick, snare]
+  genre: [rock, pop]
+  technique: [polarity, phase, comb-filtering, time-alignment]
+  event: [concert]
+summary: "Two mics on one source make a delayed copy that causes comb filtering. Polarity flip fixes opposite-facing pairs (snare top/bottom, kick in/out); distance and level differences cure the rest."
+body: |
+  ## Two different problems
+
+  - **Polarity** is a simple flip: the waveform is inverted, positive becomes
+    negative. A mic facing the other side of a drum head sees the opposite
+    movement, so a pair like snare top and snare bottom tends to cancel
+    until one is flipped.
+  - **Delay (time offset)** produces comb filtering. A second mic farther
+    from the source hears the same sound a little later; when the two are
+    summed, some frequencies add and others cancel.
+
+  Check polarity first, then timing.
+
+  ## The comb filter maths
+
+  With a delay of t milliseconds between two equal signals, the first deep
+  cancellation falls at 1000 / (2 t) Hz, and further notches repeat at
+  multiples of the delay frequency. A 1 ms delay (a path difference of about
+  34 cm) puts nulls at 500 Hz, 1.5 kHz, 2.5 kHz and so on, with peaks between
+  them. The diagram shows this for a copy only 1 dB quieter (deep notches) and
+  for a copy 10 dB quieter (ripple of only a few dB). That is the point of the
+  3:1 rule: keep the delayed copy well below the direct sound. Audible
+  coloration appears for delays up to roughly 25 ms.
+
+  ## Practical checks
+
+  1. **Snare top/bottom**: solo both, flip the bottom mic's polarity, and keep
+     the setting that sounds fuller and keeps the snare in mono.
+  2. **Kick in / kick out**: solo both, flip one and keep whichever gives the
+     most low-end weight.
+  3. **Close mics vs overheads**: test the kick and snare against the
+     overheads; if the drum thins out, try a polarity flip or move the
+     mic slightly.
+  4. **Time alignment**: if a flip is not enough, delay the nearer mic by a
+     few milliseconds so the transients line up. A rough guide is about 1 ms
+     per foot (about 0.34 ms per 10 cm). Do not align room mics, they are
+     meant to sound later.
+  5. Always check the sum in mono.
+
+  Sources disagree on which snare mic to flip (bottom is the usual advice, but
+  some engineers flip the top to keep kick and snare transients the same
+  polarity at the PA), so decide by ear for your own system.
+
+  On a WING, each input has a polarity (phase) switch and a delay, so both
+  fixes are possible without touching the mic.
+rule:
+  applies_to: {source_type: [drums.snare, drums.kick]}
+  params:
+    comb_delay_range_ms: [1, 25]
+    first_null_formula_hz: ["1000/(2*delay_ms)"]
+    close_mic_time_align_ms: [0, 15]
+  notes: "starting points; decide polarity by ear"
+sources:
+  - title: "Drum Phase Alignment: When to Nudge, When to Flip, and When to Leave It Alone"
+    publisher: "Sonnox"
+    kind: article
+    url: "https://sonnox.com/articles/drum-phase-alignment-when-to-nudge-flip-or-leave-alone"
+    accessed: "2026-11-09"
+    locator: "Kick In/Out; Snare Top/Bottom; Delay and Comb Filtering Maths"
+  - title: "The basics about comb filtering and how to avoid it"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://dpamicrophones.com/mic-university/the-basics-about-comb-filtering-and-how-to-avoid-it"
+    accessed: "2026-11-09"
+    locator: "Comb Filter Definition; The 10 dB rule"
+  - title: "Recording Drums Part 5: Phase Cancellation"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-GB/insights/recording-drums-part-5-phase-cancellation"
+    accessed: "2026-11-09"
+    locator: "What Is Phase Cancellation?"
+media:
+  - kind: diagram
+    path: comb-filter-1ms.png
+    caption: "Comb filter from a 1 ms delayed copy"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=tPxxzswyoVg"
+    title: "Mic Polarity Setup Part 1 of 3 for Live Sound Engineers"
+    channel: "Dave Rat"
+    caption: "Dave Rat on setting mic polarity for live sound, part 1 (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=7cZE1DJN6Xc"
+    title: "Mic Polarity Setup Part 3 of 3 for Live Sound Engineers"
+    channel: "Dave Rat"
+    caption: "Dave Rat on mic polarity, part 3 (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=hTJGvMW8N0k"
+    title: "Time align drum mics? || Live Sound Phase Issues"
+    channel: "Attaway Audio"
+    caption: "Time-aligning drum mics and live sound phase issues (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

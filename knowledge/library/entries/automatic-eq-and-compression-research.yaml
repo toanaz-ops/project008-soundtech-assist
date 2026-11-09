@@ -1,0 +1,89 @@
+id: automatic-eq-and-compression-research
+title: "Automatic EQ and compression research"
+title_vi: "Nghiên cứu EQ và compressor tự động"
+topic: automix
+tags:
+  instrument: [multitrack]
+  genre: [rock, pop, folk]
+  technique: [automatic-eq, automatic-compression, masking]
+  event: [concert]
+summary: "Research systems set EQ to reduce masking between tracks and set compressor ratio, threshold, knee, attack and release from the signal's own features. In one test the automatic compression matched or beat semi-professional manual mixes, but the evidence is small and studio-based."
+body: |
+  ## Automatic EQ
+
+  The multitrack EQ work by Hafezi and Reiss defines a simplified measure of masking (one track hiding another in the same frequency region) and cuts or boosts tracks to reduce it. Four versions were built: two offline (fully automatic and semi-automatic, applying a constant EQ from average masking) and two real-time. In listening tests the automatic versions reduced both measured and perceived masking, and the semi-automatic offline version, with a single user control, improved a raw mix more than an amateur did and came close to a professional. The authors also found that existing objective masking measures predict perceived masking poorly for multitrack music, so be cautious of any tool that claims to "measure" masking exactly. (Only the abstract was visible.)
+
+  ## Automatic compression
+
+  Ma and colleagues (JAES 2015) configured every compressor parameter from side-chain features. The design rests on six working assumptions that are also good rules of thumb:
+
+  - signals with large level swings get more compression;
+  - signals with more low-frequency energy get more compression;
+  - attack and release follow how transient the signal is: percussive material wants shorter times;
+  - knee width follows the amount of compression;
+  - make-up gain should restore the input loudness;
+  - there is a ceiling to useful compression that depends on the source.
+
+  In a method-of-adjustment test, 15 engineers set ratio and threshold on four songs. The averaged ratios were modest (read off the paper's figure: mostly between roughly 1.5:1 and 3:1) and the spread between engineers was smaller than expected, though differences between instruments were clear. The paper quotes usual ranges for attack of 5 to 250 ms and release of 5 to 3000 ms. The final system used a maximum attack of 80 ms and a maximum release of 1000 ms before scaling by crest factor. In the listening test (16 participants, six songs) the automatic mixes rated best for appropriate amount of compression and for overall preference, and were close to the better human mix on stabilising levels.
+
+  ## What to take from it
+
+  - Moderate ratios are enough most of the time; the experiment's engineers did not choose heavy compression.
+  - Choose time constants by how percussive the source is, not by a single "vocal" or "drum" preset.
+  - Compare compressed and bypassed at equal loudness; the paper notes that a compressor with automatic make-up gain can fool you with loudness changes.
+  - Caveats: 15 and 16 participants, half from one research group, studio multitracks and 20-second excerpts. Live rooms add bleed and feedback that these tests did not.
+rule:
+  applies_to:
+    source_type: [multitrack]
+    genre: [rock, pop, folk]
+  params:
+    comp_ratio: [1.5, 3]
+    attack_ms: [5, 250]
+    release_ms: [5, 3000]
+    attack_ms_max_used_by_system: [80, 80]
+    release_ms_max_used_by_system: [1000, 1000]
+  notes: "Ratio range is read off Fig. 2 of the cited study (studio multitracks); attack/release ranges are the paper's quoted 'usual' spans, not recommendations. Starting points only, adjust by ear."
+sources:
+  - title: "Intelligent Multitrack Dynamic Range Compression"
+    publisher: "Audio Engineering Society"
+    kind: paper
+    url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf"
+    author: "Zheng Ma, Brecht De Man, Pedro D. L. Pestana, Dawn A. A. Black, Joshua D. Reiss"
+    year: 2015
+    accessed: "2026-11-09"
+    locator: "J. Audio Eng. Soc. 63(6): Sec. 2.2 Control Assumptions, Sec. 3.1, Sec. 4, Sec. 5"
+    doi: "10.17743/jaes.2015.0053"
+  - title: "Autonomous Multitrack Equalization Based on Masking Reduction"
+    publisher: "Audio Engineering Society"
+    kind: paper
+    url: "https://www.aes.org/e-lib/browse.cfm?elib=17637"
+    author: "Sina Hafezi, Joshua D. Reiss"
+    year: 2015
+    accessed: "2026-11-09"
+    locator: "J. Audio Eng. Soc. 63(5), pp. 312-323, abstract only (page not opened; abstract seen in search result)"
+    doi: "10.17743/jaes.2015.0021"
+  - title: "Ten Years of Automatic Mixing"
+    publisher: "Queen Mary University of London"
+    kind: paper
+    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
+    author: "Brecht De Man, Joshua D. Reiss, Ryan Stables"
+    year: 2017
+    accessed: "2026-11-09"
+    locator: "Sec. 2 (compressor automation trend); references [26], [33], [34]"
+media:
+  - kind: diagram
+    path: auto-compression-flow.png
+    caption: "Cross-adaptive compression: features from all tracks set each compressor's parameters (after Ma et al. 2015, Fig. 7)"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=hED9wfRByw4"
+    title: "Intelligent Music Production: Challenges, Frontiers and Implications - Josh Reiss"
+    channel: "Semantic Audio"
+    caption: "Josh Reiss on automated mixing research, relevant to automatic EQ and compression (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

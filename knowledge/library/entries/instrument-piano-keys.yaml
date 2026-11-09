@@ -1,0 +1,75 @@
+id: instrument-piano-keys
+title: "Piano and keys: acoustic piano mics, stage piano DI and synth pads"
+title_vi: "Piano và keyboard: mic piano cơ, DI stage piano và synth pad"
+topic: instruments
+tags:
+  instrument: [piano, keyboards, synth]
+  genre: [pop, jazz]
+  technique: [mic-placement, di, eq]
+  event: [concert, corporate]
+summary: "Close mics inside an acoustic piano for gain before feedback; DI for stage pianos and synths; keep the low end of keys from stacking with bass and kick."
+body: |
+  ## Acoustic piano
+
+  A distant mic is not practical for reinforcement because of gain-before-feedback limits, so the standard is to place the microphone close to or inside the piano. Condensers are generally preferred because they hold the full range; Shure lists the Beta 181, KSM137 and PGA81 among suitable models.
+
+  - **Over the treble strings:** brighter. **Over the bass strings:** more low end.
+  - **Near the hammers:** sharper attack. **Farther away:** softer, blended sound.
+  - **Two mics, one over treble and one over bass,** is a common starting point; it gives balance and mix control and can be panned for width.
+  - **Boundary mic under the lid:** improves isolation and reduces feedback; a Beta 181 can be mounted horizontally so the lid can close. Partly or fully closing the lid also cuts spill.
+  - Compact clip mics (DPA 4099 type) save stand space on a crowded stage.
+
+  ## Stage piano and synths
+
+  A stage piano or synth outputs a line-level signal, so use a DI box (or direct line input) and skip the amp and mic unless the keyboardist insists on an amp sound. This is general practice rather than something taken from the cited pages. Two mono DI channels, panned left and right, keep stereo patches stereo; one summed channel keeps it mono for small rooms.
+
+  ## Starting EQ
+
+  iZotope's starting regions for piano:
+
+  - 20-60 Hz: sub energy, usually unnecessary live; high-pass around 40-80 Hz in a full band.
+  - 60-200 Hz: body; trim if it crowds bass and kick.
+  - 200-500 Hz: possible mud.
+  - 2-4 kHz: possible harshness.
+
+  Pads and strings patches usually crowd 200-500 Hz; a gentle shelf cut there makes room for vocals and guitars.
+
+  ## Dynamics
+
+  Piano ranges across more than seven octaves (about 27 Hz to 4.2 kHz fundamentals), so a single compressor reacts to bass notes first. Use light compression only if the player's dynamics are extreme, and prefer riding the fader.
+
+  ## Common problems
+
+  - **Piano boom or feedback near the monitor:** move the mic closer to the strings, off the soundboard, or use a boundary mic.
+  - **Wide piano collapses in mono PA:** check polarity between the two mics.
+  - **Synth patch level jumps:** ask the player to run the loudest patches at soundcheck.
+
+  ## Live and WING tips
+
+  Use one static EQ band to tame harshness on bright patches rather than reaching for dynamics. Keep the keyboard DI out of the monitor wedge's direct path to avoid ringing.
+rule:
+  applies_to: {source_type: [keys.piano, keys.stage_piano, keys.synth], genre: [pop, jazz]}
+  params:
+    hpf_hz: [40, 80]
+    mud_cut_hz: [200, 500]
+    harsh_cut_hz: [2000, 4000]
+  notes: "Starting points; DI is the usual path for stage pianos and synths."
+sources:
+  - {title: "How to Choose the Best Mic for the Pianist", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/how-to-choose-the-best-mic-for-the-pianist", accessed: "2026-11-09", locator: "Placement; Live Feedback"}
+  - {title: "How to Mic a Grand Piano for Recording and Live Sound", publisher: "Shure", kind: article, url: "https://shure.com/en-US/insights/how-to-mic-a-grand-piano-for-recording-and-live-sound", accessed: "2026-11-09", locator: "Placement (video-based)"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Piano"}
+  - {title: "3.5 Instrument Ranges", publisher: "LibreTexts", kind: article, url: "https://human.libretexts.org/Workbench/From_Ear_to_Engineer/03%3A_Psychoacoustics/3.05%3A_Instrument_Ranges", accessed: "2026-11-09", locator: "Instrument Ranges (piano 27-4186 Hz)"}
+media:
+  - {kind: diagram, path: piano-eq.png, caption: "Starting EQ for a close-miked acoustic piano", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=J8F4m8nJxBQ", title: "How to Mic a Grand Piano for Recording and Live Sound", channel: "Shure Creators", caption: "Blumlein, spaced pair, midway and hammer-position setups"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=k19mByCajDo", title: "How to mount the DPA 4099 Instrument Mic on a piano with a DPA Clip", channel: "DPA Microphones A/S", caption: "Clip mounting on piano"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=UXF70zgc-Q4"
+    title: "Mixing Keys | Mixing Pianos and Synth Pads for Worship"
+    channel: "Attaway Audio"
+    caption: "Mixing pianos and synth pads for worship (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

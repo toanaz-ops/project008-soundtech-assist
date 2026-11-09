@@ -1,0 +1,87 @@
+id: genre-pop-live
+title: "Live pop: vocal-first mixing with backing tracks"
+title_vi: "Pop live: mix lấy giọng làm trung tâm, kèm backing track"
+topic: genre
+tags:
+  instrument: [vocal, backing-track]
+  genre: [pop]
+  technique: [vocal-chain, playback-eq, de-essing, making-space]
+  event: [concert]
+summary: "Pop shows centre on a clear, often compressed lead vocal over dense playback. The job is making space for the live voice and stopping bright backing tracks from masking it."
+body: |
+  ## Balance
+
+  The lead vocal is the focus, and most of the craft is making room for it. Carve space in competing instruments with EQ, or a multiband compressor on the instrument bus sidechained to the vocal bus so it ducks the clashing frequencies only when the singer is active (Harman, Casamatta). Pop mixes are tight and dense, so there is little tolerance for a vocal that drifts in level.
+
+  ## Vocal chain
+
+  Casamatta's suggested order: high-pass and maybe a low shelf to remove rumble and mud; compression with a fast attack, the threshold set so consonants pass cleanly, and a release timed to the song's tempo; a de-esser aimed at roughly 3 to 6 kHz; then a final EQ that lifts the high mids for lyric clarity or adds some air. He notes that in pop the vocal sits fairly dry, so heavy compression works as an effect in its own right. Pitch correction, if used, should be an insert that can be bypassed and should be agreed with the artist first.
+
+  ## Tracks and playback
+
+  Pre-recorded vocals and other parts are common. Two fixes appear in both Casamatta pieces: ask the artist to re-record the playback vocals with the microphone they sing on live, and put a high shelf on the playback to take the edge off bright, heavily compressed tracks so the live voice stays audible. Check the playback level against the live band at line check and leave headroom on its channels.
+
+  ## Low end and dynamics
+
+  Playback often carries synth bass and sub; high-pass everything that does not need low end, and make sure the playback sub does not double a live bass part. The 2003 SOS piece on live playback also reminds you that a low-cut on the channel reduces booming and feedback.
+
+  ## Effects
+
+  Casamatta says pop vocals "tend to be on the dry end" of reverb and delay. A tempo-synced delay or short plate reverb adds size without washing the words; see the reverb and delay entries.
+
+  ## Common mistakes
+
+  - Letting bright playback tracks sit on top of the live voice.
+  - Over-compressing backing vocals so the lead loses focus.
+  - Over-tuning without talking to the artist.
+
+  The two Casamatta articles are the same author; treat them as one voice. I found no source giving numbers for levels or reverb times in pop, so none are given beyond the cited de-esser range.
+rule:
+  applies_to:
+    source_type: [vocal.lead]
+    genre: [pop]
+  params:
+    deesser_hz: [3000, 6000]
+  notes: "De-esser band from Casamatta (Harman, CX Network). Starting point; confirm by sweeping for the actual sibilance."
+sources:
+  - title: "Mixing Pop Vocals for Live Concerts"
+    publisher: "Harman Professional"
+    kind: article
+    url: "https://pro.harman.com/insights/?p=9222"
+    author: "Vincent Casamatta"
+    year: 2020
+    accessed: "2026-11-09"
+    locator: "FOH mixing advice for pop vocals; Playback tracks"
+  - title: "Tech Talk: Mixing Pop Vocals For Live Concerts"
+    publisher: "CX Network"
+    kind: article
+    url: "https://cxnetwork.com.au/tech-talk-mixing-pop-vocals-for-live-concerts"
+    author: "Vincent Casamatta"
+    year: 2021
+    accessed: "2026-11-09"
+    locator: "Compression; De-essing; Reverb and Delay"
+  - title: "Getting Your 'Studio Sound' Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/getting-your-studio-sound-live"
+    author: "Paul White"
+    year: 2003
+    accessed: "2026-11-09"
+    locator: "Playback and Backing Tracks"
+media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=yB-uyzdDsik"
+    title: "Live Mixing Tips from FOH Engineer Greg Price"
+    channel: "Waves Audio"
+    caption: "FOH engineer Greg Price on live mixing tips (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=cvwbngEThX4"
+    title: "Mixing FOH for J Balvin with Waves Plugins"
+    channel: "Waves Audio"
+    caption: "FOH vocal chains on a Latin pop show (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

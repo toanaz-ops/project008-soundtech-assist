@@ -1,0 +1,104 @@
+id: feedback-ringing-out
+title: "Ringing out wedges and the PA with narrow notches"
+title_vi: "Ring out monitor và PA bằng notch hẹp"
+topic: feedback
+tags:
+  instrument: [vocal]
+  genre: []
+  technique: [ringing-out, notch-filter, feedback-control]
+  event: [concert, corporate]
+summary: "Raise gain until the first frequency rings, cut that frequency with a very narrow filter, repeat a few times, then back off. Narrow cuts remove the ring without dulling the sound."
+body: |
+  ## Goal
+
+  Ringing out finds the frequencies where the system is closest to feedback
+  and trims only those, so you get more usable gain before it howls. It is
+  done per mix: each wedge mix and the mains behave differently.
+
+  ## Method
+
+  1. Set mic gains as you will use them, and set the monitor or main send to
+     a comfortable level with the mic open.
+  2. Raise the send slowly until a frequency starts to ring. Keep a hand on
+     the fader: feedback can hurt ears and damage speakers.
+  3. Find the frequency. On a parametric EQ, boost a narrow band and sweep
+     until the ring grows; on a graphic EQ, pull the matching slider.
+  4. Cut it: use a **narrow** parametric band (a high Q) so the cut
+     is only as wide as the problem.
+  5. Raise the send again, find the next ring, cut it. Repeat. When three or
+     more frequencies ring at once, or after roughly five to seven cuts, you
+     have reached the practical limit for that mix.
+  6. Pull the level back a few dB. The system is now stable but not on the
+     edge.
+
+  ## Why narrow
+
+  A narrow notch removes a thin slice of the spectrum. A wide cut of the same
+  depth removes a lot of the sound around it and makes vocals thin or dull.
+  Compare the two curves in the diagram: the Q 10 notch and the Q 8 cut touch
+  only the area near 2 kHz, while a Q 1 cut spreads over several octaves.
+
+  Starting values (adjust by ear): Q of about 8-12 for a single ring, depth
+  just enough to stop it (often 3-9 dB), and only as many bands as you need.
+  Frequencies that commonly ring are in the 400 Hz - 4 kHz region, but this
+  varies by room, mic and wedge.
+
+  ## Cautions
+
+  - A very narrow cut can stop working if the mic moves, the room fills with
+    people or humidity changes. Re-check during the show.
+  - Over-cutting damages the tone. Use the smallest cut that works.
+  - Moving the wedge or mic a little can beat stacking several notches.
+  - Automatic feedback suppressors are a backup, not the main plan.
+  - In-ear monitors have no acoustic feedback loop, so ringing out applies
+    to wedges and the PA.
+
+  On a WING, use a parametric band (or the graphic EQ) on the relevant
+  monitor bus and ring out each bus individually before the band arrives.
+rule:
+  applies_to: {source_type: [vocal.lead], event: [concert]}
+  params:
+    notch_q: [8, 12]
+    notch_depth_db: [-9, -3]
+    cuts_before_stopping: [5, 7]
+  notes: "starting points; stop when more than three frequencies ring together"
+sources:
+  - title: "How to Fight Feedback, Part 2"
+    publisher: "Yamaha"
+    kind: article
+    url: "https://hub.yamaha.com/how-to-fight-feedback-part-2"
+    accessed: "2026-11-09"
+    locator: "Page returned HTTP 404 on fetch; cited only for facts visible in search-result snippet (parametric Q narrowing, ringing out on stage)"
+  - title: "Tech Tip of the Day: EQing Stage Monitors"
+    publisher: "ProSoundWeb"
+    kind: article
+    url: "https://www.prosoundweb.com/tech-tip-of-the-day-eqing-stage-monitors/"
+    accessed: "2026-11-09"
+    locator: "Page returned HTTP 403 on fetch; cited only for facts in search-result snippet"
+media:
+  - kind: diagram
+    path: notch-vs-wide-cut.png
+    caption: "Same 2 kHz problem: narrow notch vs wide cut"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Pfx0RMHP02I"
+    title: "Ringing Out a Room (Mains and Monitors) to Eliminate Feedback | Sound Advice"
+    channel: "QSC"
+    caption: "QSC Sound Advice on ringing out mains and monitors (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=pu0xjl0rpMU"
+    title: "Ringing Out Monitors (& FOH) With A Behringer X32 & XR18, Midas M32 & MR18 -  Live Sound Tutorial"
+    channel: "Alan Hamilton Audio"
+    caption: "Ringing out monitors and FOH on a digital desk (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=JvjLkQzo7s8"
+    title: "Monitor Mixing - How to Ring Out a Floor Wedge - Ringing Out Floor Monitors"
+    channel: "Drew Brashler"
+    caption: "Ringing out a single floor wedge (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

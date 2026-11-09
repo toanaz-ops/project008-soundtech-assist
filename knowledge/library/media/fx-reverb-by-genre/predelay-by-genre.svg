@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Reverb pre-delay by genre (starting windows)</text>
+<rect x="250" y="80" width="670" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="250.0" y1="80.0" x2="250.0" y2="450.0" stroke="#2b2f37" stroke-width="1"/>
+<text x="250.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">0</text>
+<line x1="361.7" y1="80.0" x2="361.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="361.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20</text>
+<line x1="473.3" y1="80.0" x2="473.3" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="473.3" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">40</text>
+<line x1="585.0" y1="80.0" x2="585.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="585.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">60</text>
+<line x1="696.7" y1="80.0" x2="696.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="696.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">80</text>
+<line x1="808.3" y1="80.0" x2="808.3" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="808.3" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">100</text>
+<line x1="920.0" y1="80.0" x2="920.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="920.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">120</text>
+<text x="585.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Pre-delay (ms)</text>
+<text x="238.0" y="111.4" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">rock</text>
+<rect x="250.0" y="90.6" width="167.5" height="31.7" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="425.5" y="111.4" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">0 to 30 ms</text>
+<text x="238.0" y="164.3" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">edm</text>
+<rect x="305.8" y="143.4" width="279.2" height="31.7" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="593.0" y="164.3" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">10 to 60 ms</text>
+<text x="238.0" y="217.1" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">speech</text>
+<rect x="305.8" y="196.3" width="111.7" height="31.7" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="425.5" y="217.1" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">10 to 30 ms</text>
+<text x="238.0" y="270.0" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">jazz</text>
+<rect x="333.8" y="249.1" width="139.6" height="31.7" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="481.3" y="270.0" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">15 to 40 ms</text>
+<text x="238.0" y="322.9" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">bolero</text>
+<rect x="361.7" y="302.0" width="223.3" height="31.7" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="593.0" y="322.9" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">20 to 60 ms</text>
+<text x="238.0" y="375.7" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">pop</text>
+<rect x="361.7" y="354.9" width="335.0" height="31.7" rx="3" fill="#c9d1d9" fill-opacity="0.85"/>
+<text x="704.7" y="375.7" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">20 to 80 ms</text>
+<text x="238.0" y="428.6" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">ballad</text>
+<rect x="473.3" y="407.7" width="335.0" height="31.7" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="816.3" y="428.6" font-size="13" fill="#868d98" text-anchor="start" font-weight="bold">40 to 100 ms</text>
+</svg>

@@ -1,0 +1,97 @@
+id: iem-mixes
+title: "In-ear monitor (IEM) mixes: ambience, safety, stereo vs mono"
+title_vi: "Mix in-ear monitor (IEM): ambience, an toàn, stereo và mono"
+topic: monitoring
+tags:
+  instrument: [vocal, drums]
+  genre: [pop, rock]
+  technique: [iem, ambience-mic, limiting, hearing-safety]
+  event: [concert]
+summary: "IEMs remove the wedge feedback loop and protect hearing if the level is controlled, but they isolate the performer from the room. Plan ambience, a limiter and a sensible mix before the show."
+body: |
+  ## Why use IEMs
+
+  Because the earpiece is isolated from the microphone, personal monitoring
+  removes the gain-before-feedback problem that limits wedges, so the
+  performer can have a much louder, clearer mix. Sealed earpieces also give a
+  consistent sound from venue to venue and cut stage volume, which cleans up
+  the house mix. Used well, they protect hearing and reduce vocal strain
+  because singers stop pushing to hear themselves.
+
+  ## Stereo or mono
+
+  Stereo gives a more natural stage picture and can allow a lower overall
+  listening level, because a performer can separate sources by position
+  rather than loudness. Mono is cheaper and simpler and still works when each
+  performer needs only a few elements. Some transmitters offer a "mix mode"
+  that carries two separate mixes on the left and right channels, with a
+  balance control to blend them: useful for giving one person two mixes
+  instead of a stereo image.
+
+  ## Ambience
+
+  A sealed IEM cuts the performer off from the audience and the room, which
+  feels dead and can make singers over-sing. Feed a little **ambience** back:
+  place one or two condenser mics facing the audience (or use ambient
+  pass-through) and blend them in at a low level. Keep the ambience subtle;
+  too much brings back room noise and reopens the feedback path if it is
+  also in a wedge.
+
+  ## Safety
+
+  - Use the **limiter** on the transmitter or bodypack. It guards against
+    sudden loud transients, such as a mic dropped or a console glitch, that
+    can cause permanent hearing damage. Set it so it protects without
+    flattening dynamics.
+  - Start the mix low and bring it up with the performer, not the other way
+    around.
+  - Keep the wireless link clean: dropouts and loud pops are a hazard as
+    well as an annoyance.
+  - Never test a send level by putting an earpiece in your own ear at full
+    gain.
+
+  ## Building the mix
+
+  1. Start with the performer's own voice or instrument plus a click or cue
+     if needed.
+  2. Add the elements they ask for, one at a time. Less is usually more.
+  3. Add ambience last.
+  4. Let them adjust their own bodypack volume, but keep the send level
+     reasonable.
+
+  Cue sends (check what another performer hears) are a quick way to
+  troubleshoot a mix without removing your own headphones from the console.
+rule:
+  applies_to: {event: [concert]}
+  params:
+    ambience_level: ["low"]
+  notes: "no safe SPL number claimed here; use limiter and the performer's judgement; see safe-listening-levels for event limits"
+sources:
+  - title: "In-ear monitoring basics"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/in-ear-monitoring-basics"
+    accessed: "2026-11-09"
+    locator: "Hearing Conservation; Stereo Monitoring; Personal Control"
+  - title: "Shure PSM user guide (search result)"
+    publisher: "Shure"
+    kind: manual
+    url: "https://www.shure.com/damfiles/default/global/documents/publications/en/performance-production/us_pro_guidepersonalmonitor_ea.pdf-a99329954f383dc535fac48bca2396ec.pdf"
+    accessed: "2026-11-09"
+    locator: "Not opened; listed only because it appeared in search results. Ambience and limiter facts here come from the opened IEM basics page and secondary search summaries."
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=89AA-cdw5cE"
+    title: "5 tips to create the best worship team in ear monitor IEM mix"
+    channel: "Practical Worship"
+    caption: "Tips for a worship team in-ear mix (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=9LM1I1hmTsU"
+    title: "How to Mix In-Ear Monitors for Worship Leaders"
+    channel: "MxU"
+    caption: "Mixing in-ear monitors for worship leaders (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

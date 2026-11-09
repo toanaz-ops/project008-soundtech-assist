@@ -21,7 +21,7 @@ STATE_FILE = "ui-state.json"
 MAX_RECENT = 8
 
 PAGE_KEYS = ("doctor", "overview", "channels", "routing", "diff", "import_",
-             "console", "log")
+             "console", "log", "library")
 
 #: F6: the countdown a Delayed apply opens at. Clamped rather than
 #: rejected -- a hand-edited 0 or 999 is a typo, not a reason to lose the
@@ -33,7 +33,7 @@ MAX_APPLY_DELAY = 60
 MAX_SHOW_TEXT = 80
 
 DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": [],
-                  "apply_delay": 5, "language": "en", "last_show": None,
+                  "apply_delay": 5, "language": "en", "last_show": None, "author": "",
                   "automix_mode": "draft"}
 
 #: Automix mode (wave 12, AM-6). A string enum so phase 2 only appends
@@ -68,6 +68,7 @@ def normalize(state: dict) -> dict:
         delay = DEFAULTS["apply_delay"]
     delay = min(max(delay, MIN_APPLY_DELAY), MAX_APPLY_DELAY)
     language = state.get("language")
+    author = state.get("author")
     mode = state.get("automix_mode")
     return {
         "geometry": geometry if isinstance(geometry, str) else None,
@@ -81,6 +82,7 @@ def normalize(state: dict) -> dict:
         "apply_delay": delay,
         "language": language if language in LANGUAGES else "en",
         "last_show": _last_show(state.get("last_show")),
+        "author": author[:MAX_SHOW_TEXT] if isinstance(author, str) else "",
         "automix_mode": (mode if mode in AUTOMIX_MODES
                          else DEFAULTS["automix_mode"]),
     }
@@ -122,6 +124,11 @@ def save_last_show(directory: Path, show: dict) -> None:
     """Change only the last show: the Arm dialog writes it the moment the
     operator arms, without waiting for a close-time save."""
     save(directory, dict(load(directory), last_show=show))
+
+
+def save_author(directory: Path, name: str) -> None:
+    """Library page: remember who edits, written the moment a save works."""
+    save(directory, dict(load(directory), author=name))
 
 
 def remember_recent(recents: list[str], path: str) -> list[str]:

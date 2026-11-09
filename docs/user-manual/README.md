@@ -38,6 +38,7 @@ chạy đủ, chỉ thiếu phần "đề xuất hộ".
 | [02-phan-tich-scene.md](02-phan-tich-scene.md) | Phân tích scene: `analyze`, `channel`, `routing`, `diff`, `doctor`, `feedback` |
 | [03-console-truc-tiep.md](03-console-truc-tiep.md) | Làm việc với mixer đang bật: `net identity/snapshot/get/set/toggle/push/watch` |
 | [04-cau-hinh-model.md](04-cau-hinh-model.md) | `provider.yaml`, DeepSeek, tắt model bằng `WING_DISABLE_LLM` |
+| [05-thu-vien-kien-thuc.md](05-thu-vien-kien-thuc.md) | Thư viện kiến thức mix: trang Thư viện, artifact, web công ty, `wing library` |
 
 ## Ứng dụng desktop (wing-ui)
 

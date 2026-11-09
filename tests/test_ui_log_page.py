@@ -249,8 +249,8 @@ def window(qt_app, monkeypatch, knowledge):
 def test_the_log_is_the_eighth_page(window):
     from wing_parser.ui.main_window import PAGE_ORDER
 
-    assert PAGE_ORDER[-1] == "log" and len(PAGE_ORDER) == 8
-    assert window.sidebar.count() == 8
+    assert PAGE_ORDER[7] == "log" and len(PAGE_ORDER) == 9
+    assert window.sidebar.count() == 9
     assert window.sidebar.item(7).text() == "LOG"
 
 

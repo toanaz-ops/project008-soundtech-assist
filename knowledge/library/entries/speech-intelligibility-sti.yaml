@@ -1,0 +1,91 @@
+id: speech-intelligibility-sti
+title: "Speech intelligibility and STI (IEC 60268-16)"
+title_vi: "Độ rõ lời (intelligibility) và chỉ số STI (IEC 60268-16)"
+topic: speech
+tags:
+  instrument: [speech]
+  genre: []
+  technique: [intelligibility, measurement, sti]
+  event: [corporate, conference, ceremony]
+summary: |
+  STI is a 0-1 score of how well a system preserves the fast level changes in speech. Reverberation and
+  noise lower it; the consonant region around 2-4 kHz carries most of what listeners need to
+  understand words.
+body: |
+  **What STI measures.** The Speech Transmission Index asks how much of the speech's
+  slow loudness modulation survives between talker and listener. A perfect path scores 1; noise,
+  reverberation, echoes, distortion and bad loudspeaker coverage all reduce the score. IEC
+  60268-16 defines the method; the full version uses seven octave bands from 125 Hz to 8 kHz and
+  14 modulation frequencies per band, and STIPA is a faster test with a special signal
+  (about 15 seconds). Rational Acoustics' Smaart can calculate STI from an impulse response or
+  STIPA, so you can measure at a few seats instead of guessing.
+
+  **How to read a number.** Rational Acoustics' summary of the rating scale: above about 0.76 is
+  recording-studio quality; 0.66-0.76 suits theatres, auditoria and teleconferencing; 0.54-0.66
+  covers classrooms, churches and offices; 0.42-0.54 is difficult spaces; below 0.42 is not
+  suitable for PA speech. These bands are guidance, not a pass mark for your event: a ballroom
+  with an STI near 0.55 can still work if mics are close and the room is not too reverberant.
+
+  **Where the words live.** DPA's notes separate vowels (carrying pitch and body, fading fast above
+  about 1 kHz) from consonants (mostly above 500 Hz and most concentrated in 2-4 kHz). Removing
+  everything under 500 Hz costs only about 5 percent of intelligibility, but low-passing at
+  1 kHz can drop it below 40 percent. That is why a "big, bassy" speech sound can still be
+  unintelligible, and why boosting the low end does nothing for clarity.
+
+  **What hurts it:**
+
+  - **Reverberation.** Long decay smears consonants into the next syllable; direct sound from
+    well-aimed loudspeakers close to listeners is the fix, not more level.
+  - **Noise.** HVAC, crowd noise, music under dialogue. Rational Acoustics suggests a signal-to-noise
+    ratio of about 15 dB or better as ideal, with playback level roughly 60-80 dBA at the seat.
+  - **Mic position and filtering.** Chest and under-chin lavaliers lose the 2-4 kHz band (see
+    `speech-headset-and-lavalier`); removing highs with EQ or a dull windscreen does the same.
+  - **Shouting** does not help much because consonants cannot rise to match vowels.
+
+  **Practical workflow at a corporate event.** Choose mics that stay close to mouths, aim
+  loudspeakers at the audience (not at walls), keep music beds at least about 15 dB below speech
+  (see `speech-playback-and-walk-in-music`), use a small wide lift in the 2-4 kHz region only if
+  the voice needs it, and walk the room during rehearsal. If the venue's STI matters
+  (emergency announcement, regulations), measure; do not claim a figure you did not measure.
+
+  **Common mistakes:** turning up the level in a reverberant room (it raises the reverb with
+  it), cutting the 2-4 kHz band to avoid harshness without checking intelligibility, and
+  confusing loudness with clarity.
+rule:
+  applies_to: {source_type: [speech.any], event: [corporate, conference]}
+  params:
+    consonant_region_hz: [2000, 4000]
+    important_region_hz: [1000, 4000]
+    sti_target_speech_pa: [0.54, 0.66]
+    snr_db_min: [15, 15]
+  notes: "Bands from DPA (consonant region) and Rational Acoustics (STI rating scale, SNR >= about 15 dB). An STI of 0.54-0.66 is the guidance for offices/classrooms, not a requirement for every event."
+sources:
+  - title: "STI, STIPA, and Smaart"
+    publisher: "Rational Acoustics"
+    kind: article
+    url: "https://support.rationalacoustics.com/support/solutions/articles/150000188813-sti-stipa-and-smaart"
+    accessed: "2026-11-09"
+    locator: "The Speech Transmission Index (STI); Standards"
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
+    accessed: "2026-11-09"
+    locator: "Frequency ranges; What reduces intelligibility"
+media:
+  - kind: diagram
+    path: speech-bands.png
+    caption: "Where speech intelligibility lives: important region 1-4 kHz and consonant concentration 2-4 kHz (DPA)."
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=4QnFNFfIvGs"
+    title: "STI and Speech Intelligibility with Nick Screen - Webinar"
+    channel: "JBL Professional"
+    caption: "JBL Professional webinar on STI and speech intelligibility (title and channel confirmed on YouTube; not watched in full)"
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

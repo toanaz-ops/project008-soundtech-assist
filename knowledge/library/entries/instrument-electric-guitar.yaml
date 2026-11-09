@@ -1,0 +1,61 @@
+id: instrument-electric-guitar
+title: "Electric guitar: miking the amp and EQ starting points"
+title_vi: "Guitar điện: mic loa amp và điểm khởi đầu EQ"
+topic: instruments
+tags:
+  instrument: [electric-guitar]
+  genre: [rock, pop]
+  technique: [mic-placement, eq, di]
+  event: [concert]
+summary: "An SM57-style dynamic on a working speaker, a gentle high-pass and a mud cut, and a few stage-volume and phase pitfalls specific to guitar rigs."
+body: |
+  ## Mic choice and placement
+
+  Dynamic mics are the usual start: the SM57 and the Sennheiser e906 are common, and their presence peak brings out guitar crunch. Large-diaphragm condensers sound wider and more open but lack that peak, so they struggle to cut through a band. Ribbons sound smooth and flattering but are fragile on a loud stage.
+
+  - **Aim at a working speaker.** On a 2x12 or 4x12, check you are facing a driver that is actually producing sound.
+  - Position changes tone: toward the dust cap is brighter and more aggressive; toward the cone edge is darker and warmer. Practical guides disagree on the sweet spot (edge of the cap versus halfway out), so start about an inch or two from the grille and move by ear. Closer adds low end through proximity effect.
+  - Judge the position from the signal in the desk or headphones, not from how the amp sounds in the room.
+  - A single mic gives repeatable results with fewer phase problems. Two mics or mic plus DI need polarity checking.
+
+  ## Starting EQ
+
+  - High-pass around 80-100 Hz with a gradual slope; steep slopes can detach the guitar from the bass.
+  - Mud sits in 200-500 Hz; a gentle cut centred on the muddiest spot, without cutting the body away (iZotope: body 150-300 Hz, core 300 Hz to 1.5 kHz).
+  - Harshness or aggression lives at 2-5 kHz and often needs trimming around 3-6 kHz.
+  - Remember that an amp-miked guitar already has the cabinet's own roll-off above a few kHz.
+
+  ## Common problems
+
+  - **Phase and comb filtering** with multiple mics or mic plus DI. Burton's trick: make the combined sound as bad as possible, flip polarity on one channel, and keep whichever is better.
+  - **Level jumps between patches:** a distorted solo can be quieter than the clean sound; check every patch at soundcheck.
+  - **Stereo effects collapsing in mono** and reverb stacking (pedal plus amp plus room) blur the sound.
+  - **Spill into vocal mics:** point cabinets off-axis, raise them on a stand, or isolate them behind a curtain.
+  - Guitarists hear the amp at knee level; at head height it can sound very different.
+
+  ## Live and WING tips
+
+  Ask for the loudest and quietest sounds at soundcheck to learn the range, and set the channel gain for the loudest. On a WING, one HPF plus one or two EQ bands is usually enough; tame harshness with a cut first, a boost second. Consider a DI or modelled output blended under the mic for a spill-free body.
+rule:
+  applies_to: {source_type: [guitar.electric], genre: [rock, pop]}
+  params:
+    hpf_hz: [80, 100]
+    mud_cut_hz: [200, 500]
+    harsh_cut_hz: [3000, 6000]
+  notes: "Starting points; sources disagree on the speaker sweet spot."
+sources:
+  - {title: "Miking Guitar Amps On Stage", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/miking-guitar-amps-stage", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Mic Choice; Placement; Common Problems"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Electric guitar"}
+  - {title: "How to Fix Muddy Electric Guitars", publisher: "Waves Audio", kind: article, url: "https://waves.com/how-to-fix-muddy-electric-guitars", accessed: "2026-11-09", locator: "High-Pass Filtering; Mud Range"}
+media:
+  - {kind: diagram, path: electric-guitar-eq.png, caption: "Starting EQ for a miked guitar amp", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=81RF4964fRY"
+    title: "How to EQ Electric Guitars | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Live EQ of electric guitars (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

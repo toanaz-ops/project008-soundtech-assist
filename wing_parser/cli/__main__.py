@@ -7,7 +7,7 @@ import sys
 
 from wing_parser import __version__
 from wing_parser.advisory.feedback import VERDICTS
-from wing_parser.cli import commands, net_commands
+from wing_parser.cli import commands, library_commands, net_commands
 
 
 def _add_file_or_live(parser: argparse.ArgumentParser) -> None:
@@ -188,6 +188,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="stop after this long; without it, runs until interrupted",
     )
     watch.set_defaults(handler=net_commands.net_watch)
+
+    library_commands.register(sub)
 
     return parser
 

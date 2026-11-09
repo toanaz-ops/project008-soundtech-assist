@@ -1,0 +1,57 @@
+id: eq-masking-and-carving
+title: "Masking and carving space between sources"
+title_vi: "Masking và tạo khoảng trống tần số giữa các nguồn"
+topic: eq
+tags:
+  instrument: [kick, bass, vocal, guitar]
+  genre: [rock, pop]
+  technique: [eq, masking, carving]
+  event: [concert]
+summary: "When two sources fill the same frequency region one hides the other. Give each source its own region by cutting where another needs room, and judge it in the mix."
+body: |
+  Masking happens when a louder or denser source covers part of another in the same frequency region, so you cannot hear the second one clearly. The usual cure is not more level but a small trade of frequency territory.
+
+  ## Where it bites
+  - **Kick and bass guitar** both want the 60-100 Hz area. If both are full there, the low end turns cloudy.
+  - **Vocal and guitars/keys** meet in the mids and upper-mids; a wall of guitar can bury a lead vocal even with a good fader level.
+  - **Low-mid pile-up (roughly 200-500 Hz):** many channels add warmth here, and together they become mud.
+
+  ## Carving, step by step
+  1. Decide who owns each region. Example: kick owns the very bottom punch, bass owns the note body above it; or the reverse, depending on the song.
+  2. High-pass everything that does not need the lows (guitars, keys, overheads, vocals) so they leave space for kick and bass.
+  3. Make a small cut in the secondary source at the region the primary one needs. For vocal vs guitar, a few dB of cut on the guitars around the vocal's presence region often helps more than boosting the vocal.
+  4. Use a gentle boost on the primary only if still needed.
+  5. Make the move while the whole band plays. Solo can lie: a "big" solo sound often wins by hogging space.
+
+  ## Tools beyond static EQ
+  A dynamic EQ or side-chain trick can duck the bass at the moment the kick hits, so the space opens only when it is needed. See the dynamic EQ entry. Panning and level also separate sources; use them before reaching for extreme EQ.
+
+  ## Common mistakes
+  - Cutting both sources in the same place, leaving a hole.
+  - Over-carving until each part sounds thin alone; check that it still sounds right in the context.
+  - Forgetting mono compatibility; check the mix in mono.
+
+  ## Starting values (not rules)
+  Cuts of 2-4 dB with medium Q are enough to hear a difference. Check with bypass.
+rule:
+  applies_to: {source_type: [guitar, keys, vocal, kick, bass]}
+  params:
+    carve_gain_db: [-2, -4]
+    carve_q: [1, 3]
+  notes: "Starting points. Small cuts in the secondary source, judged in the full mix."
+sources:
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Mixing With EQ"}
+  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Some Practical Considerations; Five EQ Tips"}
+  - {title: "6 ways to use a high-pass filter when mixing", publisher: "iZotope", kind: article, url: "https://www.izotope.com/en/learn/6-ways-to-use-a-high-pass-filter-when-mixing", accessed: "2026-11-09", locator: "Use a high-pass filter to give your low-end instruments their space"}
+media:
+  - {kind: diagram, path: kick-bass-carve.png, caption: "Example: kick given a low boost, bass a small cut at the same region.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Sk7wefcQXTI"
+    title: "Frequency Masking 101: How to Unmask Your Mix"
+    channel: "iZotope, Inc."
+    caption: "iZotope on what frequency masking is and how to reduce it (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

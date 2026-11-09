@@ -1,0 +1,90 @@
+id: comp-makeup-and-metering
+title: "Make-up gain, gain-reduction meter and how much to compress"
+title_vi: "Make-up gain, đồng hồ gain reduction và nén bao nhiêu là đủ"
+topic: dynamics
+tags:
+  instrument: [vocal, kick, snare, bass]
+  genre: []
+  technique: [compression, makeup-gain, gain-reduction, metering]
+  event: []
+summary: "The gain-reduction meter shows how much the compressor is turning the signal down. Make-up gain restores level afterwards, and matching levels with the compressor bypassed is the only fair way to judge it."
+body: |
+  ## What the meter shows
+
+  The **gain-reduction (GR) meter** displays how many dB the compressor is currently subtracting. It is not a level meter. It sits at zero when the signal is under the threshold and drops down on loud moments. Watching it is the fastest way to know what the compressor is really doing, especially on stage where you cannot hear every channel in isolation.
+
+  Useful things to read from it:
+  - **How often it moves.** Moving on every note means the threshold is low. Moving only on the loudest phrases is a more gentle, usually safer, setting.
+  - **How far it moves.** The peak reading tells you the amount of squashing.
+  - **Whether it recovers.** If the needle never returns to zero between phrases, the release is probably too slow or the threshold too low.
+
+  ## Make-up gain
+
+  Compression lowers the loud parts, so the overall level falls. **Make-up gain** brings the output back up. It also lifts the quiet parts and everything underneath them, which is why heavy compression on a live mic raises bleed and room noise. When you compare compressed and uncompressed sound, match the levels first; louder almost always sounds better and fools you into thinking the compression helped. Some units offer automatic make-up gain; check it with a level meter rather than trusting it.
+
+  ## How much gain reduction is typical
+
+  These are starting windows drawn from a published guide and common practice, not rules:
+
+  | Purpose | Gain reduction (peaks) |
+  |---|---|
+  | Gentle, transparent smoothing | about 3 to 6 dB |
+  | Punch on kick and snare | about 6 to 12 dB |
+  | Drums with heavy control | about 10 dB (FabFilter's example) |
+  | Heavy, deliberate effect (e.g. room mics, pumping) | more than 10 dB, a matter of taste |
+
+  For live work, many engineers aim for a bit less on lead vocals and speech (a few dB, mostly on the loudest phrases) so that gain before feedback is not eaten by the make-up gain. That is a rule of thumb, not something the sources above state numerically.
+
+  ## Common mistakes
+
+  - Treating the GR meter as a goal. A big reading is not "better".
+  - Adding make-up gain until a source jumps forward in the mix, then forgetting that the noise floor and any bleed rose by the same amount.
+  - Skipping a level-matched bypass check.
+  - Chaining several compressors that each do 6 dB and ending up with a total of 15 dB or more without noticing.
+
+  ## On a WING
+
+  The dynamics section of each channel shows the gain-reduction display, so you can read it while the show is running. Use it for a quick check across channels rather than relying on your ears alone, and set make-up gain consciously when you change models, since different models have different default output levels.
+rule:
+  applies_to: {source_type: [vocal.lead, vocal.speech, kick, snare, bass]}
+  params:
+    gr_db_smoothing: [3, 6]
+    gr_db_punch: [6, 12]
+    gr_db_drums_heavy: [10, 14]
+  notes: "starting windows from iZotope and FabFilter examples; for live lead vocal keep GR modest to protect gain before feedback"
+sources:
+  - title: "What Is Audio Compression? Everything You Need to Know"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
+    accessed: "2026-11-09"
+    locator: "Makeup Gain / Gain Reduction Meter / How Much Compression"
+  - title: "Basic compressor controls"
+    publisher: "FabFilter"
+    kind: article
+    url: "https://fabfilter.com/learn/compression/basic-compressor-controls"
+    accessed: "2026-11-09"
+    locator: "Attack and release (about 10 dB for drums)"
+  - title: "Parallel compression (Uplift Compression section)"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/parallel-compression"
+    accessed: "2026-11-09"
+    locator: "Uplift Compression"
+media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
+    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
+    channel: "Audio University"
+    caption: "Compressor controls including makeup gain, with timestamps per control (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=GZ9GQKlws74"
+    title: "The Knee - Compression Explained (08 of 14)"
+    channel: "Groove3"
+    caption: "Groove3 lesson on the knee control within a compression series (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

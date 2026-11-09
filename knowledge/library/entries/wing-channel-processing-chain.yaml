@@ -1,0 +1,79 @@
+id: wing-channel-processing-chain
+title: "WING channel strip: processing order"
+title_vi: "Kênh WING: thứ tự xử lý tín hiệu"
+topic: wing-console
+tags:
+  instrument: []
+  genre: []
+  technique: [signal-flow, channel-strip, processing-order]
+  event: [concert, corporate]
+summary: "A WING channel runs input, gate, EQ and dynamics with two insert points, then fader and sends. The order of gate, dynamics, EQ and the first insert can be rearranged per channel on the HOME screen, so confirm the order on your own desk before relying on it."
+body: |
+  ## What the channel contains
+
+  A WING channel strip has an input section, filters, gate, EQ and dynamics blocks, two insert points, the main fader section and the bus sends. On the HOME screen the blocks are listed in a left column: input, gate, EQ, dynamics, a pre-fader insert, a post-fader insert, main and bus sends. The input section also holds a post delay that delays the channel output. The manual excerpt used for this entry notes that this list may describe the screen layout rather than a fixed signal path, which is why the order below is a default to verify, not a guarantee.
+
+  ## Rearranging the chain
+
+  Open the channel's HOME view and tap the wrench icon to enter edit mode, then drag blocks into a new order and tap the wrench again. The order of gate, dynamics, EQ and insert can differ from channel to channel, and so can the point where the signal is tapped for the 16 buses. The pre-fader insert can sit before or after the gate, EQ and dynamics blocks; the second insert is fixed after the fader and after the processing. A three-band EQ is available on the tapped signal feeding the buses.
+
+  ## Where sources disagree
+
+  Third-party guides show different default chains. One walkthrough describes gate, insert FX, EQ, compressor, fader; the manual excerpt lists gate, EQ, dynamics. A third guide describes the hardware strip as input, filter, gate, compressor, insert and main blocks plus a four-encoder EQ section and suggests working in this order: gain, then high-pass and low-pass filters, then EQ, then gate and compressor. These are the authors' own workflows, not an official default. That is why confidence is "contested".
+
+  ## Why order matters
+
+  - **Gate before dynamics** keeps the compressor from lifting bleed so far that the gate misjudges it.
+  - **Compressor before gate** can make toms or other decaying sources sound shorter-gated or tighter; some engineers do it deliberately.
+  - **EQ before dynamics** lets a high-pass or a cut reduce what the compressor reacts to, while **EQ after dynamics** shapes the tone of the compressed result.
+  - **Insert before the fader** processes at a fixed level; **after the fader** the effect level follows your fader moves, which is also where automix is applied (see the WING automix entry).
+
+  ## Practical routine
+
+  Set gain first, then filters, then fix tonal problems with EQ, then add the gate and compressor. Change the block order only with a reason, make a note of which channels you changed, and save it with the scene so a recall does not surprise the next engineer.
+rule:
+  applies_to:
+    console: [wing]
+  params: {}
+  notes: "Default block order is not confirmed from the full manual (only a mirror excerpt and third-party guides were opened). Verify on the desk."
+sources:
+  - title: "Behringer WING RACK manual (mirror), HOME screen and SETUP > Audio"
+    publisher: "Behringer"
+    kind: manual
+    url: "https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html"
+    accessed: "2026-11-09"
+    locator: "HOME screen left column; wrench icon; pre-fader and post-fader insert; DELAY (POST)"
+  - title: "Customizing the Processing Order Per Channel on the Behringer Wing"
+    publisher: "Technically Church"
+    kind: article
+    url: "https://technicallychurch.com/2025/06/customizing-the-processing-order-per-channel-on-the-behringer-wing/"
+    accessed: "2026-11-09"
+    locator: "Default Processing Order; Changing the Processing Order"
+  - title: "Behringer WING: A Beginner's Guide to the Console"
+    publisher: "Party Map Academy"
+    kind: article
+    url: "https://www.partymapacademy.com/blog/behringer-wing-beginners-guide/"
+    accessed: "2026-11-09"
+    locator: "Channel processing chain"
+media:
+  - kind: diagram
+    path: wing-channel-flow.png
+    caption: "WING channel blocks as listed on the HOME screen (reorderable; verify on the desk)"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Yc9hDMyUBGc"
+    title: "Wing How To: Episode 06 - EQ & Dynamics"
+    channel: "Behringer Knowledge Base"
+    caption: "Behringer's WING how-to series, EQ and dynamics episode (not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=6kXHJr2zYiA"
+    title: "Fix a Ringing Snare with Dynamic EQ on the Behringer WING"
+    channel: "Drew Brashler"
+    caption: "Dynamic EQ in the gate section of a WING channel (title and channel confirmed on YouTube; not watched in full)"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

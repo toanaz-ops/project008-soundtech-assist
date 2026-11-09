@@ -1,0 +1,108 @@
+id: comp-starting-points-by-source
+title: "Compressor starting points per source (low confidence)"
+title_vi: "Điểm xuất phát compressor cho từng nguồn (độ tin cậy thấp)"
+topic: dynamics
+tags:
+  instrument: [vocal, kick, snare, bass, acoustic-guitar, electric-guitar, keys]
+  genre: [pop, rock, jazz, edm, speech]
+  technique: [compression, ratio, attack, release, gain-reduction]
+  event: [concert, corporate]
+summary: "Ratio, attack, release and gain-reduction windows for the common live sources, collected from one church-AV blog and an academic paper on automatic compression. Weak sources: use as a first guess, not a recipe."
+body: |
+  ## Where these numbers come from
+
+  Most of the windows come from a church-audio blog (Sharefaith) that tabulates typical settings, which is not on the reputable list and carries low weight. The general limits (attack 5 to 250 ms, release 5 to 3000 ms, shorter for percussive material, soft knee for transparency) come from a published paper on intelligent multitrack compression. A vendor article on gain staging adds the rule of thumb that a compressor should work on a well-set level, not rescue a bad one. Everything is a starting point.
+
+  ## Starting windows
+
+  - **Lead vocal and speech**: ratio 2:1 to 4:1, attack 2 to 10 ms, release 40 to 100 ms, 3 to 6 dB of gain reduction.
+  - **Backing vocals**: ratio 3:1 to 4:1, attack 5 to 15 ms, release 50 to 150 ms, 4 to 8 dB. Derived by the research lane, not from a source.
+  - **Kick**: ratio about 3.5:1 to 4:1, attack 20 to 80 ms so the beater gets through, release 100 to 300 ms, 3 to 6 dB.
+  - **Snare**: ratio about 3.5:1 to 4:1, attack 10 to 78 ms, release 50 to 300 ms, 3 to 6 dB.
+  - **Bass**: ratio 2.6:1 to 4:1, attack 20 to 45 ms, release 100 to 190 ms, 3 to 6 dB.
+  - **Acoustic guitar**: ratio 2.5:1 to 3.4:1, attack 10 to 30 ms, release 150 to 400 ms, 2 to 5 dB. The blog lists an attack of over a second for this source, which looks like an error; the window here is clamped.
+  - **Electric guitar**: often left uncompressed; if used, 2:1 to 4:1, attack 10 to 30 ms, release 100 to 250 ms, 2 to 4 dB. No source.
+  - **Keys**: ratio 1.8:1 to 2.5:1, attack 5 to 30 ms, release 50 to 112 ms, 1 to 4 dB.
+  - **MC or presenter**: ratio 3:1 to 4:1, attack 5 to 10 ms, release 100 to 200 ms, 4 to 8 dB. Derived, not sourced.
+
+  ## Adjusting by genre
+
+  Jazz: lighter, ratio 1.5:1 to 2.5:1 and 1 to 2 dB of reduction. Rock: heavier, add 2 to 4 dB of reduction and use 4:1 or more. Pop: vocal reduction 2 to 3 dB more. EDM: no compression on the playback; live vocal 4:1 or more with 6 to 10 dB. Speech: steady 3:1 to 4:1. These genre shifts are product heuristics.
+
+  ## Why the weak sourcing matters
+
+  The gain-reduction targets of 3 to 6 dB come from secondary snippets. A compressor that is always working that hard on a live vocal will raise the room noise between phrases and the risk of feedback, so check by ear and use the gain-reduction meter, not the numbers.
+
+  ## Limits
+
+  The kick and snare attacks run to nearly 80 ms, which is slow; use the faster end if you want a tighter hit. No study here tested these settings in live rooms.
+rule:
+  kind: comp_start
+  applies_to: {source_type: [speech.vocal, vocal.backing, drums.kick, drums.snare, instrument.bass, instrument.guitar.acoustic, instrument.guitar.electric, instrument.keys, speech.mc]}
+  params:
+    by_source:
+      speech.vocal: {ratio: [2, 4], attack_ms: [2, 10], release_ms: [40, 100], gr_db: [3, 6]}
+      vocal.backing: {ratio: [3, 4], attack_ms: [5, 15], release_ms: [50, 150], gr_db: [4, 8]}
+      drums.kick: {ratio: [3.5, 4], attack_ms: [20, 80], release_ms: [100, 300], gr_db: [3, 6]}
+      drums.snare: {ratio: [3.5, 4], attack_ms: [10, 78], release_ms: [50, 300], gr_db: [3, 6]}
+      instrument.bass: {ratio: [2.6, 4], attack_ms: [20, 45], release_ms: [100, 190], gr_db: [3, 6]}
+      instrument.guitar.acoustic: {ratio: [2.5, 3.4], attack_ms: [10, 30], release_ms: [150, 400], gr_db: [2, 5]}
+      instrument.guitar.electric: {ratio: [2, 4], attack_ms: [10, 30], release_ms: [100, 250], gr_db: [2, 4]}
+      instrument.keys: {ratio: [1.8, 2.5], attack_ms: [5, 30], release_ms: [50, 112], gr_db: [1, 4]}
+      speech.mc: {ratio: [3, 4], attack_ms: [5, 10], release_ms: [100, 200], gr_db: [4, 8]}
+    general_limits: {attack_ms: [5, 250], release_ms: [5, 3000]}
+  notes: "Starting points from weak sources (church-AV blog, paper limits); backing vocal, electric guitar and MC rows are derived, not sourced."
+sources:
+  - title: "Intelligent Multitrack Dynamic Range Compression"
+    publisher: "Audio Engineering Society"
+    kind: paper
+    url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf"
+    author: "Ma, Reiss and Black"
+    year: 2015
+    accessed: "2026-11-09"
+    locator: "parameter limits"
+  - title: "Ultimate Audio Compression Guide"
+    publisher: "Sharefaith"
+    kind: article
+    url: "https://www.sharefaith.com/blog/2016/12/ultimate-audio-compression-guide/"
+    year: 2016
+    accessed: "2026-11-09"
+    locator: "per-source settings table (church-AV blog, low weight)"
+  - title: "Gain staging: what it is and how to do it"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/gain-staging.html"
+    accessed: "2026-11-09"
+media:
+  - kind: diagram
+    path: gain-reduction-by-source.png
+    caption: "Target gain reduction by source"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: diagram
+    path: ratio-by-source.png
+    caption: "Compressor ratio starting windows"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=gBIEaBJbAfY"
+    title: "Compressors and Gates for Live Sound"
+    channel: "Proclaim AV"
+    caption: "Compressors and gates applied to live sound sources (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=8BLsze-hE10"
+    title: "Understanding Compression on Live Vocals"
+    channel: "Attaway Audio"
+    caption: "Compression settings on live vocals (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Lni_H8Ryklk"
+    title: "Compressing Acoustic Guitar | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Compressing a live acoustic guitar without over-compressing (title and channel confirmed on YouTube; not watched in full)"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

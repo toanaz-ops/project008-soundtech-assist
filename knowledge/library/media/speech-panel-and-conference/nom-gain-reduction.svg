@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Ambient gain vs number of open mics</text>
+<rect x="90" y="80" width="830" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="311.3" y1="80.0" x2="311.3" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="311.3" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">5</text>
+<line x1="588.0" y1="80.0" x2="588.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="588.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">10</text>
+<line x1="864.7" y1="80.0" x2="864.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="864.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">15</text>
+<line x1="90.0" y1="371.3" x2="920.0" y2="371.3" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="376.3" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">-10</text>
+<line x1="90.0" y1="238.4" x2="920.0" y2="238.4" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="243.4" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">-5</text>
+<line x1="90.0" y1="105.5" x2="920.0" y2="105.5" stroke="#2b2f37" stroke-width="1"/>
+<text x="80.0" y="110.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">0</text>
+<text x="505.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Open mics (NOM)</text>
+<text transform="translate(26,265.0) rotate(-90)" font-size="15" fill="#868d98" text-anchor="middle">Gain change (dB)</text>
+<polyline points="90.0,105.5 145.3,185.3 256.0,265.0 477.3,344.7 920.0,424.5" fill="none" stroke="#ff9f1c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="718" y="78" width="200" height="32" rx="4" fill="#131519" fill-opacity="0.9" stroke="#2b2f37"/>
+<line x1="730.0" y1="90.0" x2="756.0" y2="90.0" stroke="#ff9f1c" stroke-width="3"/>
+<text x="764.0" y="94.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">about -3 dB per doubling</text>
+</svg>

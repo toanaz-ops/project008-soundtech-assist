@@ -1,0 +1,104 @@
+id: mic-three-to-one-rule
+title: "The 3:1 microphone rule"
+title_vi: "Quy tắc 3:1 khi dùng nhiều micro"
+topic: mic-technique
+tags:
+  instrument: [vocal, choir, drums]
+  genre: []
+  technique: [multi-mic, comb-filtering, mic-distance]
+  event: [concert, corporate]
+summary: "When several mics hear the same source, keep the second mic at least three times as far from the source as the first. That lowers its level by about 10 dB and keeps comb filtering mild."
+body: |
+  ## The rule
+
+  If two microphones pick up the same sound, the farther one hears it later.
+  Summed together, the two signals form a comb filter. The 3:1 rule limits
+  the damage: place the second mic **at least three times as far from the
+  source** as the first one. The usual statement is relative to the first
+  microphone: for example, with the first mic 30 cm from a snare, the second
+  should be about 90 cm away.
+
+  ## Why it works
+
+  The inverse square law means a threefold distance ratio lowers the level
+  by about 9.5 dB (20 log10 of 3). A copy that is roughly 10 dB below the
+  direct sound produces only shallow ripples when summed, rather than deep
+  holes. One manufacturer states the golden rule as attenuating the delayed
+  pickup by at least 10 dB, and notes that the 3:1 ratio is one way to
+  achieve that. Another way is panning, which also creates level differences.
+
+  ## How to use it
+
+  - **Choir and groups**: the first mic is about three feet from the nearest
+    singer, so the neighbouring mic goes about nine feet from the first.
+  - **Drums**: close mics are near their drums; keep overheads and other mics
+    far enough that no mic is a close second to the same drum.
+  - **Several talkers at a table**: each person gets a mic close to their
+    mouth, and the mics are well apart so they do not hear each other.
+  - **Adjust by ear**: the rule is a guide and starting point, not a
+    guarantee. Some cancellation is unavoidable, so listen to the sum in mono
+    as well as stereo.
+
+  ## Limits
+
+  - It targets the level of the second mic. If a loud source is close to both
+    mics, or a mic is aimed so it favours the other source, the effective
+    level difference changes.
+  - It does not fix polarity problems; see mic-phase-and-polarity.
+  - Directional mics generally tolerate the distance factor better than omnis,
+    and with more than two neighbouring mics you may need more distance.
+  - More open mics also means less gain before feedback. See
+    gain-before-feedback-pag-nag.
+rule:
+  applies_to: {technique: [multi-mic]}
+  params:
+    distance_ratio: [3, 3]
+    level_drop_db: [-10, -9.5]
+  notes: "guide only; judge by ear and in mono"
+sources:
+  - title: "3:1 rule (Mic Dictionary)"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://dpamicrophones.com/mic-dictionary/3-1-rule"
+    accessed: "2026-11-09"
+    locator: "3:1 Rule; Level difference"
+  - title: "The basics about comb filtering and how to avoid it"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://dpamicrophones.com/mic-university/the-basics-about-comb-filtering-and-how-to-avoid-it"
+    accessed: "2026-11-09"
+    locator: "The 10 dB rule"
+  - title: "Recording Drums Part 5: Phase Cancellation"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-GB/insights/recording-drums-part-5-phase-cancellation"
+    accessed: "2026-11-09"
+    locator: "Avoiding & Minimizing Phase Problems"
+  - title: "Of Mics and Monitors: Live Sound Reinforcement Tips for Choirs"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-GB/insights/of-mics-and-monitors-live-sound-reinforcement-tips-for-choirs"
+    accessed: "2026-11-09"
+    locator: "Placement; Example"
+media:
+  - kind: diagram
+    path: second-mic-level.png
+    caption: "Level of a second mic vs its distance ratio to the first"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=_RJQfGm2RAQ"
+    title: "3 to1 Rule | Proper Set-up for Multiple Mics"
+    channel: "Sonic Electronix"
+    caption: "Proper set-up for multiple mics under the 3 to 1 rule (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=LvFKZ-F9gNE"
+    title: "The Spaced Pair Technique and the 3:1 Rule"
+    channel: "Neptune Music"
+    caption: "Spaced pair technique and the 3:1 rule (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

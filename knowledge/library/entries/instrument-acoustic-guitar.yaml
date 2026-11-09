@@ -1,0 +1,67 @@
+id: instrument-acoustic-guitar
+title: "Acoustic guitar: pickup DI, mics and feedback control"
+title_vi: "Guitar acoustic: DI từ pickup, mic và chống hú"
+topic: instruments
+tags:
+  instrument: [acoustic-guitar]
+  genre: [pop, folk]
+  technique: [di, mic-placement, eq, feedback]
+  event: [concert, corporate]
+summary: "In a band, a pickup DI is usually safer than a mic; a mic near the soundhole sounds better but invites feedback and tone shift. A cut around 150-250 Hz tames boxiness."
+body: |
+  ## DI or mic?
+
+  On a loud stage, close-miking an acoustic is hard: staying close enough to reject spill makes the tone change every time the player moves, and the result may not sound like the guitar. Paul White's advice for non-acoustic gigs is therefore the DI from the guitar's pickup.
+
+  - A basic piezo under the saddle can sound harsh and may need heavy EQ or an acoustic preamp/processor.
+  - Better systems blend a pickup with a small internal microphone and need far less correction.
+  - Where the pickup sounds tinny, a mic can add a little lower-mid warmth, blended under the DI.
+
+  ## Mic when you use one
+
+  Common practice (general knowledge, not taken from the cited pages): a small-diaphragm condenser works when the stage is quiet; when monitors push the gain, a dynamic or a tighter pattern (hyper/supercardioid) gives more gain before feedback. Start a few inches from the guitar, listen, and move the mic off the soundhole if it booms; the exact spot is guitar- and room-dependent.
+
+  ## Starting EQ
+
+  - High-pass about 70-100 Hz; iZotope notes below 70 Hz is probably unnecessary.
+  - A cut at 150-250 Hz reduces boxiness (White); iZotope puts body/mud at 200-400 Hz.
+  - Presence or harshness at 1.5-2.5 kHz; trim there if the pickup quacks.
+  - 8-12 kHz is air; a small lift can restore sparkle a piezo lacks.
+
+  ## Dynamics
+
+  Gentle compression only if the strumming dynamics jump out of the mix; it also lifts feedback risk, so apply after feedback is controlled.
+
+  ## Common problems
+
+  - **Low-end feedback near the soundhole:** a narrow notch, or a soundhole cover, or a mic farther from the hole.
+  - **Piezo quack:** cut the upper mids rather than boosting.
+  - **Boom from stage monitors:** check the polarity of the pickup versus mic and keep monitors off-axis of the mic's rear.
+
+  ## Live and WING tips
+
+  Use the DI input pad and gain so the pickup preamp does not clip on strong strumming. Place a feedback notch in an EQ band, not the HPF, and keep one extra band free for the song-to-song tone. If the guitarist switches guitars, recheck gain and polarity per instrument.
+rule:
+  applies_to: {source_type: [guitar.acoustic], genre: [pop, folk]}
+  params:
+    hpf_hz: [70, 100]
+    box_cut_hz: [150, 250]
+    harsh_cut_hz: [1500, 2500]
+  notes: "Starting points; prefer pickup DI on loud stages."
+sources:
+  - {title: "Using Mics & DI Boxes On Stage", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-mics-di-boxes-stage", author: "Paul White", year: 2004, accessed: "2026-11-09", locator: "Acoustic Guitars"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Acoustic guitar"}
+media:
+  - {kind: diagram, path: acoustic-guitar-eq.png, caption: "Starting EQ for an acoustic guitar DI", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=puY8so8eb5A", title: "How to Mic an Acoustic Guitar Featuring 9 Different Shure Mics", channel: "Shure Creators", caption: "Comparison of mic choices on one guitar"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=cfAc1D5D8Wk", title: "How to mount the DPA 4099 Instrument Mic on a guitar with a DPA Clip", channel: "DPA Microphones A/S", caption: "Clip-on mic mounting"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Lni_H8Ryklk"
+    title: "Compressing Acoustic Guitar | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Compressing a live acoustic guitar (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

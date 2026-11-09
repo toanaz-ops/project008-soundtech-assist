@@ -1,0 +1,94 @@
+id: comp-threshold-ratio-knee
+title: "Compressor basics: threshold, ratio and knee"
+title_vi: "Compressor cơ bản: threshold, ratio và knee"
+topic: dynamics
+tags:
+  instrument: []
+  genre: []
+  technique: [compression, threshold, ratio, knee]
+  event: []
+summary: "Threshold decides which part of the signal gets compressed, ratio decides how hard, and knee decides how abruptly compression begins. Together they set the shape of the transfer curve."
+body: |
+  A compressor looks at the level of a signal and turns it down when it goes above a fixed level called the **threshold**. Anything under the threshold passes through untouched. Anything over it is reduced according to the **ratio**. A handy way to remember it: threshold is the "what" (which part of the signal), ratio is the "how much".
+
+  ## Ratio in numbers
+
+  At 2:1, every 2 dB the input rises above the threshold only becomes 1 dB at the output. At 4:1 it takes 4 dB in for 1 dB out. So with a 4:1 ratio and a peak 8 dB over the threshold, the output peak ends up about 2 dB over it, which means roughly 6 dB of gain reduction. From about 10:1 upwards the unit behaves like a limiter, which is why limiters are described as "very high ratio" devices.
+
+  See the diagram: the 1:1 line is the do-nothing reference, and each higher ratio bends the line further below it past the threshold.
+
+  ## Knee
+
+  A **hard knee** applies the full ratio the instant the signal crosses the threshold. A **soft knee** starts compressing gently a little before the threshold and eases up to the full ratio, so you never hear the moment compression "switches on". The diagram's 10:1 curve with a 10 dB knee shows this rounded corner.
+
+  ## Starting points (adjust by ear)
+
+  - Gentle smoothing of a vocal or a speaker: low ratio (about 2:1 to 3:1), threshold low enough that the gain-reduction meter moves on the louder phrases.
+  - Strong control of transient-heavy sources such as drums: roughly 4:1 to 8:1, but a lot depends on the source and the attack time.
+  - Mix-bus style glue: very low ratios (down to roughly 1.1:1 to 2:1) with moderate timing.
+  - Peak catching or protection: 10:1 and above.
+
+  ## What to listen for
+
+  Set the threshold first, while watching the meter, until it only reacts to the moments you actually want to control. Then raise the ratio until the problem is under control, and only then fine-tune timing. If the source sounds flat, lifeless or "breathes" with the music, the threshold is too low or the ratio too high.
+
+  ## Common mistakes
+
+  - Setting a high ratio and a very low threshold "to be safe". The whole signal gets squashed and the noise floor and bleed come up with it once make-up gain is added.
+  - Judging by the meter only. Bypass the compressor with the output level matched, otherwise the louder version always sounds better.
+  - Using a hard knee on a naturally smooth source (acoustic vocals, strings) and hearing the compressor kick in. Try a soft knee instead.
+
+  ## On a WING
+
+  The WING lets you choose among several dynamics models per channel, and their knee and ratio behaviour is not identical (some vintage-style models fix or scale the knee). Read the model's description in the manual rather than assuming the numbers match another unit.
+
+  All numbers above are starting points, not rules.
+rule:
+  applies_to: {source_type: [vocal.lead, vocal.speech, drums, bass]}
+  params:
+    ratio_smoothing: [2, 3]
+    ratio_transient_control: [4, 8]
+    ratio_glue: [1.1, 2]
+    ratio_limiting_min: [10, 20]
+  notes: "starting points only; set threshold first with the gain-reduction meter, then ratio, then timing"
+sources:
+  - title: "Compression: What Do All Those Knobs Do?"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/compression-what-do-all-those-knobs-do"
+    accessed: "2026-11-09"
+    locator: "Watching The Detectors / Target Practice"
+  - title: "What Is Audio Compression? Everything You Need to Know"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
+    accessed: "2026-11-09"
+    locator: "How Much Compression / starting points"
+  - title: "Basic compressor controls"
+    publisher: "FabFilter"
+    kind: article
+    url: "https://fabfilter.com/learn/compression/basic-compressor-controls"
+    accessed: "2026-11-09"
+    locator: "Transfer curve, threshold and ratio"
+media:
+  - kind: diagram
+    path: transfer-ratios.png
+    caption: "Transfer curves at 1:1, 2:1, 4:1 and 10:1 with a soft knee, threshold -20 dB"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
+    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
+    channel: "Audio University"
+    caption: "Threshold, ratio, attack and release explained with demos (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=_IuQKs61rO0"
+    title: "Visualizing compressor knee - Hard knee vs. soft knee"
+    channel: "Audio Masterclass"
+    caption: "Hard knee versus soft knee visualised (title and channel confirmed on YouTube; not watched in full)"
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

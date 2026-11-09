@@ -1,0 +1,84 @@
+id: gate-and-expander
+title: "Gates and expanders: threshold, range, hold and hysteresis"
+title_vi: "Gate và expander: threshold, range, hold, hysteresis"
+topic: dynamics
+tags:
+  instrument: [drums, snare, kick, tom, vocal]
+  genre: [rock]
+  technique: [gate, expander, hysteresis, hold, bleed-control]
+  event: []
+summary: "A gate attenuates a channel when it is quiet, which cuts bleed and noise between hits. Range, hold, hysteresis and a gentler expander ratio keep it from chattering or sounding unnatural."
+body: |
+  A compressor acts on the loud parts. A **gate** acts on the quiet parts: when the signal falls under the threshold, the channel is turned down. In live sound its main job is reducing bleed between close mics (toms, snare, kick) and noise on idle channels.
+
+  ## The controls
+
+  - **Threshold** is the level the signal must exceed for the gate to open fully. Set it just above the bleed and below the wanted hits.
+  - **Range (floor)** is how much the gate turns the signal down when closed. Infinite range is full muting; a range of about 10 to 20 dB leaves a little of the background, which is usually less obvious to the ear, especially on vocals and speech.
+  - **Attack** is how fast it opens. Too fast can click on drum hits; too slow softens the transient.
+  - **Hold** keeps the gate open for a set time after the signal drops below threshold. It stops chatter when the level hovers around the threshold and lets you use a shorter release.
+  - **Release** is how fast it closes. A tom needs to ring a little, so a longer release; a kick or tight snare can use a shorter one.
+  - **Hysteresis** is a second, lower threshold used for closing. The signal must fall below that lower level before the gate shuts, so a decaying note does not flutter on and off. Sound On Sound suggests opening the hysteresis control when hold is already at its minimum and the gate still chatters. Many hardware units hide this control.
+
+  ## Gate versus expander
+
+  A gate is a downward expander with an infinite ratio: it applies a fixed attenuation. An **expander** uses a ratio, so quieter signals are cut proportionally more. With a ratio of 2:1 or 3:1 and a fast attack and release it sounds more natural than a hard gate, so it is a good first choice on vocals, speech and anything that must not sound "cut".
+
+  ## Starting points (adjust by ear)
+
+  These values are highly source-dependent and are practical rules of thumb rather than figures from the cited article, so treat them as windows:
+  - Range for natural sound on vocals or speech: about 6 to 15 dB.
+  - Range for drum close mics: from 20 dB to full close.
+  - Hold: around 20 to 30 ms is typical for gates with a fixed hold.
+  - Attack: as fast as possible without clicks.
+
+  ## Key filter
+
+  The gate listens to a **side-chain**, normally the input itself. Filters in this path decide what opens it. Cutting the low end of the key on a kick stops rumble from other drums triggering it; on a snare, high-pass the key above the kick frequency. See the key-filter entry.
+
+  ## Common mistakes
+
+  - Setting the threshold so high that soft hits and ghost notes are lost.
+  - Gating a ringing tom or a sustaining bass with a short release, so the tail is cut off.
+  - Forgetting to turn the gates off when the drummer plays softly in a quiet number.
+  - Using a gate to fix a bad mic placement. It can lower bleed between hits, but it cannot remove bleed while the instrument is playing.
+  - Leaving a gate in a corporate speech channel with a closed range of infinity; clipped word beginnings make the speaker sound abrupt. Use an expander or a modest range.
+
+  The diagram shows a gate and an expander transfer curve; below the threshold the gate drops sharply to the range floor, while the expander follows its ratio.
+rule:
+  applies_to: {source_type: [drums, vocal.speech, vocal.lead]}
+  params:
+    range_db_speech: [6, 15]
+    range_db_drum: [20, 80]
+    hold_ms: [20, 30]
+    expander_ratio: [2, 3]
+  notes: "starting points; hysteresis fixes chatter before lengthening hold"
+sources:
+  - title: "Production Techniques: Using Gates & Expanders"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/production-techniques-using-gates-expanders"
+    accessed: "2026-11-09"
+    locator: "Glossary Of Controls"
+media:
+  - kind: diagram
+    path: gate-expander-curves.png
+    caption: "Gate versus expander transfer curves, threshold -40 dB"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=gBIEaBJbAfY"
+    title: "Compressors and Gates for Live Sound"
+    channel: "Proclaim AV"
+    caption: "Compressors and gates for live sound (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=5Ag_-xku3Uw"
+    title: "Reduce Stage Noise and Feedback – Waves Primary Source Expander Plugin Tutorial"
+    channel: "Waves Audio"
+    caption: "Waves expander used to reduce stage noise and feedback (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

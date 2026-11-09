@@ -1,0 +1,94 @@
+id: comp-attack-release
+title: "Compressor attack and release times"
+title_vi: "Thời gian attack và release của compressor"
+topic: dynamics
+tags:
+  instrument: [vocal, snare, kick, bass]
+  genre: []
+  technique: [compression, attack, release, pumping]
+  event: []
+summary: "Attack sets how quickly gain reduction grabs after the threshold is crossed, release sets how quickly it lets go. Slow attack keeps punch, fast attack tames peaks, and release must be matched to the rhythm of the source to avoid pumping."
+body: |
+  Attack and release are **speeds of gain change**, not delays. Attack is how fast the compressor turns the signal down once it is over the threshold. Release is how fast it returns to unity gain after the signal falls back under it.
+
+  ## Attack
+
+  - **Slow attack (roughly 20 to 40 ms and up)** lets the front of a hit through before the compressor reacts. Drums sound punchier and more percussive, but the tail after the hit gets pulled down, so sustain is reduced.
+  - **Fast attack (around 1 ms and below)** clamps the transient, so peaks are controlled and the sound gets denser and less aggressive. Too fast on a vocal makes it squashed and dull.
+  - Extremely fast action on low-frequency material can distort, because the compressor starts acting inside each bass cycle.
+
+  A worked example from Sound On Sound: with a 100 ms attack and 4:1 ratio, a peak 8 dB over threshold would reach 6 dB of reduction only after 100 ms; a peak shorter than that is gone before the compressor has fully acted.
+
+  ## Release
+
+  - **Too fast** and the level audibly rises and falls with each phrase, the "pumping" effect. On low-frequency-heavy material it can also sound like distortion.
+  - **Too slow** and the compressor never recovers before the next hit, so the next transient is squashed and the sound is flattened.
+  - A good aim is for the gain to be back at roughly 90 to 100 percent of unity just before the next hit. For music, relate it to the tempo; for speech, a medium release usually sounds most natural.
+
+  ## Starting points (adjust by ear)
+
+  | Goal | Attack | Release | Ratio |
+  |---|---|---|---|
+  | Gentle smoothing (vocal, speech) | about 8 ms | medium-slow, about 200 ms | about 3:1 |
+  | Punch on kick/snare | about 20 to 40 ms | set to tempo | about 6:1 |
+  | Crushed ambience/room | very fast | medium | about 10:1 |
+
+  A common general-purpose setup recipe is attack 1 ms, release 50 ms, ratio 4:1, then widen the times until the sound is right. FabFilter advises setting attack before release.
+
+  ## How to set them
+
+  1. Set the threshold so the meter moves on the louder moments.
+  2. Start with a slow attack and listen to the transients. Speed it up until the peaks are controlled without the sound going dull.
+  3. Then adjust release while watching the meter: you want it to swing back down to zero between phrases or hits without chattering.
+
+  ## Common mistakes
+
+  - Setting both to the fastest values "to catch everything". The result is distortion and pumping.
+  - Setting a release so long that the meter never returns to zero.
+  - Forgetting that different models respond differently to the same numbers; some have program-dependent timing that you cannot set by number at all.
+
+  The diagram shows an input burst and the gain reduction following it: the gain falls over the attack time and recovers over the release time. All values are starting points.
+rule:
+  applies_to: {source_type: [vocal.lead, vocal.speech, kick, snare]}
+  params:
+    attack_ms_punch: [20, 40]
+    attack_ms_smoothing: [5, 10]
+    release_ms_smoothing: [150, 300]
+    attack_ms_fast: [0.1, 1]
+  notes: "starting points; sources differ because each compressor model scales time constants differently"
+sources:
+  - title: "Compression: What Do All Those Knobs Do?"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/compression-what-do-all-those-knobs-do"
+    accessed: "2026-11-09"
+    locator: "Attacking Instincts / Time And Motion"
+  - title: "What Is Audio Compression? Everything You Need to Know"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
+    accessed: "2026-11-09"
+    locator: "Attack and Release Starting Points"
+  - title: "Basic compressor controls"
+    publisher: "FabFilter"
+    kind: article
+    url: "https://fabfilter.com/learn/compression/basic-compressor-controls"
+    accessed: "2026-11-09"
+    locator: "Attack and release"
+media:
+  - kind: diagram
+    path: attack-release-envelope.png
+    caption: "Input burst and gain reduction: 10 ms attack, 150 ms release"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
+    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
+    channel: "Audio University"
+    caption: "Audio University walkthrough of threshold, ratio, attack, release and more (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

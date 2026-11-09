@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Where level is set along a digital console channel</text>
+<rect x="40.0" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#ff9f1c" stroke-width="2"/>
+<text x="88.3" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Mic</text>
+<text x="88.3" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">source level</text>
+<line x1="140.6" y1="255.0" x2="162.6" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="170.6,255.0 160.6,249.0 160.6,261.0" fill="#868d98"/>
+<rect x="170.6" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#5fc9ff" stroke-width="2"/>
+<text x="218.9" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Preamp /</text>
+<text x="218.9" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">trim</text>
+<text x="218.9" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">set gain</text>
+<text x="218.9" y="356.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">here, sets</text>
+<text x="218.9" y="374.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">headroom</text>
+<line x1="271.1" y1="255.0" x2="293.1" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="301.1,255.0 291.1,249.0 291.1,261.0" fill="#868d98"/>
+<rect x="301.1" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#6ee7a0" stroke-width="2"/>
+<text x="349.4" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">A/D</text>
+<text x="349.4" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">converter</text>
+<text x="349.4" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">0 dBFS</text>
+<text x="349.4" y="356.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">ceiling</text>
+<line x1="401.7" y1="255.0" x2="423.7" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="431.7,255.0 421.7,249.0 421.7,261.0" fill="#868d98"/>
+<rect x="431.7" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#ff5a4e" stroke-width="2"/>
+<text x="480.0" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">HPF / EQ /</text>
+<text x="480.0" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">dynamics</text>
+<text x="480.0" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">check meter</text>
+<text x="480.0" y="356.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">after each</text>
+<line x1="532.3" y1="255.0" x2="554.3" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="562.3,255.0 552.3,249.0 552.3,261.0" fill="#868d98"/>
+<rect x="562.3" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#ffc24d" stroke-width="2"/>
+<text x="610.6" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Channel</text>
+<text x="610.6" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">fader</text>
+<text x="610.6" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">mix balance,</text>
+<text x="610.6" y="356.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">not gain</text>
+<line x1="662.9" y1="255.0" x2="684.9" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="692.9,255.0 682.9,249.0 682.9,261.0" fill="#868d98"/>
+<rect x="692.9" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#c9d1d9" stroke-width="2"/>
+<text x="741.1" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Bus / Main</text>
+<text x="741.1" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">sum, watch</text>
+<text x="741.1" y="356.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">headroom</text>
+<line x1="793.4" y1="255.0" x2="815.4" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="823.4,255.0 813.4,249.0 813.4,261.0" fill="#868d98"/>
+<rect x="823.4" y="200" width="96.6" height="110" rx="8" fill="#1b1e24" stroke="#ff9f1c" stroke-width="2"/>
+<text x="871.7" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">D/A + amps</text>
+<text x="871.7" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">system gain</text>
+</svg>

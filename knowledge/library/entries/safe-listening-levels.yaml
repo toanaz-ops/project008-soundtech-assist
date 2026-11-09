@@ -1,0 +1,76 @@
+id: safe-listening-levels
+title: "Safe listening levels at events (WHO global standard)"
+title_vi: "Mức nghe an toàn tại sự kiện (chuẩn toàn cầu của WHO)"
+topic: system
+tags:
+  instrument: []
+  genre: []
+  technique: [spl-monitoring, hearing-safety]
+  event: [concert, festival, corporate]
+summary: "The WHO global standard for venues and events caps average level at 100 dB LAeq over 15 minutes and adds monitoring, acoustics, hearing protection, quiet zones and staff training. It is a recommendation, not law in most places."
+body: |
+  ## What the standard says
+
+  In 2022 the World Health Organization published a global standard for safe
+  listening at venues and events (nightclubs, concerts, festivals, bars). Its
+  headline limit is **100 dB LAeq, 15 min**: the A-weighted energy-average
+  level over any 15-minute window must stay at or below 100 dB. "Average"
+  matters: peaks can exceed it briefly, but a show that sits at 105 dB for
+  long stretches will fail.
+
+  The standard is built from six features that work together:
+
+  1. The average level cap above.
+  2. Live monitoring of sound levels with calibrated equipment, by named
+     staff.
+  3. Venue acoustics and sound system design that make a lower level work.
+  4. Personal hearing protection made available to the audience.
+  5. Quiet zones where people can rest their ears.
+  6. Training and information for on-site staff and attendees.
+
+  A festival that applied it in India reported monitoring at each venue with
+  remote readout, and found exceedances rare, small and short.
+
+  ## What it means for the mix position
+
+  - Put a measurement microphone or SPL meter at or near FOH and watch a
+    **rolling 15-minute LAeq**, not just a momentary reading. A meter that
+    only shows instantaneous level will mislead you.
+  - Mix **dynamics, not constant volume**. Because the limit is an average,
+    quiet passages buy headroom for loud ones. Heavy compression across the
+    mains removes that benefit.
+  - Check where the audience actually is. Front-of-house is usually quieter
+    than the first rows near the stage.
+  - Corporate events with speech and music often need far lower levels than
+    the cap; treat 100 dB as a ceiling, not a target.
+
+  ## Caveats
+
+  The standard is a recommendation for governments and organisers; legal
+  force depends on the country. Local regulations (and venue contracts) may be
+  stricter. Always check the requirement for the specific show before relying
+  on the WHO figure.
+rule:
+  applies_to: {event: [concert, festival, club]}
+  params:
+    laeq_limit_db: [100, 100]
+    averaging_window_min: [15, 15]
+  notes: "WHO recommendation; local law or venue contract may be stricter"
+sources:
+  - title: "WHO hearing guidelines implemented at major arts festival"
+    publisher: "World Health Organization"
+    kind: article
+    url: "https://www.who.int/news-room/feature-stories/detail/who-hearing-guidelines-implemented-at-major-arts-festival"
+    accessed: "2026-11-09"
+    locator: "Six features of the standard"
+  - title: "Live event sound levels rising above the insidious undercurrent of aural incapacitance"
+    publisher: "ProSoundWeb"
+    kind: article
+    url: "https://www.prosoundweb.com/live-event-sound-levels-rising-above-the-insidious-undercurrent-of-aural-incapacitance/"
+    accessed: "2026-11-09"
+    locator: "Not opened in full; cited only for the averaging-window discussion seen in search results"
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

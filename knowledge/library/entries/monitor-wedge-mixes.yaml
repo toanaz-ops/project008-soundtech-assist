@@ -1,0 +1,106 @@
+id: monitor-wedge-mixes
+title: "Monitor wedge mixes: placement, mix content and level"
+title_vi: "Mix monitor wedge: đặt loa, nội dung mix và mức"
+topic: monitoring
+tags:
+  instrument: [vocal, drums, guitar, bass, keys]
+  genre: [pop, rock]
+  technique: [wedge-monitors, mic-null-placement, ringing-out]
+  event: [concert]
+summary: "A good wedge mix gives each performer only what they need to hear, from a speaker placed in the mic's rejection zone. Less in the mix means more gain before feedback and a cleaner stage."
+body: |
+  ## What a wedge mix is for
+
+  A wedge lets a performer hear themselves and cues from the band while staying
+  free of earpieces. The trade-off: the mic, the speaker and the performer are
+  all close together, so wedges have limited gain before feedback, and the
+  sound depends heavily on the room and on where the performer stands (the
+  "sweet spot").
+
+  ## Place the wedge where the mic is deaf
+
+  A microphone is least sensitive at particular angles. The wedge should sit
+  there:
+
+  - **Cardioid vocal mic**: least sensitive straight behind (180 degrees), so
+    a single wedge in front of the singer, aimed back toward the mic's
+    rear, is the classic solution.
+  - **Supercardioid / hypercardioid**: least sensitive at about 125 and 110
+    degrees off-axis respectively, so a single wedge dead behind the mic is a
+    poor choice; put wedges to the sides at that angle (often a pair angled
+    outward).
+  - **Omnidirectional mic**: has no null, so it is more prone to feedback with
+    wedges.
+
+  Check the actual polar plot of the mic in use; null angles differ between
+  models. Moving a wedge a short distance often helps more than adding
+  several notch filters.
+
+  ## What goes in the mix
+
+  1. Start with the performer's own voice or instrument, loud enough to find
+     pitch and timing.
+  2. Add only the cues they ask for: kick and snare for a drummer, bass
+     for a guitarist, a click or vocal cue where needed.
+  3. Keep a monitor mix thin on low end. Roll off lows on vocal sends with an
+     HPF (often 100-150 Hz as a start) and avoid sending big bass to every
+     wedge.
+  4. Leave the full stage wash to the stage volume, not the wedge.
+  5. Never send the choir or other open mics into the same wedge a mic can
+     hear; that is a quick way to cause feedback.
+
+  ## Level and workflow
+
+  - Ring out each wedge (see the ringing-out entry) with the real mic open at
+    its performance position.
+  - Raise levels only as far as needed. The loudest wedge on stage is
+    usually the one that limits everyone's gain.
+  - Re-check after the band arrives, doors open, and the room changes.
+  - Where feedback or stage volume is a recurring problem, in-ear monitors
+    (see the iem-mixes entry) remove the acoustic loop entirely.
+
+  Treat numbers here as starting points; the best monitor mix is the one the
+  performer can use without asking for it louder.
+rule:
+  applies_to: {source_type: [vocal.lead], event: [concert]}
+  params:
+    monitor_send_hpf_hz: [100, 150]
+    cardioid_wedge_angle_deg: [180, 180]
+    supercardioid_wedge_angle_deg: [125, 125]
+    hypercardioid_wedge_angle_deg: [110, 110]
+  notes: "starting points; check each mic's own polar plot; adjust by ear"
+sources:
+  - title: "Microphone Basics: Transducers, Polar Patterns & Frequency Response"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/microphone-basics-transducers-polar-patterns-frequency-response"
+    accessed: "2026-11-09"
+    locator: "Polar patterns: Omnidirectional, Supercardioid, Hypercardioid"
+  - title: "In-ear monitoring basics"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/in-ear-monitoring-basics"
+    accessed: "2026-11-09"
+    locator: "Gain-Before-Feedback; Mobility"
+  - title: "Of Mics and Monitors: Live Sound Reinforcement Tips for Choirs"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-GB/insights/of-mics-and-monitors-live-sound-reinforcement-tips-for-choirs"
+    accessed: "2026-11-09"
+    locator: "What about monitors?"
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=w_2M86O8Q5U"
+    title: "The Secret to Better Wedge Mixes (yes, they still exist)"
+    channel: "MxU"
+    caption: "Better wedge mixes (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=QVJDpd9r-Pc"
+    title: "Monitor Wedges From Front Of House In A Small Venue Part 1"
+    channel: "Steven Thompson"
+    caption: "Mixing monitor wedges from front of house in a small venue (title and channel confirmed on YouTube; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"
