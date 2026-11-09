@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 from wing_parser.ui import live_wiring, menus, window_pages, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
 from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops  # noqa: F401 -- _tab_stops re-export
+from wing_parser.ui.runner_shutdown import shutdown_runners
 from wing_parser.ui.session import Session
 from wing_parser.ui.texts import text
 from wing_parser.ui.window_pages import PAGE_ICONS, PAGE_ORDER  # noqa: F401 -- re-export
@@ -120,6 +121,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:
         window_state.save_on_close(self)
+        shutdown_runners(self)
         super().closeEvent(event)
 
     def _show_finding(self, finding) -> None:

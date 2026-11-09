@@ -28,13 +28,14 @@ from PySide6.QtWidgets import (
 
 from wing_parser.classifier import vocabulary as vocab_module
 from wing_parser.ui import key_status
+from wing_parser.ui.runner_shutdown import ShutdownOnDone
 from wing_parser.ui.texts import text
 from wing_parser.ui.vocabulary_assistant import VocabularyAssistant
 from wing_parser.ui.vocabulary_sets_tab import VocabularySetsTab
 from wing_parser.ui.vocabulary_terms_tab import VocabularyTermsTab
 
 
-class VocabularyWindow(QDialog):
+class VocabularyWindow(ShutdownOnDone, QDialog):
     def __init__(self, parent=None, *, directory=None,
                  initial_fragments: tuple[str, ...] = ()) -> None:
         super().__init__(parent)
