@@ -33,6 +33,8 @@ DATAS = [
     ("../wing_parser/classifier/data", "wing_parser/classifier/data"),
     ("../wing_parser/descriptors/data", "wing_parser/descriptors/data"),
     ("../wing_parser/edit/data", "wing_parser/edit/data"),
+    # Automix knowledge tables; loaded when Tools > Automix is used.
+    ("../wing_parser/automix/data", "wing_parser/automix/data"),
     # What the Console page reads once it is talking to a real desk.
     # Both load lazily (an lru_cache on first call), so a missing one
     # costs nothing at start-up and nothing during a screenshot run --

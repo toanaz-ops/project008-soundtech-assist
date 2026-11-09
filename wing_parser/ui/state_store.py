@@ -33,7 +33,12 @@ MAX_APPLY_DELAY = 60
 MAX_SHOW_TEXT = 80
 
 DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": [],
-                  "apply_delay": 5, "language": "en", "last_show": None, "author": ""}
+                  "apply_delay": 5, "language": "en", "last_show": None, "author": "",
+                  "automix_mode": "draft"}
+
+#: Automix mode (wave 12, AM-6). A string enum so phase 2 only appends
+#: "full_auto"; until then a stored "full_auto" reads back as the default.
+AUTOMIX_MODES = ("disabled", "draft")
 
 
 def _last_show(raw) -> dict | None:
@@ -64,6 +69,7 @@ def normalize(state: dict) -> dict:
     delay = min(max(delay, MIN_APPLY_DELAY), MAX_APPLY_DELAY)
     language = state.get("language")
     author = state.get("author")
+    mode = state.get("automix_mode")
     return {
         "geometry": geometry if isinstance(geometry, str) else None,
         "page": page if page in PAGE_KEYS else None,
@@ -77,6 +83,8 @@ def normalize(state: dict) -> dict:
         "language": language if language in LANGUAGES else "en",
         "last_show": _last_show(state.get("last_show")),
         "author": author[:MAX_SHOW_TEXT] if isinstance(author, str) else "",
+        "automix_mode": (mode if mode in AUTOMIX_MODES
+                         else DEFAULTS["automix_mode"]),
     }
 
 
@@ -105,6 +113,11 @@ def save_language(directory: Path, code: str) -> None:
     """Change only the language: the Settings row writes it the moment
     it changes, without waiting for (or clobbering) a close-time save."""
     save(directory, dict(load(directory), language=code))
+
+
+def save_automix_mode(directory: Path, mode: str) -> None:
+    """Change only the automix mode, the moment the Settings combo moves."""
+    save(directory, dict(load(directory), automix_mode=mode))
 
 
 def save_last_show(directory: Path, show: dict) -> None:

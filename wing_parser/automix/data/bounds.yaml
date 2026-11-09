@@ -1,0 +1,34 @@
+# Hard safety bounds (wave 12, spec section 6, AM-17). Enforced by bounds.py and tested as invariants.
+# Most limits are engineering choices (eng_default); the reverb ranges are the Blue Plate ranges quoted by R7.
+version: 1
+eq:       {gain_db: [-6, 3], q: [0.7, 4], hz: [20, 20000], src: [], confidence: eng_default, note: "AM-17; live practice prefers cuts (S3)"}
+hpf:      {hz: [20, 400], src: [], confidence: eng_default}
+fader:    {max_db: 0, lead_max_db: 5, floor_db: -60, src: [], confidence: eng_default, note: "a fader already at -inf is never moved"}
+send:     {max_db: 0, src: [], confidence: eng_default}
+comp:     {thr_db: [-40, -5], ratio_max: 8, gain_db: [0, 6], src: [], confidence: eng_default}
+gate:     {thr_db: [-80, -20], range_db: [3, 60], src: [], confidence: eng_default}
+reverb:   {dcy: [0.2, 5], pdel: [0, 200], lc: [20, 400], hc: [2000, 20000], src: [R7], confidence: medium, note: "Blue Plate ranges; other models unverified"}
+delay:    {time: [20, 2000], feed: [0, 60], lc: [20, 400], hc: [2000, 20000], src: [], confidence: eng_default}
+wing:     {ratio_list: [1.1, 1.2, 1.3, 1.5, 1.7, 2, 2.5, 3, 3.5, 4, 5, 6, 8, 10, 20, 50, 100], src: [], confidence: eng_default, note: "from the scene leaf inventory (tests/data/wing_leaf_inventory.json)"}
+# Paths (without the ae_data. prefix) that no Change may ever target. fnmatch syntax; * also matches dots.
+forbidden:
+  - "*.mute"
+  - "*.pan"
+  - "*.wid"
+  - "ch.*.in.*"
+  - "*.main.*"
+  - "main.*"
+  - "mtx.*"
+  - "bus.*"
+  - "dca.*"
+  - "cfg.*"
+  - "ch.*.peq.*"
+  - "*.send.*.pon"
+  - "*.send.*.plink"
+  - "*.send.*.ind"
+  - "*.send.*.pan"
+  - "*.eq.mdl"
+  - "*.dyn.mdl"
+  - "*.gate.mdl"
+  - "fx.*.mdl"
+  - "fx.*.fxmix"

@@ -132,6 +132,7 @@ class MainWindow(QMainWindow):
         self._save_action.setEnabled(loaded)
         self._undo_action.setEnabled(loaded and self.session.dirty)
         self._reanalyse_action.setEnabled(loaded)
+        self._automix_action.setEnabled(loaded)
 
         for page in self.pages.values():
             if hasattr(page, "set_session"):

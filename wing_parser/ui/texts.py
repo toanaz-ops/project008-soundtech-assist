@@ -12,6 +12,7 @@ merged in below: wave 2 pushed this file past the ~200-line ceiling
 seam a flat table of strings actually has.
 """
 
+from wing_parser.ui.texts_automix import AUTOMIX_TEXTS
 from wing_parser.ui.texts_console import CONSOLE_TEXTS
 from wing_parser.ui.texts_import import IMPORT_TEXTS
 from wing_parser.ui.texts_lang import LANG_TEXTS
@@ -176,6 +177,7 @@ TEXTS: dict[str, str] = {
     **MOVED_TEXTS,
     **LOG_TEXTS,
     **LIBRARY_TEXTS,
+    **AUTOMIX_TEXTS,
 }
 
 _TABLES = {"en": TEXTS, "vi": VI}

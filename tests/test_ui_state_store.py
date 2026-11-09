@@ -21,6 +21,7 @@ def test_save_then_load_round_trips_a_state(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
         "consoles": [], "apply_delay": 5, "language": "en", "last_show": None, "author": "",
+        "automix_mode": "draft",
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -29,7 +30,7 @@ def test_save_then_load_round_trips_a_state(tmp_path):
 def test_load_without_a_file_yields_defaults(tmp_path):
     assert state_store.load(tmp_path) == {
         "geometry": None, "page": None, "recent": [], "consoles": [],
-        "apply_delay": 5, "language": "en", "last_show": None, "author": "",
+        "apply_delay": 5, "language": "en", "last_show": None, "author": "", "automix_mode": "draft",
     }
 
 
@@ -48,7 +49,7 @@ def test_normalize_drops_junk_and_keeps_known_shape():
     clean = state_store.normalize(state)
     assert clean == {
         "geometry": None, "page": None, "recent": ["ok.snap"], "consoles": [],
-        "apply_delay": 5, "language": "en", "last_show": None, "author": "",
+        "apply_delay": 5, "language": "en", "last_show": None, "author": "", "automix_mode": "draft",
     }
 
 
@@ -91,7 +92,7 @@ def test_consoles_survive_a_save_and_load_round_trip(tmp_path):
     state = {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
         "consoles": ["192.168.1.10", "wing.local"], "apply_delay": 5,
-        "language": "en", "last_show": None, "author": "",
+        "language": "en", "last_show": None, "author": "", "automix_mode": "draft",
     }
     state_store.save(tmp_path, state)
     assert state_store.load(tmp_path) == state
@@ -195,7 +196,7 @@ def test_save_language_keeps_every_other_field(tmp_path):
     state_store.save_language(tmp_path, "vi")
     assert state_store.load(tmp_path) == {
         "geometry": "aabbcc", "page": "diff", "recent": ["x.snap"],
-        "consoles": ["10.0.0.5"], "apply_delay": 12, "language": "vi", "last_show": None, "author": "",
+        "consoles": ["10.0.0.5"], "apply_delay": 12, "language": "vi", "last_show": None, "author": "", "automix_mode": "draft",
     }
 
 
