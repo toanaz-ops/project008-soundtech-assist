@@ -7,9 +7,12 @@ AUTOMIX_TEXTS_VI: dict[str, str] = {
     "settings.automix": "Tự động mix",
     "settings.automix.disabled": "Tắt",
     "settings.automix.draft": "Chỉ bản nháp",
+    "settings.automix.full_auto": "Tự động hoàn toàn (bàn trực tiếp)",
     "settings.automix_note": (
         "Chỉ bản nháp: Công cụ > Tự động mix đề xuất thay đổi cho từng "
-        "kênh để bạn duyệt rồi áp vào scene đang mở. Không gửi gì ra desk."),
+        "kênh để bạn duyệt rồi áp vào scene đang mở. Không gửi gì ra desk. "
+        "Chế độ tự động hoàn toàn còn có phần trực tiếp, liên tục đổi desk "
+        "đang kết nối cho đến khi bạn bấm Dừng."),
 
     "automix.title": "Tự động mix (bản nháp)",
     "automix.banner": (
@@ -66,4 +69,45 @@ AUTOMIX_TEXTS_VI: dict[str, str] = {
     "automix.col.warning": "Cảnh báo",
     "automix.detail.sources": "Nguồn:",
     "automix.detail.no_sources": "Không có nguồn trích dẫn: mặc định kỹ thuật.",
+
+    "automix.full_auto": "Tự động hoàn toàn...",
+    "automix.col.path": "Tham số",
+    "automix.col.mode": "Kết quả",
+    "automix.live.title": "Tự động mix (hoàn toàn, bàn trực tiếp)",
+    "automix.live.banner": (
+        "Chế độ tự động hoàn toàn liên tục đổi desk đang kết nối, từng "
+        "bước nhỏ, qua đúng đường ghi đã kiểm soát như Repair. Hãy Pull "
+        "scene ở trang Console trước. Tham số bạn tự vặn sẽ bị khoá và "
+        "được để yên. Mô phỏng (mặc định bật) chỉ đọc desk, không ghi."),
+    "automix.live.ack": (
+        "TỰ ĐỘNG HOÀN TOÀN: ứng dụng sẽ liên tục đổi desk này cho đến "
+        "khi Dừng"),
+    "automix.live.simulate": "Mô phỏng (không ghi)",
+    "automix.live.confirm_real": (
+        "Tắt Mô phỏng? Lần Bắt đầu tới sẽ ghi vào desk thật."),
+    "automix.live.start": "Bắt đầu",
+    "automix.live.stop": "Dừng (Esc)",
+    "automix.live.revert": "Hoàn tác automix",
+    "automix.live.locked": "Bị khoá do chỉnh tay (để yên):",
+    "automix.live.need_connection": (
+        "Hãy kết nối console trước (trang Console), rồi pull scene."),
+    "automix.live.need_scene": "Hãy pull hoặc mở một scene trước (trang Console).",
+    "automix.live.busy": "Đang có một lệnh ghi chạy; thử lại.",
+    "automix.live.state.idle": "Chờ",
+    "automix.live.state.running": "Đang chạy",
+    "automix.live.state.stopped": "Đã dừng",
+    "automix.live.state.failed": "Thất bại",
+    "automix.live.status": (
+        "{state} - lượt {ticks}, dòng {rows}, còn chờ {pending}, "
+        "khoá {locked}"),
+    "automix.live.mode.simulated": "Sẽ ghi",
+    "automix.live.mode.sent": "Đã gửi",
+    "automix.live.mode.clamped": "Bị kẹp",
+    "automix.live.mode.no_reply": "Không phản hồi",
+    "automix.live.mode.revert": "Đã hoàn tác",
+    "automix.live.error": "Lỗi: {error}",
+    "automix.live.gate_closed": (
+        "Đã dừng: mất kết nối console hoặc mất trạng thái arm."),
+    "automix.live.reverted": "Đã hoàn tác {count} tham số về giá trị cũ trên desk.",
+    "automix.live.nothing_to_revert": "Không có gì để hoàn tác.",
 }

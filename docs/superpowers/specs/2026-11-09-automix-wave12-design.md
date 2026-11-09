@@ -218,6 +218,12 @@ reusing wave 3 wholesale:
   layout → disabled unless the operator ticks "experimental meters"; when on, gate thresholds and fader
   rides may use meter data. Acceptance belongs to HW-192.
 
+As built (phase 2, AM-42 to AM-50): a non-modal panel (`ui/automix_live.py`, view / worker / records split) with a
+QTimer + one `CallRunner`; worker = one batched `get_many` overlay on the pulled scene's document, `write_leaf` via
+`live_write.send`; real rows go to the Sent ledger and write log; Simulate (default on) lists would-write rows only;
+Stop / Esc / gate-down stop the loop and leave the desk as is; "Revert automix" writes back first-touch values.
+The meters checkbox is not shown until a transport is verified (AM-50).
+
 ## 8. UI (phase 1)
 
 - `ui/settings_automix.py`: Settings section, combo Disabled / Draft only (phase 2 adds Full auto), saved

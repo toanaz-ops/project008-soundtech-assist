@@ -122,7 +122,7 @@ def test_timeouts_table_carries_the_ruled_numbers():
     assert TIMEOUTS == {
         "proposal": 120, "guesses": 180, "probe": 30,
         "connect": 5, "walk": 60, "snapshot": 90,
-        "write": 10,
+        "write": 10, "tick": 60,
     }
 
 
