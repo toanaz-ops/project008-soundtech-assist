@@ -58,6 +58,12 @@ only when the latch is ticked **and** the typed name equals `identity.name` exac
 `ERROR` and app quit: the label reverts to an **Arm** button and the selector visibly falls back to Manual, so an operator
 who looks up after a dropout sees the truth.
 
+**Wave 6 (2026-11-09) — soft motion warning.** The latch stays the *only* gate; Arm requires exactly what it did. In
+addition, when the Console page's live Watch has seen a `ch`/`bus`/`main` `$fdr` or `$mute` change in the last 30 s
+(`ui/desk_activity.py`, fed from `EventTable.append`, read via `WriteGate.activity`), the dialog shows a non-blocking
+warning line (`console.write.motion_warning`, `azStyle="warn"`): *"Watch saw N fader/mute changes in the last 30 s — is a
+show running?"* No watch running, or no motion, shows nothing. Decision Q3 in `docs/proposals/2026-11-09-wave6-decisions.md`.
+
 ### 2.2 The three levels (F3)
 
 **Manual** — Repair edits the in-memory scene only (`ui/session.py:57-69`). The Changes dock appears

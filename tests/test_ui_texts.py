@@ -337,7 +337,7 @@ def test_every_write_placeholder_is_filled_by_someone():
     allowed = {
         "name", "model", "serial", "host", "error", "address", "seconds",
         "remaining", "value", "desk", "file", "after", "readback", "done", "total",
-        "skipped", "plural",
+        "skipped", "plural", "count",
     }
     for key, value in WRITE_TEXTS.items():
         fields = {f for _, f, _, _ in string.Formatter().parse(value) if f}

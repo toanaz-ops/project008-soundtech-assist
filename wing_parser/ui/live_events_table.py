@@ -20,6 +20,8 @@ call `net/watch/events.py:30-33` makes for the CLI's own line.
 
 from __future__ import annotations
 
+import time
+
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QTableView
 
@@ -34,6 +36,7 @@ class EventTable(QTableView):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.activity = None        # a `DeskActivity`, attached by live_wiring
         self.model = QStandardItemModel(0, len(COLUMNS), self)
         self.model.setHorizontalHeaderLabels(
             [text(f"console.col.{column}") for column in COLUMNS]
@@ -49,7 +52,10 @@ class EventTable(QTableView):
 
     def append(self, change) -> None:
         """One `Change` -> one row. See this module's docstring for the
-        blank-label fallback."""
+        blank-label fallback. Also feeds `activity` (wave 6), if one was
+        attached -- the only thing this table tells anyone besides itself."""
+        if self.activity is not None:
+            self.activity.record(change.address, time.monotonic())
         self.model.appendRow([
             QStandardItem(
                 text("console.event_time").format(seconds=change.elapsed)),

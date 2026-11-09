@@ -85,6 +85,7 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
     """
     gate = WriteGate(page, transport=transport, timeout=timeout, parent=window)
     window.write_gate = gate
+    page.events.table.activity = gate.activity     # wave 6: Arm's motion hint
     page.connect_bar.disconnected.connect(gate.close)
     page.events.lost.connect(lambda _exc: gate.close())
     for panel in (page.connect_bar, page.discovery, page.snapshot):
