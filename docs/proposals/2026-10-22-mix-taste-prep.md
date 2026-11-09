@@ -136,7 +136,7 @@ Override: `supersedes` tắt rule base cùng chủ đề (như `show.small.*` t�
 - Dựng "hộp dạy" phía code: form UI "rule từ finding" ghi vào `principles.yaml` (validate qua
   `layers.py`); báo cáo log verdict theo rule (đã có `read_log`); gợi ý mẫu ("rule X bị reject
   N lần với điều kiện chung Y").
-- Validator + test ép rule lớp `toanaz` phải có `source:` dạng `ToanAZ <date>: <quote>` (chống
+- [x] DONE: Validator + test ép rule lớp `toanaz` phải có `source:` dạng `ToanAZ <date>: <quote>` (chống (Đã làm: `source:` phải chứa `ToanAZ` và ngày ISO `YYYY-MM-DD`, áp cho cả lớp `toanaz` và `show`; `wing_parser/advisory/validation.py`, test `tests/test_advisory_owner_source.py`.)
   rule bịa "của ông" mà không có lời ông).
 - Biến transcript voice note thành DRAFT YAML (đánh dấu draft, không tự bật), chạy dry-run
   trên các scene `.snap` mẫu để ông thấy rule sẽ bắn gì trước khi duyệt.

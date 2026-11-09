@@ -121,7 +121,7 @@ def test_doctor_accepts_a_profile(vu_path, tmp_path, monkeypatch):
     (shows / "small.yaml").write_text(
         yaml.safe_dump(
             {"rules": [{"id": "show.small", "title": "Small show",
-                        "severity": "info", "source": "s", "rationale": "r",
+                        "severity": "info", "source": "ToanAZ test fixture 2026-01-01", "rationale": "r",
                         "supersedes": ["G8"]}]}
         ),
         encoding="utf-8",

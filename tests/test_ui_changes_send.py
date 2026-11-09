@@ -356,7 +356,13 @@ def test_stop_ends_the_run_between_parameters_and_leaves_the_rest(qt_app, settle
     from wing_parser.ui.apply_level import ApplyLevel
     from wing_parser.ui.texts import text
 
-    desk = FakeDesk(identity=_identity())
+    # The desk must answer the Immediate pre-flight read (wave-6 Q2: an
+    # unanswered read now refuses), so every leaf the run touches is scripted.
+    desk = FakeDesk(identity=_identity(),
+                    leaves={f"/ch/{n}/fdr": OscMessage(f"/ch/{n}/fdr", "sff",
+                                                       ("-6.0", 0.0, -6.0))
+                            for n in range(1, 8)},
+                    readbacks={f"/ch/{n}/fdr": -12.0 for n in range(1, 8)})
     window = _window(qt_app, vu_path)
     records = [_sent(f"/ch/{n}/fdr", f"ae_data.ch.{n}.fdr", -12.0, -6.0)
                for n in range(1, 8)]
