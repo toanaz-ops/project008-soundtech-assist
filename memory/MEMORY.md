@@ -345,3 +345,12 @@ từ `5f4b1e0`: `dist\w10\wing-ui.exe` (71.417.584 bytes, zip
 riêng `build/venv-qt612` — chỉ để ông tự đóng giữa lúc call treo (HW-192);
 không phát hành. `dist\wing-ui.exe` vẫn là bản wave 8 vì file bị một tiến trình
 smoke giữ; đóng nó rồi chép `dist\w10\wing-ui.exe` đè lên.
+
+## 2026-11-09 — Wave 11: finding Doctor tiếng Việt (đã merge)
+
+PR #54 (`52d9c0d`): khoá tuỳ chọn `title_vi`/`message_vi` trên rule YAML; 39
+rule base đã dịch (danh từ mixer giữ English, test parity placeholder). UI ở
+`vi` thì bảng + detail Doctor hiện bản VI; CLI/feedback/dry-run không đổi.
+CI 2405 / 0 / 3. Exe phát hành (6.11.2) từ `52d9c0d`: `dist\w11\wing-ui.exe`
+(71.421.585 bytes, zip `dist\wing-ui-20261109f.zip`, ảnh `--lang vi` ở
+`dist-shots\exe-20261109-w11-vi\`). Câu VI chờ ông duyệt.
