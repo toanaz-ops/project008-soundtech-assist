@@ -13,7 +13,7 @@ on:
 # A second push to the same branch makes the first run's answer worthless.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

@@ -1,6 +1,6 @@
 # PROJECT008-SOUNDTECH-ASSIST — wing-parser: parse & analyse Behringer WING scenes
 
-@memory/MEMORY.md
+Memory index: `memory/MEMORY.md` (367 lines) — grep it / read the relevant entry on demand; not auto-loaded.
 
 Global rules load automatically from
 `D:\DEV CAVE EP3\shared\harness\RULES.md`. Tier 1 — short on purpose.
