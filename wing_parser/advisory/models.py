@@ -28,6 +28,8 @@ class Rule:
     applies_when: dict[str, Any] = field(default_factory=dict)
     any_of: tuple[dict[str, Any], ...] = ()
     supersedes: tuple[str, ...] = ()
+    title_vi: str = ""
+    message_vi: str = ""
 
 
 @dataclass(frozen=True)
@@ -39,3 +41,4 @@ class Finding:
     message: str
     evidence: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
+    message_vi: str = ""

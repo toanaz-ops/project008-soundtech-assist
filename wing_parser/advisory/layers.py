@@ -175,6 +175,8 @@ def _as_rules(path: Path, layer: str, key: str,
                 applies_when=dict(entry.get("applies_when") or {}),
                 any_of=any_of,
                 supersedes=tuple(entry.get("supersedes") or ()),
+                title_vi=_optional(entry, "title_vi", ""),
+                message_vi=_optional(entry, "message_vi", ""),
             )
         )
     if owner_source:

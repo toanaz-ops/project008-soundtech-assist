@@ -8,6 +8,8 @@
 rules:
   - id: N1
     title: "Channel is in use but unnamed"
+    title_vi: "Channel đang dùng nhưng chưa đặt tên"
+    message_vi: "Channel {channel.number} đã patch, không Mute và có route, nhưng chưa có tên."
     severity: info
     source: "docs/knowledge-base/04-templates-and-matrices/Risk-Contingency-Matrix.md L135: 'undocumented setups are the real failure here'; L362 sign-off row 52"
     rationale: >
@@ -28,6 +30,8 @@ rules:
 
   - id: N2
     title: "Output receives signal but is unnamed"
+    title_vi: "Output có tín hiệu nhưng chưa đặt tên"
+    message_vi: "{bus.kind} {bus.number} có tín hiệu vào nhưng chưa có tên."
     severity: info
     enabled: false
     source: "docs/knowledge-base/04-templates-and-matrices/Risk-Contingency-Matrix.md L135; L362"

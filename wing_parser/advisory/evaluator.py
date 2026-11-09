@@ -188,6 +188,9 @@ def evaluate(scene, rule: Rule) -> list[Finding]:
                 message=render(rule.message, target.context),
                 evidence=evidence,
                 confidence=target.confidence if rule.requires_classifier else 1.0,
+                message_vi=(
+                    render(rule.message_vi, target.context) if rule.message_vi else ""
+                ),
             )
         )
     return findings

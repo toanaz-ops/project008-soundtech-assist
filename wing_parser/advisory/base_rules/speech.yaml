@@ -1,6 +1,8 @@
 rules:
   - id: S1
     title: "Speech channel without a high-pass filter"
+    title_vi: "Channel tiếng nói không có high-pass filter"
+    message_vi: "Channel {channel.number} ({channel.name}) được nhận diện là {channel.source_type} và Low cut đang tắt."
     severity: warning
     source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L690: 'Non-negotiable rule: every speech channel gets an HPF.'; L752 targets 100% by 'Configuration audit'"
     rationale: >
@@ -25,6 +27,8 @@ rules:
 
   - id: S2
     title: "Music-family channel inside an active automix group"
+    title_vi: "Channel nhạc nằm trong automix group đang hoạt động"
+    message_vi: "Channel {channel.number} ({channel.name}) được nhận diện là {channel.source_type} và nằm trong automix group {channel.post_insert.automix_group} với insert đang bật. Nội dung broadband kéo dài sẽ làm ducking mọi mic nói trong group."
     severity: error
     source: "docs/knowledge-base/01-live-audio-ai/AI-Plugins-In-Live-Sound.md L385-386: 'Do not put a music channel (playback, walk-in, a performing instrument) into an automix group.'; Core-Skills-Overview.md L711; Corporate-B2B-Events.md L657"
     rationale: >

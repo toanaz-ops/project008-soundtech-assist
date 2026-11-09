@@ -4,6 +4,8 @@
 rules:
   - id: R1
     title: "Click track reaches a FOH main"
+    title_vi: "Click track đi vào Main FOH"
+    message_vi: "Channel {channel.number} ({channel.name}) có vẻ là click track và Send sang Main {destination_main.number} ({destination_main.name}) đang bật."
     severity: error
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L175: click is 'To monitors only, hard-muted at FOH'"
     rationale: >
@@ -27,6 +29,8 @@ rules:
 
   - id: R2
     title: "Talkback reaches a FOH main"
+    title_vi: "Talkback đi vào Main FOH"
+    message_vi: "Channel {channel.number} ({channel.name}) có vẻ là mic Talkback và Send sang Main {destination_main.number} ({destination_main.name}) đang bật."
     severity: error
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L180: talkback 'Stage left, not in FOH mains'"
     rationale: >
@@ -49,6 +53,8 @@ rules:
 
   - id: R3
     title: "Timecode routed into a mix destination"
+    title_vi: "Timecode được route vào một mix"
+    message_vi: "Channel {channel.number} ({channel.name}) có vẻ là timecode và Send sang {destination_bus.kind} {destination_bus.number} ({destination_bus.name}) đang bật. LTC nghe như tiếng ồn trên loa."
     severity: error
     source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L46: LTC 'sounds like audio noise -- never patch it through a normal audio channel'"
     rationale: >
@@ -73,6 +79,8 @@ rules:
 
   - id: R3M
     title: "Timecode routed into a main"
+    title_vi: "Timecode được route vào Main"
+    message_vi: "Channel {channel.number} ({channel.name}) có vẻ là timecode và Send sang Main {destination_main.number} ({destination_main.name}) đang bật."
     severity: error
     source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L46: LTC 'sounds like audio noise -- never patch it through a normal audio channel'"
     rationale: >
@@ -91,6 +99,8 @@ rules:
 
   - id: R4
     title: "Send to a record destination is post-fader"
+    title_vi: "Send tới đích ghi âm đang để post-fader"
+    message_vi: "Channel {channel.number} ({channel.name}) đang đẩy sang đích ghi âm {destination_bus.number} ({destination_bus.name}) ở post-fader: kéo fader FOH sẽ làm đổi bản ghi."
     severity: warning
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L260: 'Record feed is pre-fader [R] -- post-gain, pre-fader, pre-EQ. A FOH fader move must not damage the archive.'"
     rationale: >
@@ -119,6 +129,8 @@ rules:
 
   - id: R5
     title: "Main-send to a record main is post-fader"
+    title_vi: "Main-send tới Main ghi âm đang để post-fader"
+    message_vi: "Channel {channel.number} ({channel.name}) đang đẩy sang Main ghi âm {destination_main.number} ({destination_main.name}) ở post-fader."
     severity: warning
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L260: 'Record feed is pre-fader [R]'"
     rationale: >
@@ -137,6 +149,8 @@ rules:
 
   - id: R6
     title: "Remote caller feeds its own mix-minus bus"
+    title_vi: "Người gọi từ xa đi vào bus mix-minus của chính nó"
+    message_vi: "Channel {channel.number} ({channel.name}) có vẻ là người gọi từ xa và Send vào bus mix-minus {destination_bus.number} ({destination_bus.name}) đang bật -- người gọi sẽ nghe lại giọng mình bị trễ."
     severity: error
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L208: 'Ch15 must be fed a bus that excludes itself... This is the single most common corporate audio failure.'; L879: 'No bus = no show, this is non-negotiable.'"
     rationale: >
