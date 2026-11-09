@@ -67,7 +67,8 @@ def _show_rules(directory: Path | None, profile: str | None = None) -> list[Rule
     )
 
 
-def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
+def _as_rules(path: Path, layer: str, key: str,
+              owner_source: bool = True) -> list[Rule]:
     """principles.yaml uses `principles:` and may omit the `when` block.
 
     A principle whose only job is to switch a base rule off needs no
@@ -176,7 +177,8 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 supersedes=tuple(entry.get("supersedes") or ()),
             )
         )
-    _validate_owner_source(rules, path)
+    if owner_source:
+        _validate_owner_source(rules, path)
     return rules
 
 

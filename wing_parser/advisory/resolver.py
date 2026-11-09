@@ -15,7 +15,7 @@ parse a rule file itself.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 from wing_parser.advisory.evaluator import evaluate_all
 from wing_parser.advisory.layers import _principles, _show_rules, profile_event
@@ -84,8 +84,10 @@ def _validate_applies_when(rule: Rule) -> None:
 
 
 def active_rules(scene, directory: Path | None = None,
-                 profile: str | None = None) -> list[Rule]:
-    candidates = _principles(directory) + _show_rules(directory, profile)
+                 profile: str | None = None,
+                 extra_rules: Sequence[Rule] = ()) -> list[Rule]:
+    candidates = (_principles(directory) + _show_rules(directory, profile)
+                  + list(extra_rules))
     for rule in candidates:
         _validate_applies_when(rule)
     higher = [r for r in candidates if _is_active(scene, r)]
@@ -127,9 +129,11 @@ def active_rules(scene, directory: Path | None = None,
 
 
 def suppressed_ids(scene, directory: Path | None = None,
-                   profile: str | None = None) -> dict[str, str]:
+                   profile: str | None = None,
+                   extra_rules: Sequence[Rule] = ()) -> dict[str, str]:
     """Map each switched-off base rule to the higher-layer rule that did it."""
-    higher = [r for r in _principles(directory) + _show_rules(directory, profile)
+    higher = [r for r in (_principles(directory) + _show_rules(directory, profile)
+                          + list(extra_rules))
               if _is_active(scene, r)]
     return {rule_id: r.id for r in higher for rule_id in r.supersedes}
 
