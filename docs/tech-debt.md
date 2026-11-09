@@ -887,6 +887,13 @@ same loss that made D1-D18 a rescue job.
        unchanged and covered by the existing tests.
     3. `live_write.REAL._read` has no unit test (task 3); it must therefore
        be on the section 9.3 real-desk acceptance list.
+       **Closed 2026-11-09 (unit side)** -- `tests/test_ui_live_write_read.py`
+       (`test_read_normalises_a_bool_leaf_like_the_write_path`,
+       `test_read_returns_a_non_bool_leaf_unchanged`,
+       `test_read_returns_none_when_the_desk_does_not_answer`,
+       `test_real_transport_wires_read_to_this_function`) stubs `WingClient`;
+       no socket. Confirmation against the REAL desk is still on the
+       section 9.3 acceptance list.
     4. ~~`tests/test_live_state.py:70` re-imports `pytest` inside a
        function (task 5).~~ **Not reproducible 2026-09-18:**
        `grep -n "import pytest" tests/test_live_state.py` returns one hit,
@@ -1059,6 +1066,12 @@ same loss that made D1-D18 a rescue job.
        reopened before its previous load finished) leaves old rows on
        screen; reachable only through a test seam today, not observed from
        the real UI.
+       **Not found 2026-11-09:** no populate guard with an early return exists
+       in `wing_parser/ui/vocabulary*.py` (`_populate` in the Sets/Terms tabs
+       has none; `_reload` always re-populates). The only early return near
+       a window reopen is `VocabularyAssistant._update_key_status`'s
+       busy-guard, which leaves the status text, not rows. Left open pending
+       the original reporter's pointer; no test or fix was written.
     7. `wing_parser.showcontext.ingest.build.resolve_fragment` rebuilds
        `vocabulary.effective()` on every fragment instead of once per
        import run — correct, not yet measured as slow enough to matter.
