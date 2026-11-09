@@ -24,4 +24,18 @@ undo. Real open questions are on the Decision Box (codes at the bottom).
 
 ## Open questions on the Decision Box
 
-Filled in when the cards are posted (see handoff).
+Posted 2026-11-09 to the Decision Box (group "PROJECT008 Soundtech Assist"):
+
+- **HW-204.Q1** — entry bodies English only, or add `body_vi` (agent-translated, flagged unreviewed)? Recommend B; interim A (L9).
+- **HW-204.Q2** — may automix use `draft` entries for suggestions? Recommend B (suggest, labelled "unreviewed source"; desk writes still only via Repair); interim: entries stay draft (L12).
+- **HW-204.Q3** — how web edits on the VPS come back to the repo. Recommend A (agent export → PR, periodic or on request); interim A documented in `deploy/library-web/README.md`.
+- **HW-204.Q4** — external images/videos as links or local copies? Recommend A (links); interim A (L8).
+
+Owned by PRJ012 (asked of the owner directly in the PRJ012 session by PRJ012 DEV01, 2026-11-09): the permission codes `knowledge_library.view` / `knowledge_library.edit`, the `GET /api/v1/me/permissions` endpoint, and `/login?next=`.
+
+## Later decisions
+
+| # | Decision | Why | Undo / cost to change |
+|---|---|---|---|
+| L16 | Online access (owner request 09/11 ~22:50): same single-page app as a private claude.ai artifact (read-only export) and as `wing-library-web` on the VPS at `master.azsoundtech.com/library/` behind PRJ012 login (route b: browser sends the PRJ012 Supabase token, server asks PRJ012 for permission codes, never verifies JWTs itself). | Agreed with PRJ012 DEV01; one origin = one login session; P008 owns no users. | Container can be stopped; nginx location removed by PRJ012. |
+| L17 | Web edit author = `"<display_name> (prj012:<member_id>)"` from PRJ012 `/api/v1/me`, set by the server, never by the browser. | History must say who changed what; the client cannot be trusted. | — |
