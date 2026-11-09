@@ -79,4 +79,22 @@ LOG_TEXTS: dict[str, str] = {
         "The desk did not answer the read-back. The write may or may not "
         "have landed."
     ),
+
+    # -- Tools > Verdict summary (wave 7) -----------------------------------
+    "menu.verdicts": "Verdict &summary...",
+    "verdicts.title": "Verdict summary",
+    "verdicts.empty": (
+        "No verdicts recorded yet. In Doctor, select a finding and press "
+        "Correct, False positive or Irrelevant; the summary appears here."
+    ),
+    "verdicts.col.rule": "Rule",
+    "verdicts.col.layer": "Layer",
+    "verdicts.col.correct": "Correct",
+    "verdicts.col.false_positive": "False positive",
+    "verdicts.col.irrelevant": "Irrelevant",
+    "verdicts.col.last": "Last",
+    "verdicts.col.candidate": "Candidate",
+    "verdicts.candidate_yes": "Review",
+    "verdicts.notes_heading": "Notes (newest first)",
+    "verdicts.no_notes": "No notes on this rule.",
 }

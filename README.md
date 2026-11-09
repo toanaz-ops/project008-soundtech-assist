@@ -76,6 +76,10 @@ provider key (it is stored locally, masked on screen), offers a real
 Test connection, and without a key every page still works — only the
 mapping proposal and vocabulary guessing stay quiet.
 
+**Tools ▸ Verdict summary** rolls the verdicts you gave in Doctor up per
+rule (counts, notes, and a Review flag on rules rejected 3+ times more
+often than confirmed). It is read-only and never changes a rule.
+
 The look is one house style: a 19-token dark palette generates the
 stylesheet (no colour literal lives outside `wing_parser/ui/theme/`),
 the typefaces ship inside the app, numbers read in a mono face, and the

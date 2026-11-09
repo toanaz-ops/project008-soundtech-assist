@@ -72,4 +72,22 @@ LOG_TEXTS_VI: dict[str, str] = {
     "log.report.footnote.no_reply": (
         "Desk không trả lời bước đọc lại. Lần ghi có thể đã vào hoặc chưa."
     ),
+
+    # -- Tools > Tổng hợp đánh giá (wave 7) ---------------------------------
+    "menu.verdicts": "&Tổng hợp đánh giá...",
+    "verdicts.title": "Tổng hợp đánh giá",
+    "verdicts.empty": (
+        "Chưa có đánh giá nào. Trong Doctor, chọn một finding rồi bấm "
+        "Đúng, Cảnh báo sai hoặc Không liên quan; bản tổng hợp sẽ hiện ở đây."
+    ),
+    "verdicts.col.rule": "Rule",
+    "verdicts.col.layer": "Layer",
+    "verdicts.col.correct": "Đúng",
+    "verdicts.col.false_positive": "Cảnh báo sai",
+    "verdicts.col.irrelevant": "Không liên quan",
+    "verdicts.col.last": "Gần nhất",
+    "verdicts.col.candidate": "Cần xét",
+    "verdicts.candidate_yes": "Xem lại",
+    "verdicts.notes_heading": "Ghi chú (mới nhất trước)",
+    "verdicts.no_notes": "Rule này chưa có ghi chú.",
 }
