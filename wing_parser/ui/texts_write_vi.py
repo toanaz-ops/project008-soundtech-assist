@@ -13,6 +13,9 @@ WRITE_TEXTS_VI: dict[str, str] = {
         "Không nhận diện được desk tại {host}: {error} — chưa Arm."
     ),
     "console.write.latch": "Desk này hiện KHÔNG chạy show.",
+    "console.write.motion_warning": (
+        "Watch thấy {count} thay đổi fader/mute trong 30 giây qua — có đang chạy show không?"
+    ),
     "console.write.latch_why": (
         "CLAUDE.md: không bao giờ ghi khi đang show nếu chưa có xác nhận "
         "rõ ràng."

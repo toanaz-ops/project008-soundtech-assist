@@ -25,6 +25,9 @@ WRITE_TEXTS: dict[str, str] = {
         "Cannot identify the desk at {host}: {error} — not armed."
     ),
     "console.write.latch": "This desk is NOT running a show right now.",
+    "console.write.motion_warning": (
+        "Watch saw {count} fader/mute changes in the last 30 s — is a show running?"
+    ),
     "console.write.latch_why": (
         "CLAUDE.md: never during a show without explicit confirmation."
     ),

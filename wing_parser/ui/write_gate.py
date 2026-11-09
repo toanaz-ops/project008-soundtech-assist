@@ -22,6 +22,7 @@ from PySide6.QtCore import QObject, Signal
 
 from wing_parser.ui import live_write
 from wing_parser.ui.apply_level import ArmState
+from wing_parser.ui.desk_activity import DeskActivity
 from wing_parser.ui.live_state import allowed_actions
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
@@ -70,6 +71,7 @@ class WriteGate(QObject):
         self._transport = transport or live_write.REAL
         self._timeout = timeout
         self.arm = ArmState()
+        self.activity = DeskActivity()      #: fed by the watch table; Arm's soft hint
         self._runner = CallRunner(self)
         self._queue = WriteQueue(self._start)
 
