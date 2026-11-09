@@ -1,0 +1,40 @@
+# Publisher allow-list: sources the library treats as reputable.
+# A source whose `publisher` is not listed (match is case-insensitive on
+# `name` or any `aliases`) is saved with an `unvetted-source` warning.
+# Add a publisher here only with a one-line reason.
+publishers:
+  - {name: "Audio Engineering Society", aliases: ["AES", "Journal of the Audio Engineering Society", "JAES"], why: "peer-reviewed audio engineering journal and conventions"}
+  - {name: "Sound On Sound", aliases: ["SOS"], why: "long-running professional recording magazine with technical editors"}
+  - {name: "iZotope", why: "audio DSP vendor; Learn articles by staff engineers"}
+  - {name: "FabFilter", why: "EQ/dynamics plug-in vendor; manuals and learn pages"}
+  - {name: "Waves Audio", aliases: ["Waves"], why: "audio DSP vendor; tutorial articles"}
+  - {name: "Sonnox", why: "audio DSP vendor (Oxford plug-ins)"}
+  - {name: "Focal Press", aliases: ["Routledge", "Taylor & Francis"], why: "publisher of Senior (Mixing Secrets), Owsinski, Izhaki and other mixing textbooks"}
+  - {name: "Mike Senior", aliases: ["Cambridge Music Technology"], why: "author of Mixing Secrets for the Small Studio"}
+  - {name: "Bobby Owsinski", why: "author of The Mixing Engineer's Handbook"}
+  - {name: "Behringer", aliases: ["Music Tribe", "Midas"], why: "manufacturer documentation for the WING console"}
+  - {name: "Shure", why: "microphone manufacturer; application notes and educational content"}
+  - {name: "Sennheiser", aliases: ["Neumann"], why: "microphone manufacturer; application notes"}
+  - {name: "DPA Microphones", aliases: ["DPA"], why: "microphone manufacturer; Mic University"}
+  - {name: "Audio-Technica", why: "microphone manufacturer; application notes"}
+  - {name: "Rane", aliases: ["Rane Corporation", "RaneNote"], why: "RaneNote engineering application notes"}
+  - {name: "Dan Dugan Sound Design", aliases: ["Dugan"], why: "inventor of gain-sharing automatic mixing"}
+  - {name: "Harman Professional", aliases: ["Harman", "JBL Professional", "Soundcraft", "BSS Audio"], why: "pro-audio manufacturer group; console and DSP application notes"}
+  - {name: "QSC", aliases: ["QSC Audio"], why: "amplifier/DSP manufacturer; application notes on limiters and system protection"}
+  - {name: "Meyer Sound", why: "loudspeaker manufacturer; system design education"}
+  - {name: "d&b audiotechnik", why: "loudspeaker manufacturer; education material"}
+  - {name: "L-Acoustics", why: "loudspeaker manufacturer; education material"}
+  - {name: "Yamaha", aliases: ["Yamaha Pro Audio"], why: "console manufacturer; sound reinforcement handbook"}
+  - {name: "Hal Leonard", why: "publisher of the Yamaha Sound Reinforcement Handbook"}
+  - {name: "Rational Acoustics", why: "Smaart measurement software; measurement education"}
+  - {name: "ITU", aliases: ["International Telecommunication Union", "ITU-R"], why: "broadcast loudness standard BS.1770"}
+  - {name: "EBU", aliases: ["European Broadcasting Union"], why: "loudness recommendation R 128"}
+  - {name: "World Health Organization", aliases: ["WHO"], why: "safe listening standard for venues and events"}
+  - {name: "IEC", aliases: ["International Electrotechnical Commission"], why: "measurement standards (e.g. IEC 60268-16 STI)"}
+  - {name: "Queen Mary University of London", aliases: ["QMUL", "Centre for Digital Music"], why: "intelligent music production research (Reiss, De Man)"}
+  - {name: "HyperPhysics", aliases: ["Georgia State University"], why: "university physics reference (R. Nave, GSU) for acoustics fundamentals"}
+  - {name: "LibreTexts", why: "university open textbook project; physics of sound chapters"}
+  - {name: "Universal Audio", why: "hardware/plug-in vendor; technical articles"}
+  - {name: "SoundGirls", why: "professional live-sound community with engineer-written articles"}
+  - {name: "ProSoundWeb", aliases: ["Live Sound International"], why: "live sound trade publication"}
+  - {name: "Mix", aliases: ["Mix Magazine", "Mixonline"], why: "professional audio trade magazine"}

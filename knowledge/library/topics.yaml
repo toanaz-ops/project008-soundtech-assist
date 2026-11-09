@@ -1,0 +1,17 @@
+# Topic taxonomy for the mixing knowledge library. id = English kebab-case.
+topics:
+  - {id: fundamentals, en: "Fundamentals", vi: "Kiến thức nền"}
+  - {id: gain-staging, en: "Gain staging & levels", vi: "Gain & mức tín hiệu"}
+  - {id: eq, en: "EQ & filters", vi: "EQ & bộ lọc"}
+  - {id: dynamics, en: "Dynamics", vi: "Xử lý động"}
+  - {id: effects, en: "Reverb, delay & FX", vi: "Reverb, delay & hiệu ứng"}
+  - {id: instruments, en: "Instruments & sources", vi: "Nhạc cụ & nguồn âm"}
+  - {id: vocals, en: "Vocals", vi: "Giọng hát"}
+  - {id: speech, en: "Speech & corporate", vi: "Giọng nói & sự kiện"}
+  - {id: automix, en: "Automix & intelligent mixing", vi: "Automix & mix tự động"}
+  - {id: feedback, en: "Feedback & gain before feedback", vi: "Hú & gain trước hú"}
+  - {id: monitoring, en: "Monitors & IEM", vi: "Monitor & IEM"}
+  - {id: mic-technique, en: "Microphones & placement", vi: "Micro & cách đặt"}
+  - {id: system, en: "PA system & loudness", vi: "Hệ thống PA & độ lớn"}
+  - {id: genre, en: "Genre approaches", vi: "Theo thể loại"}
+  - {id: wing-console, en: "Behringer WING", vi: "Behringer WING"}

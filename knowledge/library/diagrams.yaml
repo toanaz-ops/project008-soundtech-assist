@@ -1,0 +1,57 @@
+# Diagram manifest, rendered by scripts/library_diagrams.py into
+# media/<entry>/<file>.svg + .png. The entry references the PNG with a
+# media item {kind: diagram, path: <file>.png, caption, license: CC0-1.0,
+# attribution: "Generated for wing-parser", generated_by: scripts/library_diagrams.py}.
+#
+# Kinds and their keys (all frequencies Hz, levels dB, times ms):
+#   eq_curve:       curves: [{label, filters: [{type: hpf|lpf|low_shelf|high_shelf|bell|notch,
+#                    f, gain_db?, q?, slope?}]}], y_range: [lo, hi]   (slope: 6|12|18|24|48 dB/oct)
+#   band_chart:     bands: [{label, lo, hi}]  (horizontal bars on a 20 Hz-20 kHz log axis)
+#   transfer_curve: curves: [{label, mode: compress|expand|gate|limit, threshold_db, ratio?,
+#                    knee_db?, range_db?}]  (input dB vs output dB, -60..0)
+#   envelope:       attack_ms, release_ms, hold_ms?, threshold_db?, ratio?  (input burst vs gain reduction over time)
+#   polar_pattern:  patterns: [omni|subcardioid|cardioid|supercardioid|hypercardioid|figure8]
+#   signal_flow:    nodes: [{label, note?}]  (left-to-right chain with arrows)
+#   xy_plot:        x_label, y_label, x_log?, series: [{label, points: [[x, y], ...]}]
+diagrams:
+  - entry: eq-filter-types
+    file: hpf-slopes
+    kind: eq_curve
+    title: "High-pass filter at 100 Hz, four slopes"
+    y_range: [-36, 6]
+    curves:
+      - {label: "6 dB/oct", filters: [{type: hpf, f: 100, slope: 6}]}
+      - {label: "12 dB/oct", filters: [{type: hpf, f: 100, slope: 12}]}
+      - {label: "18 dB/oct", filters: [{type: hpf, f: 100, slope: 18}]}
+      - {label: "24 dB/oct", filters: [{type: hpf, f: 100, slope: 24}]}
+  - entry: eq-filter-types
+    file: bell-q-compare
+    kind: eq_curve
+    title: "+6 dB bell at 1 kHz: Q 0.7, 1.4, 4"
+    y_range: [-3, 9]
+    curves:
+      - {label: "Q 0.7", filters: [{type: bell, f: 1000, gain_db: 6, q: 0.7}]}
+      - {label: "Q 1.4", filters: [{type: bell, f: 1000, gain_db: 6, q: 1.4}]}
+      - {label: "Q 4", filters: [{type: bell, f: 1000, gain_db: 6, q: 4}]}
+  - entry: eq-filter-types
+    file: shelves
+    kind: eq_curve
+    title: "Low shelf -6 dB at 200 Hz, high shelf +4 dB at 8 kHz"
+    y_range: [-9, 9]
+    curves:
+      - {label: "low shelf", filters: [{type: low_shelf, f: 200, gain_db: -6, q: 0.7}]}
+      - {label: "high shelf", filters: [{type: high_shelf, f: 8000, gain_db: 4, q: 0.7}]}
+  - entry: comp-threshold-ratio-knee
+    file: transfer-ratios
+    kind: transfer_curve
+    title: "Compressor transfer curve, threshold -20 dB"
+    curves:
+      - {label: "1:1", mode: compress, threshold_db: -20, ratio: 1}
+      - {label: "2:1", mode: compress, threshold_db: -20, ratio: 2}
+      - {label: "4:1", mode: compress, threshold_db: -20, ratio: 4}
+      - {label: "10:1 soft knee 10 dB", mode: compress, threshold_db: -20, ratio: 10, knee_db: 10}
+  - entry: mic-polar-patterns
+    file: polar-patterns
+    kind: polar_pattern
+    title: "First-order polar patterns"
+    patterns: [omni, cardioid, supercardioid, hypercardioid, figure8]
