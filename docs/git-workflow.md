@@ -116,7 +116,9 @@ cùng phiên bản Qt.
 
 ## CI cục bộ (`scripts/ci_local.py`)
 
-Chạy trước khi push nhánh và trước khi xin ToanAZ merge:
+Locally run only the narrow tests for what you changed (`python -m pytest tests/<area> -q`). `scripts/ci_local.py` (full suite) only when GitHub Actions cannot run (billing/spending-limit annotation) — say so in the PR. The PR's `test` check is the full suite.
+
+Khi Actions không chạy được, chạy full suite cục bộ:
 
 ```bash
 python scripts/ci_local.py
