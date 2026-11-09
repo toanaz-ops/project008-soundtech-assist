@@ -14,7 +14,7 @@ from wing_parser.advisory.resolver import (
 
 def _supersede_only(rule_id: str, target: str) -> dict:
     return {"rules": [{"id": rule_id, "title": "t", "severity": "info",
-                       "source": "s", "rationale": "r", "supersedes": [target]}]}
+                       "source": "ToanAZ test fixture 2026-01-01", "rationale": "r", "supersedes": [target]}]}
 
 
 @pytest.fixture
@@ -97,7 +97,7 @@ def test_a_matching_hard_principle_supersedes_its_base_rule(scene, knowledge, mo
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -133,7 +133,7 @@ def test_a_matching_flexible_principle_supersedes_its_base_rule(scene, knowledge
                         "applies_when": {"monitor_bus_count": 9},
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -161,7 +161,7 @@ def test_a_flexible_principle_whose_condition_fails_does_not_supersede(scene, kn
                         "applies_when": {"monitor_bus_count": 1},
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -186,7 +186,7 @@ def test_a_disabled_principle_supersedes_nothing(scene, knowledge):
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "r",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": False,
                     }
                 ]
@@ -222,7 +222,7 @@ def test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule(
                         "applies_when": {"monitor_bus_count": 1},
                         "supersedes": ["G7"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -238,7 +238,7 @@ def test_a_show_rule_and_an_inactive_principle_can_both_name_the_same_base_rule(
                         "id": "show.no-g7",
                         "title": "Wedges tonight, no IEMs",
                         "severity": "info",
-                        "source": "show sheet",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "rationale": "no in-ear packs on this show",
                         "supersedes": ["G7"],
                     }
@@ -270,7 +270,7 @@ def test_a_principle_superseding_an_unknown_rule_id_raises(scene, knowledge):
                         "hardness": "hard",
                         "supersedes": ["G88"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -299,7 +299,7 @@ def test_a_principle_superseding_a_higher_layer_rule_id_raises(scene, knowledge)
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     },
                     {
@@ -308,7 +308,7 @@ def test_a_principle_superseding_a_higher_layer_rule_id_raises(scene, knowledge)
                         "hardness": "hard",
                         "supersedes": ["toanaz.base"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     },
                 ]
@@ -339,7 +339,7 @@ def test_a_principle_with_hardness_left_blank_still_defaults_to_hard(scene, know
                         "hardness": None,
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -353,7 +353,7 @@ def test_a_principle_with_hardness_left_blank_still_defaults_to_hard(scene, know
     assert rule.hardness == "hard"
 
 
-def test_a_principle_with_source_left_blank_still_defaults_to_toanaz(scene, knowledge):
+def test_a_principle_with_source_left_blank_is_rejected(scene, knowledge):
     # Same hazard as hardness above, on the field that exists purely so a
     # rule can be traced back to where it came from: a blank `source:`
     # parses as YAML null, and plain `.get(key, default)` only supplies
@@ -376,10 +376,9 @@ def test_a_principle_with_source_left_blank_still_defaults_to_toanaz(scene, know
         ),
         encoding="utf-8",
     )
-    rule = next(
-        r for r in active_rules(scene, directory=knowledge) if r.id == "toanaz.blank-source"
-    )
-    assert rule.source == "ToanAZ"
+    # The bare "ToanAZ" default carries no date, so it no longer validates.
+    with pytest.raises(ValueError, match="toanaz.blank-source"):
+        active_rules(scene, directory=knowledge)
 
 
 def test_a_principle_with_rationale_left_blank_still_defaults_to_empty_string(scene, knowledge):
@@ -393,7 +392,7 @@ def test_a_principle_with_rationale_left_blank_still_defaults_to_empty_string(sc
                         "hardness": "hard",
                         "rationale": None,
                         "supersedes": ["G8"],
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -419,7 +418,7 @@ def test_a_principle_with_an_invalid_severity_raises(scene, knowledge):
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -443,7 +442,7 @@ def test_a_principle_with_an_explicit_when_block_missing_for_each_raises(scene, 
                         "when": {"where": {"channel.number": 1}},
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -466,7 +465,7 @@ def test_suppressed_ids_reports_which_higher_layer_rule_switched_off_a_base_rule
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -492,7 +491,7 @@ def test_advisory_facade_suppressed_delegates_to_suppressed_ids(scene, knowledge
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -523,7 +522,7 @@ def test_a_flexible_principle_with_an_unknown_applies_when_key_raises(scene, kno
                         "applies_when": {"monitor_bus_cnt": 1},
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -550,7 +549,7 @@ def test_a_hard_principles_stray_applies_when_key_is_not_validated(scene, knowle
                         "applies_when": {"not_a_real_condition": 1},
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -576,7 +575,7 @@ def test_a_principle_missing_id_raises(scene, knowledge):
                         "hardness": "hard",
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -615,7 +614,7 @@ def test_a_principle_with_a_non_mapping_when_block_raises(scene, knowledge):
                         "when": [{"for_each": "channel"}],
                         "supersedes": ["G8"],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -668,7 +667,7 @@ def test_run_raises_for_an_unrecognised_for_each(scene, knowledge):
                         "when": {"for_each": "nonexistent", "where": {}},
                         "supersedes": [],
                         "rationale": "field practice",
-                        "source": "ToanAZ",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "enabled": True,
                     }
                 ]
@@ -691,7 +690,7 @@ def test_show_rules_load_from_a_yml_extension_too(scene, knowledge):
                         "id": "show.no-g7-yml",
                         "title": "Wedges tonight, no IEMs",
                         "severity": "info",
-                        "source": "show sheet",
+                        "source": "ToanAZ test fixture 2026-01-01",
                         "rationale": "no in-ear packs on this show",
                         "supersedes": ["G7"],
                     }
@@ -854,6 +853,7 @@ def test_as_rules_event_defaults_to_universal_even_when_blank(scene, knowledge):
         "principles:\n"
         "  - id: P1\n"
         "    principle: p\n"
+        "    source: ToanAZ test fixture 2026-01-01\n"
         "    event:\n"
         "    when:\n"
         "      for_each: channel\n"

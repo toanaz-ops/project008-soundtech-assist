@@ -56,6 +56,9 @@ WRITE_TEXTS_VI: dict[str, str] = {
         "Desk không trả lời khi đọc địa chỉ này. Có thể nó không tồn tại "
         "ở đây."
     ),
+    "console.write.preflight_failed": (
+        "Desk không trả lời lần đọc kiểm tra. Chưa gửi gì"
+    ),
     "console.write.apply_now": "Áp dụng ngay",
     "console.write.extend": "+5 s",
     "console.write.cancel": "Huỷ",

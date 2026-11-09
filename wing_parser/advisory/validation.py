@@ -4,6 +4,7 @@ the failure modes they document stay findable.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from wing_parser.advisory.predicates import OPERATORS
@@ -102,3 +103,25 @@ def _optional(entry: dict, key: str, default):
     """
     value = entry.get(key)
     return default if value is None else value
+
+
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def _validate_owner_source(rules, path: Path) -> None:
+    """Reject a toanaz/show rule not attributed to the owner with a date.
+
+    These layers claim to be ToanAZ's own mixing judgement, so each rule's
+    `source` must contain "ToanAZ" and an ISO date (YYYY-MM-DD) anywhere:
+    no rule may be attributed to him without his words and a date. A blank
+    or absent `source` fails too (the bare "ToanAZ" default has no date).
+    Base rules are not checked.
+    """
+    for rule in rules:
+        source = " ".join(str(rule.source or "").split())
+        if not ("ToanAZ" in source and _ISO_DATE.search(source)):
+            raise ValueError(
+                f"{path}: rule {rule.id} has source {source!r}; rules in the "
+                f"{rule.layer} layer must have a source containing "
+                "'ToanAZ' and an ISO date (YYYY-MM-DD)"
+            )

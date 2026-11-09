@@ -58,11 +58,20 @@ class ImmediateWrite(QObject):
         self._runner.start(
             "connect", (transport or live_write.REAL).read,
             gate.host(), patch.path,
-            on_success=self._write, on_failure=lambda _exc: self._write(None),
+            on_success=self._write, on_failure=lambda _exc: self._refuse(),
             timeout=timeout,
         )
 
+    def _refuse(self) -> None:
+        """D-52 #9: a failed or unanswered read refuses, like Delayed --
+        nothing is sent, so no new row can carry `desk_before=None` (older
+        write-log rows still do; their guards stay)."""
+        self._on_error(RuntimeError(text("console.write.preflight_failed")))
+
     def _write(self, desk_before) -> None:
+        if desk_before is None:                             # read: no answer
+            self._refuse()
+            return
         if not self._gate.ready():                          # GATE 4 (§8.4)
             self._on_error(GateClosed(text("console.write.gate_closed")))
             return
