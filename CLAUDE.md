@@ -3,7 +3,7 @@
 Memory index: `memory/MEMORY.md` (367 lines) — grep it / read the relevant entry on demand; not auto-loaded.
 
 Global rules load automatically from
-`D:\DEV CAVE EP3\shared\harness\RULES.md`. Tier 1 — short on purpose.
+`~/.claude/CLAUDE.md`. Tier 1 — short on purpose.
 Everything not written here is covered globally. Do not restate global rules.
 
 ## What this is
