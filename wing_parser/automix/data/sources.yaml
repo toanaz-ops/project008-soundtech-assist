@@ -1,0 +1,36 @@
+# Source registry for the automix knowledge tables (wave 12, 2026-11-09).
+# Every `src:` id used in the other data files must resolve here.
+# opened: false = only an abstract / catalogue record was read; the claim is NOT verified from the body.
+# kind internal = a file in this repository; "toanaz" is added at load time for owner overrides.
+version: 1
+sources:
+  S1:  {cite: "iZotope, EQ Cheat Sheet (learn article)", url: "https://izotope.com/en/learn/eq-cheat-sheet", kind: vendor, accessed: 2026-11-09, opened: true}
+  S2:  {cite: "iZotope, How to EQ Drums (learn article)", url: "https://www.izotope.com/en/learn/how-to-eq-drums", kind: vendor, accessed: 2026-11-09, opened: true}
+  S3:  {cite: "FabFilter, Frequency Range Characteristics (Learn: Equalization)", url: "https://www.fabfilter.com/learn/equalization/frequency-range-characteristics/", kind: vendor, accessed: 2026-11-09, opened: true}
+  S4:  {cite: "Sound On Sound, Mix Tips: Kick & Bass", url: "https://www.soundonsound.com/techniques/mix-tips-kick-bass", kind: magazine, accessed: 2026-11-09, opened: true}
+  S5:  {cite: "Shure (M. Sokol), Professional Mixing Tips for Church Sound", url: "https://www.shure.com/en-US/insights/professional-mixing-tips-for-church-sound", kind: vendor, accessed: 2026-11-09, opened: true}
+  S6:  {cite: "Sound On Sound, Sound Advice: How can I train myself to identify vocal problems? (Mike Senior)", url: "https://www.soundonsound.com/sound-advice/q-how-can-train-myself-identify-vocal-problems", kind: magazine, accessed: 2026-11-09, opened: true}
+  S7:  {cite: "QSC, Sound Advice: EQ tips for vocals", url: "https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-eq-tips-for-vocals", kind: vendor, accessed: 2026-11-09, opened: true}
+  S8:  {cite: "Hafezi & Reiss, Autonomous Multitrack Equalization Based on Masking Reduction, JAES 63(5) 312-323, 2015 (abstract only)", url: "https://www.aes.org/e-lib/browse.cfm?elib=17637", kind: aes, accessed: 2026-11-09, opened: false}
+  S9:  {cite: "De Man & Reiss, A Knowledge-Engineered Autonomous Mixing System, AES Conv. 135 paper 8961, 2013 (abstract only)", url: "https://www.aes.org/e-lib/browse.cfm?elib=17011", kind: aes, accessed: 2026-11-09, opened: false}
+  S10: {cite: "Ronan, Ma, Mc Namara, Gunes, Reiss, Automatic Minimisation of Masking in Multitrack Audio using Subgroups, arXiv 2018", url: "https://arxiv.org/abs/1803.09960v1", kind: academic, accessed: 2026-11-09, opened: true}
+  F1:  {cite: "De Man, Leonard, King, Reiss, An Analysis and Evaluation of Audio Features for Multitrack Music Mixtures, ISMIR 2014 (Table 2, Sec 4.2 read)", url: "https://archives.ismir.net/ismir2014/paper/000293.pdf", kind: academic, accessed: 2026-11-09, opened: true}
+  F2:  {cite: "De Man, Reiss, Stables, Ten Years of Automatic Mixing, WIMP 2017 (survey)", url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf", kind: academic, accessed: 2026-11-09, opened: true}
+  F3:  {cite: "Ma, Reiss, Black, Intelligent Multitrack Dynamic Range Compression, JAES 63(6) 2015", url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf", kind: aes, accessed: 2026-11-09, opened: true}
+  F4:  {cite: "iZotope, Gain staging: what it is and how to do it", url: "https://www.izotope.com/en/learn/gain-staging.html", kind: vendor, accessed: 2026-11-09, opened: true}
+  F5:  {cite: "Sharefaith, Ultimate Audio Compression Guide, 2016 (church-AV blog; not on the reputable list, low weight)", url: "https://www.sharefaith.com/blog/2016/12/ultimate-audio-compression-guide/", kind: vendor, accessed: 2026-11-09, opened: true}
+  F6:  {cite: "The Church Collective, FOH 101: Noise Gates (no numbers)", url: "https://thechurchcollective.com/tutorial/f-o-h-101-noise-gates/", kind: vendor, accessed: 2026-11-09, opened: true}
+  F7:  {cite: "Waves, Audio Gating Basics", url: "https://www.waves.com/audio-gating-basics", kind: vendor, accessed: 2026-11-09, opened: true}
+  F8:  {cite: "Perez-Gonzalez & Reiss, Automatic Gain and Fader Control for Live Mixing, WASPAA 2009 (record only, not opened)", url: "https://ieeexplore.ieee.org/document/5346498", kind: academic, accessed: 2026-11-09, opened: false}
+  R1:  {cite: "Sound On Sound, Reverb: What Do All Those Knobs Do?", url: "https://www.soundonsound.com/techniques/reverb-what-do-all-those-knobs-do", kind: magazine, accessed: 2026-11-09, opened: true}
+  R2:  {cite: "Sound On Sound, How To Use Reverb Like A Pro (p.1)", url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1", kind: magazine, accessed: 2026-11-09, opened: true}
+  R2b: {cite: "Sound On Sound, How To Use Reverb Like A Pro, page 2 (return EQ, delay, per-source)", url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2", kind: magazine, accessed: 2026-11-09, opened: true}
+  R3:  {cite: "Sound On Sound, Six Practical Uses For Delay (first two sections only)", url: "https://www.soundonsound.com/techniques/six-practical-uses-delay", kind: magazine, accessed: 2026-11-09, opened: true}
+  R4:  {cite: "iZotope, Essential tips for using reverb on vocals", url: "https://www.izotope.com/en/learn/essential-tips-for-using-reverb-on-vocals", kind: vendor, accessed: 2026-11-09, opened: true}
+  R5:  {cite: "iZotope, Reverb pre-delay explained", url: "https://www.izotope.com/community/blog/reverb-pre-delay", kind: vendor, accessed: 2026-11-09, opened: true}
+  R6:  {cite: "Waves, Delay tips for mixing vocals", url: "https://www.waves.com/delay-tips-for-mixing-vocals", kind: vendor, accessed: 2026-11-09, opened: true}
+  R7:  {cite: "Drew Brashler, How to Create a Behringer WING Vocal Reverb Using Blue Plate (WING-specialist blog, not on the reputable list; WING routing and parameter ranges only)", url: "https://drewbrashler.com/?p=44222", kind: vendor, accessed: 2026-11-09, opened: true}
+  kb_core:  {cite: "Core-Skills-Overview.md, L679-690 HPF table (repo knowledge base)", url: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md", kind: internal, accessed: 2026-11-09, opened: true}
+  kb_corp:  {cite: "Corporate-B2B-Events.md, L545-550 and L677-681 speech presets (repo knowledge base)", url: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md", kind: internal, accessed: 2026-11-09, opened: true}
+  kb_rider: {cite: "Technical-Rider-Spec.md, L153-160 drum HPF presets (repo knowledge base)", url: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md", kind: internal, accessed: 2026-11-09, opened: true}
+  maillot:  {cite: "P-G. Maillot, WING Remote Protocols V3.0.5-1 (text extract; table layout partly garbled)", url: "https://docs.rs/crate/libwing/latest/source/Wing-Remote-Protocols.pdf", kind: doc, accessed: 2026-11-09, opened: true}

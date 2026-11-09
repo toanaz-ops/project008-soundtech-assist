@@ -97,6 +97,25 @@ class Session:
         the same set of edits."""
         writer.write_snap(self._document(), path)
 
+    def record_many(self, changes) -> list[Patch]:
+        """Journal many leaf moves, then re-derive ONCE (each is still its own
+        undo step). `changes` yields (path, value, label, because); `before`
+        is read from the patched document, tracking earlier moves in the
+        same batch so a repeated path chains correctly."""
+        document, seen, patches = self._document(), {}, []
+        try:
+            for path, value, label, because in changes:
+                before = seen[path] if path in seen else pointer.read(document, path)
+                patch = Patch(path=path, before=before, after=value,
+                              because=because, label=label)
+                self._journal.append(patch)
+                seen[path] = value
+                patches.append(patch)
+        finally:
+            if patches:
+                self._derive()  # also when a later change raised: the journal moved
+        return patches
+
     def record_value(self, path: str, value: Any, *, label: str, because: str) -> Patch:
         """Move one leaf outside the repair table, and re-derive.
 

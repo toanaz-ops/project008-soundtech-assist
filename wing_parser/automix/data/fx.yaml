@@ -1,0 +1,70 @@
+# Reverb, delay and FX-send starting points (wave 12). The official WING Effects Guide could not be opened,
+# so per-genre numbers are mostly synthesis from per-source guidance (confidence low) and several are
+# eng_default. Ranges are [lo, hi]; the engine picks lo / mid / hi per role (see role_pick).
+version: 1
+# WING fx.K.mdl -> role (AM-13). Buses are found by their insert, not by name.
+model_roles:
+  PLATE: vocal_plate
+  ROOM: short_room
+  HALL: long_hall
+  CONCERT: long_hall
+  BPLATE: vocal_plate
+  V-PLATE: vocal_plate
+  VSS3: vocal_plate
+  CHAMBER: short_room
+  AMBI: short_room
+  V-ROOM: short_room
+  ST-DL: delay
+# Models whose parameter key names and ranges are UNVERIFIED (the WING Effects Guide was not readable, AM-40):
+# the engine patches only the leaves it finds and never reports a missing one as a skipped row.
+unverified_models: [BPLATE, V-PLATE, VSS3, CHAMBER, AMBI, V-ROOM]
+role_pick: {vocal_plate: mid, short_room: lo, long_hall: hi, src: [], confidence: eng_default, note: "AM-26: short room gets the short end of the genre range, hall the long end"}
+# Which source families feed which role, and the offset (dB) from their reverb level (AM-28).
+bus_assign:
+  vocal_plate: {kinds: {speech.vocal: 0, vocal.backing: 0, instrument.guitar.electric: 0, instrument.guitar.acoustic: 0, instrument.keys: 0}, level: reverb, src: [R2b, R4], confidence: low}
+  short_room:  {kinds: {drums.kick: 0, drums.snare: 0, drums.tom: 0, drums.overhead: 0}, level: reverb, src: [R2b, R1], confidence: low}
+  long_hall:   {kinds: {speech.vocal: -6, vocal.backing: -6, instrument.guitar.acoustic: -6, instrument.keys: -6}, level: reverb, src: [], confidence: eng_default, note: "second wet layer sits 6 dB under the plate send"}
+  delay:       {kinds: {speech.vocal: 0, vocal.backing: 0, instrument.guitar.electric: 0, instrument.guitar.acoustic: 0}, level: delay, src: [R3, R6], confidence: low}
+# Post-fader send level per source family, dB (0 = unity). The sources say which families get a send and which
+# stay dry (confidence low); NO source gives a dB number, so every numeric range carries `db_confidence: eng_default` (AM-39).
+#  "off" = -144. R4: when in doubt, back reverb off 10-25%.
+# Source rows given as "off..X" are resolved to off (AM-27): conservative and reversible by the owner layer.
+send_levels:
+  speech.vocal:      {reverb: [-18, -8], delay: [-24, -12], src: [R2b, R4, R6], confidence: low, db_confidence: eng_default}
+  vocal.backing:     {reverb: [-12, -4], delay: [-22, -12], src: [R4], confidence: low, db_confidence: eng_default}
+  speech.mc:         {reverb: "off", delay: "off", src: [], confidence: eng_default, note: "product decision: dry"}
+  drums.kick:        {reverb: "off", delay: "off", src: [R2b], confidence: low}
+  drums.snare:       {reverb: [-14, -6], delay: "off", src: [R1, R2b], confidence: low, db_confidence: eng_default}
+  drums.tom:         {reverb: [-16, -8], delay: "off", src: [R1, R2b], confidence: low, db_confidence: eng_default}
+  drums.overhead:    {reverb: "off", delay: "off", src: [R2b], confidence: low}
+  instrument.bass:   {reverb: "off", delay: "off", src: [R2b], confidence: low}
+  instrument.guitar.electric: {reverb: [-20, -10], delay: [-22, -12], src: [R5, R3], confidence: low, db_confidence: eng_default}
+  instrument.guitar.acoustic: {reverb: [-16, -8], delay: "off", src: [R1], confidence: low, db_confidence: eng_default}
+  instrument.keys:   {reverb: "off", delay: "off", src: [R2b], confidence: low, note: "pads rarely need reverb"}
+# dB added to the send level per genre; `dry: true` = dry (every send off). Qualitative, eng_default.
+wetness:
+  pop:    {reverb: 0, delay: 0, src: [], confidence: eng_default}
+  rock:   {reverb: -3, delay: 0, src: [], confidence: eng_default, note: "drier, slapback"}
+  ballad: {reverb: 3, delay: 0, src: [], confidence: eng_default, note: "wettest"}
+  jazz:   {reverb: -2, delay: -6, src: [], confidence: eng_default, note: "natural room, little delay"}
+  edm:    {reverb: -3, delay: 3, src: [], confidence: eng_default, note: "dry reverb, delay throws"}
+  bolero: {reverb: 2, delay: 0, src: [], confidence: eng_default, note: "ballad profile"}
+  speech: {dry: true, src: [], confidence: eng_default, note: "dry"}
+# Per-genre reverb: decay_s / predelay_ms ranges, locut/hicut Hz on the return.
+# speech has no entry on purpose: intelligibility first (R4), FX parameters are left alone.
+reverb:
+  pop:    {decay_s: [0.8, 1.8], predelay_ms: [20, 80],  locut_hz: 150, hicut_hz: 7000, src: [R1, R2b, R4, R5], confidence: low}
+  rock:   {decay_s: [0.3, 1.2], predelay_ms: [0, 30],   locut_hz: 200, hicut_hz: 7000, src: [R1, R5], confidence: low}
+  ballad: {decay_s: [1.8, 3.5], predelay_ms: [40, 100], locut_hz: 150, hicut_hz: 6500, src: [R1, R4, R5], confidence: low}
+  jazz:   {decay_s: [1.0, 2.2], predelay_ms: [15, 40],  locut_hz: 120, hicut_hz: 8000, src: [], confidence: eng_default, note: "no jazz-specific source (R1 natural-space guidance only); engineering default"}
+  edm:    {decay_s: [0.8, 2.5], predelay_ms: [10, 60],  locut_hz: 250, hicut_hz: 6000, src: [], confidence: eng_default, note: "no source (R2b only says delay suits dry modern styles); numbers are an engineering default"}
+  bolero: {decay_s: [1.8, 3.0], predelay_ms: [20, 60],  locut_hz: 150, hicut_hz: 8000, src: [], confidence: eng_default, note: "no source; extrapolated from ballad"}
+# Per-genre delay. `beats` is the note length in quarter notes (1 = 1/4, 0.75 = dotted 1/8, 0.5 = 1/8);
+# `slap_ms` is a fixed slapback time. feed_pct is the midpoint of the researched range.
+delay:
+  pop:    {beats: 1,    feed_pct: 22.5, locut_hz: 150, hicut_hz: 7000, src: [R3, R6], confidence: low}
+  rock:   {slap_ms: 100, feed_pct: 10,  locut_hz: 200, hicut_hz: 7000, src: [R1, R3], confidence: low}
+  ballad: {beats: 1,    feed_pct: 20,   locut_hz: 150, hicut_hz: 6500, src: [R3], confidence: low}
+  jazz:   {slap_ms: 125, feed_pct: 7.5, locut_hz: 120, hicut_hz: 8000, src: [R3], confidence: low}
+  edm:    {beats: 0.75, feed_pct: 40,   locut_hz: 250, hicut_hz: 6000, src: [R6], confidence: low}
+  bolero: {beats: 1,    feed_pct: 20,   locut_hz: 150, hicut_hz: 8000, src: [], confidence: eng_default, note: "extrapolated from ballad"}

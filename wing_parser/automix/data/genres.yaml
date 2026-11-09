@@ -1,0 +1,67 @@
+# Genre catalogue (wave 12, AM-4). Order is the UI order. `stages` = which stages the dialog ticks by default.
+# eq_tilt is a product heuristic: the research found no reputable source for genre EQ tilt (eng_default).
+version: 1
+genres:
+  pop:
+    label_en: Pop
+    label_vi: Pop
+    stages: [hpf, eq, gate, comp, fader, fx, sends]
+    gates: true
+    fx_roles: [vocal_plate, short_room, delay]
+    eq_tilt: {}
+    src: []
+    confidence: eng_default
+  rock:
+    label_en: Rock
+    label_vi: Rock
+    stages: [hpf, eq, gate, comp, fader, fx, sends]
+    gates: true
+    fx_roles: [vocal_plate, short_room, delay]
+    eq_tilt: {presence_db: 1.0, presence_from_hz: 2000}
+    src: []
+    confidence: eng_default
+  ballad:
+    label_en: Ballad
+    label_vi: Ballad
+    stages: [hpf, eq, comp, fader, fx, sends]
+    gates: false
+    fx_roles: [vocal_plate, long_hall, delay]
+    eq_tilt: {}
+    src: []
+    confidence: eng_default
+  jazz:
+    label_en: Jazz
+    label_vi: Jazz
+    stages: [hpf, eq, comp, fader, fx, sends]
+    gates: false
+    fx_roles: [short_room]
+    eq_tilt: {boost_scale: 0.5}
+    src: []
+    confidence: eng_default
+  edm:
+    label_en: EDM
+    label_vi: EDM
+    stages: [hpf, eq, gate, comp, fader, fx, sends]
+    gates: true
+    fx_roles: [vocal_plate, delay]
+    eq_tilt: {}
+    src: []
+    confidence: eng_default
+  bolero:
+    label_en: Bolero
+    label_vi: Bolero
+    stages: [hpf, eq, comp, fader, fx, sends]
+    gates: false
+    fx_roles: [vocal_plate, long_hall]
+    eq_tilt: {}
+    src: []
+    confidence: eng_default
+  speech:
+    label_en: Conference / speech
+    label_vi: Hội nghị / lời nói
+    stages: [hpf, eq, comp, fader, inserts]
+    gates: false
+    fx_roles: []
+    eq_tilt: {boost_scale: 0.5}
+    src: []
+    confidence: eng_default

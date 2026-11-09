@@ -12,6 +12,8 @@ from __future__ import annotations
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
+from wing_parser.ui import settings_automix
+from wing_parser.ui.automix_dialog import open_automix
 from wing_parser.ui.session import Session
 from wing_parser.ui.settings_dialog import SettingsDialog
 from wing_parser.ui.state_store import PAGE_KEYS
@@ -39,6 +41,9 @@ def build_menus(window) -> None:
         text("menu.verdicts"), lambda: open_verdict_summary(window))
     tools_menu.addAction(
         text("menu.dryrun"), lambda: open_draft_dry_run(window))
+    window._automix_action = tools_menu.addAction(
+        text("menu.automix"), lambda: open_automix(window))
+    settings_automix.sync_menu(window)
     window._reanalyse_action = tools_menu.addAction(
         text("menu.reanalyse"), window.reanalyse
     )

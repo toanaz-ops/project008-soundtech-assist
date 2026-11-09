@@ -1,5 +1,6 @@
 """The merged Vietnamese table: the counterpart of `texts.TEXTS`."""
 
+from wing_parser.ui.texts_automix_vi import AUTOMIX_TEXTS_VI
 from wing_parser.ui.texts_console_vi import CONSOLE_TEXTS_VI
 from wing_parser.ui.texts_import_vi import IMPORT_TEXTS_VI
 from wing_parser.ui.texts_lang_vi import LANG_TEXTS_VI
@@ -16,4 +17,5 @@ VI: dict[str, str] = {
     **LANG_TEXTS_VI,
     **MOVED_TEXTS_VI,
     **LOG_TEXTS_VI,
+    **AUTOMIX_TEXTS_VI,
 }

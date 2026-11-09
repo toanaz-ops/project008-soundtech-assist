@@ -1,0 +1,17 @@
+# ToanAZ's overrides for the Automix knowledge tables (wave 12). Ships empty on purpose.
+#
+# The base tables in wing_parser/automix/data/ are textbook and engineering defaults: almost every number is
+# confidence low or eng_default, not your taste. Put your own numbers here; they replace the base record
+# at `path` inside `file` (one of eq_targets, masking, dynamics, balance, fx, genres, bounds).
+#
+# An entry is honoured ONLY if its `source:` contains "ToanAZ" and an ISO date (YYYY-MM-DD). Anything else is
+# ignored and listed as a warning in the Automix dialog; nothing is applied silently. Same rule as the
+# toanaz advisory layer. HW-191.Q1-Q6 answers land here.
+#
+# Example (kept commented out):
+# overrides:
+#   - file: eq_targets
+#     path: [kinds, drums.kick, hpf]
+#     value: {hz: 40}
+#     source: "ToanAZ 2026-11-20, HW-191.Q1: kick HPF at 40 Hz"
+overrides: []
