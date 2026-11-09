@@ -18,7 +18,7 @@ class SettleMixin:
 
     def _lock_ui(self, running: bool) -> None:
         self.view.set_running(running, self._can_revert())
-        records.lock_other_writers(self._window, running)    # one writer (W10)
+        records.lock_other_writers(self._window, running, self._gate)    # one writer (W10)
 
     def _finish_run(self) -> None:
         was_running = self._timer.isActive()

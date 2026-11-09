@@ -29,7 +29,7 @@ class RevertMixin:
         if not started:
             self._worker.busy.clear()
             return False
-        records.lock_other_writers(self._window, True)
+        records.lock_other_writers(self._window, True, self._gate)
         self.view.set_running(True, False)
         return True
 

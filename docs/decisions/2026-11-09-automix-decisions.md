@@ -94,3 +94,7 @@ and override them.
 4. HPF/EQ/comp numbers: answer HW-191.Q1–Q6, they land in `knowledge/toanaz/automix.yaml`.
 5. Should automix ever load FX models into empty slots (AM-14) or assign insert FX (AM-16)?
 6. Meters: test the experimental reader at the HW-192 desk session (AM-22).
+
+## Pending manual writes vs Full auto (safety review)
+
+- **AM-61**: `WriteGate.idle()` also counts open Delayed countdowns and Immediate writes between pre-flight read and submit (`begin_pending/end_pending`), so Start is refused while one exists and the pump halts a run (status `gate_busy`) if one appears. While automix holds the wire (`gate.held`, any run incl. simulate, and Revert) open countdowns are cancelled (nothing sent), Apply/Immediate refuse, the Doctor Repair button is locked (`DetailPanel.set_repair_locked`), and the ledger `run_finished` no longer re-enables Doctor controls while held. Revert re-checks abort after its read and right before each send.

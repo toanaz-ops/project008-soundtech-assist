@@ -48,12 +48,17 @@ def record_reverts(window, ctx, rows) -> list:
     return cells
 
 
-def lock_other_writers(window, running: bool) -> None:
+def lock_other_writers(window, running: bool, gate=None) -> None:
     """While automix writes (loop, revert, or a thread still out there), Repair,
     the journal's Send and the Sent ledger's Revert stay dead (W10)."""
+    gate = gate or getattr(window, "write_gate", None)
+    if gate is not None:
+        gate.held = running
+        if running:
+            gate.cancel_pending()                    # open countdowns: nothing sent
     doctor = getattr(window, "pages", {}).get("doctor")
     if doctor is not None:
-        doctor.set_controls_enabled(not running)
+        doctor.set_controls_enabled(not running)     # incl. the Repair button
     changes = getattr(window, "changes_panel", None)
     if changes is not None:
         changes.list.setEnabled(not running)

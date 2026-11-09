@@ -139,6 +139,10 @@ class AutomixLivePanel(ConsentMixin, SettleMixin, RevertMixin, ShutdownOnDone, Q
         if not self._gate_ok():
             self._gate_changed()
             return
+        if not self._gate.idle():                    # a manual write appeared (W10)
+            self._halt()
+            self._say(text("automix.live.gate_busy"))
+            return
         self._worker.begin()
         if not self._runner.start("tick", self._worker.tick_once, loop,
                                   on_success=self._ticked, on_failure=self._failed,

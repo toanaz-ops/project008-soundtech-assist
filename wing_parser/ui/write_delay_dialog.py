@@ -109,6 +109,12 @@ class DelayedWriteDialog(QDialog):
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._tick)
         self._timer.start(1000)
+        gate.begin_pending(self)            # invisible to `idle()` otherwise
+        self.finished.connect(lambda _code: gate.end_pending(self))
+
+    def cancel_for_automix(self) -> None:
+        if not self._sent:
+            self.reject()
 
     # -- the countdown ----------------------------------------------------
     def _tick(self) -> None:
@@ -151,7 +157,7 @@ class DelayedWriteDialog(QDialog):
             return
         self._settled = True
         self._timer.stop()
-        if not self._gate.ready():                       # GATE 4 (§8.4)
+        if self._gate.held or not self._gate.ready():    # GATE 4 (§8.4)
             self.status_label.setText(text("console.write.gate_closed"))
             self.failed.emit(GateClosed(text("console.write.gate_closed")))
             self.reject()

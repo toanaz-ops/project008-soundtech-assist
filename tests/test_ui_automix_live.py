@@ -319,3 +319,48 @@ def test_rearm_after_a_gate_drop_refreshes_revert(qt_app, vu_path, settle):
     env.page.state = LiveState.CONNECTED
     env.gate.changed.emit()
     assert env.panel.view.revert_btn.isEnabled()
+
+
+def test_open_manual_write_blocks_start_and_cancels_when_automix_holds(qt_app, vu_path):
+    env = _Env(qt_app, vu_path, simulate=False)
+    token = object()
+    env.gate.begin_pending(token)                    # an open Delayed countdown / Immediate read
+    assert not env.gate.idle()
+    assert not env.panel.start() and "queued" in env.panel.view.status.text()
+    env.gate.end_pending(token)
+    assert env.gate.idle()
+
+    class _Countdown:
+        cancelled = False
+
+        def cancel_for_automix(self):
+            self.cancelled = True
+
+    countdown = _Countdown()
+    env.gate.begin_pending(countdown)
+    from wing_parser.ui import automix_live_records as records
+
+    records.lock_other_writers(env.window, True, env.gate)
+    assert countdown.cancelled and env.gate.idle() and env.gate.held
+    records.lock_other_writers(env.window, False, env.gate)
+    assert not env.gate.held
+
+
+def test_manual_write_appearing_mid_run_halts_the_pump(qt_app, vu_path):
+    env = _Env(qt_app, vu_path, simulate=False)
+    assert env.panel.start()
+    env.gate.begin_pending(object())
+    env.panel._pump()
+    assert not env.panel._timer.isActive()
+    assert "queued" in env.panel.view.status.text()
+
+
+def test_repair_button_is_dead_while_a_simulate_run_holds_the_wire(qt_app, vu_path):
+    env = _Env(qt_app, vu_path, simulate=True, armed=False)
+    detail = env.window.pages["doctor"].detail_panel
+    detail.repair_button.setVisible(True)
+    detail.repair_button.setEnabled(True)
+    assert env.panel.start()
+    assert not detail.repair_button.isEnabled() and detail.repair_locked
+    env.panel.stop()
+    assert not detail.repair_locked

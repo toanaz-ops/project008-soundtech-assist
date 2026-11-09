@@ -74,6 +74,8 @@ class WriteGate(QObject):
         self.activity = DeskActivity()      #: fed by the watch table; Arm's soft hint
         self._runner = CallRunner(self)
         self._queue = WriteQueue(self._start)
+        self._pending: set = set()     #: open countdowns / reads before a send
+        self.held = False              #: Full auto owns the wire (W10)
 
     # -- what everything asks it -------------------------------------------
 
@@ -94,7 +96,23 @@ class WriteGate(QObject):
     def idle(self) -> bool:
         """Nothing queued, on the wire, or running: a second writer may start."""
         return (self._queue.in_flight is None and not self._queue.pending
-                and not self._runner.busy)
+                and not self._runner.busy and not self._pending)
+
+    def begin_pending(self, token) -> None:
+        """A manual write is about to send (open Delayed countdown, or an
+        Immediate between its pre-flight read and its submit): not idle."""
+        self._pending.add(token)
+
+    def end_pending(self, token) -> None:
+        self._pending.discard(token)
+
+    def cancel_pending(self) -> None:
+        """Automix took the wire: every open countdown cancels, nothing sent."""
+        for token in list(self._pending):
+            cancel = getattr(token, "cancel_for_automix", None)
+            if cancel is not None:
+                cancel()
+            self._pending.discard(token)
 
     @property
     def transport(self):

@@ -32,10 +32,16 @@ def revert_all(runner, locked) -> None:
                 runner.skipped.append((path, "locked"))
             else:
                 now = ctx.transport.read(ctx.host, path)
+                if ctx.abort.is_set():               # stopped during the read
+                    runner.revert_error = "stopped"
+                    return
                 if now is None:                      # kept: a later revert may retry
                     runner.skipped.append((path, "unread"))
                     continue
                 if last is None or not differs(last, now, runner.tolerance_for(path, last)):
+                    if ctx.abort.is_set():           # and again right before the send
+                        runner.revert_error = "stopped"
+                        return
                     conf = live_write.confirmation_for(
                         ctx.host, osc_address(path), target, ctx.identity, last)
                     result = live_write.send(conf, ctx.transport)
