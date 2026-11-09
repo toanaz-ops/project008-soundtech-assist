@@ -371,3 +371,14 @@ localStorage, server hỏi `GET /api/v1/me/permissions?codes=…`, không tự k
 artifact dùng link YouTube + `#e-<id>`. Biểu đồ do `scripts/library_diagrams.py`
 vẽ (SVG thuần + PNG qua QtSvg lúc dev), không cần matplotlib. Quyết định:
 `docs/proposals/2026-11-09-knowledge-library-decisions.md`; câu hỏi HW-204.Q1–Q4.
+
+## 2026-11-09 — Fable review cả phase wave 8–11 → PR #56 (đã merge)
+
+Luật mới của chủ dự án (09/11): đóng phase lớn phải qua review Fable chỉ-đọc
+trên toàn diff phase, sửa High/Medium rồi mới đóng. Review bắt được: nháp có
+`applies_when` sai khoá hoặc `for_each` lạ vẫn "promotable" → chép vào
+principles.yaml làm hỏng mọi lần Doctor (High); merge `principles: []` làm mất
+comment phía sau; callback reanalyse ném lỗi ra Qt. Đã sửa ở PR #56
+(`d3a9b9e`, `check_rules` trong `draft_dry_run.py`). Exe phát hành mới nhất
+(6.11.2) từ `d3a9b9e`: `dist\w11b\wing-ui.exe` (71.420.922 bytes, zip
+`dist\wing-ui-20261109g.zip`) — thay bản w11.

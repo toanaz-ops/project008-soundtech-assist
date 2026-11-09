@@ -195,3 +195,24 @@ def test_promote_cancel_changes_nothing(qt_app, tmp_path, monkeypatch):
     assert (tmp_path / "principles.yaml").read_bytes() == before
     assert called == []
     assert (tmp_path / "drafts" / "d.yaml").exists()
+
+
+def test_promote_callback_error_is_shown_not_raised(qt_app, tmp_path,
+                                                    monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    _prepare_promote(tmp_path)
+    from wing_parser.ui.draft_dry_run_dialog import DraftDryRunDialog
+
+    def bad():
+        raise RuntimeError("reanalyse blew up")
+
+    dialog = DraftDryRunDialog(None, directory=tmp_path, on_promoted=bad)
+    _answer(monkeypatch, QMessageBox.StandardButton.Yes)
+    shown = []
+    monkeypatch.setattr(QMessageBox, "critical",
+                        staticmethod(lambda *a, **k: shown.append(a)))
+    dialog.promote_btn.click()
+    assert shown and "reanalyse blew up" in shown[0][2]
+    assert "draft.gate_on" in (tmp_path / "principles.yaml").read_text(
+        encoding="utf-8")

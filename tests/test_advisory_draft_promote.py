@@ -145,3 +145,58 @@ def test_promoted_rule_fires_on_scene(tmp_path, vu_path):
     assert "draft.gate_on" not in base
     assert dp.promote(_draft(tmp_path), tmp_path, NOW).ok
     assert "draft.gate_on" in {f.rule_id for f in run(scene, tmp_path)}
+
+
+@pytest.mark.parametrize("edit", [
+    ("    severity: info\n",
+     "    severity: info\n    hardness: flexible\n"
+     "    applies_when: {monitor_bus_cnt: 2}\n"),
+    ("for_each: channel", "for_each: chanel"),
+])
+def test_invalid_draft_refused_principles_untouched(tmp_path, edit):
+    target = _principles(tmp_path, "principles: []\n")
+    draft = _draft(tmp_path)
+    draft.write_text(draft.read_text(encoding="utf-8").replace(*edit),
+                     encoding="utf-8")
+    before = target.read_bytes()
+    res = dp.promote(draft, tmp_path, NOW)
+    assert not res.ok and "draft.gate_on" in res.error
+    assert target.read_bytes() == before
+    assert draft.exists()
+
+
+def test_merged_rule_check_blocks_bad_rule(tmp_path, monkeypatch):
+    from wing_parser.advisory import draft_dry_run as dd
+    target = _principles(tmp_path, "principles: []\n")
+    draft = _draft(tmp_path)
+    before = target.read_bytes()
+
+    def boom(path, rules):
+        raise ValueError("merged check failed")
+    monkeypatch.setattr(dd, "check_rules", boom)
+    # load_draft also calls it, so the failure comes back as a load error
+    res = dp.promote(draft, tmp_path, NOW)
+    assert not res.ok and "merged check failed" in res.error
+    assert target.read_bytes() == before
+
+
+def test_inline_empty_keeps_comment_and_trailing_lines(tmp_path):
+    target = _principles(
+        tmp_path, "principles: []  # keep me\n# tail one\n# tail two\n\n")
+    res = dp.promote(_draft(tmp_path), tmp_path, NOW)
+    assert res.ok, res.error
+    text = target.read_text(encoding="utf-8")
+    assert "principles:  # keep me" in text
+    assert "# tail one\n# tail two\n" in text
+    assert text.startswith(HEADER)
+    assert _ids(target) == ["draft.gate_on"]
+
+
+def test_bom_kept_on_promote(tmp_path):
+    target = tmp_path / "principles.yaml"
+    target.write_bytes(b"\xef\xbb\xbf" + (HEADER + "principles: []\n").encode())
+    res = dp.promote(_draft(tmp_path), tmp_path, NOW)
+    assert res.ok, res.error
+    raw = target.read_bytes()
+    assert raw.startswith(b"\xef\xbb\xbf") and not raw.startswith(b"\xef\xbb\xbf\xef")
+    assert _ids(target) == ["draft.gate_on"]
