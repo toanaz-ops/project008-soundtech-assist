@@ -64,4 +64,4 @@ string table is its own wave") — this is that wave.
 
 ## 5. Out of scope
 
-B6, B7. Vietnamese Doctor findings prose is a candidate next wave.
+B7. B6 (Doctor findings prose) was done in wave 11 (PR #54, 2026-11-09): `title_vi`/`message_vi` on rules; rationale, repair prose, classifier reasons and CLI stay English.
