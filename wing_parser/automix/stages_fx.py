@@ -48,9 +48,12 @@ def fx(ctx: Ctx, kb, buses, options) -> tuple:
         else:
             continue
         conf = weakest(rec["confidence"], table["role_pick"]["confidence"] if "dcy" == leaves[0][0] else "high")
+        unverified = b.mdl in table.get("unverified_models", ())
+        if unverified and all(ctx.read(base + leaf) is MISSING for leaf, *_ in leaves):
+            ctx.skip(who, f"{b.mdl}: parameter key names are not verified and none were found; left alone")
         for leaf, value, label, digits in leaves:
             changes.append(ctx.change(base + leaf, value, stage="fx", who=who, label=label, digits=digits,
-                                      why=why, src=tuple(rec["src"]), conf=conf))
+                                      why=why, src=tuple(rec["src"]), conf=conf, optional=unverified))
     return [c for c in changes if c], hints
 
 
@@ -69,7 +72,8 @@ def sends(ctx: Ctx, kb, strips, buses, genre: str) -> list:
             level = row[assign["level"]]
             off = wet.get("dry") or level == "off"
             target = OFF_DB if off else min(mid(level) + shift + wet[assign["level"]], 0.0)
-            conf = weakest(row["confidence"], assign["confidence"], wet["confidence"])
+            conf = weakest(row["confidence"], assign["confidence"], wet["confidence"],
+                           "high" if off else row.get("db_confidence", "high"))
             kw = dict(stage="sends", who=s.target, src=tuple(row["src"]) + tuple(assign["src"]), conf=conf,
                       why=f"{s.fam} to the {b.role.replace('_', ' ')} bus: "
                           + ("dry" if off else f"{target:g} dB post-fader"))

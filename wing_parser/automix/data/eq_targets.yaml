@@ -40,7 +40,7 @@ kinds:
       - {hz: [2000, 3500], why: snap, src: [S1], confidence: low}
     shelf: {hz: 8000, why: crack, src: [S1], confidence: low}
   drums.tom:
-    hpf: {hz: 60, src: [S2, S5], confidence: low, note: "exact numbers not confirmed"}
+    hpf: {hz: 60, src: [], confidence: eng_default, note: "S2/S5 mention a tom high-pass but the number is not confirmed; engineering default"}
     cuts:
       - {hz: 250, why: mud, src: [S1], confidence: low}
     boosts:
@@ -62,7 +62,7 @@ kinds:
       - {hz: [5000, 7000], why: ping harshness, src: [S2], confidence: low}
     shelf: {hz: 10000, why: sheen, src: [S5], confidence: low}
   instrument.bass:
-    hpf: {hz: 35, src: [S4], confidence: low, note: "numeric range is an engineering default"}
+    hpf: {hz: 35, src: [], confidence: eng_default, note: "S4 mentions a bass high-pass but gives no number; 30-45 Hz is an engineering default"}
     cuts:
       - {hz: [200, 400], why: mud, src: [S1], confidence: low}
     boosts:
@@ -113,7 +113,7 @@ kinds:
     cuts:
       - {hz: 300, db: -3, q: 1.4, why: proximity / lowmid (matches Doctor PC2), src: [kb_corp, S7], confidence: medium}
     boosts:
-      - {hz: 3000, db: 2, q: 1.0, why: consonant articulation (matches Doctor PC3), src: [kb_corp, S5], confidence: medium}
+      - {hz: 3000, db: 2, q: 1.0, why: consonant articulation (matches Doctor PC3), src: [kb_corp], confidence: medium, note: "3 kHz +2 dB is the corporate preset (kb_corp: +2..+3 dB at 3 kHz); S5 gives 1-1.5 kHz +3 dB, a different band"}
     note: "No lectern-specific outside source; the cut and boost reproduce the repository's corporate preset so Doctor PC2/PC3 stay quiet."
   utility.playback:
     note: "Mastered material: no HPF, no instrument EQ."

@@ -190,7 +190,7 @@
   ],
   [
    "ae_data.ch.1.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.1.gate.hld",
@@ -418,6 +418,6 @@
   ]
  ],
  "suggestions": 0,
- "skipped": 6,
+ "skipped": 3,
  "headroom_trim_db": 0.0
 }

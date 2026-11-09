@@ -17,9 +17,9 @@ comp:
 gate:
   assumptions: {thr: -40, thr_range: [-80, -20], src: [], confidence: eng_default, note: "AM-23: no meters offline"}
   kinds:
-    drums.kick:  {att: [0, 1], hld: [30, 100], rel: [50, 150],  range: [12, 30], src: [F6, F7], confidence: low}
-    drums.snare: {att: [0, 1], hld: [30, 100], rel: [80, 200],  range: [12, 20], src: [F6, F7], confidence: low, note: "partial range keeps ghost notes"}
-    drums.tom:   {att: [0, 1], hld: [50, 150], rel: [100, 250], range: [20, 40], src: [F6], confidence: low, note: "gate every mic except overheads (F6)"}
+    drums.kick:  {att: [0, 1], hld: [30, 100], rel: [50, 150],  range: [12, 30], src: [F7], confidence: low, note: "F6 supports gating the kick but gives no numbers"}
+    drums.snare: {att: [0, 1], hld: [30, 100], rel: [80, 200],  range: [12, 20], src: [F7], confidence: low, note: "partial range keeps ghost notes; F6 gives no numbers"}
+    drums.tom:   {att: [0, 1], hld: [50, 150], rel: [100, 250], range: [20, 40], src: [], confidence: eng_default, note: "F6 says gate every mic except overheads but gives no numbers; timings are an engineering default"}
 # Applied on top of the per-kind rows. gr_add shifts the gain-reduction midpoint; ratio_min/ratio_max clamp it;
 # `kinds` limits a delta to those families. No source states these deltas (eng_default).
 genre_deltas:

@@ -37,16 +37,24 @@ def hpf(ctx: Ctx, kb, strips) -> list:
     return out
 
 
+def _band_conf(rec: dict, dflt: dict) -> str:
+    """Confidence of a band: the record's own, weakened when its dB/Q are not sourced."""
+    if "db_confidence" in rec:
+        return weakest(rec["confidence"], rec["db_confidence"])
+    return rec["confidence"] if "db" in rec else weakest(rec["confidence"], dflt["confidence"])
+
+
 def _plan(kb, strip, present, tilt) -> tuple:
     """(bands, shelf): bands is [(band_no, hz, db, q, why, src, conf)]."""
     d, rec = kb.eq["defaults"], kb.eq["kinds"][strip.eq_kind]
     scale, presence = tilt.get("boost_scale", 1.0), tilt.get("presence_db", 0.0)
     cuts = [(r, "cut") for r in rec.get("cuts", [])[:2]]
     for pair in kb.masking["pairs"]:
-        if pair["yield"] == strip.eq_kind and pair["owner"] in present and len(cuts) < 2:
-            hz = geo_mid(pair["hz"])
-            if all(abs(math.log2(hz / geo_mid(r["hz"]))) > OCTAVE_GAP for r, _ in cuts):
-                cuts.append((pair, "mask"))
+        if pair["yield"] == strip.eq_kind and pair["owner"] in present:
+            kept = cuts[:1]  # the masking cut takes the second cut band (AM-35)
+            if all(abs(math.log2(geo_mid(pair["hz"]) / geo_mid(r["hz"]))) > OCTAVE_GAP for r, _ in kept):
+                cuts = kept + [(pair, "mask")]
+                break
     boosts = [(r, "boost") for r in rec.get("boosts", [])[:2]]
     bands = []
     for group, first in ((cuts, 1), (boosts, 3)):
@@ -56,7 +64,7 @@ def _plan(kb, strip, present, tilt) -> tuple:
             if kind == "boost":
                 lifted = geo_mid(r["hz"]) >= tilt.get("presence_from_hz", 1e9)
                 db = db * scale + (presence if lifted else 0.0)
-            conf = r["confidence"] if "db" in r else weakest(r["confidence"], dflt["confidence"])
+            conf = _band_conf(r, dflt)
             verb = "boost" if kind == "boost" else "cut"
             bands.append((first + index, geo_mid(r["hz"]), db, q,
                           f"{strip.eq_kind}: {r['why']} ({verb})", tuple(r["src"]), conf))
@@ -88,7 +96,7 @@ def eq(ctx: Ctx, kb, strips, genre: str) -> list:
         if shelf and ctx.read(base + "heq") == "SHV":
             dflt = kb.eq["defaults"]["shelf"]
             db = shelf.get("db", dflt["db"]) * tilt.get("boost_scale", 1.0)
-            conf = shelf["confidence"] if "db" in shelf else weakest(shelf["confidence"], dflt["confidence"])
+            conf = _band_conf(shelf, dflt)
             kw = dict(stage="eq", who=s.target, src=tuple(shelf["src"]), conf=conf,
                       why=f"{s.eq_kind}: {shelf['why']} (high shelf)")
             gains.append(db)

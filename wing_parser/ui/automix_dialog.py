@@ -47,10 +47,13 @@ class AutomixDialog(QDialog):
             tables.SUGGESTION_COLS)
         self.skipped, self.skipped_model = tables.make_table(
             tables.SKIPPED_COLS)
+        self.warnings, self.warnings_model = tables.make_table(
+            tables.WARNING_COLS)
         self.tabs = QTabWidget()
         for table, key in ((self.changes, "changes"),
                            (self.suggestions, "suggestions"),
-                           (self.skipped, "skipped")):
+                           (self.skipped, "skipped"),
+                           (self.warnings, "warnings")):
             self.tabs.addTab(table, text(f"automix.tab.{key}"))
         self.detail = QPlainTextEdit()
         self.detail.setReadOnly(True)
@@ -97,10 +100,12 @@ class AutomixDialog(QDialog):
         tables.fill_changes(self.changes_model, found.changes, self._names())
         tables.fill_suggestions(self.suggestions_model, found.suggestions)
         tables.fill_skipped(self.skipped_model, found.skipped)
+        tables.fill_warnings(self.warnings_model, found.warnings)
         self.detail.setPlainText("")
         self.summary.setText(text("automix.summary").format(
             changes=len(found.changes), suggestions=len(found.suggestions),
-            skipped=len(found.skipped), trim=found.headroom_trim_db))
+            skipped=len(found.skipped), trim=found.headroom_trim_db,
+            warnings=len(found.warnings)))
         self.apply_btn.setEnabled(bool(found.changes))
 
     def _show_detail(self, *_args) -> None:
@@ -119,11 +124,14 @@ class AutomixDialog(QDialog):
                     count=len(found.changes))) != QMessageBox.StandardButton.Yes:
             return 0
         genre = found.options.genre
-        for change in found.changes:
-            session.record_value(
-                change.path, change.after, label=change.label,
-                because=f"automix:{genre}:{change.stage}")
-        self._window._refresh()
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            session.record_many(
+                (c.path, c.after, c.label, f"automix:{genre}:{c.stage}")
+                for c in found.changes)
+            self._window._refresh()
+        finally:
+            QApplication.restoreOverrideCursor()
         self.accept()
         return len(found.changes)
 

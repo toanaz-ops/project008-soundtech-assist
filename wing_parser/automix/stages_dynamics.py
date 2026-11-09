@@ -32,7 +32,7 @@ def gate(ctx: Ctx, kb, strips, genre: str) -> list:
             ctx.change(base + "on", True, label="Gate on", mode="switch", **kw),
             ctx.change(base + "thr", fixed["thr"], label="Gate threshold", **thr_kw),
             ctx.change(base + "range", mid(rec["range"]), label="Gate range", **kw),
-            ctx.change(base + "att", mid(rec["att"]), label="Gate attack", **kw),
+            ctx.change(base + "att", int(mid(rec["att"]) + 0.5), label="Gate attack", digits=0, **kw),  # 1 ms step (AM-36)
             ctx.change(base + "hld", mid(rec["hld"]), label="Gate hold", **kw),
             ctx.change(base + "rel", mid(rec["rel"]), label="Gate release", **kw),
         ))
@@ -59,7 +59,7 @@ def comp(ctx: Ctx, kb, strips, genre: str) -> list:
     out, rules = [], kb.dynamics["comp"]
     fixed, bounds = rules["assumptions"], kb.bounds["comp"]
     for s in strips:
-        if s.fam not in rules["kinds"] or not _model_ok(ctx, s, "dyn", "COMP"):
+        if s.bottom or s.fam not in rules["kinds"] or not _model_ok(ctx, s, "dyn", "COMP"):
             continue
         rec = rules["kinds"][s.fam]
         ratio, gr, conf, src = _comp_target(kb, s, genre)

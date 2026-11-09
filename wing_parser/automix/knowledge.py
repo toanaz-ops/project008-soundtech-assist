@@ -46,6 +46,8 @@ def provenance_errors(name: str, node, ids, covered: bool = False, where: str = 
                 if ident not in ids:
                     errors.append(f"{name}:{where}: unknown source id {ident!r}")
         for key, value in node.items():
+            if key.endswith("_confidence") and value not in CONFIDENCES:
+                errors.append(f"{name}:{where}: {key} {value!r} not in {CONFIDENCES}")
             if key in ("src", "confidence") or (key == "version" and not where):
                 continue
             sub = f"{where}.{key}" if where else str(key)
@@ -103,11 +105,17 @@ def _apply(tables: dict, sources: dict, index: int, entry) -> None:
     ident = f"toanaz_{index}"
     trial = copy.deepcopy(tables[name])
     node = trial
-    for key in path[:-1]:
+    for hop, key in enumerate(path):
+        if not isinstance(node, dict):
+            raise ValueError(f"path crosses a value, not a record, before {key!r}")
         node = node.setdefault(key, {})
-    record = node.setdefault(path[-1], {})
+        if hop < len(path) - 1 and not isinstance(node, dict):
+            raise ValueError(f"path crosses {key!r}, which is a {type(node).__name__}, not a record")
+    record = node
     if not isinstance(record, dict):
         raise ValueError("path ends on a value, not a record")
+    for stale in [k for k in record if str(k).endswith("_confidence")]:
+        del record[stale]  # the owner vouches for the whole record
     record.update(copy.deepcopy(value))
     record["src"], record["confidence"] = [ident], "high"
     trial_sources = {**sources, ident: {"cite": f"ToanAZ override: {source}", "kind": "owner", "opened": True}}
@@ -126,11 +134,13 @@ def load(knowledge_dir: Path | None = None) -> Knowledge:
     if path.is_file():
         try:
             entries = _read(path).get("overrides") or []
+            if not isinstance(entries, list):
+                entries, warnings = [], [f"{path.name}: overrides must be a list"]
         except (yaml.YAMLError, OSError, AttributeError) as exc:
             entries, warnings = [], [f"{path.name}: unreadable ({exc})"]
         for index, entry in enumerate(entries, start=1):
             try:
                 _apply(tables, sources, index, entry)
-            except ValueError as exc:
+            except (ValueError, TypeError, AttributeError, KeyError) as exc:
                 warnings.append(f"{path.name} entry {index} ignored: {exc}")
     return Knowledge(tables, sources, tuple(warnings))

@@ -23,7 +23,7 @@ AUTOMIX_TEXTS_VI: dict[str, str] = {
         "lưu và chưa gửi gì cho đến khi bạn dùng Save as."),
     "automix.summary": (
         "{changes} thay đổi, {suggestions} gợi ý, {skipped} bỏ qua, "
-        "giảm headroom {trim:.1f} dB"),
+        "giảm headroom {trim:.1f} dB, {warnings} cảnh báo tri thức"),
     "automix.genre": "Thể loại",
     "automix.bpm": "BPM",
     "automix.venue": "Không gian",
@@ -53,6 +53,7 @@ AUTOMIX_TEXTS_VI: dict[str, str] = {
     "automix.tab.changes": "Thay đổi",
     "automix.tab.suggestions": "Gợi ý",
     "automix.tab.skipped": "Bỏ qua",
+    "automix.tab.warnings": "Cảnh báo",
     "automix.col.channel": "Kênh",
     "automix.col.source": "Nguồn",
     "automix.col.stage": "Công đoạn",
@@ -62,6 +63,7 @@ AUTOMIX_TEXTS_VI: dict[str, str] = {
     "automix.col.confidence": "Độ tin cậy",
     "automix.col.text": "Gợi ý",
     "automix.col.reason": "Lý do",
+    "automix.col.warning": "Cảnh báo",
     "automix.detail.sources": "Nguồn:",
     "automix.detail.no_sources": "Không có nguồn trích dẫn: mặc định kỹ thuật.",
 }

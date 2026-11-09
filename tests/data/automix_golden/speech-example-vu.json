@@ -406,7 +406,7 @@
   ],
   [
    "ae_data.ch.13.eq.2f",
-   600.0
+   187.6
   ],
   [
    "ae_data.ch.13.eq.2g",
@@ -446,7 +446,7 @@
   ],
   [
    "ae_data.ch.14.eq.2f",
-   600.0
+   187.6
   ],
   [
    "ae_data.ch.14.eq.2g",
@@ -486,15 +486,15 @@
   ],
   [
    "ae_data.ch.15.eq.2f",
-   1161.9
+   2645.8
   ],
   [
    "ae_data.ch.15.eq.2g",
-   -3.0
+   -2.0
   ],
   [
    "ae_data.ch.15.eq.2q",
-   2.0
+   1.4
   ],
   [
    "ae_data.ch.15.eq.3f",
@@ -770,7 +770,7 @@
   ],
   [
    "ae_data.ch.27.eq.2f",
-   4242.6
+   4000.0
   ],
   [
    "ae_data.ch.27.eq.2g",
@@ -806,7 +806,7 @@
   ],
   [
    "ae_data.ch.28.eq.2f",
-   4242.6
+   4000.0
   ],
   [
    "ae_data.ch.28.eq.2g",
@@ -846,11 +846,11 @@
   ],
   [
    "ae_data.ch.29.eq.2g",
-   -3.0
+   -2.0
   ],
   [
    "ae_data.ch.29.eq.2q",
-   2.0
+   1.4
   ],
   [
    "ae_data.ch.29.eq.on",
@@ -874,11 +874,11 @@
   ],
   [
    "ae_data.ch.30.eq.2g",
-   -3.0
+   -2.0
   ],
   [
    "ae_data.ch.30.eq.2q",
-   2.0
+   1.4
   ],
   [
    "ae_data.ch.30.eq.on",
@@ -1069,30 +1069,6 @@
    -18.3
   ],
   [
-   "ae_data.ch.16.dyn.att",
-   44.0
-  ],
-  [
-   "ae_data.ch.16.dyn.gain",
-   2.2
-  ],
-  [
-   "ae_data.ch.16.dyn.knee",
-   2
-  ],
-  [
-   "ae_data.ch.16.dyn.ratio",
-   3.5
-  ],
-  [
-   "ae_data.ch.16.dyn.rel",
-   175.0
-  ],
-  [
-   "ae_data.ch.16.dyn.thr",
-   -18.3
-  ],
-  [
    "ae_data.ch.25.dyn.att",
    32.5
   ],
@@ -1205,6 +1181,10 @@
    -20.0
   ],
   [
+   "ae_data.ch.1.send.11.lvl",
+   -144.0
+  ],
+  [
    "ae_data.ch.1.send.12.lvl",
    -144.0
   ],
@@ -1213,11 +1193,19 @@
    -144.0
   ],
   [
+   "ae_data.ch.2.send.11.lvl",
+   -144.0
+  ],
+  [
    "ae_data.ch.2.send.12.lvl",
    -144.0
   ],
   [
    "ae_data.ch.2.send.13.lvl",
+   -144.0
+  ],
+  [
+   "ae_data.ch.3.send.11.lvl",
    -144.0
   ],
   [
@@ -1230,6 +1218,6 @@
   ]
  ],
  "suggestions": 0,
- "skipped": 20,
+ "skipped": 18,
  "headroom_trim_db": 0.0
 }

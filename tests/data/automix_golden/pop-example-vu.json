@@ -406,7 +406,7 @@
   ],
   [
    "ae_data.ch.13.eq.2f",
-   600.0
+   187.6
   ],
   [
    "ae_data.ch.13.eq.2g",
@@ -446,7 +446,7 @@
   ],
   [
    "ae_data.ch.14.eq.2f",
-   600.0
+   187.6
   ],
   [
    "ae_data.ch.14.eq.2g",
@@ -486,15 +486,15 @@
   ],
   [
    "ae_data.ch.15.eq.2f",
-   1161.9
+   2645.8
   ],
   [
    "ae_data.ch.15.eq.2g",
-   -3.0
+   -2.0
   ],
   [
    "ae_data.ch.15.eq.2q",
-   2.0
+   1.4
   ],
   [
    "ae_data.ch.15.eq.3f",
@@ -766,7 +766,7 @@
   ],
   [
    "ae_data.ch.27.eq.2f",
-   4242.6
+   4000.0
   ],
   [
    "ae_data.ch.27.eq.2g",
@@ -802,7 +802,7 @@
   ],
   [
    "ae_data.ch.28.eq.2f",
-   4242.6
+   4000.0
   ],
   [
    "ae_data.ch.28.eq.2g",
@@ -842,11 +842,11 @@
   ],
   [
    "ae_data.ch.29.eq.2g",
-   -3.0
+   -2.0
   ],
   [
    "ae_data.ch.29.eq.2q",
-   2.0
+   1.4
   ],
   [
    "ae_data.ch.29.eq.on",
@@ -870,11 +870,11 @@
   ],
   [
    "ae_data.ch.30.eq.2g",
-   -3.0
+   -2.0
   ],
   [
    "ae_data.ch.30.eq.2q",
-   2.0
+   1.4
   ],
   [
    "ae_data.ch.30.eq.on",
@@ -882,7 +882,7 @@
   ],
   [
    "ae_data.ch.13.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.13.gate.hld",
@@ -898,7 +898,7 @@
   ],
   [
    "ae_data.ch.14.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.14.gate.hld",
@@ -918,7 +918,7 @@
   ],
   [
    "ae_data.ch.15.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.15.gate.hld",
@@ -934,7 +934,7 @@
   ],
   [
    "ae_data.ch.17.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.17.gate.hld",
@@ -954,7 +954,7 @@
   ],
   [
    "ae_data.ch.18.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.18.gate.hld",
@@ -974,7 +974,7 @@
   ],
   [
    "ae_data.ch.19.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.19.gate.hld",
@@ -994,7 +994,7 @@
   ],
   [
    "ae_data.ch.20.gate.att",
-   0.5
+   1
   ],
   [
    "ae_data.ch.20.gate.hld",
@@ -1193,30 +1193,6 @@
    -18.3
   ],
   [
-   "ae_data.ch.16.dyn.att",
-   44.0
-  ],
-  [
-   "ae_data.ch.16.dyn.gain",
-   2.2
-  ],
-  [
-   "ae_data.ch.16.dyn.knee",
-   2
-  ],
-  [
-   "ae_data.ch.16.dyn.ratio",
-   3.5
-  ],
-  [
-   "ae_data.ch.16.dyn.rel",
-   175.0
-  ],
-  [
-   "ae_data.ch.16.dyn.thr",
-   -18.3
-  ],
-  [
    "ae_data.ch.25.dyn.att",
    32.5
   ],
@@ -1329,6 +1305,10 @@
    -11.0
   ],
   [
+   "ae_data.fx.1.dcy",
+   1.3
+  ],
+  [
    "ae_data.fx.2.dcy",
    1.8
   ],
@@ -1361,12 +1341,20 @@
    500.0
   ],
   [
+   "ae_data.ch.1.send.11.lvl",
+   -13.0
+  ],
+  [
    "ae_data.ch.1.send.12.lvl",
    -19.0
   ],
   [
    "ae_data.ch.1.send.13.lvl",
    -18.0
+  ],
+  [
+   "ae_data.ch.2.send.11.lvl",
+   -8.0
   ],
   [
    "ae_data.ch.2.send.12.lvl",
@@ -1377,6 +1365,10 @@
    -17.0
   ],
   [
+   "ae_data.ch.3.send.11.lvl",
+   -8.0
+  ],
+  [
    "ae_data.ch.3.send.12.lvl",
    -14.0
   ],
@@ -1385,11 +1377,27 @@
    -17.0
   ],
   [
+   "ae_data.ch.9.send.11.lvl",
+   -12.0
+  ],
+  [
+   "ae_data.ch.9.send.11.on",
+   true
+  ],
+  [
    "ae_data.ch.9.send.12.lvl",
    -18.0
   ],
   [
    "ae_data.ch.9.send.12.on",
+   true
+  ],
+  [
+   "ae_data.ch.26.send.11.lvl",
+   -12.0
+  ],
+  [
+   "ae_data.ch.26.send.11.on",
    true
   ],
   [
@@ -1401,11 +1409,27 @@
    true
   ],
   [
+   "ae_data.ch.27.send.11.lvl",
+   -15.0
+  ],
+  [
+   "ae_data.ch.27.send.11.on",
+   true
+  ],
+  [
    "ae_data.ch.27.send.13.lvl",
    -17.0
   ],
   [
    "ae_data.ch.27.send.13.on",
+   true
+  ],
+  [
+   "ae_data.ch.28.send.11.lvl",
+   -15.0
+  ],
+  [
+   "ae_data.ch.28.send.11.on",
    true
   ],
   [
@@ -1417,7 +1441,7 @@
    true
   ]
  ],
- "suggestions": 2,
- "skipped": 26,
+ "suggestions": 1,
+ "skipped": 24,
  "headroom_trim_db": 0.0
 }

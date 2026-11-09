@@ -21,6 +21,17 @@ MISSING = object()
 _RANK = {"high": 0, "medium": 1, "low": 2, "eng_default": 3}
 
 
+def is_number(value: Any) -> bool:
+    """A real number: a bool is never one (True would otherwise pass as 1)."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def is_on(value: Any) -> bool:
+    """True for a switched-on leaf in either encoding: bool in a file document,
+    1 in a console-pulled one (net/export.py leaves are str/int/float, AM-38)."""
+    return value is True or (is_number(value) and value == 1)
+
+
 def weakest(*confidences: str) -> str:
     """The least trustworthy confidence tag among the inputs."""
     known = [c for c in confidences if c in _RANK]
@@ -71,11 +82,11 @@ class Ctx:
     def change(self, path: str, target: Any, *, stage: str, who: str, label: str, why: str,
                src: tuple, conf: str, mode: str = "lin", digits: int = 1,
                window: tuple | None = None, lead: bool = False,
-               optional: bool = False) -> Change | None:
+               optional: bool = False, strength: float | None = None) -> Change | None:
         """mode: lin (dB, ms, Q), geo (Hz), switch (bool, enum, ratio list)."""
         if self.bounds.forbidden(path):
             raise ValueError(f"automix may not touch {path}")
-        before = self.read(path)
+        before, strength = self.read(path), self.strength if strength is None else strength
         if before is MISSING:
             if not optional:
                 self.skip(who, f"leaf {path} is missing from the scene")
@@ -83,11 +94,11 @@ class Ctx:
         numeric = isinstance(target, (int, float)) and not isinstance(target, bool) \
             and isinstance(before, (int, float)) and not isinstance(before, bool)
         if not numeric or mode == "switch":
-            after = target if self.strength >= 0.5 else before
+            after = target if strength >= 0.5 else before
         elif mode == "geo":
-            after = geolerp(before, target, self.strength)
+            after = geolerp(before, target, strength)
         else:
-            after = lerp(before, target, self.strength)
+            after = lerp(before, target, strength)
         if numeric:
             after = self.bounds.clamp(path, after, lead=lead)
             if window is not None:
@@ -95,6 +106,8 @@ class Ctx:
             after = round(after, digits) if digits else int(round(after))
             if after == round(before, digits):
                 return None
+        if isinstance(target, bool) and is_number(before):
+            after = int(target)  # an int-encoded bool leaf keeps the document's own type (AM-38)
         if after == before:
             return None
         return Change(PREFIX + path, before, after, stage, who, label, why, tuple(src), conf)

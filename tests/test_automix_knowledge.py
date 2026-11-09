@@ -36,3 +36,22 @@ def test_owner_override_needs_toanaz_and_a_date(tmp_path):
     assert "ToanAZ" in kb.sources["toanaz_1"]["cite"]
     assert len(kb.warnings) == 2 and all("ignored" in w for w in kb.warnings)
     assert knowledge.load().eq["kinds"]["drums.kick"]["hpf"]["hz"] == 35  # base tables untouched
+
+
+def test_owner_paths_through_lists_or_scalars_warn_instead_of_raising(tmp_path):
+    source = "ToanAZ 2026-11-20, HW-191.Q1"
+    bad = [
+        {"file": "eq_targets", "path": ["kinds", "drums.kick", "cuts", "hz"], "value": {"hz": 1}, "source": source},
+        {"file": "eq_targets", "path": ["version", "x"], "value": {"hz": 1}, "source": source},
+        {"file": "masking", "path": ["pairs", "0", "hz"], "value": {"hz": 1}, "source": source},
+    ]
+    (tmp_path / "automix.yaml").write_text(yaml.safe_dump({"overrides": bad}), encoding="utf-8")
+    kb = knowledge.load(tmp_path)
+    assert len(kb.warnings) == 3
+    assert kb.eq["kinds"]["drums.kick"]["cuts"][0]["hz"] == [200, 500]
+
+
+def test_db_confidence_must_be_a_known_tag():
+    errors = knowledge.provenance_errors(
+        "t", {"r": {"hz": 100, "db": -3, "src": [], "confidence": "eng_default", "db_confidence": "great"}}, {})
+    assert any("db_confidence" in e for e in errors)

@@ -71,16 +71,15 @@ def select(scene, options: AutomixOptions) -> tuple[list[Strip], list[Skipped]]:
         if not name:
             continue
         guess = channel.source_type
-        if guess.kind in SILENT:
-            continue
+        if guess.kind in SILENT or guess.kind == "unknown":
+            continue  # nothing to say about these: no Skipped row (AM-37)
         if guess.confidence < options.min_confidence:
             skipped.append(Skipped(f"ch.{number}", f"{name!r}: low classifier confidence "
                                                     f"{guess.confidence:.1f} ({guess.kind})"))
             continue
         fam = family(guess.kind)
         if fam is None:
-            skipped.append(Skipped(f"ch.{number}", f"{name!r}: no automix profile for {guess.kind}"))
-            continue
+            continue  # unknown or unprofiled kind: nothing to say, no Skipped row (AM-37)
         strips.append(Strip(number, name, guess.kind, fam, fam,
                             bottom=guess.kind == "drums.snare.bottom"))
     return _assign_lead(strips, options), skipped

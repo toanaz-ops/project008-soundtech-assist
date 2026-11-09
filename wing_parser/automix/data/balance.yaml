@@ -12,6 +12,7 @@ anchor:
 headroom:
   nominal_dbfs: -18
   ceiling_dbfs: -3
+  ceiling_confidence: eng_default
   src: [F4]
   confidence: low
   note: "-18 dBFS is a DAW nominal (F4); the -3 dBFS ceiling is an engineering default."

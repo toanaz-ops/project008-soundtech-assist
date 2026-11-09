@@ -28,7 +28,7 @@ AUTOMIX_TEXTS: dict[str, str] = {
         "saved or sent until you use Save as."),
     "automix.summary": (
         "{changes} changes, {suggestions} suggestions, {skipped} skipped, "
-        "headroom trim {trim:.1f} dB"),
+        "headroom trim {trim:.1f} dB, {warnings} knowledge warnings"),
     "automix.genre": "Genre",
     "automix.bpm": "BPM",
     "automix.venue": "Venue",
@@ -58,6 +58,7 @@ AUTOMIX_TEXTS: dict[str, str] = {
     "automix.tab.changes": "Changes",
     "automix.tab.suggestions": "Suggestions",
     "automix.tab.skipped": "Skipped",
+    "automix.tab.warnings": "Warnings",
     "automix.col.channel": "Channel",
     "automix.col.source": "Source",
     "automix.col.stage": "Stage",
@@ -67,6 +68,7 @@ AUTOMIX_TEXTS: dict[str, str] = {
     "automix.col.confidence": "Confidence",
     "automix.col.text": "Suggestion",
     "automix.col.reason": "Reason",
+    "automix.col.warning": "Warning",
     "automix.detail.sources": "Sources:",
     "automix.detail.no_sources": "No cited source: engineering default.",
 }

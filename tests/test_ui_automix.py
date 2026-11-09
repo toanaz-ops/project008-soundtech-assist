@@ -25,11 +25,19 @@ def test_dialog_proposes_and_applies_to_the_session(qt_app, vu_path):
     assert automix_controls.GENRES == automix.GENRES
     assert automix_controls.STAGES == automix.STAGES
     assert automix_controls.VENUES == VENUES
+    genres = automix.knowledge.load().genres["genres"]
+    assert {g: set(t) for g, t in automix_controls.GENRE_STAGES.items()} == {
+        g: set(rec["stages"]) for g, rec in genres.items()}
 
     window = MainWindow(Session.open(vu_path))
     dialog = AutomixDialog(window)
     panel = dialog.options_panel
+    panel.genre.setCurrentIndex(panel.genre.findData("speech"))
+    assert not panel.stage_boxes["gate"].isChecked()
+    assert panel.stage_boxes["inserts"].isChecked()
     panel.genre.setCurrentIndex(panel.genre.findData("pop"))
+    assert panel.stage_boxes["gate"].isChecked()
+    assert not panel.stage_boxes["inserts"].isChecked()
     dialog.propose()
     count = len(dialog._proposal.changes)
     assert count > 0

@@ -20,6 +20,14 @@ from wing_parser.ui.texts import text
 GENRES = ("pop", "rock", "ballad", "jazz", "edm", "bolero", "speech")
 VENUES = ("small", "medium", "large")
 STAGES = ("hpf", "eq", "gate", "comp", "fader", "fx", "sends", "inserts")
+_MUSIC = ("hpf", "eq", "gate", "comp", "fader", "fx", "sends")
+_SOFT = ("hpf", "eq", "comp", "fader", "fx", "sends")
+# The stages each genre ticks by default (genres.yaml `stages`); pinned by test_ui_automix (AM-33).
+GENRE_STAGES = {
+    "pop": _MUSIC, "rock": _MUSIC, "edm": _MUSIC,
+    "ballad": _SOFT, "jazz": _SOFT, "bolero": _SOFT,
+    "speech": ("hpf", "eq", "comp", "fader", "inserts"),
+}
 
 
 class OptionsPanel(QWidget):
@@ -39,6 +47,7 @@ class OptionsPanel(QWidget):
         self.strength = QSlider(Qt.Orientation.Horizontal)
         self.strength.setRange(0, 100)
         self.strength.setValue(100)
+        self.genre.currentIndexChanged.connect(self._tick_default_stages)
         self.strength_label = QLabel(text("automix.percent").format(value=100))
         self.strength.valueChanged.connect(
             lambda v: self.strength_label.setText(
@@ -47,7 +56,7 @@ class OptionsPanel(QWidget):
         stages = QHBoxLayout()
         for code in STAGES:
             box = QCheckBox(text(f"automix.stage.{code}"))
-            box.setChecked(True)
+            box.setChecked(code in GENRE_STAGES[GENRES[0]])
             self.stage_boxes[code] = box
             stages.addWidget(box)
         strength_row = QHBoxLayout()
@@ -59,6 +68,11 @@ class OptionsPanel(QWidget):
         form.addRow(text("automix.venue"), self.venue)
         form.addRow(text("automix.strength"), strength_row)
         form.addRow(text("automix.stages"), stages)
+
+    def _tick_default_stages(self, *_args) -> None:
+        wanted = GENRE_STAGES[self.genre.currentData()]
+        for code, box in self.stage_boxes.items():
+            box.setChecked(code in wanted)
 
     def options(self):
         """Build the engine's options; the engine is loaded only here."""

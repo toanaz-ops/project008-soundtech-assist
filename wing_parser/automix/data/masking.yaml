@@ -1,9 +1,10 @@
 # Complementary-cut pairs (wave 12). When both families are present in the scene, `yield` gets a cut at `hz`
 # if it has a free cut band; `owner` keeps the range. Hafezi & Reiss (S8) and De Man & Reiss (S9) were NOT
-# readable (abstract only), so only the opened articles are cited.
+# readable (abstract only), so only the opened articles are cited. The sources give the frequency
+# region only; every dB and Q below is an engineering default (`db_confidence: eng_default`, AM-39).
 version: 1
 pairs:
-  - {owner: instrument.bass, yield: drums.kick, hz: [160, 220], db: -3, q: 2.0, why: "one instrument owns 50-100 Hz; dip the kick near 180 Hz and lift the bass 220-300 Hz", src: [S4, S3], confidence: low}
-  - {owner: speech.vocal, yield: instrument.guitar.electric, hz: 4000, db: -3, q: 2.0, why: "guitar fizz competes with vocal presence", src: [S7, S3], confidence: low}
-  - {owner: speech.vocal, yield: instrument.keys, hz: [2000, 4000], db: -2, q: 1.4, why: "gentle dip on keys where the vocal needs room", src: [S1, S3], confidence: low}
+  - {owner: instrument.bass, yield: drums.kick, hz: [160, 220], db: -3, q: 2.0, why: "one instrument owns 50-100 Hz; dip the kick near 180 Hz and lift the bass 220-300 Hz", src: [S4, S3], confidence: low, db_confidence: eng_default}
+  - {owner: speech.vocal, yield: instrument.guitar.electric, hz: 4000, db: -3, q: 2.0, why: "guitar fizz competes with vocal presence", src: [S7, S3], confidence: low, db_confidence: eng_default}
+  - {owner: speech.vocal, yield: instrument.keys, hz: [2000, 4000], db: -2, q: 1.4, why: "gentle dip on keys where the vocal needs room", src: [S1, S3], confidence: low, db_confidence: eng_default}
   - {owner: speech.vocal, yield: drums.snare, hz: [2000, 3500], db: -2, q: 1.4, why: "snare snap and vocal presence overlap; pair not directly sourced", src: [], confidence: eng_default}

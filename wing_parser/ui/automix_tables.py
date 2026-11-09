@@ -17,6 +17,7 @@ CHANGE_COLS = ("channel", "source", "stage", "parameter", "before", "after",
                "confidence")
 SUGGESTION_COLS = ("channel", "stage", "text")
 SKIPPED_COLS = ("channel", "reason")
+WARNING_COLS = ("warning",)
 NEWLINE = chr(10)
 
 
@@ -57,6 +58,10 @@ def fill_suggestions(model, suggestions) -> None:
 
 def fill_skipped(model, skipped) -> None:
     _rows(model, ((s.target, s.reason) for s in skipped))
+
+
+def fill_warnings(model, warnings) -> None:
+    _rows(model, ((w,) for w in warnings))
 
 
 def detail_text(change, sources: dict) -> str:
