@@ -16,6 +16,7 @@ from wing_parser.ui.session import Session
 from wing_parser.ui.settings_dialog import SettingsDialog
 from wing_parser.ui.state_store import PAGE_KEYS
 from wing_parser.ui.texts import text
+from wing_parser.ui.draft_dry_run_dialog import open_draft_dry_run
 from wing_parser.ui.verdict_summary import open_verdict_summary
 from wing_parser.ui.vocabulary_window import open_vocabulary as open_vocabulary_dialog
 from wing_parser.ui.window_state import adopt_session
@@ -36,6 +37,8 @@ def build_menus(window) -> None:
     tools_menu.addAction(text("menu.vocabulary"), window.open_vocabulary)
     tools_menu.addAction(
         text("menu.verdicts"), lambda: open_verdict_summary(window))
+    tools_menu.addAction(
+        text("menu.dryrun"), lambda: open_draft_dry_run(window))
     window._reanalyse_action = tools_menu.addAction(
         text("menu.reanalyse"), window.reanalyse
     )

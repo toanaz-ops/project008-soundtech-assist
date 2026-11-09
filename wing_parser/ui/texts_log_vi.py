@@ -90,4 +90,37 @@ LOG_TEXTS_VI: dict[str, str] = {
     "verdicts.candidate_yes": "Xem lại",
     "verdicts.notes_heading": "Ghi chú (mới nhất trước)",
     "verdicts.no_notes": "Rule này chưa có ghi chú.",
+
+    # -- wave 8: chạy thử rule nháp ---------------------------------------
+    "menu.dryrun": "Chạy thử rule &nháp...",
+    "dryrun.title": "Chạy thử rule nháp",
+    "dryrun.no_drafts": (
+        "Chưa có rule nháp. Đặt file YAML nháp (cùng schema với "
+        "principles.yaml, khoá `principles:`) vào:\n{path}"
+    ),
+    "dryrun.open_folder": "Mở thư mục",
+    "dryrun.draft_label": "Nháp:",
+    "dryrun.browse": "Chọn file…",
+    "dryrun.browse_title": "Chọn file rule nháp",
+    "dryrun.yaml_filter": "File YAML (*.yaml *.yml)",
+    "dryrun.snap_filter": "Scene WING (*.snap)",
+    "dryrun.rules": "{count} rule",
+    "dryrun.ready": "Sẵn sàng chép sang principles.yaml",
+    "dryrun.not_ready": "Chưa chép sang principles.yaml được:",
+    "dryrun.scenes_heading": "Scene để chạy thử nháp",
+    "dryrun.add": "Thêm…",
+    "dryrun.add_title": "Thêm scene",
+    "dryrun.remove": "Bỏ",
+    "dryrun.run": "Chạy",
+    "dryrun.no_change": "Nháp này không đổi gì trên các scene này.",
+    "dryrun.col.scene": "Scene",
+    "dryrun.col.before": "Trước",
+    "dryrun.col.after": "Sau",
+    "dryrun.col.added": "+Mới",
+    "dryrun.col.removed": "\u2212Mất",
+    "dryrun.col.error": "Lỗi",
+    "dryrun.col.change": "Đổi",
+    "dryrun.col.rule": "Rule",
+    "dryrun.col.target": "Đích",
+    "dryrun.col.message": "Nội dung",
 }

@@ -97,4 +97,37 @@ LOG_TEXTS: dict[str, str] = {
     "verdicts.candidate_yes": "Review",
     "verdicts.notes_heading": "Notes (newest first)",
     "verdicts.no_notes": "No notes on this rule.",
+
+    # -- wave 8: draft-rule dry-run ---------------------------------------
+    "menu.dryrun": "Draft rule &dry-run...",
+    "dryrun.title": "Draft rule dry-run",
+    "dryrun.no_drafts": (
+        "No draft rules yet. Put YAML drafts (same schema as "
+        "principles.yaml, key `principles:`) in:\n{path}"
+    ),
+    "dryrun.open_folder": "Open folder",
+    "dryrun.draft_label": "Draft:",
+    "dryrun.browse": "Browse…",
+    "dryrun.browse_title": "Choose a draft rule file",
+    "dryrun.yaml_filter": "YAML files (*.yaml *.yml)",
+    "dryrun.snap_filter": "WING scenes (*.snap)",
+    "dryrun.rules": "{count} rule(s)",
+    "dryrun.ready": "Ready to copy into principles.yaml",
+    "dryrun.not_ready": "Not ready to copy into principles.yaml:",
+    "dryrun.scenes_heading": "Scenes to run the draft on",
+    "dryrun.add": "Add…",
+    "dryrun.add_title": "Add scenes",
+    "dryrun.remove": "Remove",
+    "dryrun.run": "Run",
+    "dryrun.no_change": "This draft changes nothing on these scenes.",
+    "dryrun.col.scene": "Scene",
+    "dryrun.col.before": "Before",
+    "dryrun.col.after": "After",
+    "dryrun.col.added": "+New",
+    "dryrun.col.removed": "−Gone",
+    "dryrun.col.error": "Error",
+    "dryrun.col.change": "Change",
+    "dryrun.col.rule": "Rule",
+    "dryrun.col.target": "Target",
+    "dryrun.col.message": "Message",
 }
