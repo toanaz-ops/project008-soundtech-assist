@@ -32,6 +32,10 @@ publishers:
   - {name: "World Health Organization", aliases: ["WHO"], why: "safe listening standard for venues and events"}
   - {name: "IEC", aliases: ["International Electrotechnical Commission"], why: "measurement standards (e.g. IEC 60268-16 STI)"}
   - {name: "Queen Mary University of London", aliases: ["QMUL", "Centre for Digital Music"], why: "intelligent music production research (Reiss, De Man)"}
+  - {name: "Biamp", why: "conferencing/DSP manufacturer; automixer application notes"}
+  - {name: "Symetrix", why: "DSP manufacturer; automixer application notes"}
+  - {name: "DAFx", aliases: ["International Conference on Digital Audio Effects"], why: "peer-reviewed audio DSP conference"}
+  - {name: "IEEE", aliases: ["IEEE WASPAA", "IEEE Signal Processing Society"], why: "peer-reviewed signal-processing conferences and journals"}
   - {name: "HyperPhysics", aliases: ["Georgia State University"], why: "university physics reference (R. Nave, GSU) for acoustics fundamentals"}
   - {name: "LibreTexts", why: "university open textbook project; physics of sound chapters"}
   - {name: "Universal Audio", why: "hardware/plug-in vendor; technical articles"}
