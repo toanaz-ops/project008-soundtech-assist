@@ -71,6 +71,8 @@ confirm: Manual exists so the operator *sees the numbers*, and that screen is wh
 **Immediate** — Repair edits the scene and writes at once, no dialog. The row shows `console.write.sending` =
 `Sending {address}…` then one of the three badges in §2.4. The level for a soundcheck where the operator is looking at the desk,
 not the laptop.
+*(2026-11-09, wave-6 Q2:)* Immediate reads the desk first; if that read fails or gets no answer the write is refused —
+nothing is sent, no row is recorded, and `on_error` shows `console.write.preflight_failed`. It never writes blind.
 
 ### 2.3 Delayed, and the countdown (F5)
 

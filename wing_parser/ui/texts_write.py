@@ -63,6 +63,9 @@ WRITE_TEXTS: dict[str, str] = {
     "console.write.no_read": (
         "The desk did not answer a read of this address. It may not exist here."
     ),
+    "console.write.preflight_failed": (
+        "The desk did not answer the check read. Nothing was sent"
+    ),
     "console.write.apply_now": "Apply now",
     "console.write.extend": "+5 s",
     "console.write.cancel": "Cancel",

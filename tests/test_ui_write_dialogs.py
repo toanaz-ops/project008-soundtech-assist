@@ -577,6 +577,47 @@ def test_immediate_produces_exactly_one_set_and_no_dialog(qt_app, settle):
     assert sent[0].written == "PRE"
 
 
+def _failing_read(kind):
+    def read(_host, _path):
+        if kind == "raise":
+            raise TimeoutError("desk did not answer")
+        return None                                   # "no answer"
+    return read
+
+
+@pytest.mark.parametrize("kind", ["raise", "none"])
+def test_immediate_refuses_when_the_preflight_read_fails(qt_app, settle, kind):
+    """D-52 #9 second half (owner decision 2026-11-09, Q2): a failed or
+    unanswered pre-flight read refuses the write like Delayed -- nothing
+    reaches the desk, no row is recorded, the user is told once."""
+    import dataclasses
+
+    from wing_parser.ui import write_router
+    from wing_parser.ui.apply_level import ApplyLevel
+    from wing_parser.ui.texts import text
+
+    desk = FakeDesk(identity=_identity(),
+                    leaves={OSC: OscMessage(OSC, "s", ("POST",))},
+                    readbacks={OSC: "PRE"})
+    gate = _gate(qt_app, desk)
+    gate.arm.arm(_identity())
+    gate.arm.level = ApplyLevel.IMMEDIATE
+    transport = dataclasses.replace(desk.write_transport(),
+                                    read=_failing_read(kind))
+    sent, errors = [], []
+
+    write_router.route_repair(
+        gate, _patch(), 5, transport=transport, timeout=2,
+        on_sent=lambda patch, record: sent.append(record),
+        on_error=errors.append)
+
+    assert settle(lambda: errors)
+    settle(lambda: False, limit_s=0.3)
+    assert len(errors) == 1
+    assert text("console.write.preflight_failed") in str(errors[0])
+    assert desk.sets == [] and sent == []
+
+
 def test_an_unarmed_route_opens_the_arm_dialog_first(qt_app, monkeypatch):
     """§2.2: Manual's Send and a Delayed repair both enter through arm_now."""
     from wing_parser.ui import write_router

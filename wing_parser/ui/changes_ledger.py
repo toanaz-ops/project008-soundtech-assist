@@ -48,7 +48,7 @@ class LedgerRow(QWidget):
             after=record.written))
         self.result_label = QLabel(badge_text(record))
         self.revert_button = QPushButton(text("console.write.revert"))
-        if record.desk_before is None:          # a failed/unanswered pre-flight
+        if record.desk_before is None:          # old write-log rows only; new ones refuse at pre-flight
             self.revert_button.setEnabled(False)
             self.revert_button.setToolTip(text("console.write.revert_unknown"))
         self.revert_button.clicked.connect(
