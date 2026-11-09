@@ -1,0 +1,68 @@
+id: fx-modulation-chorus-doubler
+title: "Modulation: chorus, ensemble and doubling"
+title_vi: "Hiệu ứng modulation: chorus, ensemble và doubler"
+topic: effects
+tags:
+  instrument: [backing-vocal, bass, keys]
+  genre: [pop]
+  technique: [chorus, doubler, flanger, modulation]
+  event: [concert]
+summary: "Chorus, ensemble and doubling effects blend the dry signal with a short, slowly modulated delayed copy to suggest several players. They thicken backing vocals and keys, and need care on bass and in mono."
+body: |
+  ## How it works
+
+  A chorus mixes the dry signal with a slightly delayed copy whose pitch is moved by a slow low-frequency oscillator. The ear hears several players doing the same part. An ensemble effect runs several such choruses at different rates so the cyclic wobble is harder to pick out. A flanger uses shorter delays than a chorus and usually adds feedback, which gives the moving comb-filter "whoosh". One SOS article puts chorus delays at a few tens of milliseconds with an LFO near 3 Hz, vibrato under about 15 ms, and classic flanging under about 5 ms. These are typical ranges; individual units vary widely.
+
+  ## Doubling
+
+  A "doubler" or "vocal thickener" setting is a chorus-family effect aimed at mimicking a second take of the same voice. The sources I could open describe it only in terms of chorus: a short modulated delay, so the delay range overlaps the chorus numbers above. Detailed doubler algorithms vary by manufacturer, so listen rather than trust the name on the preset.
+
+  ## Where it earns its place live
+
+  - **Backing vocals and strings or brass patches:** SOS suggests chorus and ensemble for these, and for electric piano. They sound broader without more level.
+  - **Wide stereo:** Hard-pan the dry and chorused signals to widen a keys or guitar part, then check the result in mono, since the comb-filtering that makes it wide can thin out when summed.
+  - **Bass:** use it only with the wet signal high-passed, as SOS advises; modulating the low end blurs pitch and weight, and in a PA that means loose sub.
+  - **Lead vocal:** keep it subtle if you use it at all. A lead that sounds processed in a venue loses presence and can hurt intelligibility.
+
+  ## Setting up on a console
+
+  Feed the effect from an aux send, set it 100% wet, and use the send level to decide how much you hear. Choose a slow rate and modest depth first, then raise depth until you hear it in context, then back off slightly. Keep the return out of the monitor mixes unless a singer asks for it.
+
+  ## Mistakes to avoid
+
+  - Fast, deep settings that sound seasick on sustained notes.
+  - Chorus on the whole mix bus: it smears transients and fights the PA's own phase.
+  - Forgetting a mono check.
+
+  Numbers are starting points; set by ear. Sources here are mainly SOS articles on modulation, with limited detail on doubler designs.
+rule:
+  applies_to:
+    source_type: [backing-vocal, keys, strings]
+  params:
+    chorus_delay_ms: [20, 80]
+    flanger_delay_ms: [1, 5]
+    lfo_rate_hz: [2, 4]
+  notes: "Ranges from SOS (White 2003, 2022) and a plug-in's published range. Typical, not strict; adjust by ear and check mono."
+sources:
+  - title: "Modulation Effects: A Primer"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/sound-advice/modulation-effects"
+    author: "Paul White"
+    year: 2022
+    accessed: "2026-11-09"
+    locator: "Chorus & Ensemble; Flanging"
+  - title: "Using Your Plug-in Delay Effects"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/using-your-plugin-delay-effects"
+    author: "Paul White"
+    year: 2003
+    accessed: "2026-11-09"
+    locator: "Numbers for chorus, vibrato and flanging delay times"
+media: []
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

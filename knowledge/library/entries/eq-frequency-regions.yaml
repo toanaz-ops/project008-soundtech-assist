@@ -1,0 +1,56 @@
+id: eq-frequency-regions
+title: "Frequency regions: what each part of the spectrum does"
+title_vi: "Các vùng tần số và tác dụng của từng vùng"
+topic: eq
+tags:
+  instrument: [vocal, drums, bass, guitar]
+  genre: []
+  technique: [eq, frequency-regions]
+  event: []
+summary: "A working map of the spectrum from sub to air, with the character each region adds or takes away. Boundaries are approximate and differ between sources."
+body: |
+  Think of the spectrum as regions with a typical sound, not as exact bands. Different books draw the borders a little differently, so treat every edge below as a starting point.
+
+  ## The map
+  - **Sub (about 20-60 Hz):** felt as much as heard. Mostly rumble, stage vibration and wind on a microphone; only kick, bass and sub-heavy music really live here.
+  - **Bass (about 60-250 Hz):** weight and power. Around 80-100 Hz gives kick and bass their punch; too much of 100-150 Hz makes toms and snare boomy.
+  - **Low-mids (about 250-500 Hz):** warmth, but also "mud" and tubbiness. About 200 Hz is a classic place where acoustic guitars and vocals turn muddy; this region is where many channels collide.
+  - **Mids (about 500 Hz-2 kHz):** body and the nasal or honky quality. Around 600 Hz can sound congested; 1-3 kHz is where vocals can sound nasal.
+  - **Upper-mids (about 2-4 kHz):** clarity and attack, and the region the ear is most sensitive to. Too much is harsh and fatiguing.
+  - **Presence (about 4-8 kHz):** definition and edge on vocals, snare crack and guitar bite; the sibilance zone for "s" starts here and goes up.
+  - **Air (above about 8 kHz):** sparkle, cymbal shimmer, breath. Gentle shelves here open a sound up; boosting a source that has no top end only adds noise.
+
+  ## How to use the map
+  1. Describe the problem in words first ("boomy", "boxy", "harsh"), then jump to the matching region.
+  2. Confirm by a short sweep (see the listening entry) rather than trusting the table.
+  3. Fix with the smallest move: usually a cut in the offending region or a gentle shelf.
+
+  ## Common mistakes
+  - Boosting 100 Hz on everything "for weight" and making the mix cloudy.
+  - Chasing brightness in the upper-mids and getting fatigue instead of clarity.
+  - Using the same table for a PA in a small hall and a big arena; room and system change what you hear.
+
+  ## On the WING
+  The channel EQ curve and the Overview/Channels pages show where each band sits; use the diagram here to name the region you are touching.
+rule:
+  applies_to: {source_type: [any]}
+  params:
+    sub_hz: [20, 60]
+    bass_hz: [60, 250]
+    low_mid_hz: [250, 500]
+    mid_hz: [500, 2000]
+    upper_mid_hz: [2000, 4000]
+    presence_hz: [4000, 8000]
+    air_hz: [8000, 20000]
+  notes: "Conventional band edges for naming regions; sources differ, treat as approximate."
+sources:
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Mixing With EQ; Vocals"}
+  - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Understanding What EQ Frequencies Sound Like"}
+  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Where To Cut & Boost For Common Instruments"}
+media:
+  - {kind: diagram, path: frequency-regions.png, caption: "Conventional frequency regions on a 20 Hz-20 kHz log axis.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

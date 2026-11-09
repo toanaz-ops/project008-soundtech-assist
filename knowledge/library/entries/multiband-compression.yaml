@@ -1,0 +1,71 @@
+id: multiband-compression
+title: "Multiband compression"
+title_vi: "Nén đa băng tần (multiband compression)"
+topic: dynamics
+tags:
+  instrument: [vocal, bass, guitar]
+  genre: []
+  technique: [multiband, compression, crossover, dynamic-eq]
+  event: [corporate, concert]
+summary: "A multiband compressor splits the signal into bands and compresses each separately, so a loud bass note does not pull down the highs. Use the fewest bands that solve one specific problem."
+body: |
+  A normal compressor reacts to the whole signal. If a loud low note triggers it, the highs get turned down too, so the mix dulls. Sound On Sound calls this "dynamic damage" and presents multiband compression as the cure. A multiband compressor splits the sound into bands with crossovers and gives each band its own threshold, ratio and timing.
+
+  ## When it really helps
+
+  - **Taming high-frequency spikes** such as pick noise on an acoustic guitar or stick contact on cymbals: use the top band with a fast attack, a fast release, and ratios often above 5:1.
+  - **Evening out harshness on a vocal**, where bright vowels jump out: a gentle ratio (about 2:1) and around 6 dB of reduction on the upper band, with make-up gain.
+  - **De-essing** when you have no dedicated de-esser: a narrow band around the sibilance region, for example near 8 kHz (see de-esser entry).
+  - **Proximity-effect or room build-up**: a low band, below about 300 Hz on a close-miked vocal, below about 100 Hz on upright bass or bass-amp resonance, or sub thumps on a DI bass.
+  - **A harsh region** on vocals or electric guitar, where an EQ cut would dull the whole sound.
+
+  ## Setting it up
+
+  1. Decide what problem you are solving before touching a band.
+  2. Use as few bands as possible. The most common mistake is to use all bands all the time, which factory presets tend to encourage. Many fixes need only one active band.
+  3. Choose crossovers outside the most important range of the source. A crossover in the middle of the vocal range with very different settings on each side damages the voice; one suggestion is to put the low crossover below the vocal and the high crossover at or above about 2.5 kHz. Choose points by ear.
+  4. For precise, narrow work use steep slopes (above 18 dB/oct); for broad smoothing, gentler slopes are fine.
+  5. Solo or mute the processed band while you set it to be sure it catches the problem.
+
+  ## Starting points (adjust by ear)
+
+  - Spike control: top band, ratio 5:1 or more, very fast attack, fast release.
+  - Gentle vocal evening: ratio about 2:1, about 6 dB of reduction.
+  - Do not set attack extremely fast on vocals, or they sound squashed.
+
+  ## On the mix bus and PA
+
+  On a main bus a multiband compressor can control a boomy low end from a particular room, but it changes the tonality of the whole PA, so use it only when a fixed EQ cannot fix the problem, and keep the amount small. Avoid it as a loudness tool in a live system: it will pump with the music.
+
+  ## Common mistakes
+
+  - Reaching for it first. A dynamic EQ or ordinary EQ may be a better fit.
+  - Set-and-forget settings for sibilance; the threshold may need riding.
+  - Boosting mid-range to compensate for harshness; this makes other frequencies sound harsh too.
+rule:
+  applies_to: {source_type: [vocal.lead, vocal.speech, bass, guitar.acoustic]}
+  params:
+    spike_ratio_min: [5, 10]
+    vocal_ratio: [2, 3]
+    vocal_gr_db: [4, 6]
+    crossover_slope_db_oct_min: [18, 48]
+  notes: "starting points; use the minimum number of bands"
+sources:
+  - title: "How And When To Use Multiband Compression"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/how-and-when-use-multiband-compression"
+    accessed: "2026-11-09"
+    locator: "Smoothing Spikes / Brighter Vocals / Harsh Harrier / At The Low End"
+  - title: "Advanced Compression Techniques Part 1"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/advanced-compression-techniques-part-1"
+    accessed: "2026-11-09"
+    locator: "Dynamic Damage"
+media: []
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

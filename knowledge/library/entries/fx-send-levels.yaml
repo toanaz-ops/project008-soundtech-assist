@@ -1,0 +1,81 @@
+id: fx-send-levels
+title: "Reverb and delay send levels per source"
+title_vi: "Mức send reverb và delay cho từng nguồn"
+topic: effects
+tags:
+  instrument: [vocal, drums, bass, guitar, keys]
+  genre: [pop, rock, ballad, jazz, edm, bolero, speech]
+  technique: [aux-send, reverb, delay, post-fader]
+  event: [concert, corporate]
+summary: "Which sources should feed the reverb and delay returns and roughly how hard, as post-fader send offsets in dB. The sources only say who gets effect and who does not; the dB values are low confidence starting offsets, not published figures."
+body: |
+  ## Who gets effect
+
+  Guidance from the reverb articles is consistent on the pattern. Lead vocals and snares get the most reverb, toms a little less, and the kick, overheads and bass get none or very little because their low end turns to mud in a tail. Electric guitars sit well with a touch of both reverb and delay; acoustic guitar takes a little reverb; keys and pads rarely need any. An MC or speaker should stay dry. Sends are taken post-fader so the effect follows the fader, and the returns run 100 percent wet.
+
+  An iZotope article gives one useful rule of thumb: when unsure, back the reverb off by 10 to 25 percent, because it is easier to notice reverb that is missing in the quiet bars than to notice a little too much in the loud ones.
+
+  ## The dB figures
+
+  No source gives send levels in dB. The table in the rule block is the research lane's own starting offsets, written as post-fader send levels where 0 dB is unity and "off" means no send. Treat them as a first guess for the first soundcheck:
+
+  - Lead vocal: reverb -18 to -8 dB, delay -24 to -12 dB.
+  - Backing vocals: reverb -12 to -4 dB (more than the lead, so they sit behind it), delay -22 to -12 dB.
+  - Kick: reverb off to -30 dB, no delay. Overheads the same. Bass: none.
+  - Snare: reverb -14 to -6 dB. Toms: reverb -16 to -8 dB.
+  - Electric guitar: reverb -20 to -10 dB, delay -22 to -12 dB. Acoustic guitar: reverb -16 to -8 dB, delay off to -24 dB.
+  - Keys: reverb off to -18 dB.
+  - Speech or MC: reverb off to -25 dB, no delay. That is a product choice for intelligibility, not a sourced number.
+
+  ## How to set them in practice
+
+  Raise the send until you can just hear the tail on the quiet section of the song, then back it off a little. Check it again in the loudest chorus; room reverb in the venue adds to what you hear. In a very live room use less send and prefer delay.
+
+  ## Limits
+
+  These are offsets for a typical stereo return of moderate level. If the return fader sits far from 0 dB, shift the sends the other way. The relative ordering (vocal and snare wettest, kick and bass dry) is the dependable part; the absolute numbers are not.
+rule:
+  kind: send_level
+  applies_to: {source_type: [vocal.lead, vocal.backing, drums.kick, drums.snare, drums.tom, drums.overhead, instrument.bass, instrument.guitar.electric, instrument.guitar.acoustic, instrument.keys, speech.mc]}
+  params:
+    reference: "post-fader send, 0 dB = unity, off = no send"
+    by_source:
+      speech.mc: {reverb_db: ["off", -25], delay_db: ["off"]}
+      vocal.lead: {reverb_db: [-18, -8], delay_db: [-24, -12]}
+      vocal.backing: {reverb_db: [-12, -4], delay_db: [-22, -12]}
+      drums.kick: {reverb_db: ["off", -30], delay_db: ["off"]}
+      drums.snare: {reverb_db: [-14, -6], delay_db: ["off"]}
+      drums.tom: {reverb_db: [-16, -8], delay_db: ["off"]}
+      drums.overhead: {reverb_db: ["off", -30], delay_db: ["off"]}
+      instrument.bass: {reverb_db: ["off"], delay_db: ["off"]}
+      instrument.guitar.electric: {reverb_db: [-20, -10], delay_db: [-22, -12]}
+      instrument.guitar.acoustic: {reverb_db: [-16, -8], delay_db: ["off", -24]}
+      instrument.keys: {reverb_db: ["off", -18], delay_db: ["off"]}
+  notes: "dB values are low confidence starting offsets with no source; only the who-gets-effect pattern is sourced."
+sources:
+  - title: "How To Use Reverb Like A Pro (page 2)"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2"
+    accessed: "2026-11-09"
+    locator: "per-source reverb"
+  - title: "Essential tips for using reverb on vocals"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/essential-tips-for-using-reverb-on-vocals"
+    accessed: "2026-11-09"
+  - title: "Delay tips for mixing vocals"
+    publisher: "Waves Audio"
+    kind: article
+    url: "https://www.waves.com/delay-tips-for-mixing-vocals"
+    accessed: "2026-11-09"
+  - title: "Reverb: What Do All Those Knobs Do?"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/reverb-what-do-all-those-knobs-do"
+    accessed: "2026-11-09"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

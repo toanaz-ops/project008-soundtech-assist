@@ -1,0 +1,94 @@
+id: speech-headset-and-lavalier
+title: "Headset and lavalier mics: placement, chest resonance and EQ"
+title_vi: "Micro đeo đầu (headset) và cài áo (lavalier): vị trí, cộng hưởng ngực và EQ"
+topic: speech
+tags:
+  instrument: [headset-mic, lavalier-mic]
+  genre: []
+  technique: [mic-placement, eq, wireless]
+  event: [corporate, conference, ceremony, theatre]
+summary: |
+  Where a body-worn mic sits decides the tone: a chest lavalier loses the 2-4 kHz consonant band and
+  gains a chesty bump, while a headset near the mouth is much closer to a handheld. Place it well
+  first, then apply a small, wide fix on the desk.
+body: |
+  **Position decides the sound.** Shure notes that the best lavalier spot depends on the clothing
+  and the needs of the production. On shirts and blouses, clip just above the breastbone and hide the
+  cable under the garment; with a tie, clip above the breastbone and hide the cable behind the tie;
+  on a T-shirt or sweater, use the collar and keep the mic from rubbing the neck. Rubbing and
+  clothing noise are the main practical enemies of lavaliers.
+
+  **What the chest does to the voice.** DPA's speech-intelligibility notes explain that a mic on the
+  chest, and especially under the chin or under clothing, loses much of the 2-4 kHz consonant
+  range. It also tends to pick up a bump around 800 Hz from the chest cavity. Headsets near the cheek
+  need only a small lift at the top end and are much closer to a natural tone; forehead placement is
+  described as the most neutral.
+
+  **EQ starting points.** For a lav on the chest, DPA suggests lifting about 3-4 kHz by roughly
+  5-10 dB (many DPA mics have this built in, so check the manufacturer's data before adding more).
+  Then cut a few dB around 800 Hz if the voice sounds boxy or "in the chest". A dense windscreen
+  dulls the highs and may need a little more lift. For a headset, expect a gentle high shelf or
+  nothing. Always use a wide Q, and compare against what the voice sounds like in the room
+  without the PA.
+
+  **High-pass filter.** An HPF around 80-120 Hz removes handling noise and breath, and on a WING
+  it is one click on the channel. Raise it for a female or thin voice; keep it lower for a deep
+  male voice to avoid a thin tone.
+
+  **Gain before feedback.** Body-worn mics are farther from the mouth than a handheld (especially
+  at the chest), so they need more gain and feed back sooner. A headset near the mouth is much louder
+  at the capsule than a chest lav, which is why headsets are easier to run loud. If a
+  lavalier is the only option, a notch on the first ringing frequency and a smaller PA mix near the
+  presenter are your tools.
+
+  **Practical tips.** Check wireless RF and battery level, test with the real clothing before doors,
+  and ask the presenter to turn their head: a lav on one side can drop when they turn away. Mute the
+  pack when the talker leaves the stage so clothing noise and backstage chatter do not go to the
+  house.
+
+  **Common mistakes:** boosting 3-4 kHz on a headset that did not need it (it sounds harsh),
+  cutting the "chest" frequency too deeply (the voice goes hollow), and forgetting that sweat,
+  fabric and hair change the sound minute by minute.
+rule:
+  applies_to: {source_type: [speech.lavalier, speech.headset], event: [corporate, conference]}
+  params:
+    lav_chest_presence_boost_db: [5, 10]
+    lav_chest_presence_region_hz: [3000, 4000]
+    chest_cut_region_hz: [700, 900]
+    hpf_hz: [80, 120]
+  notes: "Starting points. Chest-lav boost is from DPA; the 800 Hz bump is noted there as typical of body-worn placement and correctable; cut amount is by ear."
+sources:
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
+    accessed: "2026-11-09"
+    locator: "Chest mic placement; EQ suggestions"
+  - title: "How to choose the best lavalier microphone"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/how-to-choose-the-best-lavalier-microphone"
+    accessed: "2026-11-09"
+    locator: "Placement by clothing"
+media:
+  - kind: diagram
+    path: lav-chest-eq.png
+    caption: "Chest-lavalier presence lift: +5 and +10 dB around 3.5 kHz (the range suggested by DPA)."
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://youtube.com/watch?pp=0gcJCdgAo7VqN5tD&v=H-L2iHjxGp4"
+    title: "Lavalier Mic Techniques for Theater"
+    channel: "Shure"
+    caption: "Shure livestream on rigging and mounting lavaliers (theatre context, concepts carry over)."
+  - kind: video
+    url: "https://www.youtube.com/watch?v=CE738Qoyv98"
+    title: "Clinica de colocacion de Lavaliers"
+    channel: "Shure"
+    caption: "Shure clinic on lavalier placement, in Spanish."
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

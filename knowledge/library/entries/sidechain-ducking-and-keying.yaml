@@ -1,0 +1,74 @@
+id: sidechain-ducking-and-keying
+title: "Side-chain: key filters on gates and ducking music under speech"
+title_vi: "Side-chain: key filter cho gate và ducking nhạc nền dưới giọng nói"
+topic: dynamics
+tags:
+  instrument: [kick, snare, vocal]
+  genre: [edm]
+  technique: [sidechain, ducking, key-filter, gate]
+  event: [corporate, concert]
+summary: "The side-chain (key) is the signal a dynamics processor listens to. Filtering it makes a gate respond to the right instrument, and driving a compressor from a voice lets music duck automatically under speech."
+body: |
+  Every compressor or gate has a **detector** that decides when to act. By default it listens to the same signal it processes. The **side-chain** (also called the key) lets you change that in two ways: filter what the detector hears, or feed it a different signal altogether.
+
+  ## 1. Key filter on a gate
+
+  A gate opens when the key exceeds its threshold. Filtering the key controls what counts.
+
+  - **Kick:** high-pass is rarely useful, but a low-pass on the key stops cymbal bleed from opening the gate. Keeping more low-frequency energy in the key of a snare-triggered gate holds it open longer.
+  - **Snare:** high-pass the key above the kick region so kick bleed from the neighbouring mic does not trigger it; low-pass to ignore hi-hat. A narrow bell on the key at the snare's body frequency also helps.
+  - **Toms:** band-pass around each tom's fundamental so the other toms and cymbals do not open it.
+
+  Listen to the key signal if the console offers a listen button. Sound On Sound notes that the filter, EQ and threshold work together; fix the key before touching hold and release.
+
+  ## 2. Keyed compression (ducking)
+
+  Here a different channel drives the compressor. The classic EDM example is a kick keying a compressor on the other instruments, producing a rhythmic pump. iZotope's example used attack around 0.1 ms, ratio about 6:1 and a release near 175 ms synced to the tempo, with a lot of reduction for a deliberate effect (about 14 dB, a matter of taste).
+
+  ## 3. Ducking music under speech
+
+  This is the corporate-event use. The presenter's microphone feeds the key; a compressor on the music bus lowers the music while the presenter talks and brings it back when they stop.
+
+  Starting points (adjust by ear, these are practical ranges and not from one source):
+  - Duck amount: about 6 to 12 dB. More than that feels like music is being switched off.
+  - Attack: fast to medium so the first word is not lost under the music.
+  - Release: about 0.5 to 1.5 s so the music does not bounce up between words.
+  - Hold or a modest ratio so the music stays stable through short pauses.
+  - Key filter: high-pass the speech key (about 100 to 150 Hz) so handling noise and breath thumps do not trigger it.
+
+  ## On a WING
+
+  The WING lets a dynamics block take its key from another source and has a key filter on its dynamics blocks. Check the exact key source and filter menus in the manual for your firmware before relying on names here.
+
+  ## Common mistakes
+
+  - Ducking triggered by a mic that is open all the time (hum, room noise). Gate the key mic first, or raise the threshold above the noise.
+  - Release too short, so music pumps between words.
+  - Over-ducking so the music disappears, then having the room sound empty.
+  - Forgetting to turn the ducker off when the presenter leaves the stage.
+rule:
+  applies_to: {source_type: [music.playback, vocal.speech]}
+  params:
+    duck_db: [6, 12]
+    duck_release_ms: [500, 1500]
+    key_hpf_hz: [100, 150]
+  notes: "starting points; practical ranges, not from a single published figure"
+sources:
+  - title: "Production Techniques: Using Gates & Expanders"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/production-techniques-using-gates-expanders"
+    accessed: "2026-11-09"
+    locator: "Ducking; Gate Expectations (side-chain / key filter)"
+  - title: "What Is Audio Compression? Everything You Need to Know"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
+    accessed: "2026-11-09"
+    locator: "Sidechain Compression"
+media: []
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

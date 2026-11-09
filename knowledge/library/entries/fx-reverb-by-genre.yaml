@@ -1,0 +1,78 @@
+id: fx-reverb-by-genre
+title: "Reverb starting points by genre"
+title_vi: "Điểm xuất phát cho reverb theo thể loại"
+topic: effects
+tags:
+  instrument: [vocal, drums]
+  genre: [pop, rock, ballad, jazz, edm, bolero, speech]
+  technique: [reverb, pre-delay, decay-time, return-eq]
+  event: [concert, corporate]
+summary: "General reverb rules from published guidance (faster music wants shorter decay, pre-delay keeps a vocal in front, filter the return), turned into a per-genre table of decay, pre-delay and return filtering. The per-genre numbers are a synthesis and low confidence."
+body: |
+  ## What the sources agree on
+
+  The published guidance is qualitative and consistent: the busier and faster the song, the shorter the reverb should be; a sparse, slow song can carry a long tail. Pre-delay (the gap before the reverb starts) keeps a vocal articulate: a few milliseconds suit a short ambience, while a long reverb usually wants roughly 30 to 70 ms. One vendor article gives wider windows per source (vocals about 20 to 80 ms, drums about 5 to 50 ms, guitars about 40 to 100 ms), and a magazine article notes that lead vocals can go past 100 ms. Decay depends on the algorithm: ambience patches run a fraction of a second, halls and churches run several seconds. A ballad vocal can take a layered 3 to 4 s reverb.
+
+  Return handling is the part people forget. Filter the low end of the return, roughly 100 to 300 Hz, and roll off the top from about 7 kHz so the tail does not add mud or hiss. Run the reverb as an aux return at 100 percent wet, fed by post-fader sends, so the amount follows the fader.
+
+  ## The per-genre table (starting points, low confidence)
+
+  The table in the rule block is a synthesis of that general guidance, not a measured result. Treat every figure as a starting point you adjust by ear in the room.
+
+  - **Pop**: plate on the vocal, short room or plate on drums; decay roughly 0.8 to 1.8 s, pre-delay 20 to 80 ms.
+  - **Rock**: short room or ambience on drums, a plate on the vocal; decay 0.3 to 1.2 s, little or no pre-delay on the drums (a magazine source says short or no pre-delay suits rock drums).
+  - **Ballad**: plate or hall; decay 1.8 to 3.5 s, pre-delay 40 to 100 ms.
+  - **Jazz**: room or chamber; decay 1.0 to 2.2 s. No jazz-specific source was found, so this is inferred from advice about natural spaces.
+  - **EDM**: short reverb on drums, a larger tail on the vocal; decay 0.8 to 2.5 s. No source; the only hint is that dry modern styles lean on delay.
+  - **Bolero**: treated like a ballad. No reputable source for this genre was found; it is an extrapolation.
+  - **Speech**: off or a very short room. This is a product choice, intelligibility first; one source notes long tails reduce a vocal's prominence.
+
+  ## Where sources disagree
+
+  Vocal pre-delay: one article says 100 ms or more, another 20 to 80 ms, a third 30 to 70 ms. The table uses 20 to 80 ms and widens it for ballads.
+
+  ## Limits
+
+  No source gives live-sound figures per genre, and the bolero and speech rows have no citation at all. The numbers above are for a first pass at soundcheck.
+rule:
+  kind: reverb_genre
+  applies_to: {source_type: [vocal.lead, drums.snare], genre: [pop, rock, ballad, jazz, edm, bolero, speech]}
+  params:
+    return_filter_defaults: {locut_hz: [100, 300], hicut_hz: [6000, 8000]}
+    by_genre:
+      pop: {decay_s: [0.8, 1.8], predelay_ms: [20, 80], locut_hz: 150, hicut_hz: 7000, type: "plate (vocal), short room or plate (drums)"}
+      rock: {decay_s: [0.3, 1.2], predelay_ms: [0, 30], locut_hz: 200, hicut_hz: 7000, type: "short room (drums), plate (vocal)"}
+      ballad: {decay_s: [1.8, 3.5], predelay_ms: [40, 100], locut_hz: 150, hicut_hz: 6500, type: "plate or hall"}
+      jazz: {decay_s: [1.0, 2.2], predelay_ms: [15, 40], locut_hz: 120, hicut_hz: 8000, type: "room or chamber"}
+      edm: {decay_s: [0.8, 2.5], predelay_ms: [10, 60], locut_hz: 250, hicut_hz: 6000, type: "short on drums, larger tail on vocal"}
+      bolero: {decay_s: [1.8, 3.0], predelay_ms: [20, 60], locut_hz: 150, hicut_hz: 8000, type: "hall or plate (ballad profile)"}
+      speech: {decay_s: [0.0, 0.6], predelay_ms: [10, 30], locut_hz: 250, hicut_hz: 6000, type: "off or very short room"}
+  notes: "Per-genre values are a synthesis (low confidence). Jazz, EDM, bolero and speech rows have no direct source. Adjust by ear."
+sources:
+  - title: "Reverb: What Do All Those Knobs Do?"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/reverb-what-do-all-those-knobs-do"
+    accessed: "2026-11-09"
+    locator: "decay and pre-delay sections"
+  - title: "How To Use Reverb Like A Pro (page 2)"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2"
+    accessed: "2026-11-09"
+    locator: "return EQ, pre-delay"
+  - title: "Essential tips for using reverb on vocals"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/essential-tips-for-using-reverb-on-vocals"
+    accessed: "2026-11-09"
+  - title: "Reverb pre-delay explained"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/community/blog/reverb-pre-delay"
+    accessed: "2026-11-09"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

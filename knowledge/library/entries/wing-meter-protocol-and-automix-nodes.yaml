@@ -1,0 +1,47 @@
+id: wing-meter-protocol-and-automix-nodes
+title: "WING meters, OSC limits and automix nodes (third-party protocol document)"
+title_vi: "Meter của WING, giới hạn OSC và các node automix (tài liệu giao thức bên thứ ba)"
+topic: wing-console
+tags:
+  instrument: []
+  genre: []
+  technique: [metering, osc, automix, remote-protocol]
+  event: []
+summary: "Meter levels on a WING are not available over OSC; they come from the native protocol on a separate metering channel, and only one OSC subscription can be live at a time. The automix groups appear as parameter nodes. This rests on one third-party protocol document and several points are unverified."
+body: |
+  ## What the document states
+
+  The WING remote protocols document, written by a third-party developer, says meters are not exposed over OSC. They are read through the native protocol's metering channel. A client declares a UDP port, requests a set of meters by family (channel, aux, bus, main, matrix and so on) and index, and renews the request every few seconds, or the stream stops. The reply is a stream of 16-bit big-endian values; divide by 256 to get decibels, and a value of -128 dB means no signal. Per-channel values include input and output left and right, plus gate and dynamics key and gain-reduction readings. For gate and dynamics, a value of 256 is described as 20 dB of gain reduction, but the document notes this depends on the model.
+
+  Separately, the OSC interface allows only one event subscription at a time; the last client to subscribe wins and the subscription must be renewed within about ten seconds. That means any tool that subscribes can knock WING-Edit or Companion off the console. Anything touching a live desk has to coexist with those tools.
+
+  ## Automix nodes
+
+  The built-in automix has two gain-sharing groups, X and Y, of up to 16 inputs each. The document lists a group node under the config tree and, per channel, a post-insert slot that can hold AUTO_X or AUTO_Y, an on switch and a weight from -12 to +12. The unit and the algorithm behind the weight are not documented.
+
+  ## What is unverified
+
+  - Whether the metering request goes over TCP or UDP 2222.
+  - The pre- or post-fader tap point of the meters.
+  - The layout of the newer channel meter family (the table in the document is garbled).
+  - Any safe OSC write rate: none is documented, so self-throttle.
+  - A later version of the document that was not read.
+
+  ## Practical meaning
+
+  If an app wants live meters it needs the native protocol, not OSC, and it must not hold the single OSC subscription if a mixing engineer is using other tools. Read actual ranges from the console rather than trusting the document.
+rule:
+  notes: "Single third-party source, partly unverified. Meters need the native protocol; one OSC subscription at a time."
+sources:
+  - title: "WING Remote Protocols, version 3.0.5-1"
+    publisher: "Patrick-Gilles Maillot"
+    kind: manual
+    url: "https://docs.rs/crate/libwing/latest/source/Wing-Remote-Protocols.pdf"
+    author: "Patrick-Gilles Maillot"
+    accessed: "2026-11-09"
+    locator: "pp. 16-80 (OSC), pp. 86-87 (metering channel)"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

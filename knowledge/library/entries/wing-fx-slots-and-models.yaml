@@ -1,0 +1,68 @@
+id: wing-fx-slots-and-models
+title: "WING FX slots, reverb bus setup and model ranges (partly unverified)"
+title_vi: "Slot FX của WING, cách dựng bus reverb và dải thông số (một phần chưa xác minh)"
+topic: wing-console
+tags:
+  instrument: []
+  genre: []
+  technique: [wing-fx, reverb-bus, aux-send]
+  event: [concert, corporate]
+summary: "How a reverb is typically built on a WING: an effect in one of the first eight slots, fed from channel sends on a dedicated stereo bus. The official effects guide could not be opened, so the slot split and most model parameter ranges are unverified; only one plate model has ranges from a third-party blog."
+body: |
+  ## What is known
+
+  A WING-focused blog describes a working vocal reverb setup. The reverb goes in one of the premium effect slots, which the author places in slots 1 to 8, and that effect is inserted on a dedicated stereo bus. The bus fader stays at 0 dB and the bus is routed to Main. Channels feed it through post-fader sends, which is also the general advice in mixing articles: the effect then follows the fader. This matches how any console treats a send effect, and it is a sensible default to start from.
+
+  The same blog lists the ranges of one plate model (called Blue Plate there): pre-delay 0 to 200 ms, decay 0.2 to 5 s, damping 2 to 20 kHz, low cut 20 to 400 Hz and high cut 2 to 20 kHz. Its own suggestion for a vocal return is a low cut around 150 to 200 Hz, a high cut near 7 kHz and damping around 5 to 6 kHz.
+
+  ## What is not verified
+
+  The research behind this entry could not open the official WING Effects Guide (the PDF was too large or refused). So these points are unconfirmed and must be checked on your own desk or against the manual:
+
+  - That there are 16 effect slots, with reverbs and delays only in slots 1 to 8 and slots 9 to 16 limited to channel-type effects.
+  - The full list of models (hall, room, chamber, plate, vintage plate and room, a stereo delay, gated and reverse reverb and others) and their parameter ranges.
+  - Which models count as premium.
+
+  Because the blog is a single non-vendor source, even the ranges it lists are medium confidence. Read the real ranges from the scene or the console before an automated tool uses them.
+
+  ## Practical steps
+
+  1. Put the reverb in a low-numbered slot, insert it on a spare stereo bus, bus fader at 0 dB, bus to Main.
+  2. Use post-fader sends from the channels and set the amount per source (see the send-levels entry).
+  3. Set pre-delay, decay and the return filters using the genre entry as a first guess.
+  4. Keep the effects off the live desk until you have confirmed the slot rules on your firmware.
+
+  ## Limits
+
+  This entry records a working pattern and a gap, not a manual. Replace it with the manual's content once the effects guide has been read.
+rule:
+  kind: fx_model
+  applies_to: {source_type: [fx.reverb]}
+  params:
+    blue_plate_ranges:
+      predelay_ms: [0, 200]
+      decay_s: [0.2, 5]
+      damping_hz: [2000, 20000]
+      lowcut_hz: [20, 400]
+      hicut_hz: [2000, 20000]
+    routing: "reverb in slot 1-8 inserted on a dedicated stereo bus, bus fader 0 dB, bus to Main, post-fader channel sends"
+  notes: "Slot split and other model ranges unverified (effects guide not opened); only the plate model has third-party ranges, medium confidence."
+sources:
+  - title: "How to Create a Behringer WING Vocal Reverb Using Blue Plate"
+    publisher: "Drew Brashler"
+    kind: article
+    url: "https://drewbrashler.com/?p=44222"
+    author: "Drew Brashler"
+    accessed: "2026-11-09"
+    locator: "routing and Blue Plate parameter ranges"
+  - title: "How To Use Reverb Like A Pro (page 2)"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2"
+    accessed: "2026-11-09"
+    locator: "return EQ, post-fader sends"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

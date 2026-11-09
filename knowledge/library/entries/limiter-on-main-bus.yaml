@@ -1,0 +1,74 @@
+id: limiter-on-main-bus
+title: "Limiter on the main bus: PA protection, not loudness"
+title_vi: "Limiter trên main bus: bảo vệ hệ thống PA, không phải làm to"
+topic: dynamics
+tags:
+  instrument: []
+  genre: []
+  technique: [limiter, main-bus, protection, headroom]
+  event: [corporate, concert]
+summary: "In live sound a main-bus limiter is a safety ceiling for loudspeakers, amplifiers and the audience. It should engage only on rare peaks; if it works constantly, the mix level is too high."
+body: |
+  A limiter is a compressor with a ratio as high as it can go, so the output barely rises once the input reaches the threshold. QSC describes the live-sound job plainly: it caps the maximum level so loudspeakers and amplifiers do not clip and in-ear monitors stay safe. A ratio of 10:1 and above is generally considered hard limiting.
+
+  ## Protection versus loudness
+
+  In a recording, a limiter is often used to make a mix louder. On a live main bus the goal is the opposite: **a ceiling you rarely touch**. Think of it as a seatbelt. If you watch the limiter's gain reduction move on every kick drum, the mix is being pushed into it and you are trading dynamics and clarity for risk and fatigue. The right fix is to turn the system down or lower the loudest inputs, not to pile more limiting on.
+
+  ## Setting the threshold
+
+  Start from the system, not from the console:
+  - Look at the amplifier and speaker data and the processor (DSP) limiter that may already protect the speakers. A main-bus limiter on the console is a second line of defence, not a replacement for system-processor limiting.
+  - Set the threshold so that it sits just under the level where the system or the amplifiers would clip, leaving the loudest peaks of the show to touch it occasionally.
+  - Judge by ear at show level. A badly chosen threshold squashes the sound unpleasantly.
+
+  There is no universal number; speaker manufacturers' recommended limiter settings are the most reliable starting point.
+
+  ## Attack and release
+
+  - **Attack:** fast enough to catch a dangerous transient. A very fast attack on bass can distort, so many protective limiters accept a few ms.
+  - **Release:** protection depends mostly on attack; release affects how natural the recovery sounds. A short release can pump, a very long release leaves the whole mix turned down after one peak. Medium values, from tens up to a few hundred ms, are a sensible start.
+  - Some systems use both a peak limiter for transients and an RMS limiter for thermal protection.
+
+  ## Corporate and concert differences
+
+  - **Corporate events:** the usual risk is a sudden mic pop, a dropped handheld or a video playback that is much louder than the rehearsal. A limiter on the main bus and a separate limiter on playback inputs catch these.
+  - **Concerts and bands:** keep the limiter above the normal peak level of the music, but below clipping, so only extreme transients are caught. If it is working all night, reduce the level.
+
+  ## Common mistakes
+
+  - Using it to make the PA louder.
+  - Setting it so low that it flattens the dynamics of the show.
+  - Forgetting that a limiter after the mix does not protect an individual in-ear send.
+  - Stacking a limiter on the console on top of strong limiting in the system processor, without checking each.
+  - Fast attack plus fast release on bass-heavy material, producing distortion.
+
+  ## On a WING
+
+  The WING has dedicated limiter models and output dynamics. Check the manual for which models are available on the main buses on your firmware and which one is a brick-wall limiter, then verify by watching the gain-reduction meter while playing a loud passage.
+rule:
+  applies_to: {source_type: [main.lr]}
+  params:
+    limiter_ratio_min: [10, 100]
+    limiter_attack_ms: [0.5, 5]
+    limiter_release_ms: [50, 300]
+  notes: "starting points; threshold comes from the PA system's clipping point and speaker manufacturer settings, not from a fixed dB value"
+sources:
+  - title: "Sound Advice | Limiters Explained"
+    publisher: "QSC"
+    kind: article
+    url: "https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-limiters-explained"
+    accessed: "2026-11-09"
+    locator: "Purpose / Ratio"
+  - title: "Advanced Compression Techniques Part 1"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/advanced-compression-techniques-part-1"
+    accessed: "2026-11-09"
+    locator: "Within Limits; digital clipping and limiting (short peaks)"
+media: []
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

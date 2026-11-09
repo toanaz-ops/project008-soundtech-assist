@@ -1,0 +1,73 @@
+id: balance-fader-offsets-by-genre
+title: "First-pass balance offsets by source and genre"
+title_vi: "Mức cân bằng ban đầu theo nguồn và thể loại"
+topic: automix
+tags:
+  instrument: [vocal, kick, snare, bass, guitar, keys]
+  genre: [pop, rock, ballad, jazz, edm, bolero, speech]
+  technique: [balance, fader-offsets, relative-loudness]
+  event: [concert, soundcheck]
+summary: "Measured relative loudness of vocal, kick, snare and bass in finished mixes, and a per-genre offset table derived from it. Only the four measured figures are sourced; every genre table value is a low confidence starting point."
+body: |
+  ## What was measured
+
+  A study of 8 multitrack mixes measured the perceived loudness of each processed source on its own, relative to the full mix. Averages, in loudness units: lead vocal about -2.7 LU, bass about -9.5 LU, rest of the drums as a group about -12.7 LU, kick about -13.2 LU, snare about -16.8 LU. Taking the lead vocal as the reference, that puts the kick roughly 10.5 below, the snare about 14 below, the drum group about 10 below and the bass about 7 below. Only the vocal's level differed significantly from the others.
+
+  Two lessons follow. First, the old automatic-mixing assumption that every source should be equally loud is wrong for vocals: the lead sits clearly above everything else. Second, these are loudness offsets of processed sources, not fader positions. Faders depend on gain staging, EQ and compression, so the numbers need translating on the desk.
+
+  ## The per-genre table
+
+  The rule block holds offsets relative to the lead vocal (0 dB). They are derived from the measured figures plus engineering judgement; no study gives genre-resolved values.
+
+  - **Pop**: backing vocals -5, kick -10, snare -10, toms -12, hi-hat -18, overheads -14, bass -7, electric guitar -9, acoustic guitar -8, keys -8, strings -10, horns -9, playback -6.
+  - **Rock**: pop, but electric guitar -6, kick -8, snare -8, bass -6, keys -10.
+  - **Ballad**: pop, but kick -14, snare -16, acoustic guitar -4, bass -9, keys -6.
+  - **Jazz**: no source. Bass -5, kick -12, snare -14, horns -6, keys -8, ride and overheads prominent.
+  - **EDM**: no source. Playback about -3 to -6 against the live vocal; kick and bass sit inside the playback.
+  - **Bolero**: no source. Acoustic balance, vocal 0, strings -8, horns -8.
+  - **Speech**: speaker 0, music or playback -12 to -18 under speech.
+
+  ## How to use it
+
+  Start the balance near these relationships, then set vocal first and bring the rest in underneath. Move for the room and the song. Expect the vocal to need to come up when the band is loud.
+
+  ## Limits
+
+  The study used recorded mixes, not live shows, and it reports relative loudness, not fader values. A second paper on automatic gain control for live mixing was only found as a record. All genre values are low confidence.
+rule:
+  kind: fader_offset
+  applies_to: {genre: [pop, rock, ballad, jazz, edm, bolero, speech]}
+  params:
+    reference: "offsets in dB relative to the lead vocal (0 dB); loudness offsets, not fader positions"
+    measured_vs_vocal_db: {kick: -10.5, snare: -14.1, drums_group: -10.0, bass: -6.9}
+    by_genre:
+      pop: {vocal.backing: -5, drums.kick: -10, drums.snare: -10, drums.tom: -12, drums.hihat: -18, drums.overhead: -14, instrument.bass: -7, instrument.guitar.electric: -9, instrument.guitar.acoustic: -8, instrument.keys: -8, instrument.strings: -10, instrument.horns: -9, speech.mc: 0, utility.playback: -6}
+      rock: {instrument.guitar.electric: -6, drums.kick: -8, drums.snare: -8, instrument.bass: -6, instrument.keys: -10}
+      ballad: {drums.kick: -14, drums.snare: -16, instrument.guitar.acoustic: -4, instrument.bass: -9, instrument.keys: -6}
+      jazz: {instrument.bass: -5, drums.kick: -12, drums.snare: -14, instrument.horns: -6, instrument.keys: -8}
+      edm: {utility.playback: [-6, -3]}
+      bolero: {instrument.strings: -8, instrument.horns: -8}
+      speech: {utility.playback: [-18, -12]}
+  notes: "Only measured_vs_vocal_db comes from a source; genre rows are low confidence. Rock, ballad rows list only changes from pop."
+sources:
+  - title: "An Analysis and Evaluation of Audio Features for Multitrack Music Mixtures"
+    publisher: "ISMIR"
+    kind: paper
+    url: "https://archives.ismir.net/ismir2014/paper/000293.pdf"
+    author: "De Man, Leonard, King and Reiss"
+    year: 2014
+    accessed: "2026-11-09"
+    locator: "Table 2, Section 4.2"
+  - title: "Ten Years of Automatic Mixing"
+    publisher: "Birmingham City University"
+    kind: paper
+    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
+    author: "De Man, Reiss and Stables"
+    year: 2017
+    accessed: "2026-11-09"
+    locator: "survey"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

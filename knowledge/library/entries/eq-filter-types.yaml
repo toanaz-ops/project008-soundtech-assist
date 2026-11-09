@@ -1,0 +1,50 @@
+id: eq-filter-types
+title: "EQ filter types: HPF/LPF, shelves, bell, notch and Q"
+title_vi: "Các loại bộ lọc EQ: HPF/LPF, shelf, bell, notch và Q"
+topic: eq
+tags:
+  instrument: []
+  genre: []
+  technique: [eq, filters, q-factor]
+  event: []
+summary: "The building blocks of every EQ band: cut filters with a slope, shelves that tilt the extremes, bells that act on a region, and notches for narrow faults. Q sets how wide a bell or notch is."
+body: |
+  Every EQ band on a console is one of a handful of shapes. Knowing what each one does to the neighbouring frequencies matters more than memorising numbers.
+
+  ## High-pass and low-pass (cut filters)
+  A high-pass filter (HPF, "low cut") removes everything below its corner; a low-pass (LPF, "high cut") removes everything above. The **slope** says how fast the signal disappears past the corner: a first-order filter falls 6 dB per octave, and each extra order adds another 6 dB/oct, so 12, 18 and 24 dB/oct are common. A gentle slope sounds natural but leaves low rumble in; a steep slope cleans more but changes the sound close to the corner and can ring or sound "tight". In the first diagram the same 100 Hz corner is shown at four slopes, so you can see how much is still left an octave below.
+
+  ## Shelves
+  A shelf lifts or lowers everything beyond its corner by the same amount, so the response levels out instead of continuing to climb. That makes shelves the polite way to add air or take weight off a source, and a boosted shelf is less likely to overload than a boosted bell.
+
+  ## Bell (peaking) and notch
+  A bell raises or lowers a region around its centre frequency. A notch is simply a very narrow, deep cut, used for a single ring, hum line or feedback frequency. Q is the centre frequency divided by the bandwidth between the -3 dB points, so a high Q is a narrow band. Reading the Q-comparison diagram: the same +6 dB at 1 kHz is a broad hump at Q 0.7 and a thin spike at Q 4.
+
+  ## Practical rules of thumb (starting points, not laws)
+  - Use narrow Q for cuts that remove one specific fault; use wide Q for boosts that shape tone. Narrow boosts sound unnatural and can ring.
+  - Prefer a few dB of boost; narrow cuts can go much deeper.
+  - If a channel is dull because the content is not there, boosting adds noise, not detail.
+  - Check the bypass often; compare at the same loudness.
+
+  ## On the WING
+  Each channel has a low-cut, a high-cut and a multi-band EQ whose bands can be set as shelf, bell and so on; the on-screen curve shows the combined result. Set the cut filters first, then the bells, and watch the curve rather than trusting a number from this page.
+rule:
+  applies_to: {source_type: [any]}
+  params:
+    cut_bell_q: [3, 8]
+    boost_bell_q: [0.5, 1.5]
+    boost_gain_db: [1, 4]
+    notch_depth_db: [-6, -12]
+  notes: "Starting points: narrow Q for cuts of a specific fault, wide Q for tonal boosts; adjust by ear."
+sources:
+  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "The Highs & Lows; What's In The Middle?"}
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Mixing With EQ"}
+media:
+  - {kind: diagram, path: hpf-slopes.png, caption: "A 100 Hz high-pass at 6, 12, 18 and 24 dB/oct.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - {kind: diagram, path: bell-q-compare.png, caption: "The same +6 dB bell at 1 kHz with Q 0.7, 1.4 and 4.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - {kind: diagram, path: shelves.png, caption: "A low shelf cut and a high shelf boost.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

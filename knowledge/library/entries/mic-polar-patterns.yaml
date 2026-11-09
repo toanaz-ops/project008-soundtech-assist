@@ -1,0 +1,78 @@
+id: mic-polar-patterns
+title: "Microphone polar patterns and what they mean on stage"
+title_vi: "Đặc tuyến cực (polar pattern) của micro và ý nghĩa trên sân khấu"
+topic: mic-technique
+tags:
+  instrument: [vocal, drums, guitar]
+  genre: []
+  technique: [polar-pattern, off-axis-rejection, proximity-effect]
+  event: [concert, corporate]
+summary: "A polar pattern shows how sensitivity changes with the angle of arrival. Choosing and aiming the pattern decides how much stage spill and feedback a mic picks up."
+body: |
+  ## Reading a polar pattern
+
+  The plot shows sensitivity around the capsule: 0 degrees is straight in
+  front, 180 behind. A longer line at an angle means higher sensitivity from
+  that direction. What matters live is where the **least-sensitive angle**
+  (the null) points.
+
+  ## The common patterns
+
+  - **Omnidirectional**: equal pickup from all directions. It collects more
+    room sound and is more prone to feedback with stage monitors. It does not
+    have proximity effect.
+  - **Cardioid**: full sensitivity in front, least sensitive directly behind
+    (180 degrees). It picks up much less ambient sound than an omni and is the
+    default for vocals and instruments on stage.
+  - **Supercardioid**: narrower front pickup (about 115 degrees) with its
+    least-sensitive angle at about 125 degrees off-axis. It rejects more from
+    the sides but is less deaf directly behind.
+  - **Hypercardioid**: narrower again (about 105 degrees), null at about 110
+    degrees off-axis; also weaker rejection directly behind than a cardioid.
+  - **Figure-8**: full sensitivity in front and behind, least at the sides.
+    Useful for two sources facing each other, though often only one side is
+    used.
+
+  ## Practical consequences
+
+  - **Wedge placement follows the null.** A cardioid wants the wedge behind
+    it; a super- or hypercardioid wants wedges to the sides at the null angle.
+    See the monitor-wedge-mixes entry.
+  - **Proximity effect**: directional patterns boost bass as the mic gets
+    close to the source. Under about a foot, roll off the low end with an HPF,
+    or choose an omni for close work if bass build-up is a problem.
+  - **Aim matters.** A cardioid pointed at a cymbal or a loud guitar amp takes
+    that spill into its on-axis front.
+  - **Consider the spill, not just the source.** On a loud stage a tighter
+    pattern reduces bleed between nearby instruments.
+  - Always check the manufacturer's plot for the model you use; angles and
+    frequency behavior vary between mics.
+
+  The angles above are from one manufacturer's published figures, so treat
+  them as typical values rather than guarantees for every microphone.
+rule:
+  applies_to: {source_type: [vocal.lead], event: [concert]}
+  params:
+    cardioid_null_deg: [180, 180]
+    supercardioid_null_deg: [125, 125]
+    hypercardioid_null_deg: [110, 110]
+  notes: "typical published values; check each mic's own plot"
+sources:
+  - title: "Microphone Basics: Transducers, Polar Patterns & Frequency Response"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/microphone-basics-transducers-polar-patterns-frequency-response"
+    accessed: "2026-11-09"
+    locator: "Polar patterns; Proximity effect"
+media:
+  - kind: diagram
+    path: polar-patterns.png
+    caption: "First-order polar patterns"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

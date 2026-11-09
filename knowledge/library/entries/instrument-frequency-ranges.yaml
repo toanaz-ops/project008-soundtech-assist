@@ -1,0 +1,59 @@
+id: instrument-frequency-ranges
+title: "Instrument frequency ranges: fundamentals and where the problems live"
+title_vi: "Dải tần nhạc cụ: nốt gốc và vùng tần hay gặp vấn đề"
+topic: instruments
+tags:
+  instrument: [all]
+  genre: []
+  technique: [eq, frequency-ranges]
+  event: []
+summary: "Playing ranges (fundamentals) for common instruments plus the problem regions mixers watch. A chart is a map of where to look, not a prescription."
+body: |
+  ## Fundamentals are only part of the picture
+
+  Published instrument charts mostly show **fundamental** frequencies, the pitches players actually play. What you hear, and what you EQ, also includes harmonics that extend far above these ranges. A trumpet's fundamentals stop near 1 kHz, but its brightness and bite come from overtones several kHz higher.
+
+  ## Fundamental ranges used in the chart
+
+  - **Piano:** 27-4186 Hz (A0 to C8).
+  - **Double bass:** 41-247 Hz. A 4-string bass guitar's low E is about 41 Hz, and a 5-string low B about 30 Hz.
+  - **Cello:** 65-659 Hz; **violin:** 196-2637 Hz.
+  - **Tenor trombone:** 82-466 Hz; **Bb trumpet:** 165-932 Hz (one other source gives 165-988 Hz, the difference is the highest note counted).
+  - **Flute:** 262-2093 Hz.
+
+  Standard-tuned guitar starts at E2, about 82 Hz (plain physics of the open low string).
+
+  ## Problem regions (starting points)
+
+  From iZotope's EQ cheat sheet, regions where mixers commonly cut or add:
+
+  - **200-500 Hz:** mud on most instruments (kick 200-500 Hz boxiness, electric guitar tubbiness, acoustic guitar and piano mud).
+  - **500-800 Hz:** honk on brass.
+  - **1-5 kHz:** attack and click (kick), vocal-range clutter and harshness on guitars, piano, brass.
+  - **3-7 kHz:** hi-hat and cymbal harshness.
+  - **8-12 kHz:** air on cymbals and acoustic guitar.
+
+  The chart below combines the playing ranges and these named regions. Where regions overlap, instruments compete: that is the reason mixers high-pass the ones that do not need low end and give bass and kick the lowest octaves.
+
+  ## How to use this on a WING
+
+  Use the chart to pick the HPF for each channel: nothing but kick, bass, keys and low brass needs content below roughly 80-100 Hz. Then use a bell cut where two instruments' mud regions overlap. Remember that a cheat sheet is a map, not a prescription, and different charts disagree, especially on trumpet and bass upper limits; confirm by ear.
+rule:
+  applies_to: {source_type: [all]}
+  params:
+    guitar_low_e_hz: [82, 82]
+    bass4_low_e_hz: [41, 41]
+    piano_hz: [27, 4186]
+  notes: "Reference ranges, not mixing moves."
+sources:
+  - {title: "Some Data on Orchestral Instruments", publisher: "HyperPhysics", kind: article, url: "https://hyperphysics.gsu.edu/hbase/Music/orchins.html", accessed: "2026-11-09", locator: "playing ranges table"}
+  - {title: "3.5 Instrument Ranges", publisher: "LibreTexts", kind: article, url: "https://human.libretexts.org/Workbench/From_Ear_to_Engineer/03%3A_Psychoacoustics/3.05%3A_Instrument_Ranges", accessed: "2026-11-09", locator: "Instrument Ranges"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "all instruments"}
+  - {title: "Engineering Bass Guitars Live", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "EQ (frequency range)"}
+media:
+  - {kind: diagram, path: instrument-ranges.png, caption: "Fundamental ranges and common problem regions on a log frequency axis", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

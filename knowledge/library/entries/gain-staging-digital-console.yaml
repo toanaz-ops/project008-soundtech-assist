@@ -1,0 +1,94 @@
+id: gain-staging-digital-console
+title: "Gain staging on a digital console: dBu, dBFS, trim and fader"
+title_vi: "Chỉnh gain trên mixer số: dBu, dBFS, trim và fader"
+topic: gain-staging
+tags:
+  instrument: []
+  genre: []
+  technique: [gain-staging, headroom, metering]
+  event: [concert, corporate]
+summary: "Set input gain so the signal sits comfortably below digital full scale, then use faders only for balance. Analogue and digital levels are linked by an alignment standard, not by a single magic number."
+body: |
+  ## Two scales, one chain
+
+  Analogue gear is measured in **dBu** (a voltage), digital in **dBFS**
+  (decibels below the converter's ceiling, which is 0 dBFS). A console that
+  uses an A/D converter must map one to the other. Two common alignments exist:
+  one pins 0 dBu to -18 dBFS, the other pins +4 dBu to -20 dBFS. Which one a
+  desk follows varies by manufacturer, so look at your console's meter
+  calibration before trusting a rule of thumb.
+
+  ## Why the ceiling is hard
+
+  Pushing an analogue mixer past nominal level usually just eats into
+  headroom and sounds progressively dirtier. Exceeding 0 dBFS at the converter
+  is different: it clips abruptly and the harmonics are harsh. So on a digital
+  desk you leave margin *on purpose*, because a snare hit or a shout from a
+  singer can be 15-20 dB above the average level.
+
+  ## Trim first, fader second
+
+  The **trim / preamp gain** decides how hot the signal enters the converter
+  and everything after it. The **channel fader** only decides how loud that
+  channel is in the mix. Do not use the fader to compensate for a bad gain
+  setting: a channel that is too quiet at the converter has a worse noise
+  floor, and one that is too hot may already be distorting before the fader
+  can help.
+
+  A practical routine:
+
+  1. Pull the faders to 0 dB (unity), start with the mains down.
+  2. Have the performer play or sing at the real performance level, not a
+     polite soundcheck level.
+  3. Raise trim until peaks sit well below 0 dBFS. Many engineers aim for
+     average levels around -18 to -20 dBFS on steady sources, with peaks
+     allowed to rise toward -6 to -10 dBFS.
+  4. Re-check after turning on HPF, EQ boosts and compression; each can move
+     the level.
+  5. Mix with faders in a sensible range, usually near unity, so you still have
+     travel up and down.
+
+  ## Common mistakes
+
+  - Setting gain during a quiet line check, then hitting clipping when the
+    band plays.
+  - "Running hot" to get more signal: with 24-bit converters there is no
+    benefit, only risk.
+  - Fixing a clipped input by turning the fader down. The clip is already in
+    the signal.
+  - Forgetting subgroup and main bus headroom: ten channels each peaking at
+    -6 dBFS can add up on the bus.
+
+  All numbers here are starting points; check your desk's own metering and
+  adjust by ear and by what the meters show on the night.
+rule:
+  applies_to: {source_type: [any], genre: [any]}
+  params:
+    average_level_dbfs: [-20, -18]
+    target_peak_dbfs: [-10, -6]
+  notes: "starting points only; confirm the alignment of the specific console"
+sources:
+  - title: "Q. What are reference levels in digital audio systems?"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/sound-advice/q-what-are-reference-levels-digital-audio-systems"
+    accessed: "2026-11-09"
+    locator: "Reference levels: dBu, dBV and dBFS"
+  - title: "Ins & Outs of Gain Structure"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/ins-outs-gain-structure"
+    accessed: "2026-11-09"
+    locator: "Trim and faders; Headroom and clipping"
+media:
+  - kind: diagram
+    path: channel-signal-chain.png
+    caption: "Where level is set along a digital console channel"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

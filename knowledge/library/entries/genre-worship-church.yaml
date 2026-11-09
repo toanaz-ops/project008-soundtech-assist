@@ -1,0 +1,85 @@
+id: genre-worship-church
+title: "Worship and church mixing: words first, room second"
+title_vi: "Mix nhà thờ và thờ phượng: lời hát trước, phòng sau"
+topic: genre
+tags:
+  instrument: [vocal, acoustic-guitar, keys, drums]
+  genre: []
+  technique: [high-pass, frequency-bracketing, intelligibility, reverb-restraint]
+  event: [church, congregation, worship]
+summary: "Worship mixing serves a congregation that sings along and follows words. Clear vocals, restrained low end and an honest read of a reverberant room matter more than a record-style mix."
+body: |
+  ## Balance
+
+  The congregation both sings and listens, so lyrics must be understood in every seat. That makes the vocal the priority, with the band sized around it instead of competing. Mike Sokol's Shure guide stresses bracketing: filter each source to the range it actually uses so frequencies without musical content stop adding clutter, rather than just raising levels to get clarity. Listen to each instrument on its own first, then place it.
+
+  ## Starting points from the sources
+
+  Sokol's high-pass starting points: about 80 Hz for vocals and male voices, about 140 Hz for female voices, about 150 Hz for violin. A vocal intelligibility lift of about 3 dB between 1 and 1.5 kHz, presence of about +3 dB at 4 kHz, a few dB cut near 600 Hz for nasal honk, and sibilance tamed by finding the harsh "s" region and cutting 6 to 12 dB. For acoustic guitar, a few dB cut around 200 Hz clears tubbiness. All are starting points, to be set by listening, and he says to change EQ only with a clear purpose.
+
+  DPA's speech-intelligibility article agrees on the band that matters: consonants live mostly above 500 Hz and concentrate around 2 to 4 kHz, with 1 to 4 kHz of high importance.
+
+  ## Low end
+
+  Sokol advises boosting deep bass only sparingly on kick and bass so the PA's woofers are not overloaded. Korff (SOS) adds that in a band that already has bass and kick, you thin the low end of an acoustic guitar so vocals stay intelligible. Rooms like churches often build up bass, so high-pass everything that does not need it.
+
+  ## Dynamics and effects
+
+  I found no source with numbers for worship compression or reverb, so none are given. In general terms, church rooms are already reverberant, so use reverb lightly on vocals and prefer short, dark returns; see the reverb entry for how decay, damping and return EQ work. Control vocal dynamics only enough that quiet lines stay audible; be careful, since compression adds gain and can trigger feedback.
+
+  ## Speakers and leaders
+
+  Pastors and readers often wear headset or lapel mics. A headset is less prone to feedback in large rooms than a lav (Shure, Lyons), so prefer it when the room is loud or reverberant.
+
+  ## Common mistakes
+
+  - Turning everything up because "more is better"; clarity comes from reducing competing parts.
+  - Leaving a thin middle between kick and vocal. The mix then sounds hollow.
+  - Judging the mix only from the console, which may sit in a bass-heavy spot.
+rule:
+  applies_to:
+    source_type: [vocal.lead]
+    genre: []
+  params:
+    hpf_male_hz: [80, 80]
+    hpf_female_hz: [140, 140]
+    intelligibility_boost_hz: [1000, 1500]
+    intelligibility_boost_db: [3, 3]
+  notes: "Starting points from Sokol (Shure 2017). Not rules; verify by ear in the room."
+sources:
+  - title: "Professional Mixing Tips for Church Sound"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound"
+    author: "Mike Sokol"
+    year: 2017
+    accessed: "2026-11-09"
+    locator: "HPF Starting Points; EQ by Sound Character"
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/background-knowledge/facts-about-speech-intelligibility/"
+    accessed: "2026-11-09"
+    locator: "What affects intelligibility? Important frequencies"
+  - title: "Mixing Acoustic Guitars Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/mixing-acoustic-guitars-live"
+    author: "Chris Korff"
+    year: 2013
+    accessed: "2026-11-09"
+    locator: "Band context"
+  - title: "A Basic Guide to Mics and Mic Techniques for Presenters"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/a-basic-guide-to-mics-and-mic-techniques-for-presenters"
+    author: "Chris Lyons"
+    year: 2021
+    accessed: "2026-11-09"
+    locator: "Headset; Feedback"
+media: []
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

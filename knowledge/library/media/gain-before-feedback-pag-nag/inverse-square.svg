@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Level change vs distance from a source (inverse square law)</text>
+<rect x="90" y="80" width="830" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="331.0" y1="80.0" x2="331.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="331.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">10</text>
+<line x1="598.7" y1="80.0" x2="598.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="598.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20</text>
+<line x1="866.5" y1="80.0" x2="866.5" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="866.5" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">30</text>
+<line x1="90.0" y1="423.4" x2="920.0" y2="423.4" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="428.4" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">-30</text>
+<line x1="90.0" y1="317.5" x2="920.0" y2="317.5" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="322.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">-20</text>
+<line x1="90.0" y1="211.5" x2="920.0" y2="211.5" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="216.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">-10</text>
+<line x1="90.0" y1="105.5" x2="920.0" y2="105.5" stroke="#2b2f37" stroke-width="1"/>
+<text x="80.0" y="110.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">0</text>
+<text x="505.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Distance from source (m, relative to 1 m)</text>
+<text transform="translate(26,265.0) rotate(-90)" font-size="15" fill="#868d98" text-anchor="middle">Level re 1 m (dB)</text>
+<polyline points="90.0,105.5 116.8,169.1 143.5,206.2 170.3,232.7 223.9,270.8 277.4,297.3 384.5,334.4 491.6,360.9 705.8,398.0 920.0,424.5" fill="none" stroke="#ff9f1c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="718" y="78" width="200" height="32" rx="4" fill="#131519" fill-opacity="0.9" stroke="#2b2f37"/>
+<line x1="730.0" y1="90.0" x2="756.0" y2="90.0" stroke="#ff9f1c" stroke-width="3"/>
+<text x="764.0" y="94.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">-20 log10(d)</text>
+</svg>

@@ -1,0 +1,81 @@
+id: genre-rock-live
+title: "Live rock: balance, low end, dynamics and effects"
+title_vi: "Rock live: cân bằng, tiếng trầm, động và hiệu ứng"
+topic: genre
+tags:
+  instrument: [kick, bass, guitar, vocal, drums]
+  genre: [rock]
+  technique: [low-end, ducking, di-plus-mic, vocal-midrange]
+  event: [concert]
+summary: "In rock the mix is built around drums, bass and a vocal that must cut through loud guitars. The common problems are kick and bass fighting for the same low end and guitars burying the vocal."
+body: |
+  ## Balance
+
+  Rock leans on the rhythm section and a vocal that sits in the midrange. One iZotope author, mixing in a studio, advises keeping the vocal focused in the mids rather than adding a lot of bright treble, leaving the top end to the cymbals. Distortion on the high mids can work on guitars but a distorted top end tends to sound bad on a voice. In a live room the same idea applies: carve guitar space around the vocal instead of just pushing the vocal fader.
+
+  ## Low end
+
+  Kick and bass share the lowest octaves, so decide who owns what. The iZotope author lets the bass dominate the low end with the kick sitting just above it, using a gentle shelf on the bass and a dynamic dip around 100 Hz while the kick hits. SOS offers the opposite shaping option: set the kick around the bass, boost the kick near 70 to 90 Hz for punch, and cut about an octave higher to reduce boxiness. Sidechain-ducking the bass by about 3 dB when the kick hits sounds natural, with harder rock using more. These two SOS and iZotope pieces are studio-focused; the principle carries over, but check by ear in the room and in the sub.
+
+  If a bass is taken both from a DI and a mic, check polarity. SOS (Burton) notes that phase problems between the two can thin the low end; flip one polarity and listen from where stage and PA are balanced.
+
+  ## Dynamics
+
+  A compressor on bass with slow attack lets transients through while controlling the tail; slap playing needs faster attack, with a medium release so it recovers before the next note. Over-editing and over-tuning remove the imperfection that gives rock its groove, so fix only the worst problems.
+
+  ## Effects
+
+  Rock vocals tend to sit drier than ballads; keep reverb to the snare and a short ambience, and delay for emphasis rather than a constant wash. Parallel compression on drums is a common way to add weight without flattening transients (iZotope).
+
+  ## Common mistakes
+
+  - Boosting rhythm-guitar lows, which clouds the mix and fights the bass.
+  - Judging the bass solo. Mute it and check what remains in the low end.
+  - Leaving the kick and bass both full-range into the subwoofers.
+
+  Every number here is a starting point from magazine and vendor articles, mostly written for studio mixes. I found no reputable live-rock source that gives dB or Hz targets for the whole genre, so none is given beyond what is cited.
+rule:
+  applies_to:
+    source_type: [kick, bass]
+    genre: [rock]
+  params:
+    bass_duck_by_kick_db: [3, 3]
+    kick_punch_boost_hz: [70, 90]
+    kick_box_cut_hz: [160, 180]
+  notes: "Studio-oriented starting points (SOS White 2011). Harder rock can duck more. Adjust by ear in the room."
+sources:
+  - title: "6 Tips for Mixing Good Ol' Fashioned Rock and Roll"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/community/blog/6-tips-for-mixing-good-ol-fashioned-rock-and-roll"
+    author: "Nick Messitte"
+    year: 2022
+    accessed: "2026-11-09"
+    locator: "Tips 1 (low end), 3 (vocals), 4 (editing)"
+  - title: "Mix Tips For Kick & Bass"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/mix-tips-kick-bass"
+    author: "Paul White"
+    year: 2011
+    accessed: "2026-11-09"
+    locator: "Ducking; EQ regions"
+  - title: "Engineering Bass Guitars Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live"
+    author: "Jon Burton"
+    year: 2014
+    accessed: "2026-11-09"
+    locator: "Combining DI and Mic; Compression"
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=H5S34Hf95gI"
+    title: "Live Sound Mixing Strategy - Updated"
+    channel: "Dave Rat"
+    caption: "FOH mixing strategy for rock shows (channel inferred from search results, not confirmed on the page)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

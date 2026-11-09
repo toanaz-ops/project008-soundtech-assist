@@ -1,0 +1,70 @@
+id: instrument-brass-winds
+title: "Brass and winds: mic distance, angle and EQ starting points"
+title_vi: "Kèn đồng và kèn hơi: khoảng cách mic, góc mic và EQ"
+topic: instruments
+tags:
+  instrument: [brass, trumpet, trombone, saxophone, flute]
+  genre: [pop, funk]
+  technique: [mic-placement, eq, feedback]
+  event: [concert, corporate]
+summary: "Brass wants a little distance and an on- or off-axis choice for brightness; saxophone can be miked at the bell or the body; EQ is mostly gentle cuts of honk and harshness."
+body: |
+  ## Brass (trumpet, trombone, tuba)
+
+  Brass needs some distance for the sound to develop; very close placement skews the tone. Shure suggests starting roughly one to two feet from the bell. Close placement tightens the sound and reduces leakage and feedback, while more distance adds depth.
+
+  - **On-axis at the bell:** brighter, sharper, more bite.
+  - **Off-axis:** softer, less edge.
+  - Clip-on condenser/instrument mics (Beta 98H/C, PGA98H, SM137) suit stage movement and loud monitors.
+  - For a section, a mic per player gives control; a shared mic for two players is a quick compromise on small stages.
+
+  ## Saxophone
+
+  A mic with a shaped, vocal-style response suits sax. Aim at the bell from a few inches for a bright sound with less feedback and spill. A mic a few inches from the sound holes gives a warmer, fuller tone but picks up finger and key noise, so stay away from the finger holes.
+
+  ## Flute
+
+  Close, but not so close that breath noise dominates; a windscreen keeps the clarity and tames breath. No specific distance is given by the source.
+
+  ## Starting EQ
+
+  iZotope's brass-section regions:
+
+  - Below 150 Hz: low end to cut (apart from tuba).
+  - 500-800 Hz: honkiness or boxiness; a gentle cut helps.
+  - 1-5 kHz: attack or harshness.
+  - 5 kHz and above: aggression or air, depending on context.
+
+  Keep moves small; as iZotope puts it, "less is always more."
+
+  ## Dynamics
+
+  Brass is dynamically wide. A light compressor on a section bus evens up stabs; a limiter on the bus protects the PA from sudden bell-to-mic blasts.
+
+  ## Common problems
+
+  - **Harsh on-axis trumpet:** turn the mic slightly off-axis before EQ.
+  - **Sax clacks:** move the mic away from the keys or toward the bell.
+  - **Feedback with horns near wedges:** closer mic, tighter pattern, correct wedge angle.
+
+  ## Live and WING tips
+
+  Ask the horn players to play their loudest passage at soundcheck, set gain for that, and subgroup the section so one fader and one EQ handle the stack. Use a high-pass around 100-150 Hz on trumpets and saxes to clear space for bass and kick.
+rule:
+  applies_to: {source_type: [brass.section, brass.trumpet, brass.trombone, wind.sax, wind.flute], genre: [pop, funk]}
+  params:
+    hpf_hz: [100, 150]
+    honk_cut_hz: [500, 800]
+    harsh_cut_hz: [1000, 5000]
+    mic_distance_ft: [1, 2]
+  notes: "Starting points; bell mic distance is for brass only."
+sources:
+  - {title: "How to Choose the Best Mics for Brass, Wind and String Instruments", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/how-to-choose-the-best-mics-for-brass-wind-and-string-instruments", accessed: "2026-11-09", locator: "Brass; Saxophone; Flute"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Brass section"}
+media:
+  - {kind: diagram, path: brass-eq.png, caption: "Starting EQ for a brass section channel", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

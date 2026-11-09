@@ -55,3 +55,394 @@ diagrams:
     kind: polar_pattern
     title: "First-order polar patterns"
     patterns: [omni, cardioid, supercardioid, hypercardioid, figure8]
+  - entry: automix-gain-sharing-dugan
+    file: gain-sharing-flow
+    kind: signal_flow
+    title: "Gain-sharing automixer, signal path"
+    nodes:
+      - {label: "Mic inputs", note: "all stay open"}
+      - {label: "Level detectors", note: "one per channel"}
+      - {label: "Compare with group level", note: "dB difference per channel"}
+      - {label: "Per-channel gain", note: "total gain stays constant"}
+      - {label: "Mix output"}
+  - entry: automix-gated-and-nom
+    file: nom-attenuation
+    kind: xy_plot
+    title: "NOM attenuation = 10*log10(NOM)"
+    x_label: "Number of open mics (NOM)"
+    y_label: "Group attenuation (dB)"
+    series:
+      - label: "10*log10(NOM)"
+        points: [[1, 0], [2, 3.01], [3, 4.77], [4, 6.02], [6, 7.78], [8, 9.03], [12, 10.79], [16, 12.04]]
+  - entry: intelligent-mixing-research
+    file: cross-adaptive-flow
+    kind: signal_flow
+    title: "Cross-adaptive processing (after De Man et al. 2017; Ma et al. 2015)"
+    nodes:
+      - {label: "Per-channel feature extraction", note: "loudness, spectrum, crest factor"}
+      - {label: "Shared cross-adaptive rules", note: "sees every channel"}
+      - {label: "Per-channel control values", note: "gain, pan, EQ, compressor"}
+      - {label: "Channel processors"}
+      - {label: "Summed mix"}
+  - entry: automatic-fader-balance-loudness
+    file: loudness-balance-flow
+    kind: signal_flow
+    title: "Loudness-based balancing, with the engineer in the loop"
+    nodes:
+      - {label: "Measure channel loudness", note: "energy or loudness model"}
+      - {label: "Compare with target", note: "per-instrument template"}
+      - {label: "Suggest gain offsets"}
+      - {label: "Engineer adjusts by ear", note: "vocals/speech on top"}
+  - entry: automatic-eq-and-compression-research
+    file: auto-compression-flow
+    kind: signal_flow
+    title: "Cross-adaptive compression (after Ma et al. 2015, Fig. 7)"
+    nodes:
+      - {label: "Feature extraction", note: "RMS, crest factor, low-freq weighting"}
+      - {label: "Cross-adaptive analysis", note: "all tracks"}
+      - {label: "Compressor parameters", note: "threshold, ratio, knee, attack, release"}
+      - {label: "Loudness make-up gain"}
+      - {label: "Stereo sum"}
+  - entry: wing-channel-processing-chain
+    file: wing-channel-flow
+    kind: signal_flow
+    title: "WING channel blocks as listed on the HOME screen"
+    nodes:
+      - {label: "Input", note: "post delay in input section"}
+      - {label: "Gate"}
+      - {label: "EQ"}
+      - {label: "Dynamics"}
+      - {label: "Pre-fader insert", note: "position movable"}
+      - {label: "Fader / Main"}
+      - {label: "Post-fader insert", note: "fixed"}
+      - {label: "Bus sends", note: "tap point selectable"}
+  - entry: wing-automix
+    file: wing-automix-position
+    kind: signal_flow
+    title: "Automix position in a WING channel"
+    nodes:
+      - {label: "Channel processing", note: "gate, EQ, dynamics"}
+      - {label: "Fader"}
+      - {label: "Post-fader insert slot", note: "automix group A or B"}
+      - {label: "Main / bus"}
+  - entry: soundcheck-workflow
+    file: soundcheck-steps
+    kind: signal_flow
+    title: "Soundcheck in layers"
+    nodes:
+      - {label: "Power and patch"}
+      - {label: "Line check", note: "each input at show level; set gain"}
+      - {label: "Soundcheck", note: "30-60 s excerpts, band together"}
+      - {label: "Readiness pass", note: "about 60 s, first song"}
+  - entry: comp-attack-release
+    file: attack-release-envelope
+    kind: envelope
+    title: "Gain reduction over time: attack 10 ms, release 150 ms"
+    attack_ms: 10
+    release_ms: 150
+    threshold_db: -20
+    ratio: 4
+  - entry: gate-and-expander
+    file: gate-expander-curves
+    kind: transfer_curve
+    title: "Gate versus expander, threshold -40 dB"
+    curves:
+      - {label: "gate, range -40 dB", mode: gate, threshold_db: -40, range_db: -40}
+      - {label: "gate, range -15 dB", mode: gate, threshold_db: -40, range_db: -15}
+      - {label: "expander 2:1", mode: expand, threshold_db: -40, ratio: 2}
+  - entry: de-esser
+    file: sibilance-bands
+    kind: band_chart
+    title: "Sibilance region against the voice (starting windows)"
+    bands:
+      - {label: "voice body", lo: 100, hi: 1000}
+      - {label: "presence", lo: 2000, hi: 5000}
+      - {label: "sibilance (typical)", lo: 4000, hi: 10000}
+  - entry: fx-reverb-types-and-parameters
+    file: reverb-aux-routing
+    kind: signal_flow
+    title: "Reverb on an aux send and return"
+    nodes:
+      - {label: "Channel", note: "post-fader send"}
+      - {label: "Aux send"}
+      - {label: "Reverb", note: "100% wet"}
+      - {label: "Return EQ", note: "low cut, high damp"}
+      - {label: "Main L/R"}
+  - entry: fx-delay-basics
+    file: delay-ms-vs-bpm
+    kind: xy_plot
+    title: "Delay time versus tempo (60000 / BPM)"
+    x_label: "Tempo (BPM)"
+    y_label: "Delay time (ms)"
+    series:
+      - label: "quarter note"
+        points: [[60, 1000], [80, 750], [90, 666.7], [100, 600], [120, 500], [140, 428.6], [160, 375], [180, 333.3]]
+      - label: "dotted eighth (0.75 x quarter)"
+        points: [[60, 750], [80, 562.5], [90, 500], [100, 450], [120, 375], [140, 321.4], [160, 281.3], [180, 250]]
+  - entry: eq-frequency-regions
+    file: frequency-regions
+    kind: band_chart
+    title: "Frequency regions (conventional, approximate)"
+    bands:
+      - {label: "sub", lo: 20, hi: 60}
+      - {label: "bass", lo: 60, hi: 250}
+      - {label: "low-mid", lo: 250, hi: 500}
+      - {label: "mid", lo: 500, hi: 2000}
+      - {label: "upper-mid", lo: 2000, hi: 4000}
+      - {label: "presence", lo: 4000, hi: 8000}
+      - {label: "air", lo: 8000, hi: 20000}
+  - entry: eq-subtractive-vs-additive
+    file: cut-vs-boost
+    kind: eq_curve
+    title: "Narrow -6 dB cut (Q 4) vs wide +3 dB boost (Q 0.8) at 300 Hz"
+    y_range: [-9, 6]
+    curves:
+      - {label: "cut", filters: [{type: bell, f: 300, gain_db: -6, q: 4}]}
+      - {label: "boost", filters: [{type: bell, f: 300, gain_db: 3, q: 0.8}]}
+  - entry: eq-masking-and-carving
+    file: kick-bass-carve
+    kind: eq_curve
+    title: "Example carve: kick +3 dB at 60 Hz, bass -3 dB at 60 Hz"
+    y_range: [-6, 6]
+    curves:
+      - {label: "kick", filters: [{type: bell, f: 60, gain_db: 3, q: 1.5}]}
+      - {label: "bass", filters: [{type: bell, f: 60, gain_db: -3, q: 1.5}]}
+  - entry: eq-hpf-every-channel
+    file: hpf-corners
+    kind: eq_curve
+    title: "HPF corners: male vocal 80 Hz, female vocal 140 Hz (12 dB/oct)"
+    y_range: [-30, 6]
+    curves:
+      - {label: "male vocal 80 Hz", filters: [{type: hpf, f: 80, slope: 12}]}
+      - {label: "female vocal 140 Hz", filters: [{type: hpf, f: 140, slope: 12}]}
+  - entry: gain-staging-digital-console
+    file: channel-signal-chain
+    kind: signal_flow
+    title: "Where level is set along a digital console channel"
+    nodes:
+      - {label: "Mic", note: "source level"}
+      - {label: "Preamp / trim", note: "set gain here, sets headroom"}
+      - {label: "A/D converter", note: "0 dBFS ceiling"}
+      - {label: "HPF / EQ / dynamics", note: "check meter after each"}
+      - {label: "Channel fader", note: "mix balance, not gain"}
+      - {label: "Bus / Main", note: "sum, watch headroom"}
+      - {label: "D/A + amps", note: "system gain"}
+  - entry: gain-before-feedback-pag-nag
+    file: inverse-square
+    kind: xy_plot
+    title: "Level change vs distance from a source (inverse square law)"
+    x_label: "Distance from source (m, relative to 1 m)"
+    y_label: "Level re 1 m (dB)"
+    series:
+      - label: "-20 log10(d)"
+        points: [[1, -0.0], [2, -6.0], [3, -9.5], [4, -12.0], [6, -15.6], [8, -18.1], [12, -21.6], [16, -24.1], [24, -27.6], [32, -30.1]]
+  - entry: feedback-ringing-out
+    file: notch-vs-wide-cut
+    kind: eq_curve
+    title: "Same 2 kHz problem: narrow notch vs wide cut"
+    y_range: [-24, 3]
+    curves:
+      - {label: "notch Q 10", filters: [{type: notch, f: 2000, q: 10}]}
+      - {label: "bell -9 dB Q 8", filters: [{type: bell, f: 2000, gain_db: -9, q: 8}]}
+      - {label: "bell -9 dB Q 1 (too wide)", filters: [{type: bell, f: 2000, gain_db: -9, q: 1}]}
+  - entry: mic-three-to-one-rule
+    file: second-mic-level
+    kind: xy_plot
+    title: "Level of a second mic vs its distance ratio to the first"
+    x_label: "Distance ratio (second mic / first mic)"
+    y_label: "Level of second mic re first (dB)"
+    series:
+      - label: "-20 log10(ratio)"
+        points: [[1.0, -0.0], [1.5, -3.5], [2.0, -6.0], [2.5, -8.0], [3.0, -9.5], [3.5, -10.9], [4.0, -12.0], [4.5, -13.1], [5.0, -14.0]]
+  - entry: mic-phase-and-polarity
+    file: comb-filter-1ms
+    kind: xy_plot
+    title: "Comb filter from a 1 ms delayed copy (about 0.34 m path difference)"
+    x_label: "Frequency (Hz)"
+    y_label: "Summed level (dB)"
+    series:
+      - label: "copy at -10 dB"
+        points: [[0, 2.4], [50, 2.3], [100, 2.1], [150, 1.7], [200, 1.1], [250, 0.4], [300, -0.4], [350, -1.4], [400, -2.3], [450, -3.0], [500, -3.3], [550, -3.0], [600, -2.3], [650, -1.4], [700, -0.4], [750, 0.4], [800, 1.1], [850, 1.7], [900, 2.1], [950, 2.3], [1000, 2.4], [1050, 2.3], [1100, 2.1], [1150, 1.7], [1200, 1.1], [1250, 0.4], [1300, -0.4], [1350, -1.4], [1400, -2.3], [1450, -3.0], [1500, -3.3], [1550, -3.0], [1600, -2.3], [1650, -1.4], [1700, -0.4], [1750, 0.4], [1800, 1.1], [1850, 1.7], [1900, 2.1], [1950, 2.3], [2000, 2.4], [2050, 2.3], [2100, 2.1], [2150, 1.7], [2200, 1.1], [2250, 0.4], [2300, -0.4], [2350, -1.4], [2400, -2.3], [2450, -3.0], [2500, -3.3], [2550, -3.0], [2600, -2.3], [2650, -1.4], [2700, -0.4], [2750, 0.4], [2800, 1.1], [2850, 1.7], [2900, 2.1], [2950, 2.3], [3000, 2.4]]
+      - label: "copy at -1 dB"
+        points: [[0, 5.6], [50, 5.5], [100, 5.1], [150, 4.6], [200, 3.7], [250, 2.6], [300, 1.0], [350, -1.2], [400, -4.5], [450, -10.1], [500, -20.0], [550, -10.1], [600, -4.5], [650, -1.2], [700, 1.0], [750, 2.6], [800, 3.7], [850, 4.6], [900, 5.1], [950, 5.5], [1000, 5.6], [1050, 5.5], [1100, 5.1], [1150, 4.6], [1200, 3.7], [1250, 2.6], [1300, 1.0], [1350, -1.2], [1400, -4.5], [1450, -10.1], [1500, -20.0], [1550, -10.1], [1600, -4.5], [1650, -1.2], [1700, 1.0], [1750, 2.6], [1800, 3.7], [1850, 4.6], [1900, 5.1], [1950, 5.5], [2000, 5.6], [2050, 5.5], [2100, 5.1], [2150, 4.6], [2200, 3.7], [2250, 2.6], [2300, 1.0], [2350, -1.2], [2400, -4.5], [2450, -10.1], [2500, -20.0], [2550, -10.1], [2600, -4.5], [2650, -1.2], [2700, 1.0], [2750, 2.6], [2800, 3.7], [2850, 4.6], [2900, 5.1], [2950, 5.5], [3000, 5.6]]
+  - entry: instrument-kick-drum
+    file: kick-eq
+    kind: eq_curve
+    title: "Live kick starting EQ (HPF 40 Hz, +4 dB 60 Hz, cuts 150/450 Hz, +3 dB 3 kHz)"
+    y_range: [-9, 9]
+    curves:
+      - label: "kick start"
+        filters:
+          - {type: hpf, f: 40, slope: 24}
+          - {type: bell, f: 60, gain_db: 4, q: 1.4}
+          - {type: bell, f: 150, gain_db: -3, q: 1.4}
+          - {type: bell, f: 450, gain_db: -3, q: 1.4}
+          - {type: bell, f: 3000, gain_db: 3, q: 1.4}
+  - entry: instrument-snare-drum
+    file: snare-eq
+    kind: eq_curve
+    title: "Live snare starting EQ (HPF 100 Hz, small moves)"
+    y_range: [-6, 6]
+    curves:
+      - label: "snare start"
+        filters:
+          - {type: hpf, f: 100, slope: 12}
+          - {type: bell, f: 200, gain_db: 2, q: 1.4}
+          - {type: bell, f: 450, gain_db: -2, q: 2}
+          - {type: bell, f: 5000, gain_db: 2, q: 1.4}
+  - entry: instrument-toms
+    file: toms-eq
+    kind: eq_curve
+    title: "Rack tom starting EQ (HPF 75 Hz)"
+    y_range: [-6, 6]
+    curves:
+      - label: "rack tom"
+        filters:
+          - {type: hpf, f: 75, slope: 12}
+          - {type: bell, f: 350, gain_db: 2, q: 1.4}
+          - {type: bell, f: 600, gain_db: -2, q: 2}
+          - {type: bell, f: 5500, gain_db: 2, q: 1.4}
+  - entry: instrument-overheads-cymbals
+    file: overheads-eq
+    kind: eq_curve
+    title: "Overhead starting EQ (HPF 250 Hz, small cuts)"
+    y_range: [-6, 6]
+    curves:
+      - label: "overhead"
+        filters:
+          - {type: hpf, f: 250, slope: 12}
+          - {type: bell, f: 500, gain_db: -2, q: 1.4}
+          - {type: bell, f: 4000, gain_db: -1.5, q: 2}
+          - {type: bell, f: 9000, gain_db: -1.5, q: 1.4}
+  - entry: instrument-bass-guitar
+    file: bass-eq
+    kind: eq_curve
+    title: "Bass DI starting EQ (HPF 30 Hz, mud cut 400 Hz, presence 900 Hz)"
+    y_range: [-6, 6]
+    curves:
+      - label: "bass DI"
+        filters:
+          - {type: hpf, f: 30, slope: 12}
+          - {type: bell, f: 400, gain_db: -3, q: 1.4}
+          - {type: bell, f: 900, gain_db: 2, q: 1.4}
+  - entry: instrument-electric-guitar
+    file: electric-guitar-eq
+    kind: eq_curve
+    title: "Miked guitar amp starting EQ (HPF 90 Hz, mud and harshness cuts)"
+    y_range: [-6, 6]
+    curves:
+      - label: "electric guitar"
+        filters:
+          - {type: hpf, f: 90, slope: 12}
+          - {type: bell, f: 300, gain_db: -3, q: 1.0}
+          - {type: bell, f: 4000, gain_db: -2, q: 1.4}
+  - entry: instrument-acoustic-guitar
+    file: acoustic-guitar-eq
+    kind: eq_curve
+    title: "Acoustic guitar DI starting EQ (HPF 80 Hz, box cut 200 Hz, air shelf)"
+    y_range: [-6, 6]
+    curves:
+      - label: "acoustic guitar"
+        filters:
+          - {type: hpf, f: 80, slope: 12}
+          - {type: bell, f: 200, gain_db: -3, q: 1.0}
+          - {type: high_shelf, f: 10000, gain_db: 2, q: 0.7}
+  - entry: instrument-piano-keys
+    file: piano-eq
+    kind: eq_curve
+    title: "Piano starting EQ (HPF 60 Hz, mud and harshness cuts)"
+    y_range: [-6, 6]
+    curves:
+      - label: "piano"
+        filters:
+          - {type: hpf, f: 60, slope: 12}
+          - {type: bell, f: 350, gain_db: -2, q: 1.0}
+          - {type: bell, f: 3000, gain_db: -2, q: 1.4}
+  - entry: instrument-brass-winds
+    file: brass-eq
+    kind: eq_curve
+    title: "Brass starting EQ (HPF 120 Hz, honk cut 650 Hz, harshness cut 3 kHz)"
+    y_range: [-6, 6]
+    curves:
+      - label: "brass"
+        filters:
+          - {type: hpf, f: 120, slope: 12}
+          - {type: bell, f: 650, gain_db: -2, q: 1.4}
+          - {type: bell, f: 3000, gain_db: -1.5, q: 1.4}
+  - entry: instrument-frequency-ranges
+    file: instrument-ranges
+    kind: band_chart
+    title: "Fundamental playing ranges and common problem regions"
+    bands:
+      - {label: "Piano", lo: 27, hi: 4186}
+      - {label: "Double bass", lo: 41, hi: 247}
+      - {label: "Cello", lo: 65, hi: 659}
+      - {label: "Violin", lo: 196, hi: 2637}
+      - {label: "Tenor trombone", lo: 82, hi: 466}
+      - {label: "Bb trumpet", lo: 165, hi: 932}
+      - {label: "Flute", lo: 262, hi: 2093}
+      - {label: "mud 200-500", lo: 200, hi: 500}
+      - {label: "brass honk 500-800", lo: 500, hi: 800}
+      - {label: "harshness 1-5k", lo: 1000, hi: 5000}
+      - {label: "air 8-12k", lo: 8000, hi: 12000}
+  - entry: vocal-lead-live
+    file: vocal-lead-zones
+    kind: band_chart
+    title: "Lead vocal zones to watch"
+    bands:
+      - {label: "Proximity / plosive region (below ~300 Hz)", lo: 20, hi: 300}
+      - {label: "HPF starting window (80-125 Hz)", lo: 80, hi: 125}
+      - {label: "Low-mid mud zone (~200 Hz to 1 kHz)", lo: 200, hi: 1000}
+      - {label: "Presence peak of a typical handheld (2-7 kHz)", lo: 2000, hi: 7000}
+  - entry: vocal-backing-and-choir
+    file: backing-vocal-chain
+    kind: signal_flow
+    title: "Backing vocals: channel to group"
+    nodes:
+      - {label: "BV mics", note: "own gain"}
+      - {label: "HPF + EQ", note: "HPF above lead"}
+      - {label: "BV group bus", note: "shared compressor"}
+      - {label: "Fader", note: "behind the lead"}
+  - entry: vocal-proximity-effect
+    file: proximity-boost-vs-distance
+    kind: xy_plot
+    title: "Ideal cardioid bass boost at 100 Hz (24 in point: under 1 dB)"
+    x_label: "Distance (inches)"
+    y_label: "Boost at 100 Hz (dB)"
+    series:
+      - label: "ideal cardioid"
+        points: [[1, 21], [6, 6], [12, 3], [24, 1]]
+  - entry: speech-headset-and-lavalier
+    file: lav-chest-eq
+    kind: eq_curve
+    title: "Chest lavalier presence lift: +5 and +10 dB at 3.5 kHz"
+    y_range: [-3, 12]
+    curves:
+      - {label: "+5 dB", filters: [{type: bell, f: 3500, gain_db: 5, q: 0.8}]}
+      - {label: "+10 dB", filters: [{type: bell, f: 3500, gain_db: 10, q: 0.8}]}
+  - entry: speech-intelligibility-sti
+    file: speech-bands
+    kind: band_chart
+    title: "Where speech intelligibility lives"
+    bands:
+      - {label: "Vowel energy falls off above ~1 kHz", lo: 100, hi: 1000}
+      - {label: "Important region (1-4 kHz)", lo: 1000, hi: 4000}
+      - {label: "Consonants most concentrated (2-4 kHz)", lo: 2000, hi: 4000}
+  - entry: speech-panel-and-conference
+    file: nom-gain-reduction
+    kind: xy_plot
+    title: "Ambient gain vs number of open mics"
+    x_label: "Open mics (NOM)"
+    y_label: "Gain change (dB)"
+    series:
+      - label: "about -3 dB per doubling"
+        points: [[1, 0], [2, -3], [4, -6], [8, -9], [16, -12]]
+  - entry: speech-playback-and-walk-in-music
+    file: ducking-chain
+    kind: signal_flow
+    title: "Ducking: MC mic keys the music bus compressor"
+    nodes:
+      - {label: "MC mic", note: "control (key) signal"}
+      - {label: "Sidechain input", note: "threshold"}
+      - {label: "Music bus compressor", note: "depth, hold, release"}
+      - {label: "Main mix"}

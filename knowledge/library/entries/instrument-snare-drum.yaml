@@ -1,0 +1,67 @@
+id: instrument-snare-drum
+title: "Snare drum: mic choice, placement and EQ starting points"
+title_vi: "Trống snare: chọn mic, đặt mic và điểm khởi đầu EQ"
+topic: instruments
+tags:
+  instrument: [snare, drums]
+  genre: [rock, pop]
+  technique: [mic-placement, eq, polarity]
+  event: [concert]
+summary: "Top mic about four inches off the head, optional bottom mic with reversed polarity, and small EQ moves to control ring and add crack."
+body: |
+  ## Mic choice and placement
+
+  The SM57 is the standard live snare mic. Hypercardioid dynamics such as the Beyerdynamic M201 or Sennheiser MD441 are popular because they reject hi-hat and tom spill better.
+
+  - Place the top mic roughly **four inches** from the head, angled to catch the head and some shell. Too close sounds dull and choked.
+  - Keep it clear of the stick path and secure the clip; kits on risers creep during a show.
+  - A **bottom mic** adds snare-wire snap. It sees the wires moving in the opposite direction from the top mic, so **reverse its polarity** or the combined sound turns thin and hollow. Not every snare needs it: a thin piccolo snare often does fine with one mic, a deep snare may like two.
+  - One drummer interview in Shure's article puts a single mic at the side of the shell, an inch or less out and square to the shell, away from the vent hole, for a more shell-toned sound with less top-head ring.
+
+  ## Starting EQ
+
+  Small moves, 1-2 dB, are typical:
+
+  - High-pass about 100 Hz (12-24 dB/oct) to clean rumble; another engineer keeps fullness and filters nearer 140 Hz.
+  - 150-250 Hz is the body: a small boost if thin, a small cut if boomy.
+  - 300-500 Hz is boxiness; a small cut around 450 Hz helps.
+  - Ring lives in a narrow band (iZotope 400-700 Hz; another source 3-5 kHz). Find it by boosting 10-20 dB temporarily, sweeping until it screams, then cutting that frequency.
+  - 2-5 kHz is stick attack and crack: a little boost around 5 kHz if the snare disappears.
+  - Low-pass near 15 kHz is optional.
+
+  ## Dynamics
+
+  The top snare mic is rarely gated; the snare top can instead key a gate on the bottom mic. If compressing, do it lightly; heavy processing chokes the natural tone.
+
+  ## Common problems
+
+  - **Hi-hat bleed:** angle the mic away from the hat or switch to a tighter pattern.
+  - **Ringing snare:** tune it first, then notch, then maybe use a little tape or a dampening ring.
+  - **Hollow sound:** polarity between top and bottom (or against the overheads) is wrong.
+
+  ## Live and WING tips
+
+  Use the channel polarity switch before reaching for EQ. On a WING, one EQ band swept narrowly handles the ring; solo it only briefly in headphones, then confirm out in the room.
+rule:
+  applies_to: {source_type: [drums.snare], genre: [rock, pop]}
+  params:
+    hpf_hz: [100, 140]
+    body_hz: [150, 250]
+    box_cut_hz: [300, 500]
+    ring_notch_hz: [400, 700]
+    crack_boost_hz: [2000, 5000]
+    eq_move_db: [1, 2]
+  notes: "Starting points; ring frequency is drum-specific, find it by sweep."
+sources:
+  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Snare Drum"}
+  - {title: "Beyond the Basics: Drum Miking", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking", accessed: "2026-11-09", locator: "Snare"}
+  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Snare drum"}
+  - {title: "How to EQ Live Drums", publisher: "mixingaband.com", kind: article, url: "https://mixingaband.com/how-to-eq-live-drums/", author: "Simon Crome", year: 2020, accessed: "2026-11-09", locator: "Snare Drum"}
+  - {title: "How to EQ Drums Live", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/eq-drums-live/", accessed: "2026-11-09", locator: "Live Snare EQ"}
+media:
+  - {kind: diagram, path: snare-eq.png, caption: "Typical starting EQ for a live snare top mic", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

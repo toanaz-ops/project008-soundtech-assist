@@ -1,0 +1,78 @@
+id: genre-jazz-acoustic
+title: "Jazz and acoustic bands: light touch, natural sound"
+title_vi: "Jazz và ban nhạc acoustic: xử lý nhẹ, giữ âm thanh tự nhiên"
+topic: genre
+tags:
+  instrument: [upright-bass, piano, acoustic-guitar, drums]
+  genre: [jazz]
+  technique: [light-compression, di-plus-mic, feedback-control, minimal-eq]
+  event: [concert, club]
+summary: "Acoustic jazz is reinforced, not remade: keep the natural dynamics, favour balance over EQ boosts, and manage feedback on open mics and the upright bass."
+body: |
+  ## Balance and approach
+
+  The goal is to make the instruments louder while keeping their character. Jazz instruments are normally played acoustically, so heavy processing quickly sounds artificial. Rely on balancing first and on EQ cuts rather than boosts. Shure's church-sound guide by Mike Sokol starts from listening: hear each instrument on its own first, and ask the players to play so you know its natural tone before you shape it. Then walk away from the console and listen to the room.
+
+  This entry extrapolates from general acoustic and live-bass guidance; I did not find a source specific to mixing acoustic jazz through a PA, so treat it as a starting framework rather than a jazz rulebook.
+
+  ## Low end
+
+  Bass is often the problem in a quiet band. Taking a DI from an upright or electric bass avoids spill and boomy stage low end; if you add a mic as well, check polarity between them because phase cancellation thins the bass (Burton, SOS). Boost deep bass sparingly because it is easy to overload PA woofers (Sokol, Shure). In a band that has bass, thin the low end of an acoustic guitar so the mix stays clear and the vocal stays intelligible; for a solo or duo, you can leave more low end in (Korff, SOS).
+
+  ## Dynamics
+
+  Use compression with a clear purpose. For an acoustic guitar Korff describes a low threshold with a gentle ratio around 1.5:1 and medium to long attack and release to even out level changes, watching for only 0 to 3 dB of gain reduction on strums. A faster attack and higher ratio only tames a spiky piezo pickup. Bass compression with slow attack lets transients through while controlling the tail (Burton). Compression adds gain, so make sure you have headroom before feedback, since compression can trigger it.
+
+  ## Mics and feedback
+
+  If there is no pickup, Korff suggests a small-diaphragm cardioid or hypercardioid condenser aimed at the neck-body join and avoiding omnis for feedback reasons. Dynamic mics need more gain and bring their own feedback risk. Keep monitors low but let performers hear themselves, and use a graphic EQ on the monitor send for problem frequencies.
+
+  ## Effects
+
+  Keep reverb light and natural, a short room or plate that suits the venue rather than an obvious wash. I found no source giving numbers for reverb time in jazz.
+
+  ## Common mistakes
+
+  - Boosting instead of balancing.
+  - Piezo pickup quack left in the 800 Hz to 3 kHz area; Korff cuts 12 dB or more there as a starting point.
+  - Compressing so hard that the dynamics of brushes and soft playing disappear.
+rule:
+  applies_to:
+    source_type: [guitar.acoustic]
+    genre: [jazz]
+  params:
+    comp_ratio: [1.5, 1.5]
+    gain_reduction_db: [0, 3]
+    piezo_quack_cut_hz: [800, 3000]
+  notes: "From Korff (SOS 2013) on acoustic guitar, applied here as a conservative starting framework for acoustic bands. Adjust by ear."
+sources:
+  - title: "Mixing Acoustic Guitars Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/mixing-acoustic-guitars-live"
+    author: "Chris Korff"
+    year: 2013
+    accessed: "2026-11-09"
+    locator: "Band context; Miking; Compression"
+  - title: "Engineering Bass Guitars Live"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live"
+    author: "Jon Burton"
+    year: 2014
+    accessed: "2026-11-09"
+    locator: "Combining DI and Mic; Compression"
+  - title: "Professional Mixing Tips for Church Sound"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound"
+    author: "Mike Sokol"
+    year: 2017
+    accessed: "2026-11-09"
+    locator: "Listening First; EQ by Sound Character"
+media: []
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

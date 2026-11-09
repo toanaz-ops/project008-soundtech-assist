@@ -1,0 +1,83 @@
+id: speech-panel-and-conference
+title: "Panels and conferences: many open mics, NOM and mute discipline"
+title_vi: "Hội thảo, panel nhiều micro: số mic mở (NOM) và kỷ luật mute"
+topic: speech
+tags:
+  instrument: [table-mic, gooseneck-mic, handheld-mic]
+  genre: []
+  technique: [automix, gain-sharing, mute-discipline, gain-before-feedback]
+  event: [corporate, conference, panel]
+summary: |
+  Every open microphone adds noise and cuts gain before feedback: roughly 3 dB per doubling of the
+  number of open mics. Use a speech automixer or strict mute discipline so only the active talker is
+  live, and keep gating-style behaviour out of the picture unless you mean it.
+body: |
+  **The rule of open mics.** Dan Dugan's Model D manual defines NOM, the number of open
+  microphones, and the gain limiting that goes with it: ambient gain drops about 3 dB each time the
+  number of open mics doubles. With four open mics that is about -6 dB, with eight about -9 dB and with
+  sixteen about -12 dB. The same arithmetic describes what happens to your margin before
+  feedback if you leave all mics open at the same gain: each doubling costs about 3 dB of
+  headroom and adds room noise and reverb. A panel with eight table mics all open is
+  therefore a much harder job than the same room with two.
+
+  **Option 1: a speech automixer.** The Speech System in Dugan's manual spreads the gain of a single
+  open mic across the system. When someone talks, that mic rises and the others fall;
+  when everyone pauses, all mics return to a medium gain. It is a gain-sharing design, not a
+  gate, so the room does not "chop". Set the thresholds so ambient noise gives roughly equal gain on
+  every channel, and use the weight/threshold control to compensate a loud or quiet talker. If thresholds are set
+  too low the mics start to sound gated, which the manual calls undesirable. See the automix topic
+  entries for how to set this up on a console; if your console has a built-in automixer, check
+  the WING manual for the exact controls.
+
+  **Option 2: manual mixing with mute discipline.** On a small panel with a competent
+  operator, no automixer is needed. Only unmute a mic when its person is about to speak, and
+  mute it when they finish. Ask moderators to keep to one speaker at a time; assign one
+  VCA/mute group per table; and keep a spare mic muted for Q&A. Mutes are free; gain before feedback is not.
+
+  **Mute and override.** The Model D manual describes a mute that fades all channels out
+  while held (it can be remoted to the chair), an override to silence other mics momentarily, and
+  a preset that restores the stored on/auto/off pattern. A chairperson's mute button is a
+  simple, reliable way to stop crosstalk and coughing.
+
+  **When not to use gain sharing.** For a sung choir or a music mix, a speech gain-sharing
+  automixer will give most of the gain to the loudest voice. See `vocal-backing-and-choir`.
+
+  **Processing per mic.** Give every mic its own HPF (around 100 Hz as a starting point), a gentle
+  wide presence lift if needed (see `speech-intelligibility-sti`), and a notch only where it rings.
+  Use the same pickup pattern and distance on all table mics so the automixer sees similar levels.
+  Test with all talkers speaking at normal volume at their real position.
+
+  **Common mistakes:** leaving every table mic open "just in case", setting automix thresholds so
+  low that ambient noise drives gain, treating a gain-sharing automixer as a noise gate, and
+  forgetting to mute pack-worn mics when a panelist leaves the table.
+rule:
+  applies_to: {source_type: [speech.panel], event: [conference, panel]}
+  params:
+    gain_reduction_db_per_nom_doubling: [3, 3]
+    hpf_hz: [80, 120]
+  notes: "3 dB per doubling is from Dugan's manual (ambient gain: 4 mics about -6 dB, 8 about -9 dB, 16 about -12 dB). HPF is a starting point."
+sources:
+  - title: "Dugan Automatic Mixer Model D and D-1 Manual"
+    publisher: "Dan Dugan Sound Design"
+    kind: manual
+    url: "https://dandugan.com/Assets/manuals/Model-D-and-D-1-Manual.html"
+    accessed: "2026-11-09"
+    locator: "NOM; Gain sharing principle; Mute and Override; Weighting"
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
+    accessed: "2026-11-09"
+    locator: "What reduces intelligibility"
+media:
+  - kind: diagram
+    path: nom-gain-reduction.png
+    caption: "Ambient gain versus number of open mics (about 3 dB per doubling, per Dugan's manual)."
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py"
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

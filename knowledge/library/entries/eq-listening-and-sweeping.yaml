@@ -1,0 +1,54 @@
+id: eq-listening-and-sweeping
+title: "Listening and sweeping: finding problems by ear"
+title_vi: "Nghe và quét tần số: tìm lỗi bằng tai"
+topic: eq
+tags:
+  instrument: []
+  genre: []
+  technique: [eq, ear-training, sweeping]
+  event: [concert, corporate]
+summary: "Boost-and-sweep finds problem frequencies quickly but biases you toward harshness; combine it with ear training and judge decisions in context, not solo."
+body: |
+  ## Boost-and-sweep
+  Set a narrow-to-medium bell (a Q around 1 to 4, depending on the source) and boost strongly. Sweep slowly across the spectrum and listen for regions that sound ugly or ringy. When one stands out, stop, flip the boost into a cut and tune how deep and wide it needs to be.
+
+  **Pros:** fast, makes problems obvious, teaches what each region sounds like.
+  **Cons:** a big boost is harsh everywhere, so you may cut something that was fine. Narrow Q can find ringing frequencies that are not actually a problem for the listener. Always follow the cut with a bypass comparison.
+
+  ## Ear training
+  - Name what you hear ("boomy", "nasal", "harsh") before you touch the knob.
+  - Practise guessing the frequency first, then check it by sweeping; this avoids the bias from the harsh boost.
+  - Learn the character of the regions (see the frequency regions entry) with a few reference tracks and a few familiar voices.
+  - Keep your monitoring level realistic: perceived tone changes with loudness.
+
+  ## Solo vs in-context
+  Soloing helps to find a specific fault like a hum or buzz. But tonal decisions should be made with the band playing, since a solo sound that is big and shiny often steals room from others. Bass in particular can seem to vanish once the rest plays.
+
+  ## Live routine
+  1. At line check, sweep a channel briefly on a single source and note faults.
+  2. Fix with cuts; keep the boost minimal.
+  3. In the song, re-judge with everything on.
+  4. Compare in bypass; reset to flat if it does not help.
+
+  ## Feedback is different
+  Ringing out a monitor or main system by boosting until it rings and then cutting is a sweep with a specific goal; use narrow notches and take care with level.
+
+  ## Mistakes
+  - Sweeping on a channel with gain staged hot.
+  - Cutting a tiny, narrow peak that nobody notices.
+  - Spending soundcheck on solo when the problem shows up only in the mix.
+rule:
+  applies_to: {source_type: [any]}
+  params:
+    sweep_q: [1, 4]
+    sweep_boost_db: [6, 12]
+  notes: "Starting points for the temporary boost used to locate a fault; the final move should be a small cut."
+sources:
+  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Sweeping Technique; Five EQ Tips"}
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Practice Makes Perfect; Mixing With EQ"}
+  - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Understanding What EQ Frequencies Sound Like"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

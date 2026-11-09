@@ -1,0 +1,85 @@
+id: fx-reverb-types-and-parameters
+title: "Reverb types and parameters: hall, plate, room, chamber"
+title_vi: "Các loại reverb và thông số: hall, plate, room, chamber"
+topic: effects
+tags:
+  instrument: [vocal, snare, drums]
+  genre: []
+  technique: [reverb, aux-send, pre-delay, decay-time, damping, return-eq]
+  event: [concert, corporate]
+summary: "Reverb types differ mainly in decay length, density and brightness. Four controls do most of the work: pre-delay, decay time, high-frequency damping and EQ on the return, fed from an aux send rather than inserted."
+body: |
+  ## What the types are for
+
+  **Plate** is the bright, dense, fairly short reverb associated with pop vocals and snares. A real plate decays in roughly three to four seconds, and most digital reverbs imitate it. **Room** and **chamber** are shorter, more intimate spaces, useful when you want ambience that does not wash over the next word. **Hall** is long and spacious, suited to ballads, pads and choirs. Many cheap multi-effects use one algorithm for every preset, so "hall" and "room" can sound alike. Judge by the decay and tone, not the label.
+
+  ## The four controls that matter
+
+  - **Pre-delay**: the gap between the dry sound and the start of the reverb. None or very short blends the source into the space, which suits rock drums. A longer gap keeps a vocal or lead line in front and dry. One SOS author suggests 100 ms or more for vocals, or a note-synced value; an older SOS guide uses 0 to about 80 ms for pop vocals. Very short pre-delay with audible early reflections can sound phasey.
+  - **Decay time (RT60)**: how long the tail takes to fall 60 dB. Fast, busy songs need short decays so each hit clears before the next; slow songs can carry longer ones. Sources differ on the ceiling: one says even large halls rarely exceed about four seconds and two is often enough, another quotes cathedral-scale spaces of 10 seconds or more. Treat 2 to 4 seconds as a hall-size window and under one second as ambience.
+  - **Damping / low-pass**: real rooms lose top end quickly, so a dark tail sounds more natural than a bright one. Turn the damping or low-pass down until the reverb stops sizzling.
+  - **Return EQ**: roll off the lows of the reverb return so the tail does not add mud under the kick and bass. The 1996 SOS example uses 100 Hz low-frequency damping on a plate and about 300 Hz on a drum room.
+
+  ## Routing in live work
+
+  Use an aux send into a reverb set to 100% wet, and bring it back on its own channel or return. Sends are normally taken post-fader, so pulling a singer down also pulls their reverb down. A stereo return can be narrowed toward centre for better mono compatibility, which matters in a room where half the audience sits off-axis. On a WING, load the reverb in an FX slot, feed it from a bus send, and return it to a channel so you have EQ and a fader on it; check your own routing and tap points.
+
+  ## Mistakes to avoid
+
+  - Reverb on everything: it eats clarity, especially in a reverberant room that already adds its own.
+  - A long bright tail on speech: consonants smear and intelligibility drops.
+  - Setting it solo. Judge reverb in the full mix and from audience position.
+
+  Every number above is a starting point drawn from studio and magazine sources; set the final values by ear in the venue.
+rule:
+  applies_to:
+    source_type: [reverb.return]
+  params:
+    plate_decay_s: [3, 4]
+    hall_decay_s: [2, 4]
+    ambience_decay_s: [0.1, 1]
+    vocal_pre_delay_ms: [0, 100]
+    return_low_damping_hz: [100, 300]
+  notes: "Starting points from SOS articles (White 1996, Robjohns 1997, Inglis 2020). Sources differ on long-hall decay; adjust by ear and to song tempo."
+sources:
+  - title: "Reverb: What Do All Those Knobs Do?"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/reverb-what-do-all-those-knobs-do"
+    author: "Sam Inglis"
+    year: 2020
+    accessed: "2026-11-09"
+    locator: "Pre Possessing; Tone & Time"
+  - title: "Improving The Sound Of Your Reverb"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/improving-sound-your-reverb"
+    author: "Paul White"
+    year: 1996
+    accessed: "2026-11-09"
+    locator: "Plate vs. hall vs. room; low-frequency damping"
+  - title: "Reverb From First Principles"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/reverb-first-principles"
+    author: "Hugh Robjohns"
+    year: 1997
+    accessed: "2026-11-09"
+    locator: "Choosing And Using Reverb"
+media:
+  - kind: diagram
+    path: reverb-aux-routing.png
+    caption: "Aux send to reverb to return EQ to the main mix"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lseGTGRK3fM"
+    title: "Pre-Delay Tips: How to Use It With Reverb in Your Mix"
+    channel: "LANDR"
+    caption: "Pre-delay in a mix (found via search; contents not reviewed beyond the title)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

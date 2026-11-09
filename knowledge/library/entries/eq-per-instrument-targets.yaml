@@ -1,0 +1,102 @@
+id: eq-per-instrument-targets
+title: "EQ targets per instrument: one cross-source table"
+title_vi: "EQ theo từng nhạc cụ: bảng tổng hợp từ nhiều nguồn"
+topic: eq
+tags:
+  instrument: [kick, snare, toms, hi-hat, overheads, bass, electric-guitar, acoustic-guitar, keys, strings, horns, vocal]
+  genre: [pop, rock, speech]
+  technique: [high-pass, subtractive-eq, frequency-ranges]
+  event: [concert, corporate]
+summary: "One table of high-pass corners, cut regions and boost regions for the common live sources, gathered from vendor and magazine articles. Most sources give regions, not decibel amounts, so the dB column is mostly empty on purpose."
+body: |
+  ## How to read the table
+
+  The sources rarely give gain or Q. They name a region and a reason ("boxy", "papery", "presence"). The rule block records the regions and leaves decibel amounts out unless a source gave one. Cut narrow regions that sound bad, boost broad regions that sound good, and make every move by ear. The ranges below are starting points.
+
+  ## Drums
+
+  - **Kick**: high-pass roughly 25 to 60 Hz (35 Hz typical). Cut 200 to 500 Hz for boxiness; a dip near 180 Hz helps the bass sit. Boost 60 to 90 Hz for punch and 1 to 5 kHz (about 3 to 4 kHz) for beater click. Avoid boosting the sub below about 40 Hz live.
+  - **Snare**: high-pass 80 to 200 Hz. Cut 400 to 700 Hz for ring and 900 to 1500 Hz if it sounds papery. Boost 150 to 250 Hz for body, 2 to 3.5 kHz for snap, a shelf near 8 kHz for crack. The 2 to 4 kHz zone competes with vocal presence.
+  - **Toms**: high-pass about 40 to 100 Hz (exact numbers unconfirmed). Cut near 250 Hz for mud; boost 60 to 120 Hz for body and 800 to 1500 Hz for attack.
+  - **Hi-hat and ride**: high-pass 150 to 500 Hz (the two sources disagree on how hard). Cut 3 to 7 kHz if harsh; a shelf near 10 to 12 kHz adds sheen.
+  - **Overheads**: high-pass 150 to 500 Hz, a broad cut near 4 kHz if harsh, a shelf at 8 to 12 kHz for shimmer.
+
+  ## Bass and guitars
+
+  - **Bass**: high-pass roughly 30 to 45 Hz (this range is the lane's convention, not a sourced figure). Cut 200 to 400 Hz for mud; boost 220 to 300 Hz for character and 800 Hz to 1 kHz for articulation.
+  - **Electric guitar**: high-pass 80 to 120 Hz. Cut 200 to 300 Hz for tubbiness and 3 to 6 kHz for fizz; a broad boost near 4 kHz adds presence (one source suggests +3 dB). Do not scoop the mids live, the core is 300 Hz to 1.5 kHz.
+  - **Acoustic guitar**: high-pass 60 to 100 Hz. Cut 150 to 400 Hz if tubby; boost near 1.5 kHz for presence and a shelf at 8 to 12 kHz for air. Feedback prone at 100 to 250 Hz, so prefer cuts.
+
+  ## Keys, strings, horns
+
+  - **Keys**: cut 200 to 500 Hz for mud and 2 to 4 kHz to leave room for the vocal. The high-pass (40 to 100 Hz) has no source.
+  - **Strings**: high-pass 100 to 150 Hz; cut 200 to 500 Hz for mud and 1 to 4 kHz for harshness; shelf near 10 kHz for air.
+  - **Horns**: high-pass 100 to 200 Hz; cut 500 to 800 Hz if boxy and 1 to 5 kHz if harsh; shelf near 5 kHz.
+
+  ## Voice
+
+  - **Vocal and MC**: high-pass 80 to 150 Hz (one source says about 80 Hz for male and 140 Hz for female). Cut 200 to 500 Hz for mud and 500 Hz to 1.2 kHz for nasal tone; sibilance sits at 5 to 8 kHz (a de-esser is better than a deep notch). Boost 3 to 4 kHz broadly for presence and 1 to 1.5 kHz for intelligibility, about +3 dB.
+
+  ## Where sources disagree
+
+  Hi-hat high-pass ("lightly" versus 300 to 500 Hz), vocal high-pass (80 and 140 Hz versus 100 to 250 Hz) and kick high-pass (30 to 40 Hz versus 25 to 60 Hz). The table gives the wider window.
+
+  ## Not covered by any source
+
+  Genre-specific EQ tilt, playback tracks, a lectern mic and the snare-versus-vocal masking region have no direct source. Those rows are product heuristics.
+rule:
+  kind: eq_target
+  applies_to: {source_type: [drums.kick, drums.snare, drums.tom, drums.hihat, drums.overhead, instrument.bass, instrument.guitar.electric, instrument.guitar.acoustic, instrument.keys, instrument.strings, instrument.horns, speech.vocal, speech.mc]}
+  params:
+    by_source:
+      drums.kick: {hpf_hz: [25, 60], cut_hz: [[200, 500], 180], boost_hz: [[60, 90], [1000, 5000]]}
+      drums.snare: {hpf_hz: [80, 200], cut_hz: [[400, 700], [900, 1500]], boost_hz: [[150, 250], [2000, 3500]]}
+      drums.tom: {hpf_hz: [40, 100], cut_hz: [[250, 250]], boost_hz: [[60, 120], [800, 1500]]}
+      drums.hihat: {hpf_hz: [150, 500], cut_hz: [[3000, 7000]], boost_hz: [[12000, 12000]]}
+      drums.overhead: {hpf_hz: [150, 500], cut_hz: [[4000, 4000]], boost_hz: [[8000, 12000]]}
+      instrument.bass: {hpf_hz: [30, 45], cut_hz: [[200, 400]], boost_hz: [[220, 300], [800, 1000]]}
+      instrument.guitar.electric: {hpf_hz: [80, 120], cut_hz: [[200, 300], [3000, 6000]], boost_hz: [[4000, 4000]]}
+      instrument.guitar.acoustic: {hpf_hz: [60, 100], cut_hz: [[150, 400]], boost_hz: [[1500, 1500], [8000, 12000]]}
+      instrument.keys: {hpf_hz: [40, 100], cut_hz: [[200, 500], [2000, 4000]], boost_hz: []}
+      instrument.strings: {hpf_hz: [100, 150], cut_hz: [[200, 500], [1000, 4000]], boost_hz: [[10000, 10000]]}
+      instrument.horns: {hpf_hz: [100, 200], cut_hz: [[500, 800], [1000, 5000]], boost_hz: [[5000, 5000]]}
+      speech.vocal: {hpf_hz: [80, 150], cut_hz: [[200, 500], [500, 1200], [5000, 8000]], boost_hz: [[3000, 4000], [1000, 1500]]}
+      speech.mc: {hpf_hz: [80, 150], cut_hz: [[200, 500], [5000, 8000]], boost_hz: [[1000, 1500]]}
+  notes: "Regions, not gains. Keys high-pass, playback and lectern rows have no source. Starting points; adjust by ear."
+sources:
+  - title: "EQ Cheat Sheet"
+    publisher: "iZotope"
+    kind: article
+    url: "https://izotope.com/en/learn/eq-cheat-sheet"
+    accessed: "2026-11-09"
+  - title: "How to EQ Drums"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/how-to-eq-drums"
+    accessed: "2026-11-09"
+  - title: "Frequency Range Characteristics"
+    publisher: "FabFilter"
+    kind: article
+    url: "https://www.fabfilter.com/learn/equalization/frequency-range-characteristics/"
+    accessed: "2026-11-09"
+  - title: "Mix Tips: Kick & Bass"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/mix-tips-kick-bass"
+    accessed: "2026-11-09"
+  - title: "Professional Mixing Tips for Church Sound"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/professional-mixing-tips-for-church-sound"
+    author: "M. Sokol"
+    accessed: "2026-11-09"
+  - title: "Sound Advice: EQ tips for vocals"
+    publisher: "QSC"
+    kind: article
+    url: "https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-eq-tips-for-vocals"
+    accessed: "2026-11-09"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

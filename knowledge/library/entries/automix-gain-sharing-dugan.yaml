@@ -1,0 +1,98 @@
+id: automix-gain-sharing-dugan
+title: "Dugan gain-sharing automixing"
+title_vi: "Automix chia sẻ gain kiểu Dugan"
+topic: automix
+tags:
+  instrument: [microphone]
+  genre: []
+  technique: [automix, gain-sharing]
+  event: [corporate, panel, conference]
+summary: "Gain-sharing keeps the total gain of a group of microphones roughly constant and splits it between the mics according to how loud each one is, instead of switching mics on and off. It sounds smoother than a gate but cannot silence an idle mic."
+body: |
+  ## The idea
+
+  Dan Dugan, widely credited as the inventor of the automatic microphone mixer, introduced the principle in the 1970s: the sound system's total gain should stay about the same no matter how many people talk. A mixer built on this idea never "decides" that a mic is open or closed. Each channel is turned up or down continuously, and the loudest talker simply receives the largest share of a fixed gain budget.
+
+  ## How the gain is shared
+
+  One manufacturer description puts the rule this way: every channel is attenuated by the dB difference between its own level and the combined level of all the channels in the group. One loud mic and several quiet ones: the loud mic sits near unity, the others are pushed down. Two people talking at the same level: they share the gain, so each is a little lower and the third mic drops further. Nobody talking: the mixer looks at the background level on each mic and spreads the gain by that, which is why faders can stay raised between speakers.
+
+  ## Gain-sharing versus gating
+
+  - A gated automixer works like a noise gate per mic: open or closed, usually with a number-of-open-mics (NOM) reduction and a "last mic on" safeguard. See the entry on gated automixers.
+  - A gain-sharing automixer behaves like a set of linked expanders. There is no fixed threshold to tune, no chatter, and the ambient noise level in the room stays steady, so it is usually described as the more natural-sounding of the two.
+  - The trade-off is control: gated mixers typically let you limit the number of open mics and handle difficult rooms; gain-sharing offers fewer knobs. One vendor's guidance prefers gating for large mic counts or hard acoustics; treat that as a rule of thumb, not a law.
+  - Symetrix notes that NOM attenuation is not a very useful concept for gain-sharing, because the dividing of a fixed total already does that job.
+
+  ## Using it at a show
+
+  - Mind where the automixer listens. Yamaha advises inserting it post-fader (POST ON) so it sees the fader-adjusted level: channels that are off or at minimum fader do not disturb the share, and you can favour a speaker by raising that fader.
+  - Do not treat it as a gate. Pushing weights very low to force silence defeats the point; use mutes for mics that are genuinely not in use.
+  - Favour a speaker (chair, lectern) with that channel's fader or the weight/priority control rather than by raising everything else.
+  - Keep gain-before-feedback in mind: the algorithm shares gain, it does not create headroom. Every open mic still adds noise and feedback risk.
+  - Starting values depend on the console; none are given here because the sources describe behaviour, not settings.
+
+  ## Where sources differ
+
+  Sources agree on the broad contrast above but differ on details such as thresholds and counts, so check your own console manual before relying on a specific behaviour.
+rule:
+  applies_to:
+    source_type: [speech.panel, speech.lectern]
+    event: [corporate, conference]
+  params: {}
+  notes: "Behavioural guidance only; no numeric starting values in the cited sources. Insert automix post-input-processing and keep unused mics muted."
+sources:
+  - title: "Gain Sharing vs. Gating Automixer"
+    publisher: "Biamp"
+    kind: article
+    url: "https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer"
+    accessed: "2026-11-09"
+    locator: "Gain Sharing Automixer / Gating Automixer"
+  - title: "Automixer Technology"
+    publisher: "Symetrix"
+    kind: article
+    url: "https://composer-docs.symetrix.co/software/toolkit/design-view/automixers/Automixer_Technology.html"
+    accessed: "2026-11-09"
+    locator: "Gain-Sharing Automixers / NOM Attenuation"
+  - title: "Theory of Automixer operation (RIVAGE PM series)"
+    publisher: "Yamaha"
+    kind: manual
+    url: "https://manual.yamaha.com/pa/mixers/RIVAGE_PM_series/en-US/5462888203.html"
+    accessed: "2026-11-09"
+    locator: "How Gain Is Distributed; Level-Based Priority"
+  - title: "Dan Dugan Sound Design"
+    publisher: "Dan Dugan Sound Design"
+    kind: article
+    url: "https://www.dandugan.com/"
+    accessed: "2026-11-09"
+    locator: "home page (inventor attribution)"
+  - title: "Ten Years of Automatic Mixing"
+    publisher: "Queen Mary University of London"
+    kind: paper
+    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
+    author: "Brecht De Man, Joshua D. Reiss, Ryan Stables"
+    year: 2017
+    accessed: "2026-11-09"
+    locator: "Sec. 2 History; reference [5] (Dugan, JAES vol. 23, June 1975)"
+media:
+  - kind: diagram
+    path: gain-sharing-flow.png
+    caption: "Gain-sharing in one picture: each channel is compared with the group level and its gain follows"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=P_KSBx02jCI"
+    title: "Dugan Automixing Explained By Dan Dugan"
+    channel: "Sound Speeds"
+    caption: "The inventor explains the idea (title seen in search results; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=e4lnJO9kOB8"
+    title: "Introducing Waves Dugan Automixer"
+    channel: "Waves Audio"
+    caption: "Plug-in introduction (title seen in search results; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

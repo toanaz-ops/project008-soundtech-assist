@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Ideal cardioid bass boost at 100 Hz (24 in point: under 1 dB)</text>
+<rect x="90" y="80" width="830" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="234.3" y1="80.0" x2="234.3" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="234.3" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">5</text>
+<line x1="414.8" y1="80.0" x2="414.8" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="414.8" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">10</text>
+<line x1="595.2" y1="80.0" x2="595.2" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="595.2" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">15</text>
+<line x1="775.7" y1="80.0" x2="775.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="775.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20</text>
+<line x1="90.0" y1="440.4" x2="920.0" y2="440.4" stroke="#2b2f37" stroke-width="1"/>
+<text x="80.0" y="445.4" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">0</text>
+<line x1="90.0" y1="360.7" x2="920.0" y2="360.7" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="365.7" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">5</text>
+<line x1="90.0" y1="280.9" x2="920.0" y2="280.9" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="285.9" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">10</text>
+<line x1="90.0" y1="201.2" x2="920.0" y2="201.2" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="206.2" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">15</text>
+<line x1="90.0" y1="121.5" x2="920.0" y2="121.5" stroke="#1d2128" stroke-width="1"/>
+<text x="80.0" y="126.5" font-size="14" fill="#868d98" text-anchor="end" font-weight="normal">20</text>
+<text x="505.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Distance (inches)</text>
+<text transform="translate(26,265.0) rotate(-90)" font-size="15" fill="#868d98" text-anchor="middle">Boost at 100 Hz (dB)</text>
+<polyline points="90.0,105.5 270.4,344.7 487.0,392.6 920.0,424.5" fill="none" stroke="#ff9f1c" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="718" y="78" width="200" height="32" rx="4" fill="#131519" fill-opacity="0.9" stroke="#2b2f37"/>
+<line x1="730.0" y1="90.0" x2="756.0" y2="90.0" stroke="#ff9f1c" stroke-width="3"/>
+<text x="764.0" y="94.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">ideal cardioid</text>
+</svg>

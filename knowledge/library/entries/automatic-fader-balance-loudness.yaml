@@ -1,0 +1,82 @@
+id: automatic-fader-balance-loudness
+title: "Automatic fader balance and loudness-based mixing studies"
+title_vi: "Cân bằng fader tự động dựa trên độ lớn (loudness): các nghiên cứu"
+topic: automix
+tags:
+  instrument: []
+  genre: []
+  technique: [loudness, fader-balance, automatic-mixing]
+  event: [concert, soundcheck]
+summary: "Several studies set channel faders automatically from measured loudness. One found listeners preferred a simple energy-based balance over a complex psychoacoustic model; others warn that making every track equally loud gives a poor mix, so a per-instrument target is needed."
+body: |
+  ## The question
+
+  If you could measure how loud each channel is, could a program set a sensible starting balance? Researchers have tried it with simple level measures, with loudness standards, and with full psychoacoustic models. The lessons are useful when you want a quick first balance at soundcheck.
+
+  ## What the studies report
+
+  - **Energy beats complexity (Wichern et al., iZotope, AES 2015).** The authors studied human mixes from a multitrack dataset to derive loudness targets per instrument type, then built three automatic level-setting methods and compared them with human mixes in a listening test. Listeners preferred the mixes from the simple energy-based model, which suggests a complex psychoacoustic model may not be needed just to set levels. (Only the abstract was visible; the detailed statistics were not read.)
+  - **Partial loudness and masking (Ward, Reiss, Athwal, AES 2012).** This work measures each track's loudness alone and in the presence of the others and uses the difference to set gains over time and to reduce masking. Its starting premise is that a balanced mix is one where the instruments sound about equally loud, which sets it apart from the per-instrument targets above. (Abstract only.)
+  - **Faders in practice (Mansbridge, Finn, Reiss, AES 2012).** An autonomous multitrack fader control was evaluated against a human mix and an earlier automatic implementation. (Listing seen only.)
+  - **A warning from a compressor study.** An automatic compressor that first equalised the loudness of all tracks scored worst in a listening test, because percussive instruments ended up too loud relative to the rest. The authors link this to the earlier fader work.
+
+  ## So how loud should each thing be?
+
+  The studies disagree in method, not just in detail: some treat "equal loudness" as the goal, others learn instrument-dependent targets from real mixes and find simple RMS-style measures sufficient. That is why the confidence here is "contested". Neither approach replaces the engineer's decision about what the song or the speaker needs to be on top.
+
+  ## Using this at a show
+
+  - Use meters or a loudness readout to get every channel into a sane starting range, then balance by ear. Do not trim everything to the same number.
+  - Expect percussive and low-frequency sources to look louder on a meter than they feel in the mix; vocals and speech usually need to sit above the band.
+  - Re-check balance when the audience arrives; room level changes the picture.
+  - For corporate speech, automix handles level between talkers (see the automix entries); music balance is still a human call.
+rule:
+  applies_to:
+    source_type: [multitrack]
+  params: {}
+  notes: "No sourced numeric targets: published per-instrument loudness templates were not read in full. Use as a method, not as values."
+sources:
+  - title: "Comparison of Loudness Features for Automatic Level Adjustment in Mixing"
+    publisher: "Audio Engineering Society"
+    kind: paper
+    url: "https://www.aes.org/e-lib/browse.cfm?elib=17928"
+    author: "Gordon Wichern, Aaron Wishnick, Alexey Lukin, Hannah Robertson"
+    year: 2015
+    accessed: "2026-11-09"
+    locator: "AES Convention 139, abstract only (page returned HTTP 403; abstract seen in search result)"
+  - title: "Multitrack Mixing Using a Model of Loudness and Partial Loudness"
+    publisher: "Audio Engineering Society"
+    kind: paper
+    url: "https://joshreiss.github.io/documents/2012/WardReissAthwal-AES133-Multitrackmixingusingamodelofloudnessandpartialloudness.pdf"
+    author: "Dominic Ward, Joshua D. Reiss, Cham Athwal"
+    year: 2012
+    accessed: "2026-11-09"
+    locator: "AES Convention 133, abstract (seen in search result; PDF not opened)"
+  - title: "Intelligent Multitrack Dynamic Range Compression"
+    publisher: "Audio Engineering Society"
+    kind: paper
+    url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf"
+    author: "Zheng Ma, Brecht De Man, Pedro D. L. Pestana, Dawn A. A. Black, Joshua D. Reiss"
+    year: 2015
+    accessed: "2026-11-09"
+    locator: "J. Audio Eng. Soc. 63(6), Sec. 5.3 Summary (comparison against an alternative that equalises loudness first)"
+  - title: "Ten Years of Automatic Mixing"
+    publisher: "Queen Mary University of London"
+    kind: paper
+    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
+    author: "Brecht De Man, Joshua D. Reiss, Ryan Stables"
+    year: 2017
+    accessed: "2026-11-09"
+    locator: "Sec. 2 History; references [19], [23], [36]"
+media:
+  - kind: diagram
+    path: loudness-balance-flow.png
+    caption: "Loudness-based balancing as the studies describe it, with the human still in the loop"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

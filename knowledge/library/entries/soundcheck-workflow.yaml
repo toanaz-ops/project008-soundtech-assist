@@ -1,0 +1,75 @@
+id: soundcheck-workflow
+title: "Soundcheck workflow: line check, gain, then the band"
+title_vi: "Quy trình soundcheck: line check, gain, rồi cả ban"
+topic: fundamentals
+tags:
+  instrument: []
+  genre: []
+  technique: [soundcheck, line-check, gain-staging, virtual-soundcheck]
+  event: [concert, corporate]
+summary: "Run the check in layers: power and patch, a line check of each input at show level, gain set at that level, then a short soundcheck with the whole band on representative excerpts. A virtual soundcheck replays a recording so you can work without the band."
+body: |
+  ## Line check versus soundcheck
+
+  A line check proves that every input works. A soundcheck is when the band and crew hear those inputs together and shape the front-of-house and monitor mixes. Small shows often combine them; the order still matters. Ideally the crew line-checks before the band takes the stage.
+
+  ## The order that works
+
+  1. **Power and patch.** Connect and power the whole chain: pedals, DIs, playback interfaces and wireless. Load the show scene and keep a mute ready.
+  2. **Line check, one channel at a time.** Each player produces a short, repeatable signal at performance level. Report a fault immediately, and save mix requests for the monitor stage.
+  3. **Set gain during the line check.** Use the level and sound the player will use in the show: a guitarist's normal gain and pedal state, a keyboard's loudest patch. If a part moves between clean and driven, check both. A quiet clean test patch leaves you with a gain that clips later.
+  4. **Soundcheck.** Pick two test sections, one dense and one quieter. Play a representative 30 to 60 seconds, stop together, make one request at a time, replay the same section and confirm the change.
+  5. **First-song readiness pass.** About a minute: check settings and signal paths, play the opening of the first song, stop together, and raise only readiness problems.
+
+  ## Gain before anything else
+
+  Gain is the foundation of the rest: set it before EQ and dynamics, then stop moving it. A speculative gain change after the mix is usable shifts every downstream level, and the room sounds different once people arrive. If you must correct something, fix the cause at the source or make a small fader move, and note it.
+
+  ## Virtual soundcheck
+
+  Record each input on the show day or at rehearsal, then replay the tracks through the channels later to build the mix without the band. On WING, channels have an alternate input where a USB or card playback source can be selected. One forum account describes recording to card or USB and patching the playback back into the channels. The key caution: gain is baked into the recording, so you cannot adjust it from the console on playback; record early in the chain and do not change gain afterwards. These WING details are from secondary sources seen only as search snippets and should be checked against the manual.
+
+  ## Common mistakes
+
+  - Checking the quiet patch only.
+  - Chasing monitor mixes during the line check.
+  - Changing gain after the mix is built.
+  - Checking in the empty room and not leaving headroom for the audience and the first song.
+rule:
+  applies_to:
+    event: [concert]
+  params:
+    soundcheck_excerpt_seconds: [30, 60]
+    readiness_pass_seconds: [60, 60]
+  notes: "Timings from one musician-facing guide; starting points only. Virtual-soundcheck WING details are unverified."
+sources:
+  - title: "Line Check vs Soundcheck: A Musician Guide"
+    publisher: "Soundbrenner"
+    kind: article
+    url: "https://www.soundbrenner.com/blogs/articles/line-check-vs-soundcheck-musician-guide"
+    accessed: "2026-11-09"
+    locator: "Order of Steps; Gain Setting Advice"
+  - title: "Virtual Soundcheck: How Does It Work? (forum thread)"
+    publisher: "behringer.world"
+    kind: article
+    url: "https://behringer.world/viewtopic.php?p=12416"
+    accessed: "2026-11-09"
+    locator: "page returned HTTP 403; facts seen only in a search-result summary"
+  - title: "Behringer WING Source and Channel Setup"
+    publisher: "Sweetwater"
+    kind: article
+    url: "https://www.sweetwater.com/sweetcare/articles/behringer-wing-source-and-channel-setup/"
+    accessed: "2026-11-09"
+    locator: "alternate input for playback (page returned HTTP 403; fact seen only in a search-result summary)"
+media:
+  - kind: diagram
+    path: soundcheck-steps.png
+    caption: "Soundcheck layers: patch, line check with gain, soundcheck, readiness pass"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

@@ -1,0 +1,86 @@
+id: automix-gated-and-nom
+title: "Gated automixers, NOM attenuation and last-mic-on"
+title_vi: "Automix dạng gate, NOM attenuation và last-mic-on"
+topic: automix
+tags:
+  instrument: [microphone]
+  genre: []
+  technique: [automix, gating, nom-attenuation]
+  event: [corporate, panel, conference]
+summary: "A gated automixer puts a gate on every microphone and lowers the whole group as more mics open; the reduction for N open mics is 10·log10(N) dB, about 3 dB per doubling. A last-mic-on setting keeps one channel open so the room never goes dead."
+body: |
+  ## What a gated automixer does
+
+  Each channel behaves like a noise gate that is either open or closed. A mic opens when its level rises far enough above the tracked background noise on that channel, and it stays open for a hold time so short pauses do not chop words. Because the threshold follows the noise floor, an air-conditioning unit switching on does not force every mic open.
+
+  ## NOM attenuation
+
+  When several mics are open at once the combined gain rises, and so does feedback risk. NOM (number of open microphones) attenuation fights that by turning the whole group down as more mics open. The usual law is:
+
+  attenuation = 10 · log10(NOM) dB
+
+  That gives 0 dB for one mic, about 3 dB for two, 6 dB for four, 9 dB for eight, 12 dB for sixteen: roughly 3 dB each time the count doubles. The diagram below plots the curve (plain maths, not a manufacturer table). One vendor implements it as a 3 dB step per doubling by default, with a maximum-attenuation cap and an optional linear mode that steps per mic instead. Other vendors name and default things differently, so read your own manual.
+
+  ## Last mic on
+
+  If every mic gates shut, the room sounds unnaturally silent and, on a call, the far end thinks the line dropped. "Last mic on" keeps the most recently active channel open when nothing else is. Some mixers instead let you nominate a default channel; on one vendor's mixer the two options are mutually exclusive.
+
+  ## Other controls worth knowing
+
+  - **Maximum open mics**: caps the count; when the limit is exceeded the longest-open mic closes.
+  - **Side-chain filter**: the detector can ignore low-frequency rumble without filtering the audio itself.
+  - **Gating on the loudest mic only**: when one talker feeds several mics, only the loudest opens, which reduces comb-filtering from multiple open mics.
+  - **Manual open**: a channel forced open by hand typically does not count towards NOM.
+
+  ## Strengths and weaknesses
+
+  Gating gives the most control in awkward rooms and with many mics, but it can chatter, clip the first syllable if the threshold is wrong, and makes the room tone jump. Gain-sharing avoids those artefacts; see the Dugan entry. Starting settings for hold time and depth vary by product and the cited pages give no numbers, so none are given here.
+rule:
+  applies_to:
+    source_type: [speech.panel, speech.lectern]
+    event: [corporate, conference]
+  params:
+    nom_attenuation_db_per_doubling: [3, 3]
+  notes: "3 dB per doubling = 10*log10(2), plain maths; one vendor default. Hold time, depth and max-open limits are product-specific: no sourced starting values."
+sources:
+  - title: "Gating Automatic Mic Mixer"
+    publisher: "QSC"
+    kind: course
+    url: "https://training.qsc.com/mod/book/tool/print/index.php?id=218"
+    accessed: "2026-11-09"
+    locator: "Number of Open Mics (NOM) attenuation; Last Mic On"
+  - title: "Gain Sharing vs. Gating Automixer"
+    publisher: "Biamp"
+    kind: article
+    url: "https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer"
+    accessed: "2026-11-09"
+    locator: "Gating Automixer; Last Mic Hold"
+  - title: "Automixer Technology"
+    publisher: "Symetrix"
+    kind: article
+    url: "https://composer-docs.symetrix.co/software/toolkit/design-view/automixers/Automixer_Technology.html"
+    accessed: "2026-11-09"
+    locator: "Gating Automixers; NOM Attenuation"
+  - title: "Using Automatic Mic Mixers"
+    publisher: "AV Network"
+    kind: article
+    url: "https://www.avnetwork.com/avnetwork/mix-it-up"
+    accessed: "2026-11-09"
+    locator: "Gating vs. gain-sharing"
+media:
+  - kind: diagram
+    path: nom-attenuation.png
+    caption: "NOM attenuation = 10*log10(NOM): about 3 dB per doubling of open mics"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:xy_plot"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=2yD4YKnsI7A"
+    title: "Q-SYS: Automatic Mixers - Part A (Gain Sharing - Setup)"
+    channel: "Q-SYS"
+    caption: "Vendor tutorial on the gain-sharing side of the comparison (title seen in search results; not watched in full)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

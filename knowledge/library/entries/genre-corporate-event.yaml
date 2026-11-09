@@ -1,0 +1,75 @@
+id: genre-corporate-event
+title: "Corporate events: speech first, music beds and awards shows"
+title_vi: "Sự kiện doanh nghiệp: giọng nói trước, nhạc nền và lễ trao giải"
+topic: genre
+tags:
+  instrument: [lavalier, headset, podium-mic, playback]
+  genre: [speech]
+  technique: [speech-intelligibility, mic-placement, music-bed-eq, gain-before-feedback]
+  event: [corporate, awards, conference]
+summary: "At a corporate event the message is the product. Prioritise intelligible speech, pick and place mics for feedback margin, and keep music beds from masking the voice."
+body: |
+  ## Balance
+
+  Speech comes first, ahead of music, video and effects. Consonants carry meaning, and DPA's analysis puts them mostly above 500 Hz and concentrated around 2 to 4 kHz, with 1 to 4 kHz of high importance. Removing everything below 500 Hz costs only about 5% of intelligibility, so high-pass speech channels fairly firmly and spend your effort on the mids and highs.
+
+  ## Mics and feedback
+
+  Mic choice decides your gain before feedback. Shure's presenter guide: a lavalier clipped near breast-pocket height sounds right (higher and chin shadow muffles it, lower is too quiet), a headset is less prone to feedback and suits large rooms and louder systems, and podium mics need the speaker to stay in front of them. A lav may simply not reach the level needed in a big room without feedback. DPA notes a chest-worn lav lacks 2 to 4 kHz and suggests boosting roughly 5 to 10 dB around 3 to 4 kHz, either with a pre-equalised mic or EQ. A cheek-mounted headset gets about 10 dB more level than the chest position. Head turns change level a lot, so ride faders or use gentle compression on speech.
+
+  ## Music beds and playback
+
+  DPA treats background music under narration as noise and says a parametric cut of 5 to 10 dB in the 1 to 4 kHz range of the music improves intelligibility; that article is aimed at narration, but the principle applies to presenters over music. Practical version: carve the music, do not just turn it down. Play-in and play-out music can run higher and fuller; pull it to a bed before the speaker starts.
+
+  ## Awards shows
+
+  Awards add live moments: presenters, winners at a podium or lectern, a host, then entertainment. I found no reputable source with numbers for award-show mixing, so none are given. Structurally, treat each speaker position as its own scene, check every mic path including spare lavs, and keep a clean fallback handheld ready. One person per mic during speech helps because open mics add noise and feedback risk.
+
+  ## Effects and dynamics
+
+  Keep effects minimal on speech; reverb smears consonants in a reverberant room. Entertainment segments with a band or singer can use light reverb and delay, using the music and effects entries.
+
+  ## Common mistakes
+
+  - Boosting lows on a lav for warmth, which hides consonants.
+  - Letting music beds sit full-range under speech.
+  - Turning up a lav in a loud room instead of switching to a headset.
+  - Leaving mics open when nobody is speaking.
+
+  Numbers from DPA and Shure are starting points drawn from broadcast and presenter contexts; confirm in the room.
+rule:
+  applies_to:
+    source_type: [speech.lavalier, music.bed]
+    genre: [speech]
+  params:
+    lav_chest_boost_hz: [3000, 4000]
+    lav_chest_boost_db: [5, 10]
+    music_cut_hz: [1000, 4000]
+    music_cut_db: [5, 10]
+  notes: "From DPA Mic University speech-intelligibility article (broadcast context). Starting points; verify by ear."
+sources:
+  - title: "Facts about speech intelligibility"
+    publisher: "DPA Microphones"
+    kind: article
+    url: "https://www.dpamicrophones.com/mic-university/background-knowledge/facts-about-speech-intelligibility/"
+    accessed: "2026-11-09"
+    locator: "What affects intelligibility?; Placing the microphone"
+  - title: "A Basic Guide to Mics and Mic Techniques for Presenters"
+    publisher: "Shure"
+    kind: article
+    url: "https://www.shure.com/en-US/insights/a-basic-guide-to-mics-and-mic-techniques-for-presenters"
+    author: "Chris Lyons"
+    year: 2021
+    accessed: "2026-11-09"
+    locator: "Mic Types; Feedback"
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=XKRnl5KlSv0"
+    title: "How to Choose a Lavalier Microphone"
+    channel: "Shure"
+    caption: "Choosing a lavalier (title ends with Shure on the page; contents not reviewed)"
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

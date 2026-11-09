@@ -1,0 +1,62 @@
+id: eq-hpf-every-channel
+title: "High-pass filter on (almost) every channel: corner choices"
+title_vi: "HPF trên hầu hết các kênh: chọn tần số cắt"
+topic: eq
+tags:
+  instrument: [vocal, guitar, drums, bass, keys]
+  genre: []
+  technique: [eq, hpf, filters]
+  event: [concert, corporate]
+summary: "A high-pass on nearly every channel removes rumble, handling noise, plosives and stage spill, leaving room for kick and bass. Corner frequency depends on the source; the values here are starting points."
+body: |
+  Most sources contain nothing useful below a certain frequency, but a microphone still picks up stage rumble, handling noise, wind, plosives and bleed there. Those low frequencies eat headroom in the PA and muddy the mix. A high-pass filter (HPF) on most channels is the cheapest clean-up on the desk.
+
+  ## Method
+  1. Engage the HPF at a low value.
+  2. Raise the corner slowly while listening in the mix until the sound starts to thin, then back it off a little.
+  3. Bypass to confirm you only removed junk, not body.
+  The corner is a trade: higher means cleaner but thinner. Choosing by ear in context beats any table.
+
+  ## Starting corners (not rules)
+  - **Lead vocal, male:** about 80 Hz; **female:** about 140 Hz. Handheld mics with a close proximity effect may want more.
+  - **Acoustic guitar:** about 80-120 Hz, higher if it fights bass and kick.
+  - **Electric guitar:** about 80 Hz and above; guitar cabinets have little below that anyway.
+  - **Overheads, hi-hats, cymbals:** well above the drum body, often 200-300 Hz.
+  - **Toms and snare:** at or just below their fundamentals; some engineers cut the kick region from them.
+  - **Keys and pads:** depends on the part; wide parts are often cut to free the bass.
+  - **Kick and bass:** usually left open, with only a low rumble filter at 20-40 Hz if needed; check on the system.
+  - **Violin and similar:** around 150 Hz; piccolo much higher (about 400 Hz).
+
+  ## Slope
+  First-order slopes (6-12 dB/oct) sound natural; steeper slopes (18-24 dB/oct) remove more but can ring near the corner. A shelf is an alternative when a full cut sounds thin.
+
+  ## Caveats and disagreement
+  Most engineers filter almost everything; a few warn against HPFs on every guitar or against filtering where the source needs weight. Leave a channel flat unless you can name the problem.
+
+  ## On the WING
+  Each channel has a low-cut with adjustable frequency and slope on the channel strip; set it before the EQ bands and re-check after the soundcheck, with the band playing.
+rule:
+  applies_to: {source_type: [vocal.lead, guitar.electric, guitar.acoustic, overhead, snare, tom, keys, violin, kick, bass]}
+  params:
+    vocal_male_hpf_hz: [80, 100]
+    vocal_female_hpf_hz: [120, 160]
+    acoustic_guitar_hpf_hz: [80, 120]
+    electric_guitar_hpf_hz: [80, 100]
+    overhead_hpf_hz: [200, 300]
+    keys_hpf_hz: [60, 120]
+    violin_hpf_hz: [130, 170]
+    kick_hpf_hz: [20, 40]
+    bass_hpf_hz: [20, 40]
+    slope_db_oct: [12, 24]
+  notes: "Starting points to be adjusted by ear. Overhead and keys values are conventions, not from a cited source."
+sources:
+  - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Frequency Bracketing in Practice"}
+  - {title: "6 ways to use a high-pass filter when mixing", publisher: "iZotope", kind: article, url: "https://www.izotope.com/en/learn/6-ways-to-use-a-high-pass-filter-when-mixing", accessed: "2026-11-09", locator: "Remove low end rumble; Use a high-pass filter carefully or not at all"}
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Guitars & Basses; Vocals"}
+media:
+  - {kind: diagram, path: hpf-corners.png, caption: "HPF corners for a male vocal (80 Hz) and a female vocal (140 Hz), 12 dB/oct.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

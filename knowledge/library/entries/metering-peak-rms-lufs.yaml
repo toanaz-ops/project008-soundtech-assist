@@ -1,0 +1,89 @@
+id: metering-peak-rms-lufs
+title: "Metering: peak, RMS and LUFS (BS.1770 / EBU R128 basics)"
+title_vi: "Đo mức: peak, RMS và LUFS (cơ bản BS.1770 / EBU R128)"
+topic: gain-staging
+tags:
+  instrument: []
+  genre: []
+  technique: [metering, loudness, lufs]
+  event: [concert, corporate, broadcast]
+summary: "Peak meters show the loudest instant, RMS-style meters show average energy, and LUFS measures perceived loudness over a time window. Each answers a different question, so use the right one for the job."
+body: |
+  ## Three questions, three meters
+
+  - **Peak** tells you how close a signal is to clipping. It reacts almost
+    instantly, so it is the right meter for trim and for protecting converters.
+  - **RMS / average** reflects energy over a short window and tracks how
+    "heavy" a sound feels better than a peak meter does. A drum hit may peak
+    high yet have modest RMS.
+  - **LUFS** applies a weighting that approximates how loud people hear
+    something, then averages it. It is the unit used by the loudness
+    standards below.
+
+  ## What BS.1770 and R128 define
+
+  ITU-R BS.1770 specifies the measurement algorithm; EBU R 128 is a European
+  recommendation built on it for programme loudness. A meter in R128 mode
+  typically shows three readings:
+
+  - **Momentary (M)**: a 400 ms window, no gating. Follows the music beat to
+    beat.
+  - **Short-term (S)**: a 3 second window. Good for judging a verse or a
+    chorus.
+  - **Integrated (I)**: the whole programme since reset, with gating that
+    ignores very quiet passages.
+
+  The absolute scale is **LUFS** (equivalent to LKFS in BS.1770). **LU** is a
+  *relative* unit: with the -23 LUFS target, a reading of -23 LUFS shows as
+  0 LU. R128 also caps true peak, commonly quoted as -1 dBTP; a supplement
+  for short-form material adds a short-term limit. Check the current EBU text
+  before quoting a number in a spec, since tolerances depend on the meter's
+  mode.
+
+  ## Using this live
+
+  Broadcast loudness targets are not live-sound targets. A concert is not
+  normalised to -23 LUFS. Still, LUFS-style meters help in three situations:
+
+  1. **Streams and recordings** of a show: if the feed goes to broadcast or
+     a platform, match the specified target.
+  2. **Speech vs music** balance in corporate events: short-term LUFS gives a
+     fairer comparison than peak.
+  3. **Keeping a consistent level** from one act to the next across a
+     festival day.
+
+  ## Common mistakes
+
+  - Reading integrated loudness without resetting it between songs.
+  - Treating a peak meter as a loudness meter: two signals with the same peak
+    can differ by many dB in perceived loudness.
+  - Confusing LU (relative) with LUFS (absolute).
+
+  The numbers in this entry are reference points from the standards, not
+  mixing targets for a live PA.
+rule:
+  applies_to: {source_type: [programme], event: [broadcast, stream]}
+  params:
+    momentary_window_ms: [400, 400]
+    short_term_window_s: [3, 3]
+    target_lufs: [-23, -23]
+    max_true_peak_dbtp: [-1, -1]
+  notes: "broadcast reference values from EBU R128; not a live-sound mix target"
+sources:
+  - title: "Loudness metering"
+    publisher: "Flux"
+    kind: manual
+    url: "https://doc.flux.audio/analyzer/Metering_Loudness.html"
+    accessed: "2026-11-09"
+    locator: "LUFS; Time windows"
+  - title: "EBU R 128 (loudness normalisation and permitted maximum level)"
+    publisher: "EBU"
+    kind: standard
+    url: "https://tech.ebu.ch/docs/r/r128-2014.pdf"
+    accessed: "2026-11-09"
+    locator: "PDF could not be read as text; figures taken from search-result summaries"
+confidence: established
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

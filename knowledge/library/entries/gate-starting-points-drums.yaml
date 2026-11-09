@@ -1,0 +1,62 @@
+id: gate-starting-points-drums
+title: "Gate starting points for kick, snare and toms"
+title_vi: "Điểm xuất phát gate cho kick, snare và tom"
+topic: dynamics
+tags:
+  instrument: [kick, snare, toms]
+  genre: [rock, pop]
+  technique: [gate, attack, hold, release, range]
+  event: [concert]
+summary: "Attack, hold, release and range windows for gating live drums, with the practical method of raising the threshold until only the hits open. The windows are low confidence; the sources give method and mostly not numbers."
+body: |
+  ## The method
+
+  Two sources agree on how to set a drum gate. Raise the threshold until only the intended hits open the gate and the bleed from other drums stays shut, then fine-tune the other controls. A gating tutorial recommends this and a church-sound tutorial adds that you should gate every tom mic but not the overheads, because the overheads need the natural decay of the whole kit.
+
+  Use a partial range rather than full mute so the drum still sounds natural: the gate drops the signal by a set amount instead of closing completely. A shallow range (for example about -12 to -20 dB on a snare) keeps ghost notes audible.
+
+  ## Starting windows (low confidence)
+
+  - **Kick**: attack 0 to 1 ms, hold 30 to 100 ms, release 50 to 150 ms, range -30 to -12 dB.
+  - **Snare**: attack 0 to 1 ms, hold 30 to 100 ms, release 80 to 200 ms, range -20 to -12 dB; partial range keeps ghost notes.
+  - **Toms**: attack 0 to 1 ms, hold 50 to 150 ms, release 100 to 250 ms, range -40 to -20 dB. Toms ring longer, so hold and release are longer.
+
+  These windows come from the research lane's reading of the two tutorials and mostly rest on convention; neither source tabulates numbers. Check by ear: if the front of a hit is clipped, shorten the attack or lower the threshold; if the tail chops off, lengthen hold and release.
+
+  ## Mistakes to avoid
+
+  - Setting a deep range on a live snare so the gate chatters between hits.
+  - Gating the overheads.
+  - Setting the threshold during soundcheck with a soft player. A harder hit opens the gate wider than expected.
+
+  ## Limits
+
+  Without numbers in the sources, treat the ranges above as places to start your own search. Expanders and a sidechain filter are alternatives when a gate sounds abrupt; see the gate and expander entry.
+rule:
+  kind: gate_start
+  applies_to: {source_type: [drums.kick, drums.snare, drums.tom]}
+  params:
+    by_source:
+      drums.kick: {attack_ms: [0, 1], hold_ms: [30, 100], release_ms: [50, 150], range_db: [-30, -12]}
+      drums.snare: {attack_ms: [0, 1], hold_ms: [30, 100], release_ms: [80, 200], range_db: [-20, -12]}
+      drums.tom: {attack_ms: [0, 1], hold_ms: [50, 150], release_ms: [100, 250], range_db: [-40, -20]}
+    threshold_method: "raise until only the intended hits open the gate"
+  notes: "Windows are low confidence; the sources give the method (and not gating overheads) but no figures."
+sources:
+  - title: "Audio Gating Basics"
+    publisher: "Waves Audio"
+    kind: article
+    url: "https://www.waves.com/audio-gating-basics"
+    accessed: "2026-11-09"
+    locator: "threshold setting"
+  - title: "FOH 101: Noise Gates"
+    publisher: "The Church Collective"
+    kind: article
+    url: "https://thechurchcollective.com/tutorial/f-o-h-101-noise-gates/"
+    accessed: "2026-11-09"
+    locator: "which channels to gate"
+confidence: contested
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-import"

@@ -1,0 +1,77 @@
+id: de-esser
+title: "De-esser: taming sibilance"
+title_vi: "De-esser: giảm âm xì (sibilance)"
+topic: dynamics
+tags:
+  instrument: [vocal]
+  genre: []
+  technique: [de-esser, sibilance, split-band, wideband]
+  event: [corporate, concert]
+summary: "A de-esser is a compressor whose detector listens to the sibilance band, so it only turns the voice down on harsh S and T sounds. Choose split-band for transparency and wideband when you need to reduce the whole signal."
+body: |
+  Sibilance is the sharp, hissy energy of "s", "sh" and "t" sounds. Close vocal mics, bright capsules, and heavy high-frequency EQ make it worse, and in a PA it is one of the first things that sounds harsh and fatiguing.
+
+  ## Where it lives
+
+  Most sibilant energy sits around 3 to 6 kHz where hearing is most sensitive, with more above 10 kHz. iZotope gives a broader window of roughly 4 to 10 kHz, and notes that with some voices and mics it can be as low as 1.5 kHz. Female voices tend to have higher-frequency esses than male voices. The exact point depends on the speaker and the microphone, so find it by ear: loop an ess on a recording, or push a narrow EQ boost and sweep until it sounds worst. Many vocal mics also have a presence boost around 5 kHz that exaggerates it.
+
+  ## How a de-esser works
+
+  A de-esser is a compressor whose side-chain is filtered to listen to the sibilance range. When that band is loud, it reduces gain.
+
+  - **Wideband (full-band)** reduces the entire signal when the detector fires. It is simple and robust, but the vowel body also dips, so over-use makes the voice sound like it ducks or lisps.
+  - **Split-band** reduces only the content above the crossover (or in a band), leaving the rest alone. It is more transparent and is usually the first choice. It behaves like a one-band multiband compressor.
+
+  ## Setting it up
+
+  1. Set the frequency where the sibilance is harshest.
+  2. Lower the threshold until you hear it acting on the esses, then back off until the harshness is gone but the speaker still sounds natural.
+  3. Keep the amount modest. Most de-essers have attack and release automated; leave them unless you can hear artifacts.
+  4. Listen to the reduced part if the unit has a "listen" mode, to make sure it only grabs sibilance.
+
+  Starting points: frequency range about 4 to 8 kHz, a few dB of reduction on the worst esses. Treat these as windows, not rules.
+
+  ## Live specifics
+
+  - On a console without a dedicated de-esser, use a compressor with a boosted key filter around the sibilant band, or a multiband compressor with one narrow high band. Sound On Sound lists both as alternatives.
+  - A static EQ cut dulls the voice all the time; a de-esser only acts when needed. Try a gentle cut first on a harsh mic, then add a de-esser for the peaks.
+  - Wireless headset mics for speech often need it more than handheld vocal mics, because the capsule sits very close to the mouth.
+  - De-ess before the effects send. A bright reverb or delay turns sibilance into a splashy wash.
+
+  ## Common mistakes
+
+  - Removing the esses entirely; they are a normal part of speech, and iZotope warns against taking them out completely.
+  - Boosting high frequencies later in the chain and undoing the work.
+  - Stacking one heavy de-esser rather than two gentle passes.
+  - Leaving it static as the singer's level changes; automate or adjust the threshold when the performer gets louder.
+rule:
+  applies_to: {source_type: [vocal.lead, vocal.speech]}
+  params:
+    sibilance_hz: [3000, 8000]
+    deess_reduction_db: [2, 6]
+  notes: "find the actual frequency by ear on a looped ess; split-band first choice"
+sources:
+  - title: "Managing Sibilance"
+    publisher: "Sound On Sound"
+    kind: article
+    url: "https://www.soundonsound.com/techniques/managing-sibilance"
+    accessed: "2026-11-09"
+    locator: "Conventional De-essing / How Much Is Enough?"
+  - title: "What is de-essing? The dos and don'ts of using a de-esser"
+    publisher: "iZotope"
+    kind: article
+    url: "https://www.izotope.com/en/learn/the-dos-and-donts-of-de-essing.html"
+    accessed: "2026-11-09"
+    locator: "Types of de-essers; How to use a de-esser to your advantage"
+media:
+  - kind: diagram
+    path: sibilance-bands.png
+    caption: "Where sibilance sits compared with the vocal body and presence region"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: scripts/library_diagrams.py
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"

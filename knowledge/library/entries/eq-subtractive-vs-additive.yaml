@@ -1,0 +1,56 @@
+id: eq-subtractive-vs-additive
+title: "Subtractive vs additive EQ: cut first, boost carefully"
+title_vi: "EQ cắt và EQ nâng: ưu tiên cắt, nâng có chừng mực"
+topic: eq
+tags:
+  instrument: []
+  genre: []
+  technique: [eq, subtractive-eq, additive-eq]
+  event: []
+summary: "Cutting a problem is usually more transparent than boosting a good part, and cuts leave headroom. Boost still has its place when it is wide and small."
+body: |
+  Two approaches reach the same balance: lower what is too loud, or raise what is too quiet. They are not equal in sound or in risk.
+
+  ## Why cut first
+  A boost is easier to hear as "EQ", and a narrow high-Q boost can ring at its centre. A cut removes the offending region and also makes the neighbouring frequencies appear brighter by comparison, without adding gain. On a live desk, where every channel feeds a limited-headroom PA and a gain-before-feedback ceiling, taking energy away is usually the safer choice. Several sources agree on "cut to fix, boost to enhance".
+
+  ## When a boost is right
+  - A source is simply missing a quality that the microphone captured: a wide, gentle lift of a few dB.
+  - Opening a vocal with a shelf in the air region.
+  - Adding the beater click to a kick.
+  Keep these moves wide and small. Boosting where the source has no content only raises noise.
+
+  ## Shape the width to the job
+  - **Cuts:** narrow to medium Q; deep cuts are fine if the Q is tight.
+  - **Boosts:** wide Q, 1-4 dB. Stacking two bells on the same frequency for a deeper notch uses up headroom and can expose artefacts.
+  - A narrow cut that also removes something wanted can be softened with a small nearby boost.
+
+  ## Practical routine
+  1. Start from flat. Set the high-pass filter first.
+  2. Listen for what is wrong, not what is missing.
+  3. Cut it, bypass to compare, and match levels (a cut makes the result quieter, which can fool you into preferring the original).
+  4. Only then, add a wide boost if the sound still lacks something.
+
+  ## Common mistakes
+  - Boosting a dull vocal and then cutting everything else to compensate: you lose headroom and gain-before-feedback.
+  - Judging in solo; make the decision in the mix.
+  - Reaching for the EQ when the cause is mic position, wrong mic, or stage spill.
+rule:
+  applies_to: {source_type: [any]}
+  params:
+    boost_gain_db: [1, 4]
+    boost_q: [0.5, 1.5]
+    cut_q: [2, 8]
+    cut_gain_db: [-2, -12]
+  notes: "Starting points. Boosts small and wide, cuts narrow and as deep as needed; adjust by ear."
+sources:
+  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Equalisation Or Enhancement?; Mixing With EQ"}
+  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Some Practical Considerations"}
+  - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Using EQ to Improve Church Sound"}
+media:
+  - {kind: diagram, path: cut-vs-boost.png, caption: "A narrow -6 dB cut versus a wide +3 dB boost on the same band.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+confidence: common-practice
+status: draft
+revision: 1
+updated_at: "2026-11-09T00:00:00+07:00"
+updated_by: "agent:library-research"
