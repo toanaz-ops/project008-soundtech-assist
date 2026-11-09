@@ -22,12 +22,14 @@ is reported like any other failure.
 """
 from __future__ import annotations
 
+import gc
 import re
 import threading
 
 import pytest
 
 pytest.importorskip("PySide6.QtWidgets")
+from PySide6.QtCore import QEvent  # noqa: E402
 
 XLSX = "tests/data/ingest-fixture.xlsx"
 
@@ -46,8 +48,16 @@ def panel(qt_app):
     runner = CallRunner()
     widget = MappingTryAi(runner, lambda: object(), lambda: "some.xlsx")
     yield widget
+    # PySide6 6.12 aborts when the cyclic GC frees this widget<->ButtonRunner
+    # cycle while a LATER test's FunctionWorker is mid-run() (CI dump:
+    # "Garbage-collecting" in _settle; D-58). Outside exec(), processEvents()
+    # never delivers DeferredDelete, so free everything here, once this
+    # runner's workers are really done, not at some later GC pass.
+    runner.shutdown(timeout_ms=10_000)
     widget.close()
     widget.deleteLater()
+    qt_app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    gc.collect()
 
 
 def test_a_successful_try_shows_provider_model_and_the_proposal(panel, monkeypatch, settle):

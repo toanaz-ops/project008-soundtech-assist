@@ -1167,6 +1167,12 @@ same loss that made D1-D18 a rescue job.
     `taskkill` without `/F` did not close the onefile process, and it was
     force-killed. The release keeps the 6.11.2 pin until someone closes the
     6.12 exe by hand mid-call and it exits cleanly.
+  - 2026-11-09, `qt-latest` flake (runs 42620478249, 42619688738): the abort is
+    the cyclic GC freeing the previous test's `MappingTryAi`/`ButtonRunner`
+    cycle while the next test's worker runs; the `panel` fixture now drains its
+    runner and frees the cycle in teardown. Repro: `gc.set_threshold(5,1,1)`
+    + `pytest tests/test_ui_mapping_try_ai.py` on 6.12 (red 3/3 before, green
+    after). Production code unchanged; the native cause is not pinned down.
 
 ---
 
