@@ -77,7 +77,9 @@
   const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/đ/g, "d").replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
   const lbl = (o) => (S.lang === "vi" && o.vi) || o.en || o.id;
-  const setView = (...nodes) => { const v = $("view"); v.replaceChildren(...nodes); v.scrollTop = 0; };
+  // Flatten nested arrays and drop false/null like h() does: `cond && node`
+  // and `[heading, [figures]]` are passed straight in.
+  const setView = (...nodes) => { const v = $("view"); v.replaceChildren(...nodes.flat(Infinity).filter((n) => n != null && n !== false)); v.scrollTop = 0; };
   const safeHttp = (u) => /^https?:\/\//i.test(u || "") ? u : null;
 
   /* ---------- auth + API (server mode) ---------- */
