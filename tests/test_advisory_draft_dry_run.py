@@ -156,3 +156,44 @@ def test_dry_run_files_real_scene_and_missing_file(tmp_path, vu_path):
     assert results[0].error is None and results[0].delta.added
     assert results[1].delta is None and results[1].error
     assert results[1].path == missing
+
+
+def test_invalid_applies_when_key_is_error(tmp_path):
+    body = _gate().replace(
+        "    severity: info\n",
+        "    severity: info\n    hardness: flexible\n"
+        "    applies_when: {monitor_bus_cnt: 2}\n")
+    load = dd.load_draft(_draft(tmp_path, body), tmp_path)
+    assert load.error and "draft.gate_on" in load.error
+    assert not load.promotable
+
+
+def test_unknown_for_each_is_error(tmp_path):
+    body = _gate().replace("for_each: channel", "for_each: chanel")
+    load = dd.load_draft(_draft(tmp_path, body), tmp_path)
+    assert load.error and "draft.gate_on" in load.error
+    assert not load.promotable
+
+
+def test_supersede_only_none_iterator_still_loads(tmp_path):
+    body = f"""
+principles:
+  - id: draft.off_g8
+    source: "{GOOD}"
+    supersedes: [G8]
+"""
+    assert dd.load_draft(_draft(tmp_path, body), tmp_path).error is None
+
+
+def test_non_string_vi_fields_rejected(tmp_path):
+    body = _gate().replace("    severity: info\n",
+                           "    severity: info\n    title_vi: [a, b]\n")
+    load = dd.load_draft(_draft(tmp_path, body), tmp_path)
+    assert load.error and "title_vi" in load.error and "draft.gate_on" in load.error
+    body = _gate().replace("    severity: info\n",
+                           "    severity: info\n    message_vi: 5\n")
+    load = dd.load_draft(_draft(tmp_path, body), tmp_path)
+    assert load.error and "message_vi" in load.error
+    body = _gate().replace("    severity: info\n",
+                           "    severity: info\n    title_vi:\n")
+    assert dd.load_draft(_draft(tmp_path, body), tmp_path).error is None

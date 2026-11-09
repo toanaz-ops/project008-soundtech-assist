@@ -12,7 +12,12 @@ from pathlib import Path
 import yaml
 
 from wing_parser.advisory.models import EVENTS, SEVERITIES, Rule
-from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
+from wing_parser.advisory.validation import (
+    _optional,
+    _optional_text,
+    _validate_any_of,
+    _validate_where,
+)
 
 BASE_RULES_DIR = Path(__file__).resolve().parent / "base_rules"
 
@@ -104,8 +109,8 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         applies_when=dict(entry.get("applies_when") or {}),
         any_of=any_of,
         supersedes=tuple(entry.get("supersedes") or ()),
-        title_vi=_optional(entry, "title_vi", ""),
-        message_vi=_optional(entry, "message_vi", ""),
+        title_vi=_optional_text(entry, "title_vi", where_from),
+        message_vi=_optional_text(entry, "message_vi", where_from),
     )
 
 

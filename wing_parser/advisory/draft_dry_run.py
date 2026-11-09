@@ -14,10 +14,14 @@ from pathlib import Path
 
 from wing_parser import config
 from wing_parser.advisory import layers
-from wing_parser.advisory.evaluator import evaluate_all
+from wing_parser.advisory.evaluator import ITERATORS, evaluate_all
 from wing_parser.advisory.loader import load_base_rules
 from wing_parser.advisory.models import Finding, Rule
-from wing_parser.advisory.resolver import active_rules, suppressed_ids
+from wing_parser.advisory.resolver import (
+    _validate_applies_when,
+    active_rules,
+    suppressed_ids,
+)
 from wing_parser.advisory.validation import _validate_owner_source
 
 DRAFTS_DIR = "drafts"
@@ -83,6 +87,16 @@ def _check_ids(path: Path, rules: list[Rule], directory: Path | None) -> None:
                                  f"rule id {target!r}")
 
 
+def check_rules(path: Path, rules) -> None:
+    """Per-rule checks the resolver would raise on at every Doctor run."""
+    for rule in rules:
+        if rule.for_each not in ITERATORS:
+            raise ValueError(f"{path}: rule {rule.id} has unknown for_each "
+                             f"{rule.for_each!r}; expected one of "
+                             f"{sorted(ITERATORS)}")
+        _validate_applies_when(rule)
+
+
 def load_draft(path: Path, directory: Path | None = None) -> DraftLoad:
     path = Path(path)
     try:
@@ -92,6 +106,7 @@ def load_draft(path: Path, directory: Path | None = None) -> DraftLoad:
             raise ValueError(f"{path}: the draft contains no rules under "
                              "'principles:'")
         _check_ids(path, rules, directory)
+        check_rules(path, rules)
     except (ValueError, OSError) as exc:
         return DraftLoad(path=path, error=str(exc))
     blockers: list[str] = []

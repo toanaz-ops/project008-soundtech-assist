@@ -66,7 +66,10 @@ def _merge_text(old: str, entries: list[dict]) -> str:
     block = _entries_text(entries)
     if m.group(1):  # inline empty list
         head = "\n".join(lines[:i]) + ("\n" if i else "")
-        return head + "principles:\n" + block
+        comment = m.group(2)
+        tail = "".join(ln + "\n" for ln in lines[i + 1:])
+        return (head + "principles:" + (f"  {comment}" if comment else "")
+                + "\n" + block + tail)
     return old + ("" if old.endswith("\n") else "\n") + block
 
 
@@ -84,9 +87,12 @@ def promote(draft_path: Path, directory: Path | None = None,
         raw = yaml.safe_load(draft_path.read_text(encoding="utf-8"))
         entries = [dict(e) for e in raw["principles"]]
         # Keep the owner's line endings: read_text folds CRLF to LF.
+        bom = False
         crlf = target.exists() and b"\r\n" in target.read_bytes()
         if target.exists():
             old = target.read_text(encoding="utf-8")
+            bom = old.startswith("\ufeff")
+            old = old.lstrip("\ufeff")
             old_list = (yaml.safe_load(old) or {}).get("principles") or []
         else:
             old = ("# ToanAZ's personal mixing principles.\n"
@@ -101,8 +107,9 @@ def promote(draft_path: Path, directory: Path | None = None,
         try:
             with os.fdopen(fd, "w", encoding="utf-8",
                            newline="\r\n" if crlf else "") as fh:
-                fh.write(merged)
-            layers._as_rules(tmp, layer="toanaz", key="principles")
+                fh.write(("\ufeff" if bom else "") + merged)
+            dd.check_rules(tmp, layers._as_rules(
+                tmp, layer="toanaz", key="principles"))
             backup = None
             if target.exists():
                 backup = target.with_name(target.name + ".bak")
