@@ -3,6 +3,7 @@
 from wing_parser.ui.texts_console_vi import CONSOLE_TEXTS_VI
 from wing_parser.ui.texts_import_vi import IMPORT_TEXTS_VI
 from wing_parser.ui.texts_lang_vi import LANG_TEXTS_VI
+from wing_parser.ui.texts_library_vi import LIBRARY_TEXTS_VI
 from wing_parser.ui.texts_log_vi import LOG_TEXTS_VI
 from wing_parser.ui.texts_moved_vi import MOVED_TEXTS_VI
 from wing_parser.ui.texts_vi import VI_TEXTS
@@ -16,4 +17,5 @@ VI: dict[str, str] = {
     **LANG_TEXTS_VI,
     **MOVED_TEXTS_VI,
     **LOG_TEXTS_VI,
+    **LIBRARY_TEXTS_VI,
 }

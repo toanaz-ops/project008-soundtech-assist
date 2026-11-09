@@ -151,7 +151,9 @@ def test_tab_order_stays_inside_each_page(window, key):
     for _ in range(500):
         walk.append(current)
         current = current.nextInFocusChain()
-        if current is None:
+        # The chain is circular: stop at the lap, or a longer chain (a ninth
+        # page) overwrites the first stops' positions on lap two.
+        if current is None or current is stops[0]:
             break
     position = {id(node): index for index, node in enumerate(walk)}
     missing = [s for s in stops if id(s) not in position]

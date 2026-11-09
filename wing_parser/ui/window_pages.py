@@ -19,6 +19,7 @@ from wing_parser.ui.console_page import ConsolePage
 from wing_parser.ui.diff_page import DiffPage
 from wing_parser.ui.doctor_page import DoctorPage
 from wing_parser.ui.import_page import ImportPage
+from wing_parser.ui.library_page import LibraryPage
 from wing_parser.ui.log_page import LogPage
 from wing_parser.ui.overview_page import OverviewPage
 from wing_parser.ui.routing_page import RoutingPage
@@ -36,6 +37,7 @@ PAGE_ICONS = {
     "import_": "fa5s.file-import",
     "console": "fa5s.network-wired",
     "log": "fa5s.clipboard-list",
+    "library": "fa5s.book-open",
 }
 
 
@@ -54,6 +56,7 @@ def build_pages(window) -> dict[str, QWidget]:
     pages["console"].session_pulled.connect(
         pages["import_"].scene_step.set_pulled_session)
     pages["log"] = LogPage()
+    pages["library"] = LibraryPage()
     return pages
 
 

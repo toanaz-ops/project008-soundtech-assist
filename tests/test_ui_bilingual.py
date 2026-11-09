@@ -20,6 +20,8 @@ def _pairs():
     from wing_parser.ui.texts_import_vi import IMPORT_TEXTS_VI
     from wing_parser.ui.texts_lang import LANG_TEXTS
     from wing_parser.ui.texts_lang_vi import LANG_TEXTS_VI
+    from wing_parser.ui.texts_library import LIBRARY_TEXTS
+    from wing_parser.ui.texts_library_vi import LIBRARY_TEXTS_VI
     from wing_parser.ui.texts_log import LOG_TEXTS
     from wing_parser.ui.texts_log_vi import LOG_TEXTS_VI
     from wing_parser.ui.texts_moved import MOVED_TEXTS
@@ -29,7 +31,7 @@ def _pairs():
     from wing_parser.ui.texts_write_vi import WRITE_TEXTS_VI
 
     merged = {*CONSOLE_TEXTS, *IMPORT_TEXTS, *WRITE_TEXTS, *LANG_TEXTS,
-              *MOVED_TEXTS, *LOG_TEXTS}
+              *MOVED_TEXTS, *LOG_TEXTS, *LIBRARY_TEXTS}
     base = {k: v for k, v in texts.TEXTS.items() if k not in merged}
     return [
         ("base", base, VI_TEXTS),
@@ -39,6 +41,7 @@ def _pairs():
         ("lang", LANG_TEXTS, LANG_TEXTS_VI),
         ("moved", MOVED_TEXTS, MOVED_TEXTS_VI),
         ("log", LOG_TEXTS, LOG_TEXTS_VI),
+        ("library", LIBRARY_TEXTS, LIBRARY_TEXTS_VI),
     ]
 
 
