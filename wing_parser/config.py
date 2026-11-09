@@ -31,6 +31,34 @@ _REPO_DEFAULT = Path(__file__).resolve().parent.parent / "knowledge" / "toanaz"
 
 USER_DEFAULT = Path.home() / ".config" / "wing-skill"
 
+PROFILE_ENV_VAR = "DEVCAVE_TEST_PROFILE"
+PROFILE_TITLE_MARKER = " [TEST PROFILE]"
+
+
+def test_profile() -> Path | None:
+    """The isolated test profile directory, or None when not set.
+
+    Set by the harness launcher (`shared/harness/guards/test_app_launcher.ps1`).
+    A relative value raises ValueError: silently falling back to the real
+    per-user paths would defeat the isolation it exists for. This is the
+    only place that reads the variable.
+    """
+    raw = os.environ.get(PROFILE_ENV_VAR, "").strip()
+    if not raw:
+        return None
+    path = Path(raw)
+    if not path.is_absolute():
+        raise ValueError(f"{PROFILE_ENV_VAR} must be an absolute path, got {raw!r}")
+    return path
+
+
+def user_dir() -> Path:
+    """Per-user knowledge/state directory: the test profile's, else the real one."""
+    profile = test_profile()
+    if profile is None:
+        return USER_DEFAULT
+    return profile / "home" / ".config" / "wing-skill"
+
 SEARCH_ORDER: tuple[Path, ...] = (
     _REPO_DEFAULT,
     USER_DEFAULT,
@@ -56,6 +84,11 @@ def knowledge_dir(override: Path | None = None) -> Path:
     if override is not None:
         return Path(override)
 
+    # A test profile beats the env var and the in-repo default: the point
+    # is that no real directory can be reached while it is active.
+    if test_profile() is not None:
+        return user_dir()
+
     from_env = os.environ.get(ENV_VAR)
     if from_env:
         return Path(from_env)
@@ -63,7 +96,7 @@ def knowledge_dir(override: Path | None = None) -> Path:
     if is_frozen():
         # SEARCH_ORDER is deliberately not consulted: its first entry is
         # the bundle's own temporary copy, which exists and would win.
-        return USER_DEFAULT
+        return user_dir()
 
     for candidate in SEARCH_ORDER:
         if candidate.is_dir():
@@ -118,6 +151,8 @@ def library_dir(override: Path | None = None) -> Path:
     """
     if override is not None:
         return Path(override)
+    if test_profile() is not None:
+        return user_dir() / "library"
     from_env = os.environ.get(LIBRARY_ENV_VAR)
     if from_env:
         return Path(from_env)

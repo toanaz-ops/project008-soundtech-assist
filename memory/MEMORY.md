@@ -388,3 +388,12 @@ comment phía sau; callback reanalyse ném lỗi ra Qt. Đã sửa ở PR #56
 (`d3a9b9e`, `check_rules` trong `draft_dry_run.py`). Exe phát hành mới nhất
 (6.11.2) từ `d3a9b9e`: `dist\w11b\wing-ui.exe` (71.420.922 bytes, zip
 `dist\wing-ui-20261109g.zip`) — thay bản w11.
+
+## 2026-11-10 — DEVCAVE_TEST_PROFILE (UI test cô lập)
+Sự cố: UI test app thật của dự án khác trả lời "không lưu" khi thoát, xoá autosave của chủ.
+Biến `DEVCAVE_TEST_PROFILE=<đường dẫn tuyệt đối>` (launcher chung set) → `config.test_profile()`
+là chỗ DUY NHẤT đọc nó; `config.user_dir()`/`knowledge_dir()`/`library_dir()` đổi sang
+`<profile>/home/.config/wing-skill` (thắng cả WING_KNOWLEDGE_DIR / WING_LIBRARY_DIR). Đường dẫn
+tương đối → ValueError. Title cửa sổ thêm " [TEST PROFILE]". `ui-state.json` (recent, consoles,
+geometry) nằm trong knowledge_dir nên tự được cô lập. Chưa ép: Qt tự lưu theo APPDATA/HOME
+(launcher đã trỏ), hộp thoại file mở ở thư mục hiện hành. Test: `tests/test_test_profile.py`.

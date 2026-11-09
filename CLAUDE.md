@@ -31,3 +31,7 @@ explicit paths.
 `main` chỉ đổi qua PR đã merge trên GitHub; không commit thẳng vào main local.
 Mỗi task một nhánh trong worktree riêng, CI (check `test`) phải xanh, người bấm
 Merge là ToanAZ. Chi tiết và lệnh cụ thể: `docs/git-workflow.md`.
+
+## UI tests on the real app
+
+Real-app UI tests: launch only via `D:/DEV CAVE EP3/shared/harness/guards/test_app_launcher.ps1 -App soundtech_assist` (DEVCAVE_TEST_PROFILE); never answer don't-save/discard on a window you did not start.

@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from wing_parser import config
 from wing_parser.ui import live_wiring, menus, window_pages, window_state
 from wing_parser.ui.changes_panel import ChangesPanel
 from wing_parser.ui.focus_chain import _chain_tab_order, _tab_stops  # noqa: F401 -- _tab_stops re-export
@@ -142,12 +143,13 @@ class MainWindow(QMainWindow):
         self._changes_dock.setVisible(
             loaded and (self.session.dirty or self.changes_panel.has_ledger()))
 
+        marker = config.PROFILE_TITLE_MARKER if config.test_profile() else ""
         if not loaded:
-            self.setWindowTitle(text("app.title"))
+            self.setWindowTitle(text("app.title") + marker)
             return
         mark = " *" if self.session.dirty else ""
         profile = f"  [{self.session.profile}]" if self.session.profile else ""
         self.setWindowTitle(text("window.title").format(
             app=text("app.title"), file=self.session.path.name,
             profile=profile, mark=mark,
-        ))
+        ) + marker)
