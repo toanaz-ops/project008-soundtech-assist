@@ -314,3 +314,22 @@ một FunctionWorker khác đang chạy — sửa phía test ở #47; app thật
 kiểu (D-58 còn mở). **Bẫy 2:** agent chạy test bằng python ngoài `.venv` sẽ
 thiếu `qtawesome` và bỏ sót test — dùng `.venv` của checkout chính + `PYTHONPATH=.`
 từ gốc worktree (editable install trỏ về checkout chính). Handoff: `D:\DEV CAVE EP3\shared\handoff\handoff-20261109-p008-wave6-7.md`.
+
+## 2026-11-09 — Wave 8 + 9: rule nháp chạy thử rồi chép vào principles (đã merge)
+
+PR #49 (`6bc316d`) + PR #50 (`b2f856e`). Nháp rule nằm ở
+`<knowledge_dir>/drafts/*.yaml` (schema như `principles.yaml`); resolver
+**không bao giờ** đọc `drafts/` — test khoá điều này. Tools ▸ Draft rule
+dry-run… chạy nháp trên scene Doctor + `.snap` gần đây, so finding trước/sau.
+Nút Copy into principles.yaml… chỉ bật khi `source:` có `ToanAZ` + ngày ISO;
+ghi `.bak`, giữ comment đầu file và **CRLF** (file thật của ông là CRLF —
+review độc lập bắt được lỗi đổi sang LF, đã sửa), nháp dời sang
+`drafts/promoted/`. CI 2393 / 0 / 3. Exe build lại từ `b2f856e` ra
+`dist\w9\wing-ui.exe` (71.416.186 bytes; zip `dist\wing-ui-20261109d.zip`;
+`--screenshot` chạy xong mã 0, 9 ảnh `dist-shots\exe-20261109-w9-en\`) —
+`dist\wing-ui.exe` vẫn là bản wave 8 (`6bc316d`) vì một tiến trình smoke
+còn giữ file. **Bẫy:** exe onefile sinh tiến trình con; smoke bằng
+`--screenshot DIR` (tự thoát) thay vì Start-Process + Stop-Process.
+**Bẫy:** gõ ký hiệu `−` (U+2212) trong UI → font vendored có thể thiếu
+(D-51), dùng `-` ASCII. `run_capped.ps1` phải gọi qua `pwsh -NoProfile -File`
+— gọi bằng `&` thì PowerShell nuốt `--` và script thoát mã 2.
