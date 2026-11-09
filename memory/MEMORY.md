@@ -333,3 +333,15 @@ còn giữ file. **Bẫy:** exe onefile sinh tiến trình con; smoke bằng
 **Bẫy:** gõ ký hiệu `−` (U+2212) trong UI → font vendored có thể thiếu
 (D-51), dùng `-` ASCII. `run_capped.ps1` phải gọi qua `pwsh -NoProfile -File`
 — gọi bằng `&` thì PowerShell nuốt `--` và script thoát mã 2.
+
+## 2026-11-09 — Wave 10: D-58 phía app (đã merge) + exe thử 6.12
+
+PR #52 (`5f4b1e0`): đóng cửa sổ chính / Settings / Vocabulary khi một call
+đang treo giờ huỷ mọi `CallRunner` bên dưới, chờ chung tối đa 1 s
+(`ui/runner_shutdown.py`); worker còn chạy được giữ sống toàn app, không bị
+huỷ. CI 2397 / 0 / 3 trên cả 6.11.2 và 6.12. Exe phát hành (6.11.2) build lại
+từ `5f4b1e0`: `dist\w10\wing-ui.exe` (71.417.584 bytes, zip
+`dist\wing-ui-20261109e.zip`). Exe THỬ 6.12: `dist\qt612\wing-ui.exe` từ venv
+riêng `build/venv-qt612` — chỉ để ông tự đóng giữa lúc call treo (HW-192);
+không phát hành. `dist\wing-ui.exe` vẫn là bản wave 8 vì file bị một tiến trình
+smoke giữ; đóng nó rồi chép `dist\w10\wing-ui.exe` đè lên.
