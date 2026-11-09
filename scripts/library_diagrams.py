@@ -12,6 +12,7 @@ deterministic, so re-running is idempotent.
 from __future__ import annotations
 
 import argparse
+import os
 import importlib.util
 import math
 import sys
@@ -409,11 +410,12 @@ def render_item(item: dict) -> str:
 
 def svg_to_png(svg_path: Path, png_path: Path) -> None:
     """Rasterise with QtSvg (dev-time only)."""
-    import os
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    from PySide6.QtGui import QColor, QGuiApplication, QImage, QPainter
+    from PySide6.QtGui import QColor, QImage, QPainter
     from PySide6.QtSvg import QSvgRenderer
-    app = QGuiApplication.instance() or QGuiApplication([])  # noqa: F841 - keeps fonts alive
+    from PySide6.QtWidgets import QApplication
+    # QApplication, not QGuiApplication: under pytest a bare QGuiApplication
+    # created here makes the later `qt_app` fixture's widget tests abort.
+    app = QApplication.instance() or QApplication([])  # noqa: F841 - keeps fonts alive
     # The offscreen platform has no system fonts: load the app's vendored sans
     # and let the SVG's generic "sans-serif" resolve to it.
     from PySide6.QtGui import QFont, QFontDatabase
@@ -469,4 +471,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # Headless only when run as a script; inside pytest the shared
+    # QApplication's platform is the test run's choice, not ours.
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     sys.exit(main())

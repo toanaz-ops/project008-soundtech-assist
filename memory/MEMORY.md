@@ -354,6 +354,7 @@ rule base đã dịch (danh từ mixer giữ English, test parity placeholder). 
 CI 2405 / 0 / 3. Exe phát hành (6.11.2) từ `52d9c0d`: `dist\w11\wing-ui.exe`
 (71.421.585 bytes, zip `dist\wing-ui-20261109f.zip`, ảnh `--lang vi` ở
 `dist-shots\exe-20261109-w11-vi\`). Câu VI chờ ông duyệt.
+
 ## 2026-11-09 — Thư viện kiến thức mix (trang Library + web + artifact)
 
 Kho `knowledge/library/` (một YAML/mục, lịch sử JSONL, `SCHEMA.md` là nguồn
