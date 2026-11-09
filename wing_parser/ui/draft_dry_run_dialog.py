@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 from wing_parser import config
 from wing_parser.advisory import draft_dry_run as dd
 from wing_parser.ui import draft_dry_run_tables as tables
+from wing_parser.ui import draft_promote_ui
 from wing_parser.ui.texts import text
 
 NEWLINE = chr(10)
@@ -38,8 +39,10 @@ def default_scenes(window) -> list[str]:
 
 
 class DraftDryRunDialog(QDialog):
-    def __init__(self, parent=None, scenes=(), directory=None) -> None:
+    def __init__(self, parent=None, scenes=(), directory=None,
+                 on_promoted=None) -> None:
         super().__init__(parent)
+        self._on_promoted = on_promoted
         self.setWindowTitle(text("dryrun.title"))
         self.resize(980, 640)
         self._directory = directory
@@ -67,6 +70,7 @@ class DraftDryRunDialog(QDialog):
         self.remove_btn.clicked.connect(self._remove)
         self.run_btn = QPushButton(text("dryrun.run"))
         self.run_btn.clicked.connect(self.run)
+        self.promote_btn = draft_promote_ui.make_button(self)
         self.no_change = QLabel(text("dryrun.no_change"))
         self.no_change.setVisible(False)
         self.summary, self.summary_model = tables.make_table(
@@ -78,6 +82,7 @@ class DraftDryRunDialog(QDialog):
         row.addWidget(QLabel(text("dryrun.draft_label")))
         row.addWidget(self.combo, 1)
         row.addWidget(self.browse)
+        row.addWidget(self.promote_btn)
         side = QVBoxLayout()
         for w in (self.add_btn, self.remove_btn, self.run_btn):
             side.addWidget(w)
@@ -131,6 +136,7 @@ class DraftDryRunDialog(QDialog):
     def _update_run(self) -> None:
         ok = self._load is not None and not self._load.error
         self.run_btn.setEnabled(ok and self.scene_list.count() > 0)
+        self.promote_btn.setEnabled(draft_promote_ui.can_promote(self._load))
 
     def _browse(self) -> None:
         name, _ = QFileDialog.getOpenFileName(
@@ -178,4 +184,5 @@ class DraftDryRunDialog(QDialog):
 
 
 def open_draft_dry_run(window) -> None:
-    DraftDryRunDialog(window, default_scenes(window)).exec()
+    cb = window.reanalyse if getattr(window, "session", None) else None
+    DraftDryRunDialog(window, default_scenes(window), on_promoted=cb).exec()
