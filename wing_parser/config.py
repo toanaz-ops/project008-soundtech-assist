@@ -91,3 +91,36 @@ def seed_user_dir(target: Path | None = None, source: Path | None = None) -> boo
 
     shutil.copytree(origin, destination)
     return True
+
+
+LIBRARY_ENV_VAR = "WING_LIBRARY_DIR"
+
+_LIBRARY_REPO_DEFAULT = (
+    Path(__file__).resolve().parent.parent / "knowledge" / "library"
+)
+
+
+def shipped_library_dir() -> Path:
+    """The read-only mixing library that ships with the app.
+
+    The repo's knowledge/library, which in a frozen build is the bundle copy.
+    The user layer (`library_dir()`) overlays it; nothing is copied.
+    """
+    return _LIBRARY_REPO_DEFAULT
+
+
+def library_dir(override: Path | None = None) -> Path:
+    """Where the mixing knowledge library lives (see knowledge/library/SCHEMA.md).
+
+    override -> WING_LIBRARY_DIR -> frozen: USER_DEFAULT/library ->
+    the in-repo directory. A frozen build must never resolve to the
+    bundle's temporary extraction directory (see module docstring).
+    """
+    if override is not None:
+        return Path(override)
+    from_env = os.environ.get(LIBRARY_ENV_VAR)
+    if from_env:
+        return Path(from_env)
+    if is_frozen():
+        return USER_DEFAULT / "library"
+    return _LIBRARY_REPO_DEFAULT

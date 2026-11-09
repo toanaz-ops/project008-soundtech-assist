@@ -51,6 +51,10 @@ DATAS = [
     # The seed. Target path must match config._REPO_DEFAULT, which is
     # <bundle root>/knowledge/toanaz.
     ("../knowledge/toanaz", "knowledge/toanaz"),
+    # The mixing knowledge library, read-only shipped layer, must match
+    # config._LIBRARY_REPO_DEFAULT (<bundle root>/knowledge/library); the user
+    # layer in ~/.config/wing-skill/library overlays it (nothing is copied).
+    ("../knowledge/library", "knowledge/library"),
 ]
 
 # Optional extras this build deliberately does not carry. The tool is
