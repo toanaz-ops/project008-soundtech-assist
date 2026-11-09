@@ -89,7 +89,9 @@ class LibraryStore:
             layers.append(("shipped", self.shipped_root))
         return layers
 
-    def _taxonomy_root(self) -> Path:
+    @property
+    def taxonomy_root(self) -> Path:
+        """Folder holding topics.yaml / publishers.yaml (user layer first, then shipped)."""
         for _, root in self._layers():
             if (root / "topics.yaml").is_file():
                 return root
@@ -125,7 +127,7 @@ class LibraryStore:
 
     # -- reading ---------------------------------------------------------
     def _check(self, entry: dict) -> list[Issue]:
-        tax = self._taxonomy_root()
+        tax = self.taxonomy_root
         return validate(entry, topics=schema.load_topics(tax),
                         publishers=schema.load_publishers(tax),
                         media_root=[r / "media" for _, r in self._layers()])

@@ -161,14 +161,15 @@ def export_web(args) -> int:
     from wing_parser.library.web.export import export_web as run_export
 
     try:
-        result = run_export(_store(), Path(args.out_dir))
+        artifact = bool(getattr(args, "artifact", False))
+        result = run_export(_store(), Path(args.out_dir), artifact=artifact)
     except render.MissingDependency as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     for item in result["missing_media"]:
         print(f"warning: diagram not exported (missing or not PNG): {item}", file=sys.stderr)
     print(f"exported {result['entries']} entries, {result['media']} images, "
-          f"{result['bytes'] / 1024:.0f} KiB -> {Path(args.out_dir) / 'index.html'}")
+          f"{result['bytes'] / 1024:.0f} KiB -> {result['path']}")
     return 0
 
 
@@ -214,4 +215,6 @@ def register(sub) -> None:
     p.set_defaults(handler=history)
     p = inner.add_parser("export-web", help="write a static, read-only web export of the library")
     p.add_argument("out_dir")
+    p.add_argument("--artifact", action="store_true",
+                   help="write ONE page fragment library.html (inline images, link-card videos) for claude.ai artifacts")
     p.set_defaults(handler=export_web)

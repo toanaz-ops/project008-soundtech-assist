@@ -80,6 +80,8 @@
   // Flatten nested arrays and drop false/null like h() does: `cond && node`
   // and `[heading, [figures]]` are passed straight in.
   const setView = (...nodes) => { const v = $("view"); v.replaceChildren(...nodes.flat(Infinity).filter((n) => n != null && n !== false)); v.scrollTop = 0; };
+  // Plain hashes only (#e-<id>, #edit-<id>, #hist-<id>, #new): the artifact host passes just `#name`.
+  const go = (kind, id) => { location.hash = kind === "new" ? "#new" : "#" + kind + "-" + id; };
   const safeHttp = (u) => /^https?:\/\//i.test(u || "") ? u : null;
 
   /* ---------- auth + API (server mode) ---------- */
@@ -158,7 +160,7 @@
     tree.replaceChildren(...sorted.map(([k, list]) => h("details", { open: !!S.query || list.some((e) => e.id === S.id) },
       h("summary", {}, name(k) + " ", h("span", { class: "n" }, "(" + list.length + ")")),
       list.map((e) => h("button", { type: "button", class: "item" + (e.id === S.id ? " sel" : "") + (e.status === "retired" ? " retired" : ""),
-        onclick: () => { location.hash = "#/e/" + e.id; document.getElementById("app").classList.remove("menu-open"); } }, titleOf(e))))));
+        onclick: () => { go("e", e.id); document.getElementById("app").classList.remove("menu-open"); } }, titleOf(e))))));
   }
   function renderChrome() {
     document.documentElement.lang = S.lang;
@@ -220,6 +222,14 @@
       } else if (m.kind === "video") {
         const url = safeHttp(m.url), id = ytId(m.url || "");
         const block = h("div", { class: "video" });
+        if (EXPORT) {
+          // Iframes are blocked on the artifact host: a link card that opens YouTube in a new tab.
+          const start = startSeconds(m.timestamp);
+          const href = id ? "https://www.youtube.com/watch?v=" + encodeURIComponent(id) + (start ? "&t=" + start + "s" : "") : url;
+          const label = ["▶ " + (m.title || "video"), m.channel, m.timestamp].filter(Boolean).join(" · ") + (m.caption ? " — " + m.caption : "");
+          out.push(href ? h("a", { class: "video-card", href, target: "_blank", rel: "noopener noreferrer" }, label) : h("div", { class: "video-card" }, label));
+          continue;
+        }
         if (id) {
           const start = startSeconds(m.timestamp);
           block.append(h("iframe", { src: "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + (start ? "?start=" + start : ""),
@@ -247,8 +257,8 @@
       e.unvetted && h("span", { class: "badge amber" }, t("unvetted")),
       ...["instrument", "genre", "technique"].flatMap((g) => ((e.tags || {})[g] || []).map((v) => h("span", { class: "badge" }, v))));
     const actions = (!EXPORT) && h("div", { class: "actions" },
-      S.canEdit && h("button", { class: "btn", type: "button", onclick: () => (location.hash = "#/edit/" + id) }, t("edit")),
-      h("button", { class: "btn", type: "button", onclick: () => (location.hash = "#/hist/" + id) }, t("history")),
+      S.canEdit && h("button", { class: "btn", type: "button", onclick: () => go("edit", id) }, t("edit")),
+      h("button", { class: "btn", type: "button", onclick: () => go("hist", id) }, t("history")),
       S.canEdit && e.status !== "retired" && h("button", { class: "btn danger", type: "button", onclick: () => retireEntry(id) }, t("retire")));
     const media = mediaBlocks(e);
     setView(
@@ -262,6 +272,7 @@
     $("view").focus({ preventScroll: true });
   }
   async function retireEntry(id) {
+    if (EXPORT) return; // dialogs are no-ops on the artifact host; retiring is server-only
     const note = prompt(t("retireAsk"), "");
     if (note === null) return;
     try { await api("api/entries/" + id + "/retire", { method: "POST", body: { note } }); await afterWrite(id); } catch (err) { fatal(err); }
@@ -270,7 +281,7 @@
     S.detail = {};
     await load();
     renderTree();
-    if (location.hash === "#/e/" + id) route(); else location.hash = "#/e/" + id;
+    if (location.hash === "#e-" + id) route(); else go("e", id);
   }
 
   /* ---------- edit form ---------- */
@@ -364,7 +375,7 @@
       h("h2", {}, t("media")), mediaBox, h("button", { type: "button", class: "btn", onclick: () => addMedia() }, t("addMedia")),
       field(t("f_rule"), f.rule), field(t("note"), f.note), lic, msg,
       h("div", { class: "actions" }, h("button", { type: "submit", class: "btn primary" }, t("save")),
-        h("button", { type: "button", class: "btn", onclick: () => (location.hash = creating ? "#/" : "#/e/" + id) }, t("cancel")))));
+        h("button", { type: "button", class: "btn", onclick: () => (creating ? (location.hash = "") : go("e", id)) }, t("cancel")))));
   }
 
   /* ---------- history ---------- */
@@ -385,23 +396,26 @@
       h("span", { class: "muted" }, r.author + " · " + r.at),
       S.canEdit && h("button", { type: "button", class: "btn", onclick: async (ev) => {
         ev.stopPropagation();
-        if (!confirm(t("restoreAsk"))) return;
+        if (EXPORT || !confirm(t("restoreAsk"))) return;
         try { await api("api/entries/" + id + "/restore", { method: "POST", body: { rev: r.rev, note: "" } }); await afterWrite(id); } catch (err) { fatal(err); }
       } }, t("restore")))));
-    setView(h("h1", {}, t("history") + ": " + id), h("div", { class: "actions" }, h("button", { class: "btn", type: "button", onclick: () => (location.hash = "#/e/" + id) }, t("back"))),
+    setView(h("h1", {}, t("history") + ": " + id), h("div", { class: "actions" }, h("button", { class: "btn", type: "button", onclick: () => go("e", id) }, t("back"))),
       h("h2", {}, t("revisions")), list, diffBox);
     if (revs.length) pick(revs.length - 1);
   }
 
   /* ---------- routing ---------- */
   function route() {
-    const m = location.hash.match(/^#\/(e|edit|hist)\/([\w-]+)$/);
+    // Plain form #e-<id>; the old #/e/<id> form still resolves.
+    const m = location.hash.match(/^#(?:\/(e|edit|hist)\/|(edit|hist|e)-)([\w-]+)$/);
+    if (m) { m[1] = m[1] || m[2]; m[2] = m[3]; }
+    const isNew = location.hash === "#new" || location.hash === "#/new";
     S.id = m && m[1] === "e" ? m[2] : (m ? m[2] : null);
     renderTree();
     if (m && m[1] === "e") showEntry(m[2]);
     else if (m && m[1] === "edit") showForm(m[2]);
     else if (m && m[1] === "hist" && !EXPORT) showHistory(m[2]);
-    else if (location.hash === "#/new") showForm(null);
+    else if (isNew) showForm(null);
     else setView(h("p", { class: "muted" }, t("empty")), EXPORT && h("p", { class: "muted" }, t("exportNote") + " · " + t("generated") + " " + (S.data.generated_at || "")));
   }
   function wire() {
@@ -413,7 +427,7 @@
       try { localStorage.setItem("library-lang", S.lang); } catch (e) { /* private mode */ }
       renderChrome(); route();
     });
-    $("new-btn").addEventListener("click", () => { location.hash = "#/new"; });
+    $("new-btn").addEventListener("click", () => go("new"));
     $("menu-btn").addEventListener("click", () => $("app").classList.toggle("menu-open"));
     window.addEventListener("hashchange", route);
   }

@@ -227,7 +227,7 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
     def entries(token: str = Depends(need_view)):
         loaded = store.entries(include_retired=True)
         return {"mode": "server", "can_edit": auth.permissions(token)[EDIT],
-                "topics": render.topic_list(load_topics(store._taxonomy_root())),
+                "topics": render.topic_list(load_topics(store.taxonomy_root)),
                 "schema": render.schema_info(),
                 "entries": [render.list_item(x) for x in loaded],
                 "facets": {k: dict(v) for k, v in facets(loaded).items()}}

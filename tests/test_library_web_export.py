@@ -94,3 +94,37 @@ def test_cli_export_web_writes_index(store, tmp_path, monkeypatch, capsys):
     assert library_commands.export_web(args) == 0
     assert (tmp_path / "cli" / "index.html").is_file()
     assert "exported 2 entries" in capsys.readouterr().out
+
+
+def test_artifact_export_is_a_single_fragment(store, tmp_path, monkeypatch, capsys):
+    video = {"kind": "video", "url": "https://youtu.be/abc123XYZ_-", "title": "Talk", "channel": "Ch", "timestamp": "1:05"}
+    store.save(entry("with-video", media=[video]), author="t", note="n")
+    out = tmp_path / "art"
+    result = export_web(store, out, artifact=True)
+    page = (out / "library.html").read_text(encoding="utf-8")
+    assert [p.name for p in out.iterdir()] == ["library.html"]
+    assert result["path"] == out / "library.html" and result["media"] == 1
+    assert page.startswith("<title>Thư viện Mix</title>\n<meta name=\"claude:viewport-fit-sides\" content=\"cover\">")
+    assert not re.search(r"<(html|head|body)[\s>]", page) and "<!doctype" not in page.lower()
+    assert "youtube.com/watch?v=" in page  # video link cards, no embeds
+    assert "data:image/png;base64," in page and "media/with-diagram/curve.png" not in page
+    assert '"#" + kind + "-"' in page and "<iframe" not in page
+    assert "#/e/" in page  # legacy form stays readable
+    assert "<style>" in page and "<script>" in page
+
+
+def test_artifact_cli_flag(store, tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(library_commands, "_store", lambda: store)
+    args = type("A", (), {"out_dir": str(tmp_path / "c"), "artifact": True})()
+    assert library_commands.export_web(args) == 0
+    assert (tmp_path / "c" / "library.html").is_file() and not (tmp_path / "c" / "index.html").exists()
+    assert "library.html" in capsys.readouterr().out
+
+
+def test_shell_keeps_full_document_for_server_mode():
+    from wing_parser.library.web.export import static_text
+    shell = static_text("index.html")
+    assert "<!doctype html>" in shell.lower() and "<body>" in shell
+    css = static_text("app.css")
+    assert ':root[data-theme="light"]' in css and ':root:not([data-theme="dark"])' in css
+    assert "100vh" not in css
