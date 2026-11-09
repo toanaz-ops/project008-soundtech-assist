@@ -34,11 +34,12 @@ from wing_parser.ui.ai_error_text import ai_message
 from wing_parser.ui.call_button import ButtonRunner
 from wing_parser.ui.settings_io import dump_yaml, mask, resolve_key
 from wing_parser.ui.settings_language import LanguageRow
+from wing_parser.ui.runner_shutdown import ShutdownOnDone
 from wing_parser.ui.texts import text
 from wing_parser.ui.workers import CallRunner
 
 
-class SettingsDialog(QDialog):
+class SettingsDialog(ShutdownOnDone, QDialog):
     def __init__(self, parent=None, *, probe=None) -> None:
         super().__init__(parent)
         self._probe = probe or settings_probe.probe
@@ -86,8 +87,7 @@ class SettingsDialog(QDialog):
         self.cancel_button.setVisible(False)
         save_btn = QPushButton(text("settings.save"))
         save_btn.clicked.connect(self._save_and_close)
-        close_btn = QPushButton(text("settings.close"))
-        close_btn.clicked.connect(self.reject)
+        close_btn = QPushButton(text("settings.close"), clicked=self.reject)
         self._runner = CallRunner(self)
         self._probe_call = ButtonRunner(
             runner=self._runner, primary=self.test_button,

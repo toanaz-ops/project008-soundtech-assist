@@ -164,18 +164,23 @@ class CallRunner(QObject):
         if active["on_cancel"] is not None:
             active["on_cancel"]()
 
-    def shutdown(self, timeout_ms: int = 2000) -> None:
-        """Owner is closing: cancel, wait a bounded time for this runner's
-        workers. Stragglers remain parked in the module keep-alive set."""
-        active = self._active
+    def drain(self) -> list:
+        """Cancel active + retired calls; return their workers."""
         workers = list(self._retired)
-        if active is not None:
-            workers.append(active["worker"])
+        if self._active is not None:
+            workers.append(self._active["worker"])
             self.cancel()
         for worker in workers:
             worker.cancel()
-        wait_all(workers, timeout_ms)
+        return workers
+
+    def prune(self) -> None:
         self._retired[:] = [w for w in self._retired if w.isRunning()]
+
+    def shutdown(self, timeout_ms: int = 2000) -> None:
+        """Owner closing: cancel, bounded wait; stragglers stay parked."""
+        wait_all(self.drain(), timeout_ms)
+        self.prune()
 
     # -- internals ------------------------------------------------------
 

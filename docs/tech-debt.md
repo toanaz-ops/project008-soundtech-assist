@@ -1195,3 +1195,17 @@ as the new baseline. That figure was measured at **Task 0**, before eleven furth
 tasks landed, so it is not the current baseline and must not be quoted as one. The
 wave-1 plan's own figure (1271 passed / 21 skipped) is older still. Any document
 needing a test count must measure it, not copy one from here.
+  - 2026-11-09, app-side owners (branch `fix/d58-worker-shutdown`): steps (1)
+    and (2) closed for every owner. Before this, only `aboutToQuit` waited;
+    closing a dialog or the main window mid-call left the call "busy" and its
+    late callbacks pointing at a dying owner. Now one shared helper,
+    `ui/runner_shutdown.py` (`shutdown_runners` = cancel every `CallRunner`
+    under an owner, ONE bounded 1 s wait for all of them; stragglers stay in
+    `worker_registry`), is called from `MainWindow.closeEvent` (covers Import,
+    Try AI, Console panels, write gate/dialogs) and, through the
+    `ShutdownOnDone` mixin (`done()` = accept/reject/X), from `SettingsDialog`
+    and `VocabularyWindow` (Assistant tab). `CallRunner.drain()`/`prune()`
+    added. Pinned by `tests/test_ui_close_shutdown.py` (hanging call released
+    by a gate: helper bound, Settings probe, Vocabulary assistant, main window
+    with Import + Console calls). **Step (3) still open:** 6.12 proof build and
+    hand-closing that exe mid-call; keep the 6.11.2 release pin until then.
