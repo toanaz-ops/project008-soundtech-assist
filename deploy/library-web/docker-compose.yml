@@ -7,6 +7,7 @@ services:
     image: wing-library-web:latest
     container_name: wing-library-web
     restart: unless-stopped
+    mem_limit: 512m           # shared 8 GB box; idles at ~40 MiB
     ports:
       - "127.0.0.1:8731:8731"   # loopback only; PRJ012's nginx is the public door
     environment:

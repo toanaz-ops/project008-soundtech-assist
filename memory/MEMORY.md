@@ -371,6 +371,12 @@ localStorage, server hỏi `GET /api/v1/me/permissions?codes=…`, không tự k
 artifact dùng link YouTube + `#e-<id>`. Biểu đồ do `scripts/library_diagrams.py`
 vẽ (SVG thuần + PNG qua QtSvg lúc dev), không cần matplotlib. Quyết định:
 `docs/proposals/2026-11-09-knowledge-library-decisions.md`; câu hỏi HW-204.Q1–Q4.
+**(Cập nhật 2026-11-10, đã merge):** PR #58 (`161bd5d`), CI 2553 / 0 / 4. Web chạy trên VPS:
+container `wing-library-web` từ `/opt/p008-library`, loopback 8731, nginx `/library/` do PRJ012 thêm;
+cập nhật bằng `git pull` + `docker compose -f deploy/library-web/docker-compose.yml up -d --build`
+(volume `library-web_library_user` giữ bài sửa trên web). Exe `dist\wlib\wing-ui.exe` (75.283.066 bytes),
+zip `dist\wing-ui-20261110-library.zip`, ảnh `dist-shots\exe-20261110-library-en\`. Chờ chủ dự án gán
+`knowledge_library.view/edit` ở PRJ012 UI-15.
 
 ## 2026-11-09 — Fable review cả phase wave 8–11 → PR #56 (đã merge)
 
