@@ -123,4 +123,10 @@ LOG_TEXTS_VI: dict[str, str] = {
     "dryrun.col.rule": "Rule",
     "dryrun.col.target": "Đích",
     "dryrun.col.message": "Nội dung",
+    "dryrun.promote": "Chép vào principles.yaml…",
+    "dryrun.promote_title": "Chép nháp vào principles.yaml",
+    "dryrun.promote_confirm": "Chép các rule trong {name} vào principles.yaml?\n\nChúng sẽ chạy trong mọi lần phân tích của Doctor từ giờ. Máy tạo .bak của principles.yaml trước, rồi chuyển nháp sang drafts/promoted.",
+    "dryrun.promote_done": "Đã chép: {ids}\nBản sao lưu: {backup}",
+    "dryrun.promote_warn": "\n\n{error}",
+    "dryrun.promote_failed": "Chưa ghi gì cả.\n\n{error}",
 }

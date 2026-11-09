@@ -130,4 +130,10 @@ LOG_TEXTS: dict[str, str] = {
     "dryrun.col.rule": "Rule",
     "dryrun.col.target": "Target",
     "dryrun.col.message": "Message",
+    "dryrun.promote": "Copy into principles.yaml…",
+    "dryrun.promote_title": "Copy draft into principles.yaml",
+    "dryrun.promote_confirm": "Copy the rules from {name} into principles.yaml?\n\nThey will run on every Doctor analysis from now on. A .bak of principles.yaml is made first, and the draft is moved to drafts/promoted.",
+    "dryrun.promote_done": "Copied: {ids}\nBackup: {backup}",
+    "dryrun.promote_warn": "\n\n{error}",
+    "dryrun.promote_failed": "Nothing was written.\n\n{error}",
 }

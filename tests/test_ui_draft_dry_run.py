@@ -135,3 +135,63 @@ def test_tools_menu_has_the_action(qt_app):
     window = MainWindow(None)
     labels = [a.text() for a in window.findChildren(QAction)]
     assert text("menu.dryrun") in labels
+
+
+def _prepare_promote(root):
+    (root / "principles.yaml").write_text(
+        "# h\nprinciples: []\n", encoding="utf-8")
+    _draft(root, GATE.format(source=GOOD))
+
+
+def _answer(monkeypatch, button):
+    from PySide6.QtWidgets import QMessageBox
+
+    for name in ("information", "warning"):
+        monkeypatch.setattr(QMessageBox, name,
+                            staticmethod(lambda *a, **k: None))
+    monkeypatch.setattr(QMessageBox, "question",
+                        staticmethod(lambda *a, **k: button))
+
+
+def test_promote_button_disabled_when_not_promotable(qt_app, tmp_path):
+    _draft(tmp_path, GATE.format(source="ToanAZ no date"))
+    dialog = _dialog(tmp_path)
+    assert not dialog.promote_btn.isEnabled()
+    assert dialog.run_btn.isEnabled() is False  # no scenes, unrelated gate
+
+
+def test_promote_confirm_yes_writes_and_calls_back(qt_app, tmp_path,
+                                                   monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    _prepare_promote(tmp_path)
+    called = []
+    from wing_parser.ui.draft_dry_run_dialog import DraftDryRunDialog
+
+    dialog = DraftDryRunDialog(None, directory=tmp_path,
+                               on_promoted=lambda: called.append(1))
+    assert dialog.promote_btn.isEnabled()
+    _answer(monkeypatch, QMessageBox.StandardButton.Yes)
+    dialog.promote_btn.click()
+    assert "draft.gate_on" in (tmp_path / "principles.yaml").read_text(
+        encoding="utf-8")
+    assert called == [1]
+    assert dialog.combo.count() == 0
+    assert not dialog.promote_btn.isEnabled()
+
+
+def test_promote_cancel_changes_nothing(qt_app, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    _prepare_promote(tmp_path)
+    called = []
+    from wing_parser.ui.draft_dry_run_dialog import DraftDryRunDialog
+
+    dialog = DraftDryRunDialog(None, directory=tmp_path,
+                               on_promoted=lambda: called.append(1))
+    before = (tmp_path / "principles.yaml").read_bytes()
+    _answer(monkeypatch, QMessageBox.StandardButton.No)
+    dialog.promote_btn.click()
+    assert (tmp_path / "principles.yaml").read_bytes() == before
+    assert called == []
+    assert (tmp_path / "drafts" / "d.yaml").exists()
