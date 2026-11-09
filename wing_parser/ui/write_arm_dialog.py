@@ -28,6 +28,8 @@ this dialog could not even show which desk it is about to arm.
 
 from __future__ import annotations
 
+import time
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout,
@@ -55,6 +57,14 @@ class ArmWriteDialog(QDialog):
 
         self.status_label = QLabel(text("console.write.reading"))
         self.status_label.setWordWrap(True)
+        # Wave 6: soft hint only -- the latch below stays the one gate.
+        self.motion_warning = QLabel("")
+        self.motion_warning.setProperty("azStyle", "warn")
+        self.motion_warning.setWordWrap(True)
+        moved = gate.activity.recent_motion(time.monotonic())
+        self.motion_warning.setText(
+            text("console.write.motion_warning").format(count=moved) if moved else "")
+        self.motion_warning.setVisible(bool(moved))
         self.latch = QCheckBox(text("console.write.latch"))
         self.latch_why = QLabel(text("console.write.latch_why"))
         self.latch_why.setWordWrap(True)
@@ -69,6 +79,7 @@ class ArmWriteDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addWidget(self.status_label)
         layout.addWidget(self.show_fields)
+        layout.addWidget(self.motion_warning)
         layout.addWidget(self.latch)
         layout.addWidget(self.latch_why)
         layout.addWidget(QLabel(text("console.write.name_prompt")))
