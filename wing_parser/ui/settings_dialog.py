@@ -22,17 +22,18 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
-    QSpinBox,
     QVBoxLayout,
 )
 
 from wing_parser import config
 from wing_parser.classifier import provider, provider_errors
 from wing_parser.classifier.llm import kill_switch_on
-from wing_parser.ui import settings_probe, state_store
+from wing_parser.ui import settings_probe
 from wing_parser.ui.ai_error_text import ai_message
 from wing_parser.ui.call_button import ButtonRunner
-from wing_parser.ui.settings_io import dump_yaml, mask, resolve_key
+from wing_parser.ui.settings_automix import AutomixRow
+from wing_parser.ui.settings_io import (
+    dump_yaml, make_delay_spin, mask, resolve_key)
 from wing_parser.ui.settings_language import LanguageRow
 from wing_parser.ui.runner_shutdown import ShutdownOnDone
 from wing_parser.ui.texts import text
@@ -63,11 +64,7 @@ class SettingsDialog(ShutdownOnDone, QDialog):
         self.key_edit.setPlaceholderText(text("settings.key_placeholder"))
         self.key_edit.setToolTip(text("settings.key_tooltip"))
         self.env_edit = QLineEdit(cfg.api_key_env)
-        self.delay_spin = QSpinBox()
-        self.delay_spin.setRange(state_store.MIN_APPLY_DELAY,
-                                 state_store.MAX_APPLY_DELAY)
-        self.delay_spin.setValue(getattr(parent, "_apply_delay",
-                                         state_store.DEFAULTS["apply_delay"]))
+        self.delay_spin = make_delay_spin(parent)
 
         form = QFormLayout()
         form.addRow(text("settings.provider"), self.name_box)
@@ -77,6 +74,7 @@ class SettingsDialog(ShutdownOnDone, QDialog):
         form.addRow(text("settings.api_key_env"), self.env_edit)
         form.addRow(text("settings.apply_delay"), self.delay_spin)
         form.addRow(text("settings.language"), LanguageRow(self))
+        form.addRow(text("settings.automix"), AutomixRow(self))
 
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)

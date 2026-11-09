@@ -14,6 +14,8 @@ from wing_parser.ui import texts
 
 def _pairs():
     """(name, English table, Vietnamese table) -- one row per source pair."""
+    from wing_parser.ui.texts_automix import AUTOMIX_TEXTS
+    from wing_parser.ui.texts_automix_vi import AUTOMIX_TEXTS_VI
     from wing_parser.ui.texts_console import CONSOLE_TEXTS
     from wing_parser.ui.texts_console_vi import CONSOLE_TEXTS_VI
     from wing_parser.ui.texts_import import IMPORT_TEXTS
@@ -29,7 +31,7 @@ def _pairs():
     from wing_parser.ui.texts_write_vi import WRITE_TEXTS_VI
 
     merged = {*CONSOLE_TEXTS, *IMPORT_TEXTS, *WRITE_TEXTS, *LANG_TEXTS,
-              *MOVED_TEXTS, *LOG_TEXTS}
+              *MOVED_TEXTS, *LOG_TEXTS, *AUTOMIX_TEXTS}
     base = {k: v for k, v in texts.TEXTS.items() if k not in merged}
     return [
         ("base", base, VI_TEXTS),
@@ -39,6 +41,7 @@ def _pairs():
         ("lang", LANG_TEXTS, LANG_TEXTS_VI),
         ("moved", MOVED_TEXTS, MOVED_TEXTS_VI),
         ("log", LOG_TEXTS, LOG_TEXTS_VI),
+        ("automix", AUTOMIX_TEXTS, AUTOMIX_TEXTS_VI),
     ]
 
 

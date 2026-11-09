@@ -11,6 +11,10 @@ from __future__ import annotations
 
 import io
 
+from PySide6.QtWidgets import QSpinBox
+
+from wing_parser.ui import state_store
+
 MASK = "•" * 4
 
 
@@ -35,3 +39,12 @@ def dump_yaml(doc: dict) -> str:
     stream = io.StringIO()
     engine.dump(doc, stream)
     return stream.getvalue()
+
+
+def make_delay_spin(window) -> QSpinBox:
+    """The Delayed-apply seconds spin, preset from the window's value."""
+    spin = QSpinBox()
+    spin.setRange(state_store.MIN_APPLY_DELAY, state_store.MAX_APPLY_DELAY)
+    spin.setValue(getattr(window, "_apply_delay",
+                          state_store.DEFAULTS["apply_delay"]))
+    return spin
