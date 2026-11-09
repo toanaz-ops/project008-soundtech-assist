@@ -1,7 +1,10 @@
 # wing-parser — roadmap
 
-**Last updated:** 2026-10-21 (§3 "Done" now runs through GUI wave 5; the
-paragraph below is the older wave 2/3 history it grew from).
+**Last updated:** 2026-11-09. **The 2026-10-22 pause is lifted** (owner, 09/11:
+"Kích hoạt lại, bỏ lệnh tạm dừng các dự án"); waves 6 and 7 merged —
+see the GUI 6 row in §3 and `docs/proposals/2026-11-09-wave6-decisions.md`. Mix-taste
+answers (Decision Box HW-191.Q1–Q6) and desk acceptance (HW-192) stay with ToanAZ.
+The paragraph below is the older wave 2/3 history §3 grew from.
 GUI wave 3 decisions were resolved 2026-09-25 and its debt cleanup merged. GUI wave 2 (live console page) **merged into `main`** via
 PR #1–#4 (`bedad80`, `00949c4`, `56d5114`, `dcf897a`) — measured at
 `dcf897a`: **1580 passed / 3 skipped**. GUI wave 3 (write to a live
@@ -97,6 +100,8 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 4 | **Better cue-sheet import** | Shipped cue-sheet vocabulary defaults (`cuesheet_defaults.yaml`) for corporate and concert sheets, an editable Vocabulary window (Tools ▸ Vocabulary) and an AI assistant that proposes vocabulary changes he approves; Settings ▸ Test connection honours `WING_DISABLE_LLM`. Closes the old §5 item 2. **Merged into `main` 2026-09-27 via PR #11 (`97d4ec5`).** Acceptance runbook `docs/acceptance/2026-09-wave4-import-acceptance.md` still pending with ToanAZ's real key. | **2088** (3 skipped) at code-complete |
 | UI i18n | **Bilingual UI** | Settings ▸ Language (English default / Tiếng Việt, applies on next start) and `wing-ui --lang en\|vi`; six EN/VI string-table pairs with a key + placeholder parity test; mixer nouns stay English. **Merged 2026-09-29 via PR #13 (`bbb0ab9`), polish PR #14, exe docs PR #15.** | **2193** (3 skipped) |
 | GUI 5 | **Durable write log + post-show report** | Every settled write and revert is appended to `<knowledge_dir>/write-log/<SHOW-CODE>.jsonl` (non-UI package `wing_parser/writelog/`); the Arm dialog asks for a show code, name and venue; desk identity and show are copied at submit (W13). An eighth page, **Log** (Ctrl+8), lists shows and writes and exports a self-contained HTML report. A log failure never blocks a desk write (W3). Overturns wave-3 W8. **Merged into `main` 2026-10-21 via PR #23 (`17b8867`).** Real-desk acceptance step 6b still pending with ToanAZ. | **2291** (3 skipped) |
+| GUI 6 | **Write-path hardening (Fable Q2/Q3) + owner-source check** | Decisions for the seven Fable questions recorded in `docs/proposals/2026-11-09-wave6-decisions.md` (pause lifted 2026-11-09). Immediate now **refuses** a failed or unanswered pre-flight read — nothing sent, no `desk_before=None` row (PR #42, closes D-52 #9). The Arm dialog shows a **soft, non-blocking** warning when the Console watch saw fader/mute changes in the last 30 s; the latch stays the only gate (PR #44, `ui/desk_activity.py`). Rules in the `toanaz`/`show` layers must carry a `source:` with `ToanAZ` and an ISO date (PR #43). D-52 #3 `live_write._read` unit tests (PR #45). **Merged 2026-11-09** (`799b894`, `db4c201`, `3a04ba5`, `ba7f647`). Real-desk acceptance still pending (Decision Box HW-192). | CI `test` green on each PR (2321+ passed / 3 skipped) |
+| GUI 7 | **Verdict summary** | First agent-safe slice of direction 3 (mix-taste advisory): Tools ▸ **Verdict summary** rolls the Doctor verdict log (`knowledge/toanaz/feedback.jsonl`) up per rule — counts, notes newest first, last recorded — and flags a rule as a *candidate* when false-positive + irrelevant ≥ 3 and outnumber correct. Read-only; never writes a rule (pure `advisory/feedback_report.py`, dialog `ui/verdict_summary.py`). Spec `docs/superpowers/specs/2026-11-09-verdict-summary-wave7-design.md`. **Merged 2026-11-09 via PR #46 (`923a79c`).** VI column wording awaits ToanAZ's review. | CI `test` green |
 
 ### Where each one's paperwork lives
 

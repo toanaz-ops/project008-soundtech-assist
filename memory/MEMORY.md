@@ -298,3 +298,19 @@ Exe phát hành vẫn là bản build từ `17b8867`, CHƯA build lại sau các
 Mở lại khi chủ dự án cho phép. Chờ chủ dự án: nghiệm thu trên desk thật, câu
 hỏi trong #35 và #39, và tự tay thoát exe 6.12 khi model call đang treo.
 Handoff: `D:\DEV CAVE EP3\shared\handoff\handoff-20261022-p008-paused.md`.
+
+## 2026-11-09 — Tạm ngưng đã gỡ; wave 6 + wave 7 đã merge
+
+Chủ dự án 09/11: "Kích hoạt lại, bỏ lệnh tạm dừng các dự án". 7 câu Fable đã chốt
+theo khuyến nghị (`docs/proposals/2026-11-09-wave6-decisions.md`): Q4 xong từ #36;
+Q1/Q5/Q7 hoãn tới buổi nghiệm thu tại bàn (Decision Box **HW-192**); Q6 = hướng 3
+nhưng mọi số/`source:` chặn ở 6 thẻ gu mix **HW-191.Q1–Q6** — không bịa. Đã merge:
+#42 Immediate từ chối khi pre-flight lỗi (đóng D-52 #9), #43 rule lớp
+`toanaz`/`show` phải có `source:` chứa `ToanAZ` + ngày ISO, #44 cảnh báo mềm ở Arm
+khi Watch thấy fader/mute động trong 30 s (`ui/desk_activity.py`), #45 test
+`live_write._read` (D-52 #3), #46 wave 7 Tools ▸ Verdict summary. **Bẫy:** job
+`qt-latest` (6.12) abort ngẫu nhiên khi GC dọn chu trình panel↔ButtonRunner lúc
+một FunctionWorker khác đang chạy — sửa phía test ở #47; app thật có thể dính cùng
+kiểu (D-58 còn mở). **Bẫy 2:** agent chạy test bằng python ngoài `.venv` sẽ
+thiếu `qtawesome` và bỏ sót test — dùng `.venv` của checkout chính + `PYTHONPATH=.`
+từ gốc worktree (editable install trỏ về checkout chính). Handoff: `D:\DEV CAVE EP3\shared\handoff\handoff-20261109-p008-wave6-7.md`.

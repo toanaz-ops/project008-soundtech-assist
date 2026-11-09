@@ -3,7 +3,7 @@
 **Ngày:** ________ · **Chi tiết từng bước:** [wave 3](2026-09-wave3-desk-acceptance.md) · [wave 4](2026-09-wave4-import-acceptance.md) · Bàn **KHÔNG** trong show, **WING-Edit mở và nối suốt buổi** (rớt thì nối lại, làm lại bước đó).
 
 ## 1. Trước khi đi
-☐ Exe: `dist\wing-ui-20261021.zip` (PySide6 6.11.2), giải nén, mở thử, đợi ~6 s xem còn chạy ☐ Laptop + cáp mạng/Wi-Fi cùng LAN với bàn ☐ DeepSeek API key ☐ 1 cue sheet `.xlsx` thật + 1 file show-context `.yaml` ☐ Bản in này + bút + điện thoại chụp ảnh ☐ Hỏi venue: bàn đang rảnh, không show.
+☐ Exe: zip mới nhất trong `dist\` (`wing-ui-20261109*.zip` trở đi, PySide6 6.11.2), giải nén, mở thử, đợi ~6 s xem còn chạy ☐ Laptop + cáp mạng/Wi-Fi cùng LAN với bàn ☐ DeepSeek API key ☐ 1 cue sheet `.xlsx` thật + 1 file show-context `.yaml` ☐ Bản in này + bút + điện thoại chụp ảnh ☐ Hỏi venue: bàn đang rảnh, không show.
 
 ## 2. Baseline (P3) — chạy TRƯỚC khi mở app
 ```bash
