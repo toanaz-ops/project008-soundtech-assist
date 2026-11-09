@@ -1209,3 +1209,12 @@ needing a test count must measure it, not copy one from here.
     by a gate: helper bound, Settings probe, Vocabulary assistant, main window
     with Import + Console calls). **Step (3) still open:** 6.12 proof build and
     hand-closing that exe mid-call; keep the 6.11.2 release pin until then.
+  - 2026-11-09, step (3) half done: merged as PR #52 (`5f4b1e0`; CI `test` and
+    `qt-latest` 6.12 both 2397 passed / 3 skipped). Proof exe built from
+    `5f4b1e0` in a separate venv (`build/venv-qt612`, PySide6 6.12.0):
+    `dist\qt612\wing-ui.exe` (72,321,905 bytes, zip
+    `dist\wing-ui-qt612-test-20261109.zip`); `--screenshot` run exits 0 with 9
+    shots. **Remaining (owner, HW-192):** open that exe, start a model call
+    that hangs (Settings ▸ Test connection with a bad endpoint, or Try AI),
+    close the dialog and then the window mid-call; no crash = close D-58 and
+    lift the release pin.

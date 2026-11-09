@@ -1,8 +1,8 @@
 # wing-parser — roadmap
 
 **Last updated:** 2026-11-09. **The 2026-10-22 pause is lifted** (owner, 09/11:
-"Kích hoạt lại, bỏ lệnh tạm dừng các dự án"); waves 6–9 merged —
-see the GUI 6–9 rows in §3 and `docs/proposals/2026-11-09-wave6-decisions.md`. Mix-taste
+"Kích hoạt lại, bỏ lệnh tạm dừng các dự án"); waves 6–10 merged —
+see the GUI 6–10 rows in §3 and `docs/proposals/2026-11-09-wave6-decisions.md`. Mix-taste
 answers (Decision Box HW-191.Q1–Q6) and desk acceptance (HW-192) stay with ToanAZ.
 The paragraph below is the older wave 2/3 history §3 grew from.
 GUI wave 3 decisions were resolved 2026-09-25 and its debt cleanup merged. GUI wave 2 (live console page) **merged into `main`** via
@@ -104,6 +104,7 @@ subsystem; each handoff records what it measured and what it left open.
 | GUI 7 | **Verdict summary** | First agent-safe slice of direction 3 (mix-taste advisory): Tools ▸ **Verdict summary** rolls the Doctor verdict log (`knowledge/toanaz/feedback.jsonl`) up per rule — counts, notes newest first, last recorded — and flags a rule as a *candidate* when false-positive + irrelevant ≥ 3 and outnumber correct. Read-only; never writes a rule (pure `advisory/feedback_report.py`, dialog `ui/verdict_summary.py`). Spec `docs/superpowers/specs/2026-11-09-verdict-summary-wave7-design.md`. **Merged 2026-11-09 via PR #46 (`923a79c`).** VI column wording awaits ToanAZ's review. | CI `test` green |
 | GUI 8 | **Draft-rule dry-run** | A rule draft goes in `<knowledge_dir>/drafts/*.yaml` (same schema as `principles.yaml`); the resolver never reads that folder, so a draft cannot change a real Doctor run. Tools ▸ **Draft rule dry-run…** loads a draft (full validation; a `source:` without `ToanAZ` + ISO date is reported as "not ready to copy", not an error), runs it against the Doctor scene + recent `.snap` files (or any picked), and shows findings before/after per scene, +new / −gone, filterable detail. Pure `advisory/draft_dry_run.py` (`resolver.active_rules(extra_rules=)`), dialog `ui/draft_dry_run_dialog.py`. Read-only. Spec `docs/superpowers/specs/2026-11-09-draft-dry-run-wave8-design.md`. **Merged 2026-11-09 via PR #49 (`6bc316d`).** | **2381** (3 skipped, CI) |
 | GUI 9 | **Copy a draft into principles.yaml** | Button **Copy into principles.yaml…** in the dry-run dialog, enabled only when the draft is ready (owner `source:`); confirm box, then the draft's raw YAML entries are text-merged into `principles.yaml` (header comments and CRLF kept, re-parsed and validated on a temp file, `.bak` first, `os.replace`), the draft moves to `drafts/promoted/<stem>-<stamp>.yaml`, and Doctor re-analyses. Unknown layouts are refused with nothing written. Only the owner's click writes. Pure `advisory/draft_promote.py`. Spec `docs/superpowers/specs/2026-11-09-draft-promote-wave9-design.md`. **Merged 2026-11-09 via PR #50 (`b2f856e`).** Fresh adversarial review found the CRLF loss (fixed `7c1a29d`). | **2393** (3 skipped, CI) |
+| GUI 10 | **Close mid-call safely (D-58 steps 1–2)** | Closing the main window, Settings or the Vocabulary window while a model/desk call hangs now cancels every `CallRunner` under it with one bounded 1 s wait (`ui/runner_shutdown.py`); a worker still running is parked app-wide, never destroyed while running — the PySide6 6.12 abort path. Proof exe on 6.12 built (`dist\qt612\`); owner hand check pending (HW-192), release stays on 6.11.2 until then. **Merged 2026-11-09 via PR #52 (`5f4b1e0`).** | **2397** (3 skipped, CI on 6.11.2 and 6.12) |
 
 ### Where each one's paperwork lives
 
