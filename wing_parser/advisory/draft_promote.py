@@ -83,6 +83,8 @@ def promote(draft_path: Path, directory: Path | None = None,
     try:
         raw = yaml.safe_load(draft_path.read_text(encoding="utf-8"))
         entries = [dict(e) for e in raw["principles"]]
+        # Keep the owner's line endings: read_text folds CRLF to LF.
+        crlf = target.exists() and b"\r\n" in target.read_bytes()
         if target.exists():
             old = target.read_text(encoding="utf-8")
             old_list = (yaml.safe_load(old) or {}).get("principles") or []
@@ -97,7 +99,8 @@ def promote(draft_path: Path, directory: Path | None = None,
         fd, tmp_name = tempfile.mkstemp(dir=root, suffix=".tmp")
         tmp = Path(tmp_name)
         try:
-            with os.fdopen(fd, "w", encoding="utf-8", newline="") as fh:
+            with os.fdopen(fd, "w", encoding="utf-8",
+                           newline="\r\n" if crlf else "") as fh:
                 fh.write(merged)
             layers._as_rules(tmp, layer="toanaz", key="principles")
             backup = None

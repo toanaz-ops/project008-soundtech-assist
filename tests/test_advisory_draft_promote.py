@@ -80,6 +80,17 @@ def test_existing_entry_and_header_kept_in_order(tmp_path):
     assert res.backup.read_text(encoding="utf-8") == before
 
 
+def test_crlf_file_keeps_crlf_and_prefix(tmp_path):
+    target = tmp_path / "principles.yaml"
+    old = (HEADER + "principles:\n" + EXISTING).replace("\n", "\r\n").encode()
+    target.write_bytes(old)
+    assert dp.promote(_draft(tmp_path), tmp_path, NOW).ok
+    new = target.read_bytes()
+    assert new.startswith(old)
+    assert b"\n" not in new.replace(b"\r\n", b"")
+    assert _ids(target) == ["mine.old", "draft.gate_on"]
+
+
 def test_missing_file_is_created(tmp_path):
     res = dp.promote(_draft(tmp_path), tmp_path, NOW)
     assert res.ok and res.backup is None
