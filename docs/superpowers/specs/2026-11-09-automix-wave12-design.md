@@ -224,6 +224,14 @@ QTimer + one `CallRunner`; worker = one batched `get_many` overlay on the pulled
 Stop / Esc / gate-down stop the loop and leave the desk as is; "Revert automix" writes back first-touch values.
 The meters checkbox is not shown until a transport is verified (AM-50).
 
+Safety review fixes (AM-51 to AM-60): a failed or timed-out tick/revert halts the run and keeps controls locked
+until its thread has ended; every row a thread sent is recorded (ledger + write log) even if abandoned; the whole
+Sent ledger is disabled while any automix thread lives and Start refuses while the gate has a write queued;
+ticks stop writing after 60 % of their timeout; Revert automix skips locked or operator-moved leaves and keeps
+partial results; a real Start needs the FULL AUTO tick, Settings mode Full auto and a fresh arm, and Stop /
+run end / revert end release that arm; unresolved leaves are not written or lock-checked; the lock compares the
+read-back (clamp-safe) with a relative tolerance for frequency/time leaves; one panel per window.
+
 ## 8. UI (phase 1)
 
 - `ui/settings_automix.py`: Settings section, combo Disabled / Draft only (phase 2 adds Full auto), saved

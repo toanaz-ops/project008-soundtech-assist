@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import threading
+import time
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -30,6 +31,7 @@ class LiveContext:
     simulate: bool
     stop: threading.Event                # no new loop writes
     abort: threading.Event               # the gate is down: not even a revert
+    tick_budget_s: float | None = None   # no new write once a tick has run this long (AM-53)
 
 
 @dataclass(frozen=True)
@@ -51,9 +53,37 @@ class TickRunner:
         self.simulated: dict = {}
         self.originals: dict = {}        # path -> desk value before the first write
         self.last_written: dict = {}
-        self.rows: list = []
+        self.tolerance_for = lambda path, value: 0.25   # make_loop wires the real limits
         self.fatal = ""
         self._doc: dict = self.base
+        self.unknown: frozenset = frozenset()   # leaves the last read did not resolve (AM-58)
+        self.busy = threading.Event()           # set by `begin` (GUI), cleared when the thread ends
+        self._lock = threading.Lock()
+        self._rows: list = []                   # every row sent, kept until the GUI takes it (AM-52)
+        self._revert_rows: list = []
+        self.skipped: list = []                 # (path, reason) a revert left alone (AM-55)
+        self.revert_error = ""
+        self._deadline: float | None = None
+
+    # -- the thread handshake (AM-52) ---------------------------------------
+
+    def begin(self) -> None:
+        """GUI thread, right before the CallRunner starts a thread function."""
+        self.busy.set()
+
+    def take_rows(self) -> tuple:
+        with self._lock:
+            rows, self._rows = tuple(self._rows), []
+        return rows
+
+    def take_revert_rows(self) -> tuple:
+        with self._lock:
+            rows, self._revert_rows = tuple(self._revert_rows), []
+        return rows
+
+    def add_revert_row(self, row) -> None:
+        with self._lock:
+            self._revert_rows.append(row)
 
     def propose(self, scene, document, options):
         from wing_parser.automix import propose
@@ -74,6 +104,8 @@ class TickRunner:
                 batch = client.get_many(tuple(wanted), batch_size=200)
             if not batch.replies:
                 raise OSError("the desk did not answer the read")
+            self.unknown = frozenset(
+                path for address, path in wanted.items() if address not in batch.replies)
             for address, message in batch.replies.items():
                 path = wanted[address]
                 self._put(document, path, live_write.scene_value(
@@ -90,15 +122,18 @@ class TickRunner:
         except KeyError:
             pass                         # a leaf the pulled scene does not hold
 
-    def write_leaf(self, path: str, value) -> None:
+    def write_leaf(self, path: str, value):
+        """Returns the value the desk settled on (read-back), or None."""
         if self.ctx.stop.is_set():
             raise RuntimeError("stopped")
+        if self._deadline is not None and time.monotonic() > self._deadline:
+            raise TimeoutError("tick time budget used up")
         before = pointer.read(self._doc, path)
         stage, label = self.meta.get(path, ("", path))
         if self.ctx.simulate:
             self.simulated[path] = value
-            self.rows.append(WriteRow(path, before, value, stage, label, None))
-            return
+            self._add_row(WriteRow(path, before, value, stage, label, None))
+            return value
         conf = live_write.confirmation_for(
             self.ctx.host, osc_address(path), value, self.ctx.identity, before)
         try:
@@ -110,40 +145,44 @@ class TickRunner:
             raise
         self.originals.setdefault(path, before)
         self.last_written[path] = value
-        self.rows.append(WriteRow(path, before, value, stage, label, result))
+        self._add_row(WriteRow(path, before, value, stage, label, result))
         if result.readback is None:
             raise OSError(f"no read-back for {path}")
+        settled = live_write.scene_value(leaf_parts(path), result.readback)
+        self.last_written[path] = settled
+        return settled
+
+    def _add_row(self, row) -> None:
+        with self._lock:
+            self._rows.append(row)
 
     def tick_once(self, loop):
-        self.rows = []
-        report = loop.tick()
-        return report, tuple(self.rows), self.fatal
+        """Rows stay in `take_rows` even if this is abandoned on a timeout."""
+        try:
+            budget = self.ctx.tick_budget_s
+            self._deadline = time.monotonic() + budget if budget else None
+            return loop.tick(), self.fatal
+        finally:
+            self.busy.clear()
 
-    def revert(self) -> list:
-        """Each touched path back to its pre-automix desk value, once, last
-        touched first; stops when the gate goes down."""
-        rows = []
-        for path in reversed(list(self.originals)):
-            target = self.originals[path]
-            if target is None or self.ctx.abort.is_set():
-                continue
-            last = self.last_written.get(path)
-            conf = live_write.confirmation_for(
-                self.ctx.host, osc_address(path), target, self.ctx.identity, last)
-            result = live_write.send(conf, self.ctx.transport)
-            stage, label = self.meta.get(path, ("", path))
-            rows.append(WriteRow(path, last, target, stage, label, result))
-        return rows
+    def revert(self, locked=frozenset()):
+        from wing_parser.ui.automix_live_revert import revert_all
+
+        try:
+            revert_all(self, locked)
+            return list(self.skipped), self.revert_error
+        finally:
+            self.busy.clear()
 
 
 def make_loop(runner: TickRunner, options, limits=None, clock=None):
     """The pure loop wired to `runner`; the engine is imported here only."""
-    import time
-
     from wing_parser.automix.live_limits import LiveLimits
     from wing_parser.automix.live_loop import LiveAutomix
 
+    limits = limits or LiveLimits()
+    runner.tolerance_for = limits.tolerance_for
     return LiveAutomix(
         options, runner.load_scene, runner.read_document, runner.write_leaf,
-        clock or time.monotonic, limits=limits or LiveLimits(),
-        propose_fn=runner.propose)
+        clock or time.monotonic, limits=limits,
+        propose_fn=runner.propose, unknown_fn=lambda: runner.unknown)

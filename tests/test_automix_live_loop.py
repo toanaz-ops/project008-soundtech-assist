@@ -160,3 +160,35 @@ def test_real_scene_converges_within_limits():
     assert any(r.written for r in reports)
     assert all(len(r.written) <= 10 and not r.errors for r in reports)
     assert reports[-1].pending == 0 and not loop.locked_paths
+
+
+def test_unresolved_leaves_are_neither_written_nor_locked():
+    desk = Desk(_doc(fdr=-30.0))
+    unknown = {"ae_data.ch.1.fdr"}
+    targets = {"ae_data.ch.1.fdr": (-10.0, "fader"), "ae_data.ch.1.eq.1g": (-3.0, "eq")}
+    loop = _loop(desk, targets, unknown_fn=lambda: frozenset(unknown))
+    report = loop.tick()
+    assert [p for p, _ in report.written] == ["ae_data.ch.1.eq.1g"]
+    assert report.pending >= 2 and not loop.locked_paths
+    unknown.clear()
+    assert "ae_data.ch.1.fdr" in [p for p, _ in loop.tick().written]
+
+
+def test_clamped_readback_is_not_an_operator_override():
+    class Clamping(Desk):
+        def write(self, path, value):
+            clamped = round(value - 1.0, 2)
+            super().write(path, clamped)
+            return clamped
+
+    desk = Clamping(_doc(fdr=-30.0))
+    loop = _loop(desk, {"ae_data.ch.1.fdr": (-10.0, "fader")})
+    loop.tick()
+    report = loop.tick()
+    assert report.written and not loop.locked_paths and not report.newly_locked
+
+
+def test_frequency_tolerance_is_relative():
+    limits = LiveLimits()
+    assert limits.tolerance_for("ae_data.ch.1.eq.1f", 4000.0) == 40.0
+    assert limits.tolerance_for("ae_data.ch.1.fdr", 4000.0) == limits.tolerance

@@ -15,18 +15,22 @@ import threading
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QDialog, QVBoxLayout
 
+from wing_parser.ui import automix_live_guard as guard
 from wing_parser.ui import automix_live_records as records
 from wing_parser.ui import automix_live_worker as work
+from wing_parser.ui.automix_live_consent import ConsentMixin
+from wing_parser.ui.automix_live_panel_revert import RevertMixin
+from wing_parser.ui.automix_live_settle import SettleMixin
 from wing_parser.ui.automix_live_view import LiveControls
 from wing_parser.ui.runner_shutdown import ShutdownOnDone
 from wing_parser.ui.texts import text
-from wing_parser.ui.workers import CallRunner
-from wing_parser.ui.write_arm_dialog import arm_now
+from wing_parser.ui.workers import TIMEOUTS, CallRunner
 
 PUMP_MS = 250
+BUDGET_SHARE = 0.6           # a tick stops writing after this share of its timeout (AM-53)
 
 
-class AutomixLivePanel(ShutdownOnDone, QDialog):
+class AutomixLivePanel(ConsentMixin, SettleMixin, RevertMixin, ShutdownOnDone, QDialog):
     def __init__(self, window, *, gate=None, client_factory=None, limits=None,
                  clock=None, timeout=None) -> None:
         super().__init__(window)
@@ -36,48 +40,45 @@ class AutomixLivePanel(ShutdownOnDone, QDialog):
         self._limits, self._clock, self._timeout = limits, clock, timeout
         self._loop = self._worker = self._ctx = None
         self._ticks = self._rows = self._pending = 0
+        self._armed_by_me = self._silent = False
         self.setWindowTitle(text("automix.live.title"))
         self.resize(900, 700)
         self.view = LiveControls()
         QVBoxLayout(self).addWidget(self.view)
         self._runner = CallRunner(self)
         self._timer = QTimer(self, interval=PUMP_MS, timeout=self._pump)
+        self._settle_timer = QTimer(self, interval=PUMP_MS, timeout=self._settle)
         self.view.start_btn.clicked.connect(self.start)
         self.view.stop_btn.clicked.connect(self.stop)
         self.view.revert_btn.clicked.connect(self.revert)
         self._gate.changed.connect(self._gate_changed)
 
-    # -- start / stop -------------------------------------------------------
-
     def _say(self, message: str) -> None:
         self.view.status.setText(message)
 
-    def _error(self, exc) -> None:
-        self._say(text("automix.live.error").format(error=exc))
+    # -- start / stop -------------------------------------------------------
+
     def start(self) -> bool:
         window, gate, view = self._window, self._gate, self.view
-        session = getattr(window, "session", None)
-        if session is None:
-            self._say(text("automix.live.need_scene"))
-            return False
-        if not gate.can_write():
-            self._say(text("automix.live.need_connection"))
+        reason = guard.refusal(self)
+        if reason:
+            self._say(text(reason))
             return False
         simulate = view.simulate.isChecked()
-        if not simulate and not arm_now(gate, self):
-            return False
-        if self._runner.busy:
-            self._say(text("automix.live.busy"))
+        if not simulate and not self._fresh_arm():
             return False
         if self._factory is None:
             from wing_parser.ui import live_controller
             self._factory = live_controller.REAL.client
+        budget = BUDGET_SHARE * (TIMEOUTS["tick"] if self._timeout is None else self._timeout)
         self._ctx = work.LiveContext(
             gate.host(), gate.arm.identity, gate.arm.show, gate.transport,
-            self._factory, simulate, threading.Event(), threading.Event())
+            self._factory, simulate, threading.Event(), threading.Event(),
+            budget or None)
         from wing_parser import WingScene
         from wing_parser.core.loader import parse_raw
 
+        session = window.session
         path, options = session.path, view.options_panel.options()
         self._worker = work.TickRunner(
             self._ctx, copy.deepcopy(session._document()),
@@ -95,63 +96,68 @@ class AutomixLivePanel(ShutdownOnDone, QDialog):
         if self._loop is not None:
             self._loop.stop()
             self._ctx.stop.set()
+            self._ctx.abort.set()
         self._finish_run()
+        self._release_arm()                          # a new run needs a new arm
 
     def done(self, result) -> None:
         self.stop()
         super().done(result)
 
-    def _gate_ok(self) -> bool:
-        return self._gate.can_write() if self._ctx.simulate else self._gate.ready()
-
-    def _gate_changed(self) -> None:
-        if self._loop is None or not self._timer.isActive() or self._gate_ok():
-            return
+    def _halt(self) -> None:
+        """Stop writing at once, whatever thread is still out there (AM-52)."""
         self._ctx.abort.set()
         self._ctx.stop.set()
         self._loop.stop()
         self._finish_run()
+        self._release_arm()
+
+    def _failed(self, exc) -> None:
+        """A tick or revert failed or timed out: its thread may still run."""
+        self._say(text("automix.live.error").format(error=exc))
+        if self._loop is not None:
+            self._halt()
+
+    def _gate_ok(self) -> bool:
+        return self._gate.can_write() if self._ctx.simulate else self._gate.ready()
+
+    def _gate_changed(self) -> None:
+        if self._loop is None or self._silent:
+            return
+        if self._gate_ok() or not self._active():
+            self.view.set_running(self._active(), self._can_revert())
+            return
+        self._halt()
         self._say(text("automix.live.gate_closed"))
-
-    def _lock_ui(self, running: bool) -> None:
-        self.view.set_running(running, self._can_revert())
-        records.lock_other_writers(self._window, running)    # one writer (W10)
-
-    def _can_revert(self) -> bool:
-        return bool(self._worker and self._worker.originals and self._gate.ready())
-
-    def _finish_run(self) -> None:
-        was_running = self._timer.isActive()
-        self._timer.stop()
-        self._lock_ui(False)
-        if was_running:
-            self._refresh_status()
 
     # -- the tick loop ------------------------------------------------------
 
     def _pump(self) -> None:
         loop = self._loop
-        if loop is None or not loop.due() or self._runner.busy:
+        if loop is None or not loop.due() or self._runner.busy or self._worker_busy():
             return
         if not self._gate_ok():
             self._gate_changed()
             return
-        self._runner.start("tick", self._worker.tick_once, loop,
-                           on_success=self._ticked, on_failure=self._error,
-                           timeout=self._timeout)
+        self._worker.begin()
+        if not self._runner.start("tick", self._worker.tick_once, loop,
+                                  on_success=self._ticked, on_failure=self._failed,
+                                  timeout=self._timeout):
+            self._worker.busy.clear()
 
     def _ticked(self, result) -> None:
-        report, rows, fatal = result
+        report, fatal = result
         self._ticks += 1
         self._pending = report.pending
-        self._add_rows(rows)
+        self._drain()
         self.view.set_locked(self._loop.locked_paths)
         if fatal or report.state.value != "running":
             self._ctx.stop.set()
             self._finish_run()
+            self._release_arm()
         self._refresh_status()
         if report.errors:
-            self._error(report.errors[-1][1])
+            self._say(text("automix.live.error").format(error=report.errors[-1][1]))
 
     def _add_rows(self, rows) -> None:
         genre = self.view.options_panel.options().genre
@@ -163,28 +169,6 @@ class AutomixLivePanel(ShutdownOnDone, QDialog):
             self._say(records.status_line(
                 self._loop, self._ticks, self._rows, self._pending))
 
-    # -- revert -------------------------------------------------------------
-
-    def revert(self) -> bool:
-        if not self._can_revert():
-            self._say(text("automix.live.nothing_to_revert"))
-            return False
-        self._ctx.abort.clear()
-        started = self._runner.start(
-            "tick", self._worker.revert, on_success=self._reverted,
-            on_failure=self._error,
-            timeout=self._timeout or max(60, 6 * len(self._worker.originals)))
-        if started:
-            self.view.revert_btn.setEnabled(False)
-        return started
-
-    def _reverted(self, rows) -> None:
-        self.view.add_rows(records.record_reverts(self._window, self._ctx, rows))
-        for row in rows:
-            self._worker.originals.pop(row.path, None)
-        self._say(text("automix.live.reverted").format(count=len(rows)))
-        self.view.set_running(False, self._can_revert())
-
     def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key.Key_Escape and self._timer.isActive():
             self.stop()
@@ -193,6 +177,16 @@ class AutomixLivePanel(ShutdownOnDone, QDialog):
 
 
 def open_live(window) -> None:
+    """One panel per window: a second call raises the one already open (AM-60)."""
+    panel = getattr(window, "_automix_live", None)
+    try:
+        if panel is not None:
+            panel.show()
+            panel.raise_()
+            panel.activateWindow()
+            return
+    except RuntimeError:                             # its C++ side is gone
+        pass
     panel = AutomixLivePanel(window)
     panel.show()
     window._automix_live = panel

@@ -39,6 +39,13 @@ class LiveLimits:
     tolerance: float = 0.25       # desk re-quantisation allowed before a leaf counts as touched
     max_failing_ticks: int = 3
 
+    def tolerance_for(self, path: str, value) -> float:
+        """Re-quantisation allowed before a leaf counts as touched: absolute,
+        but at least 1% of the value for frequency/time leaves (AM-59)."""
+        if _is_number(value) and _RELATIVE.fullmatch(_plain(path)):
+            return max(self.tolerance, 0.01 * abs(value))
+        return self.tolerance
+
     def next_value(self, path: str, current, target):
         """One stepped move from `current` toward `target`; None when already there."""
         if current == target:

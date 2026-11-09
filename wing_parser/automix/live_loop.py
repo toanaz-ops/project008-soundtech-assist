@@ -48,6 +48,7 @@ class LiveAutomix:
     clock: Callable[[], float]
     limits: LiveLimits = field(default_factory=LiveLimits)
     propose_fn: Callable = propose
+    unknown_fn: Callable[[], frozenset] | None = None   # leaves the last read did not resolve
     bounds: Bounds | None = None
     state: LoopState = LoopState.RUNNING
 
@@ -79,11 +80,16 @@ class LiveAutomix:
             proposal = self.propose_fn(self.load_scene(document), document, self.options)
         except Exception as exc:  # noqa: BLE001 - a desk or engine fault must not escape the loop
             return self._finish(errors=(("read", str(exc)),))
-        newly, skipped, refused, todo = [], [], [], []
+        unknown = self.unknown_fn() if self.unknown_fn else frozenset()
+        newly, skipped, refused, todo, unread = [], [], [], [], 0
         for change in sorted(proposal.changes, key=_priority):
             path = change.path
-            if path not in self._locked and path in self._last_written and _differs(
-                    self._last_written[path], change.before, self.limits.tolerance):
+            if path in unknown:              # stale value: neither write nor lock (AM-58)
+                unread += 1
+                continue
+            if path not in self._locked and path in self._last_written and differs(
+                    self._last_written[path], change.before,
+                    self.limits.tolerance_for(path, self._last_written[path])):
                 self._locked.add(path)
                 newly.append(path)
             if path in self._locked:
@@ -99,14 +105,16 @@ class LiveAutomix:
         written, errors = [], []
         for path, value, _ in todo[: self.limits.max_writes_per_tick]:
             try:
-                self.write_leaf(path, value)
+                settled = self.write_leaf(path, value)
             except Exception as exc:  # noqa: BLE001 - recorded; stop writing this tick
                 errors.append((path, str(exc)))
                 break
-            self._last_written[path] = value
+            # The desk's read-back wins over what was sent: a clamped write
+            # must not look like an operator move next tick (AM-59).
+            self._last_written[path] = value if settled is None else settled
             written.append((path, value))
         done = {path for (path, value), (_, _, after) in zip(written, todo) if value == after}
-        pending = sum(1 for path, _, _ in todo if path not in done)
+        pending = unread + sum(1 for path, _, _ in todo if path not in done)
         return self._finish(tuple(written), tuple(skipped), tuple(newly), tuple(refused), pending, tuple(errors))
 
     def _finish(self, written=(), skipped=(), newly=(), refused=(), pending=0, errors=()) -> TickReport:
@@ -121,7 +129,7 @@ def _priority(change) -> tuple:
     return rank, change.path
 
 
-def _differs(written, current, tolerance: float) -> bool:
+def differs(written, current, tolerance: float) -> bool:
     if _is_number(written) and _is_number(current):
         return abs(written - current) > tolerance
     return written != current

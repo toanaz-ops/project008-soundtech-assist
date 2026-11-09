@@ -91,6 +91,11 @@ class WriteGate(QObject):
         must not retarget a countdown that is already running."""
         return self.arm.host or self._page.connect_bar.host()
 
+    def idle(self) -> bool:
+        """Nothing queued, on the wire, or running: a second writer may start."""
+        return (self._queue.in_flight is None and not self._queue.pending
+                and not self._runner.busy)
+
     @property
     def transport(self):
         """The transport this gate was built with (REAL in production, a

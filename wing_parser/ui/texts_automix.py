@@ -115,4 +115,14 @@ AUTOMIX_TEXTS: dict[str, str] = {
         "Stopped: the console connection or the arming was lost."),
     "automix.live.reverted": "Reverted {count} parameters to their desk values.",
     "automix.live.nothing_to_revert": "Nothing to revert.",
+    "automix.live.need_ack": "Tick the FULL AUTO box first, or use Simulate.",
+    "automix.live.need_mode": (
+        "Settings > Automix is not set to Full auto; switch it there, or use Simulate."),
+    "automix.live.gate_busy": (
+        "Another write (Repair or Revert) is still queued or running; wait for it."),
+    "automix.live.mode_off": (
+        "Stopped: Settings > Automix was changed away from Full auto."),
+    "automix.live.reverted_skipped": (
+        "Reverted {count} parameters; left {skipped} alone (moved by hand, "
+        "locked or unreadable)."),
 }

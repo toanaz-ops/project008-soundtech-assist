@@ -110,4 +110,14 @@ AUTOMIX_TEXTS_VI: dict[str, str] = {
         "Đã dừng: mất kết nối console hoặc mất trạng thái arm."),
     "automix.live.reverted": "Đã hoàn tác {count} tham số về giá trị cũ trên desk.",
     "automix.live.nothing_to_revert": "Không có gì để hoàn tác.",
+    "automix.live.need_ack": "Hãy tick ô FULL AUTO trước, hoặc dùng Mô phỏng.",
+    "automix.live.need_mode": (
+        "Cài đặt > Automix chưa ở chế độ Full auto; đổi ở đó, hoặc dùng Mô phỏng."),
+    "automix.live.gate_busy": (
+        "Một lệnh ghi khác (Repair hoặc Hoàn tác) đang xếp hàng hoặc chạy; hãy chờ."),
+    "automix.live.mode_off": (
+        "Đã dừng: Cài đặt > Automix đã đổi khỏi Full auto."),
+    "automix.live.reverted_skipped": (
+        "Đã hoàn tác {count} tham số; bỏ qua {skipped} (chỉnh tay, bị khoá "
+        "hoặc không đọc được)."),
 }

@@ -49,13 +49,15 @@ def record_reverts(window, ctx, rows) -> list:
 
 
 def lock_other_writers(window, running: bool) -> None:
-    """While the loop runs, Repair and the journal's Send stay dead (W10)."""
+    """While automix writes (loop, revert, or a thread still out there), Repair,
+    the journal's Send and the Sent ledger's Revert stay dead (W10)."""
     doctor = getattr(window, "pages", {}).get("doctor")
     if doctor is not None:
         doctor.set_controls_enabled(not running)
     changes = getattr(window, "changes_panel", None)
     if changes is not None:
         changes.list.setEnabled(not running)
+        changes.ledger.setEnabled(not running)       # Revert / Revert all too
 
 
 def status_line(loop, ticks: int, rows: int, pending: int) -> str:
