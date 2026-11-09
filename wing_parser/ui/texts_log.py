@@ -124,7 +124,7 @@ LOG_TEXTS: dict[str, str] = {
     "dryrun.col.before": "Before",
     "dryrun.col.after": "After",
     "dryrun.col.added": "+New",
-    "dryrun.col.removed": "−Gone",
+    "dryrun.col.removed": "-Gone",
     "dryrun.col.error": "Error",
     "dryrun.col.change": "Change",
     "dryrun.col.rule": "Rule",

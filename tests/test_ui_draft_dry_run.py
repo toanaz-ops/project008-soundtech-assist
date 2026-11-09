@@ -61,7 +61,7 @@ def test_run_fills_summary_and_filters_detail(qt_app, tmp_path, vu_path):
     assert _cell(m, 0, 1) == str(delta.before)
     assert _cell(m, 0, 2) == str(delta.after)
     assert _cell(m, 0, 3) == "+" + str(len(delta.added))
-    assert _cell(m, 0, 4) == "−0"
+    assert _cell(m, 0, 4) == "-0"
     assert dialog.detail_model.rowCount() == len(delta.added)
     assert dialog.no_change.isHidden()
     dialog.summary.selectRow(0)

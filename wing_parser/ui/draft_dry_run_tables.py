@@ -11,7 +11,7 @@ from wing_parser.ui.texts import text
 
 SUMMARY_COLS = ("scene", "before", "after", "added", "removed", "error")
 DETAIL_COLS = ("scene", "change", "rule", "target", "message")
-PLUS, MINUS = "+", "−"
+PLUS, MINUS = "+", "-"
 
 
 def make_table(keys, numeric, mono, single=False):
