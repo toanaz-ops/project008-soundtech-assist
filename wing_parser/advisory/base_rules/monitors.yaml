@@ -4,6 +4,8 @@
 rules:
   - id: G8
     title: "Monitor send is post-fader"
+    title_vi: "Monitor send đang để post-fader"
+    message_vi: "Channel {channel.number} ({channel.name}) send post-fader sang {destination_bus.kind} {destination_bus.number} ({destination_bus.name}), có vẻ là monitor bus. Kéo fader FOH sẽ làm đổi mix của người biểu diễn."
     severity: warning
     source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 2"
     rationale: >
@@ -38,6 +40,8 @@ rules:
 
   - id: G7
     title: "IEM output has no active dynamics"
+    title_vi: "Output IEM không có dynamics đang chạy"
+    message_vi: "{bus.kind} {bus.number} ({bus.name}) là output IEM nhưng dynamics đang bypass: slot đang giữ {bus.dyn.model}, on = {bus.dyn.on}. Một cú feedback vào moulds có thể gây tổn thương thính giác."
     severity: error
     source: >
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8;
@@ -81,6 +85,8 @@ rules:
 
   - id: G9
     title: "Wedge or monitor output has no active dynamics"
+    title_vi: "Output wedge hoặc monitor không có dynamics đang chạy"
+    message_vi: "{bus.kind} {bus.number} ({bus.name}) là output monitor nhưng dynamics đang bypass: slot đang giữ {bus.dyn.model}, on = {bus.dyn.on}."
     severity: warning
     source: >
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md section 3.4 step 8;

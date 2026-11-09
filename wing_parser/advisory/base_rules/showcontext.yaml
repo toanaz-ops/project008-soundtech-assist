@@ -4,6 +4,8 @@
 rules:
   - id: Q1
     title: "Cue names a channel the scene does not have"
+    title_vi: "Cue nhắc tới channel mà scene không có"
+    message_vi: "Cue {cue.id} trong segment {segment.id} nhắc tới channel {cue.missing_channels_text}, nhưng scene không có."
     severity: warning
     source: >
       docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
@@ -25,6 +27,8 @@ rules:
 
   - id: Q2
     title: "Cue names a channel that carries no name"
+    title_vi: "Cue nhắc tới channel chưa có tên"
+    message_vi: "Cue {cue.id} trong segment {segment.id} nhắc tới channel {cue.unnamed_channels_text}, các channel này có tồn tại nhưng chưa có tên."
     severity: info
     source: >
       docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
@@ -45,6 +49,8 @@ rules:
 
   - id: Q3
     title: "Cue names a DCA number the console does not have"
+    title_vi: "Cue nhắc tới số DCA mà console không có"
+    message_vi: "Cue {cue.id} trong segment {segment.id} nhắc tới DCA {cue.missing_dcas_text}, console không có."
     severity: warning
     source: >
       docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
@@ -71,6 +77,8 @@ rules:
 
   - id: Q4
     title: "Show expects a source with no channel for it"
+    title_vi: "Show cần một nguồn nhưng không có channel nào cho nó"
+    message_vi: "{expectation.kind} được {expectation.segments_text} cần tới, nhưng scene không có channel nào thuộc loại đó (đã được nhận diện chắc chắn)."
     severity: warning
     source: >
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md
@@ -101,6 +109,8 @@ rules:
 
   - id: Q5
     title: "Show expects a source whose channels are all parked"
+    title_vi: "Show cần một nguồn nhưng mọi channel của nó đều đang parked"
+    message_vi: "{expectation.kind} được {expectation.segments_text} cần tới; có channel thuộc loại đó nhưng không cái nào đang dùng."
     severity: info
     source: >
       docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md
@@ -129,6 +139,8 @@ rules:
 
   - id: Q6
     title: "Cue repeats a channel state an earlier cue already set"
+    title_vi: "Cue lặp lại trạng thái channel mà cue trước đã đặt"
+    message_vi: "Cue {cue.id} trong segment {segment.id} chạy \"{cue.action}\" trên channel {cue.contradictions_text}, mà các cue trước trong show này đã để sẵn ở trạng thái đó -- dư thừa, không phải lỗi."
     severity: info
     source: >
       docs/knowledge-base/04-templates-and-matrices/Master-Run-Of-Show-ROS.md
@@ -162,6 +174,8 @@ rules:
 
   - id: Q7
     title: "Two cues sit closer together than the operation needs"
+    title_vi: "Hai cue gần nhau hơn mức thao tác cần"
+    message_vi: "Cue {cue.id} trong segment {segment.id} cách cue có thời gian trước đó {cue.seconds_after_previous} s."
     severity: warning
     enabled: false
     source: >

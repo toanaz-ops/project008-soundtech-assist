@@ -11,13 +11,31 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from wing_parser.advisory.models import Finding
 from wing_parser.ui import token_labels
-from wing_parser.ui.texts import text
+from wing_parser.ui.texts import current_language, text
 
 #: Column keys; the header words come from `findings.col.<key>` when asked.
 COLUMNS: tuple[str, ...] = ("severity", "rule", "target", "message", "layer")
 
 # Errors first: an error is a routing mistake that will be audible.
 _RANK = {"error": 0, "warning": 1, "info": 2}
+
+
+def display_message(finding: Finding) -> str:
+    """The finding sentence in the UI language, English when no VI exists.
+
+    Looked up at call time so a language change is never frozen in."""
+    if current_language() == "vi" and finding.message_vi:
+        return finding.message_vi
+    return finding.message
+
+
+def display_title(rule) -> str:
+    """The rule title in the UI language, English when no VI exists."""
+    if rule is None:
+        return ""
+    if current_language() == "vi" and rule.title_vi:
+        return rule.title_vi
+    return rule.title
 
 
 def sort_key(finding: Finding) -> tuple:
@@ -51,7 +69,7 @@ class FindingsModel(QAbstractTableModel):
             token_labels.label("severity", finding.severity),
             finding.rule_id,
             finding.target,
-            finding.message,
+            display_message(finding),
             token_labels.label("layer", finding.layer),
         )[index.column()]
 

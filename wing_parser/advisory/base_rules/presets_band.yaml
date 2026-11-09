@@ -3,6 +3,8 @@
 rules:
   - id: PB1
     title: "Snare-bottom channel is not polarity inverted"
+    title_vi: "Channel snare bottom chưa đảo pha"
+    message_vi: "Channel {channel.number} ({channel.name}) được nhận diện là snare bottom và polarity thực tế chưa đảo."
     severity: info
     event: band
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L153: snare btm 'Polarity invert' (bolded; repeated L1070)"
@@ -22,6 +24,8 @@ rules:
 
   - id: PB2
     title: "Hi-hat HPF outside the 160-250 Hz window"
+    title_vi: "HPF hi-hat ngoài khoảng 160-250 Hz"
+    message_vi: "Channel {channel.number} ({channel.name}): preset hi-hat là HPF quanh 200 Hz; Low cut on = {channel.filter.low_cut_on}, corner = {channel.filter.low_cut_hz} Hz."
     severity: info
     event: band
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L154: hi-hat 'HPF 200 Hz'"
@@ -44,6 +48,8 @@ rules:
 
   - id: PB3
     title: "Ride HPF outside the 200-300 Hz window"
+    title_vi: "HPF ride ngoài khoảng 200-300 Hz"
+    message_vi: "Channel {channel.number} ({channel.name}): preset ride là HPF quanh 250 Hz; Low cut on = {channel.filter.low_cut_on}, corner = {channel.filter.low_cut_hz} Hz."
     severity: info
     event: band
     source: "docs/knowledge-base/04-templates-and-matrices/Technical-Rider-Spec.md L160: ride 'HPF 250 Hz'"
@@ -65,6 +71,8 @@ rules:
 
   - id: PB4
     title: "Overhead HPF outside the 160-450 Hz window"
+    title_vi: "HPF overhead ngoài khoảng 160-450 Hz"
+    message_vi: "Channel {channel.number} ({channel.name}): preset overhead là HPF ở 200-400 Hz; Low cut on = {channel.filter.low_cut_on}, corner = {channel.filter.low_cut_hz} Hz."
     severity: info
     event: band
     source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L686: 'Overheads / cymbals | 200-400 Hz | 12-18 dB/oct | Reject kick and tom bleed'"
@@ -87,6 +95,8 @@ rules:
 
   - id: PB5
     title: "Kick or bass high-passed above 45 Hz"
+    title_vi: "Kick hoặc bass bị HPF cao hơn 45 Hz"
+    message_vi: "Channel {channel.number} ({channel.name}): preset kick/bass là tắt HPF hoặc 30 Hz; corner của channel này là {channel.filter.low_cut_hz} Hz."
     severity: info
     event: band
     source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L687: 'Kick / bass | Off, or 30 Hz | 12 dB/oct | Protect sub drivers from DC/subsonic only'"
@@ -110,6 +120,8 @@ rules:
 
   - id: PB6
     title: "Click reaches more than two IEM mixes"
+    title_vi: "Click vào hơn hai mix IEM"
+    message_vi: "Channel {channel.number} ({channel.name}) có vẻ là click track và đang vào {channel.iem_send_count} mix IEM; các nguồn chỉ cho phép drummer, tối đa thêm bassist."
     severity: info
     event: band
     source: "docs/knowledge-base/03-event-type-sops/Live-Entertainment-Shows.md L609: click 'Drummer only'; L635: 'Click track audible to drummer and bassist only'"

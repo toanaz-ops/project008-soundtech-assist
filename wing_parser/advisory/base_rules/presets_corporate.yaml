@@ -5,6 +5,8 @@
 rules:
   - id: PC1
     title: "Lectern HPF outside the 90-160 Hz window"
+    title_vi: "HPF lectern ngoài khoảng 90-160 Hz"
+    message_vi: "Channel {channel.number} ({channel.name}): preset lectern cần HPF quanh 100-120 Hz; Low cut on = {channel.filter.low_cut_on}, corner = {channel.filter.low_cut_hz} Hz."
     severity: info
     event: corporate
     source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L545: 'HPF 100 Hz, 12 dB/oct (raise to 120 Hz for a boomy male voice)'; Core-Skills-Overview.md L679: lectern gooseneck 100-150 Hz"
@@ -28,6 +30,8 @@ rules:
 
   - id: PC2
     title: "Lectern/panel channel missing the low-mid boundary cut"
+    title_vi: "Channel lectern/panel thiếu cut low-mid boundary"
+    message_vi: "Channel {channel.number} ({channel.name}): preset corporate có boundary cut quanh 250-300 Hz, nhưng EQ này không có cut nào trong khoảng 200-500 Hz."
     severity: info
     event: corporate
     source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L546: '-3 to -4 dB, 300 Hz, Q 1.4'; L678: '-3 dB @ 250 Hz, Q 1.4'"
@@ -51,6 +55,8 @@ rules:
 
   - id: PC3
     title: "Lectern/panel channel missing the presence lift"
+    title_vi: "Channel lectern/panel thiếu presence lift"
+    message_vi: "Channel {channel.number} ({channel.name}): preset corporate nâng 3-3.5 kHz, nhưng EQ này không có boost nào trong khoảng 2-4 kHz."
     severity: info
     event: corporate
     source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L547: '+2 to +3 dB, 3 kHz, Q 1.0 -- Consonant articulation; the biggest single STI improvement available'; L679: '+2 dB @ 3.5 kHz'"
@@ -70,6 +76,8 @@ rules:
 
   - id: PC4
     title: "Lectern gate outside the documented envelope"
+    title_vi: "Gate lectern ngoài khoảng đã được tài liệu hoá"
+    message_vi: "Channel {channel.number} ({channel.name}): Gate lectern ở threshold {channel.gate.threshold_dB} dBFS, range {channel.gate.range_dB} dB; preset là -48 dBFS với range 12."
     severity: info
     event: corporate
     source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L549: 'Threshold -48 dBFS, range 12 dB... Prefer automix over gating. If gating, keep range shallow so it never chatters'"
@@ -94,6 +102,8 @@ rules:
 
   - id: PC5
     title: "Speech compression ratio above 4:1"
+    title_vi: "Tỉ lệ nén tiếng nói trên 4:1"
+    message_vi: "Channel {channel.number} ({channel.name}): nén tiếng nói ở {channel.dyn.ratio}:1; các preset nằm trong khoảng 2:1-3:1."
     severity: info
     event: corporate
     source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L438: 'compression 2:1 to 3:1 with 3-6 dB gain reduction on peaks for speech'; Corporate-B2B-Events.md L550, L680 both 3:1"
@@ -114,6 +124,8 @@ rules:
 
   - id: PC6
     title: "Panel HPF outside the 100-160 Hz window"
+    title_vi: "HPF panel ngoài khoảng 100-160 Hz"
+    message_vi: "Channel {channel.number} ({channel.name}): preset panel cần HPF quanh 120 Hz; Low cut on = {channel.filter.low_cut_on}, corner = {channel.filter.low_cut_hz} Hz."
     severity: info
     event: corporate
     source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L677: 'HPF 120 Hz, 12 dB/oct (table mics pick up more LF than lectern mics)'"
@@ -136,6 +148,8 @@ rules:
 
   - id: PC7
     title: "MC in an automix group without a weight advantage"
+    title_vi: "MC trong automix group không có weight cao hơn"
+    message_vi: "Channel {channel.number} ({channel.name}) là MC trong automix group {channel.post_insert.automix_group} với weight {channel.post_insert.automix_weight} dB; preset cho moderator +3 đến +6 dB."
     severity: info
     event: corporate
     source: "docs/knowledge-base/03-event-type-sops/Corporate-B2B-Events.md L648: 'raise the moderator +3 to +6 dB so they can always cut in'; L681: '(moderator +4 dB)'"
@@ -161,6 +175,8 @@ rules:
 
   - id: PC8
     title: "Q&A mic unmuted in the saved scene"
+    title_vi: "Mic Q&A không Mute trong scene đã lưu"
+    message_vi: "Channel {channel.number} ({channel.name}) được nhận diện là mic khán giả/Q&A và không bị Mute trong scene này."
     severity: info
     event: corporate
     source: "docs/knowledge-base/02-event-ops-framework/Core-Skills-Overview.md L499: audience Q&A mics 'Killed by default, opened only during Q&A'; L741: 'Q&A mic feeds back instantly'"

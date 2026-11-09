@@ -104,6 +104,8 @@ def _rule_from(entry: dict, layer: str, where_from: Path) -> Rule:
         applies_when=dict(entry.get("applies_when") or {}),
         any_of=any_of,
         supersedes=tuple(entry.get("supersedes") or ()),
+        title_vi=_optional(entry, "title_vi", ""),
+        message_vi=_optional(entry, "message_vi", ""),
     )
 
 
