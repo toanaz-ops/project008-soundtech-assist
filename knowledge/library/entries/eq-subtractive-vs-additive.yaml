@@ -49,6 +49,11 @@ sources:
   - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Using EQ to Improve Church Sound"}
 media:
   - {kind: diagram, path: cut-vs-boost.png, caption: "A narrow -6 dB cut versus a wide +3 dB boost on the same band.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=0TqRw1ZuH_c"
+    title: "When to Use Additive vs Subtractive EQ"
+    channel: "SlateDigitalTV"
+    caption: "Slate Digital on when to use additive versus subtractive EQ (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

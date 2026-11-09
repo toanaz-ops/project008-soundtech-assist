@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Starting boost regions by source</text>
+<rect x="90" y="80" width="830" height="370" fill="#0c0e11" stroke="#2b2f37"/>
+<line x1="90.0" y1="80.0" x2="90.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="90.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20</text>
+<line x1="200.1" y1="80.0" x2="200.1" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="200.1" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">50</text>
+<line x1="283.4" y1="80.0" x2="283.4" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="283.4" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">100</text>
+<line x1="366.7" y1="80.0" x2="366.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="366.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">200</text>
+<line x1="476.8" y1="80.0" x2="476.8" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="476.8" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">500</text>
+<line x1="560.0" y1="80.0" x2="560.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="560.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">1k</text>
+<line x1="643.3" y1="80.0" x2="643.3" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="643.3" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">2k</text>
+<line x1="753.4" y1="80.0" x2="753.4" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="753.4" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">5k</text>
+<line x1="836.7" y1="80.0" x2="836.7" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="836.7" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">10k</text>
+<line x1="920.0" y1="80.0" x2="920.0" y2="450.0" stroke="#1d2128" stroke-width="1"/>
+<text x="920.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20k</text>
+<text x="505.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Frequency (Hz)</text>
+<rect x="222.0" y="87.4" width="48.7" height="26.3" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="278.7" y="105.6" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">kick body 60-90</text>
+<rect x="222.0" y="128.5" width="83.3" height="26.3" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="313.3" y="146.7" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">tom body 60-120</text>
+<rect x="332.1" y="169.6" width="61.4" height="26.3" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="401.5" y="187.8" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">snare body 150-250</text>
+<rect x="378.1" y="210.7" width="37.3" height="26.3" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
+<text x="423.4" y="228.9" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">bass 220-300</text>
+<rect x="533.2" y="251.8" width="26.8" height="26.3" rx="3" fill="#ffc24d" fill-opacity="0.85"/>
+<text x="568.0" y="270.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">bass 800-1k</text>
+<rect x="560.0" y="293.0" width="193.4" height="26.3" rx="3" fill="#c9d1d9" fill-opacity="0.85"/>
+<text x="568.0" y="311.1" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">kick beater 1k-5k</text>
+<rect x="643.3" y="334.1" width="67.2" height="26.3" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
+<text x="718.6" y="352.2" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">snare crack 2k-3.5k</text>
+<rect x="692.1" y="375.2" width="34.6" height="26.3" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
+<text x="734.6" y="393.3" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">speech vocal 3k-4k</text>
+<rect x="809.9" y="416.3" width="48.7" height="26.3" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
+<text x="801.9" y="434.4" font-size="14" fill="#e8eaed" text-anchor="end" font-weight="bold">overhead 8k-12k</text>
+</svg>

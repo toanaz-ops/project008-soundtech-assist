@@ -54,6 +54,17 @@ sources:
     accessed: "2026-11-09"
     locator: "Downward Compression / Uplift Compression (page 1 only; the Parallel Compression section on page 2 was not opened)"
 media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=v7NhjvB8jUM"
+    title: "FOH Mixing: Live Tips and Tricks by Ozzy’s Mix Engineer"
+    channel: "Waves Audio"
+    caption: "Ozzy Osbourne's FOH engineer on live tips including parallel drum compression (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=yB-uyzdDsik"
+    title: "Live Mixing Tips from FOH Engineer Greg Price"
+    channel: "Waves Audio"
+    caption: "Greg Price on live mixing with Waves, including his parallel drum compression (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

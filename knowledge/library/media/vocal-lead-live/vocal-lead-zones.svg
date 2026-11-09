@@ -24,11 +24,11 @@
 <text x="920.0" y="472.0" font-size="14" fill="#868d98" text-anchor="middle" font-weight="normal">20k</text>
 <text x="505.0" y="500.0" font-size="15" fill="#868d98" text-anchor="middle" font-weight="normal">Frequency (Hz)</text>
 <rect x="90.0" y="96.7" width="325.4" height="59.2" rx="3" fill="#ff9f1c" fill-opacity="0.85"/>
-<text x="98.0" y="131.2" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Proximity / plosive region (below ~300 Hz)</text>
+<text x="423.4" y="131.2" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">Proximity / plosive region (below ~300 Hz)</text>
 <rect x="256.6" y="189.2" width="53.6" height="59.2" rx="3" fill="#5fc9ff" fill-opacity="0.85"/>
 <text x="318.2" y="223.8" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">HPF starting window (80-125 Hz)</text>
 <rect x="366.7" y="281.6" width="193.4" height="59.2" rx="3" fill="#6ee7a0" fill-opacity="0.85"/>
-<text x="374.7" y="316.2" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Low-mid mud zone (~200 Hz to 1 kHz)</text>
+<text x="568.0" y="316.2" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="bold">Low-mid mud zone (~200 Hz to 1 kHz)</text>
 <rect x="643.3" y="374.1" width="150.5" height="59.2" rx="3" fill="#ff5a4e" fill-opacity="0.85"/>
-<text x="651.3" y="408.8" font-size="14" fill="#0a0b0d" text-anchor="start" font-weight="bold">Presence peak of a typical handheld (2-7 kHz)</text>
+<text x="635.3" y="408.8" font-size="14" fill="#e8eaed" text-anchor="end" font-weight="bold">Presence peak of a typical handheld (2-7 kHz)</text>
 </svg>

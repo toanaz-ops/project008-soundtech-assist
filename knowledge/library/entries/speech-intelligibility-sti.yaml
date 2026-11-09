@@ -79,6 +79,11 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=4QnFNFfIvGs"
+    title: "STI and Speech Intelligibility with Nick Screen - Webinar"
+    channel: "JBL Professional"
+    caption: "JBL Professional webinar on STI and speech intelligibility (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

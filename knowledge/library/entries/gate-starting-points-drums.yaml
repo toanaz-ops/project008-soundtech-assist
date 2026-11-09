@@ -55,6 +55,23 @@ sources:
     url: "https://thechurchcollective.com/tutorial/f-o-h-101-noise-gates/"
     accessed: "2026-11-09"
     locator: "which channels to gate"
+media:
+  - kind: diagram
+    path: gate-times.png
+    caption: "Drum gate hold and release windows"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=9tArCx0JvhA"
+    title: "How to Gate Toms | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Gating toms for a tighter live drum mix (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=5-k6qps4QcQ"
+    title: "Using the Compressor Before Gate on the Behringer Wing - Sounds great on Toms!"
+    channel: "Drew Brashler"
+    caption: "Compressor before gate on toms on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

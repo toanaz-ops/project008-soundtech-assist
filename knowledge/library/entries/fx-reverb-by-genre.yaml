@@ -71,6 +71,29 @@ sources:
     kind: article
     url: "https://www.izotope.com/community/blog/reverb-pre-delay"
     accessed: "2026-11-09"
+media:
+  - kind: diagram
+    path: predelay-by-genre.png
+    caption: "Reverb pre-delay windows by genre"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: diagram
+    path: decay-by-genre.png
+    caption: "Reverb decay windows by genre"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=M20X449rDuE"
+    title: "How to Create a Vocal Reverb on the Behringer WING (Blue Plate FX Tutorial)"
+    channel: "Drew Brashler"
+    caption: "Building a vocal reverb on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=TXAHYFezGiA"
+    title: "The 4 types of reverb EXPLAINED (and when to use each one)."
+    channel: "Jordan McCrae"
+    caption: "Room, hall, plate and spring reverb and when to use each (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

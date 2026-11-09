@@ -72,6 +72,17 @@ sources:
     accessed: "2026-11-09"
     locator: "Uplift Compression"
 media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
+    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
+    channel: "Audio University"
+    caption: "Compressor controls including makeup gain, with timestamps per control (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=GZ9GQKlws74"
+    title: "The Knee - Compression Explained (08 of 14)"
+    channel: "Groove3"
+    caption: "Groove3 lesson on the knee control within a compression series (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

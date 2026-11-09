@@ -79,6 +79,11 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=vVqQh3On69o"
+    title: "From Cue to Speakers - the audio signal path in QLab 5"
+    channel: "Figure 53"
+    caption: "Audio path from cue to speakers in QLab (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

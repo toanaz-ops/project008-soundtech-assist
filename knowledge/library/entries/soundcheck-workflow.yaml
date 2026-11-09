@@ -68,6 +68,21 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=EF8HICmp_VI"
+    title: "A Guide to Running Soundcheck"
+    channel: "Sweetwater"
+    caption: "Sweetwater guide to running soundcheck (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=P6JGU_zOX5M"
+    title: "30 Day Worship Sound Tools #18: Line Check vs Sound Check"
+    channel: "Fender Studio"
+    caption: "Line check versus sound check (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lmTkTDVu_HU"
+    title: "Audio Live Mixing - Unit 4 - 3 - How to do a Linecheck and Soundcheck"
+    channel: "Audio Live Mixing Basic by Kaufmann Sound"
+    caption: "How to do a line check and soundcheck (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

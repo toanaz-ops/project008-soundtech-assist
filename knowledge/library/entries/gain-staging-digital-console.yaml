@@ -87,6 +87,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=PA0kzFmplMg"
+    title: "How To Mix Live Music Chapter 6 - Gain Structure"
+    channel: "Yamaha Global"
+    caption: "Yamaha chapter on gain structure on a mixing console (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=M8FDiMj1tS4"
+    title: "Gain Staging for Live Sound: Set Levels the Right Way"
+    channel: "Church Tech Corner"
+    caption: "Setting input levels for live sound (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

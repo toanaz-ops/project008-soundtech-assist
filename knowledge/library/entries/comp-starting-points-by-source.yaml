@@ -73,6 +73,34 @@ sources:
     kind: article
     url: "https://www.izotope.com/en/learn/gain-staging.html"
     accessed: "2026-11-09"
+media:
+  - kind: diagram
+    path: gain-reduction-by-source.png
+    caption: "Target gain reduction by source"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: diagram
+    path: ratio-by-source.png
+    caption: "Compressor ratio starting windows"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=gBIEaBJbAfY"
+    title: "Compressors and Gates for Live Sound"
+    channel: "Proclaim AV"
+    caption: "Compressors and gates applied to live sound sources (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=8BLsze-hE10"
+    title: "Understanding Compression on Live Vocals"
+    channel: "Attaway Audio"
+    caption: "Compression settings on live vocals (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Lni_H8Ryklk"
+    title: "Compressing Acoustic Guitar | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Compressing a live acoustic guitar without over-compressing (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

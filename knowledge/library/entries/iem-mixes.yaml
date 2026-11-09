@@ -79,6 +79,17 @@ sources:
     url: "https://www.shure.com/damfiles/default/global/documents/publications/en/performance-production/us_pro_guidepersonalmonitor_ea.pdf-a99329954f383dc535fac48bca2396ec.pdf"
     accessed: "2026-11-09"
     locator: "Not opened; listed only because it appeared in search results. Ambience and limiter facts here come from the opened IEM basics page and secondary search summaries."
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=89AA-cdw5cE"
+    title: "5 tips to create the best worship team in ear monitor IEM mix"
+    channel: "Practical Worship"
+    caption: "Tips for a worship team in-ear mix (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=9LM1I1hmTsU"
+    title: "How to Mix In-Ear Monitors for Worship Leaders"
+    channel: "MxU"
+    caption: "Mixing in-ear monitors for worship leaders (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

@@ -81,7 +81,7 @@ media:
   - kind: video
     url: "https://www.youtube.com/watch?v=hED9wfRByw4"
     title: "Intelligent Music Production: Challenges, Frontiers and Implications"
-    channel: "unverified (AES-Midlands workshop upload; speaker Josh Reiss)"
+    channel: "Semantic Audio"
     caption: "Talk by Josh Reiss (title and speaker seen in search results; not watched)"
 confidence: common-practice
 status: draft

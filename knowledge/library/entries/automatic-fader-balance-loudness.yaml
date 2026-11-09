@@ -75,6 +75,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=DZIrlcIV4PM"
+    title: "All Your Audio Meters explained  |  LU, LUFS and more"
+    channel: "Next Level Sound"
+    caption: "Loudness units and meters explained, the measurement behind loudness-based balancing (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=faMwXFuxlpM"
+    title: "How To Mix Live Music Chapter 15 - Faders & Groups"
+    channel: "Yamaha Global"
+    caption: "Yamaha chapter on balancing a band with faders and groups (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

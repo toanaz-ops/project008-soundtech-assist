@@ -52,6 +52,11 @@ sources:
   - {title: "Engineering Bass Guitars Live", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "EQ (frequency range)"}
 media:
   - {kind: diagram, path: instrument-ranges.png, caption: "Fundamental ranges and common problem regions on a log frequency axis", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=K5Ek_yszvEM"
+    title: "Frequency Ranges Explained: From Sub Bass to Brilliance"
+    channel: "Distinct Mastering"
+    caption: "Frequency ranges from sub bass to brilliance explained (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

@@ -45,6 +45,11 @@ sources:
   - {title: "6 ways to use a high-pass filter when mixing", publisher: "iZotope", kind: article, url: "https://www.izotope.com/en/learn/6-ways-to-use-a-high-pass-filter-when-mixing", accessed: "2026-11-09", locator: "Use a high-pass filter to give your low-end instruments their space"}
 media:
   - {kind: diagram, path: kick-bass-carve.png, caption: "Example: kick given a low boost, bass a small cut at the same region.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Sk7wefcQXTI"
+    title: "Frequency Masking 101: How to Unmask Your Mix"
+    channel: "iZotope, Inc."
+    caption: "iZotope on what frequency masking is and how to reduce it (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

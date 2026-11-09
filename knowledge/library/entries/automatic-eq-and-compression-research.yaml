@@ -77,6 +77,11 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=hED9wfRByw4"
+    title: "Intelligent Music Production: Challenges, Frontiers and Implications - Josh Reiss"
+    channel: "Semantic Audio"
+    caption: "Josh Reiss on automated mixing research, relevant to automatic EQ and compression (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

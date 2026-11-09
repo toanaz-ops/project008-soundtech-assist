@@ -71,6 +71,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=rYWnSuAxato"
+    title: "Understanding Mic Specifications - Part 3 - Polar Pattern"
+    channel: "Shure"
+    caption: "Shure on reading a polar pattern (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=qCV8T7mJGYA"
+    title: "The Big 5 Polar Patterns explained: Part I - Cardioid"
+    channel: "Austrian Audio"
+    caption: "Austrian Audio on the cardioid pattern (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

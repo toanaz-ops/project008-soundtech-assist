@@ -61,8 +61,13 @@ sources:
   - {title: "3.5 Instrument Ranges", publisher: "LibreTexts", kind: article, url: "https://human.libretexts.org/Workbench/From_Ear_to_Engineer/03%3A_Psychoacoustics/3.05%3A_Instrument_Ranges", accessed: "2026-11-09", locator: "Instrument Ranges (piano 27-4186 Hz)"}
 media:
   - {kind: diagram, path: piano-eq.png, caption: "Starting EQ for a close-miked acoustic piano", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=J8F4m8nJxBQ", title: "How to Mic a Grand Piano for Recording and Live Sound", channel: "Shure", caption: "Blumlein, spaced pair, midway and hammer-position setups"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=k19mByCajDo", title: "How to mount the DPA 4099 Instrument Mic on a piano with a DPA Clip", channel: "DPA Microphones", caption: "Clip mounting on piano"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=J8F4m8nJxBQ", title: "How to Mic a Grand Piano for Recording and Live Sound", channel: "Shure Creators", caption: "Blumlein, spaced pair, midway and hammer-position setups"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=k19mByCajDo", title: "How to mount the DPA 4099 Instrument Mic on a piano with a DPA Clip", channel: "DPA Microphones A/S", caption: "Clip mounting on piano"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=UXF70zgc-Q4"
+    title: "Mixing Keys | Mixing Pianos and Synth Pads for Worship"
+    channel: "Attaway Audio"
+    caption: "Mixing pianos and synth pads for worship (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

@@ -102,3 +102,27 @@ def test_png_conversion(tool, tmp_path):
     tool.run(manifest(tmp_path, [EQ]), out, png=True)
     png = out / "media" / "eq-test" / "hpf.png"
     assert png.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def _xy(tool, x_values):
+    pts = [[x, math.log10(x)] for x in x_values]
+    return tool.xy_plot({"title": "t", "x_label": "x", "y_label": "y", "x_log": True,
+                         "series": [{"label": "s", "points": pts}]})
+
+
+def test_xy_log_axis_fits_non_frequency_data_with_decade_ticks(tool):
+    svg = _xy(tool, [1, 2, 4, 8, 16])
+    assert ">1<" in svg and ">10<" in svg and ">100<" in svg
+    assert ">20k<" not in svg and ">200<" not in svg
+
+
+def test_xy_log_axis_keeps_audio_ticks_inside_20_to_20k(tool):
+    svg = _xy(tool, [50, 500, 5000])
+    assert ">20k<" in svg and ">1k<" in svg
+
+
+def test_range_chart_draws_one_bar_per_row(tool):
+    svg = tool.range_chart({"title": "r", "x_label": "s", "unit": " s",
+                            "rows": [{"label": "a", "lo": 0.8, "hi": 1.8},
+                                     {"label": "b", "lo": 0.0, "hi": 0.6}]})
+    assert svg.count("<rect") >= 2 and "0.8 to 1.8 s" in svg

@@ -66,8 +66,13 @@ media:
   - kind: video
     url: "https://www.youtube.com/watch?v=XKRnl5KlSv0"
     title: "How to Choose a Lavalier Microphone"
-    channel: "Shure"
+    channel: "Shure Creators"
     caption: "Choosing a lavalier (title ends with Shure on the page; contents not reviewed)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=_SMtL6tEfKk"
+    title: "How to EQ MC Microphones | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Live sound tutorial on EQ for MC microphones (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

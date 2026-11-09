@@ -82,6 +82,17 @@ sources:
     url: "https://tech.ebu.ch/docs/r/r128-2014.pdf"
     accessed: "2026-11-09"
     locator: "PDF could not be read as text; figures taken from search-result summaries"
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=DZIrlcIV4PM"
+    title: "All Your Audio Meters explained  |  LU, LUFS and more"
+    channel: "Next Level Sound"
+    caption: "Peak, LU and LUFS meters explained (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=myTcnK1lRUA"
+    title: "Levels and Loudness Metering (RMS, LUFS and True Peak)"
+    channel: "Sean Divine"
+    caption: "RMS, LUFS and true peak metering (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

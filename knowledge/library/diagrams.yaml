@@ -12,6 +12,7 @@
 #   envelope:       attack_ms, release_ms, hold_ms?, threshold_db?, ratio?  (input burst vs gain reduction over time)
 #   polar_pattern:  patterns: [omni|subcardioid|cardioid|supercardioid|hypercardioid|figure8]
 #   signal_flow:    nodes: [{label, note?}]  (left-to-right chain with arrows)
+#   range_chart:    x_label, unit?, x_range?: [lo, hi], rows: [{label, lo, hi}]  (horizontal bars on a linear axis)
 #   xy_plot:        x_label, y_label, x_log?, series: [{label, points: [[x, y], ...]}]
 diagrams:
   - entry: eq-filter-types
@@ -69,6 +70,7 @@ diagrams:
     file: nom-attenuation
     kind: xy_plot
     title: "NOM attenuation = 10*log10(NOM)"
+    x_log: true
     x_label: "Number of open mics (NOM)"
     y_label: "Group attenuation (dB)"
     series:
@@ -446,3 +448,193 @@ diagrams:
       - {label: "Sidechain input", note: "threshold"}
       - {label: "Music bus compressor", note: "depth, hold, release"}
       - {label: "Main mix"}
+  - entry: fx-reverb-by-genre
+    file: decay-by-genre
+    kind: range_chart
+    title: "Reverb decay time by genre (starting windows)"
+    x_label: "Decay time (s)"
+    unit: " s"
+    x_range: [0, 4]
+    rows:
+      - {label: "speech", lo: 0.0, hi: 0.6}
+      - {label: "rock", lo: 0.3, hi: 1.2}
+      - {label: "pop", lo: 0.8, hi: 1.8}
+      - {label: "edm", lo: 0.8, hi: 2.5}
+      - {label: "jazz", lo: 1.0, hi: 2.2}
+      - {label: "bolero", lo: 1.8, hi: 3.0}
+      - {label: "ballad", lo: 1.8, hi: 3.5}
+  - entry: fx-reverb-by-genre
+    file: predelay-by-genre
+    kind: range_chart
+    title: "Reverb pre-delay by genre (starting windows)"
+    x_label: "Pre-delay (ms)"
+    unit: " ms"
+    x_range: [0, 120]
+    rows:
+      - {label: "rock", lo: 0, hi: 30}
+      - {label: "edm", lo: 10, hi: 60}
+      - {label: "speech", lo: 10, hi: 30}
+      - {label: "jazz", lo: 15, hi: 40}
+      - {label: "bolero", lo: 20, hi: 60}
+      - {label: "pop", lo: 20, hi: 80}
+      - {label: "ballad", lo: 40, hi: 100}
+  - entry: fx-delay-by-genre
+    file: feedback-by-genre
+    kind: range_chart
+    title: "Delay feedback by genre (starting windows)"
+    x_label: "Feedback (%)"
+    unit: " %"
+    x_range: [0, 60]
+    rows:
+      - {label: "rock", lo: 0, hi: 20}
+      - {label: "jazz", lo: 0, hi: 15}
+      - {label: "pop", lo: 15, hi: 30}
+      - {label: "ballad", lo: 15, hi: 25}
+      - {label: "bolero", lo: 15, hi: 25}
+      - {label: "edm", lo: 30, hi: 50}
+  - entry: fx-send-levels
+    file: reverb-send-by-source
+    kind: range_chart
+    title: "Reverb send level by source (post-fader, 0 dB = unity)"
+    x_label: "Send level (dB)"
+    unit: " dB"
+    x_range: [-24, 0]
+    rows:
+      - {label: "electric guitar", lo: -20, hi: -10}
+      - {label: "lead vocal", lo: -18, hi: -8}
+      - {label: "toms", lo: -16, hi: -8}
+      - {label: "acoustic guitar", lo: -16, hi: -8}
+      - {label: "snare", lo: -14, hi: -6}
+      - {label: "backing vocals", lo: -12, hi: -4}
+  - entry: wing-fx-slots-and-models
+    file: reverb-routing
+    kind: signal_flow
+    title: "Reverb routing on WING: slot, dedicated bus, main"
+    nodes:
+      - {label: "Channel send", note: "post-fader"}
+      - {label: "FX slot 1-8", note: "reverb model, e.g. Blue Plate"}
+      - {label: "Dedicated stereo bus", note: "fader at 0 dB"}
+      - {label: "Main"}
+  - entry: eq-per-instrument-targets
+    file: boost-regions
+    kind: band_chart
+    title: "Starting boost regions by source"
+    bands:
+      - {label: "kick body 60-90", lo: 60, hi: 90}
+      - {label: "tom body 60-120", lo: 60, hi: 120}
+      - {label: "snare body 150-250", lo: 150, hi: 250}
+      - {label: "bass 220-300", lo: 220, hi: 300}
+      - {label: "bass 800-1k", lo: 800, hi: 1000}
+      - {label: "kick beater 1k-5k", lo: 1000, hi: 5000}
+      - {label: "snare crack 2k-3.5k", lo: 2000, hi: 3500}
+      - {label: "speech vocal 3k-4k", lo: 3000, hi: 4000}
+      - {label: "overhead 8k-12k", lo: 8000, hi: 12000}
+  - entry: eq-per-instrument-targets
+    file: cut-regions
+    kind: band_chart
+    title: "Starting cut regions by source"
+    bands:
+      - {label: "kick 200-500", lo: 200, hi: 500}
+      - {label: "bass 200-400", lo: 200, hi: 400}
+      - {label: "electric guitar 200-300", lo: 200, hi: 300}
+      - {label: "speech vocal 200-500", lo: 200, hi: 500}
+      - {label: "snare 400-700", lo: 400, hi: 700}
+      - {label: "horns 500-800", lo: 500, hi: 800}
+      - {label: "overhead / hi-hat 3k-7k", lo: 3000, hi: 7000}
+      - {label: "speech vocal 5k-8k", lo: 5000, hi: 8000}
+  - entry: eq-masking-pairs-and-auto-eq-limits
+    file: masking-pair-ranges
+    kind: band_chart
+    title: "Frequency ranges where common pairs collide"
+    bands:
+      - {label: "kick vs bass 50-300", lo: 50, hi: 300}
+      - {label: "vocal vs keys 125-4k", lo: 125, hi: 4000}
+      - {label: "vocal vs electric guitar 1k-4k", lo: 1000, hi: 4000}
+  - entry: balance-fader-offsets-by-genre
+    file: measured-vs-vocal
+    kind: range_chart
+    title: "Measured loudness relative to the lead vocal (0 dB)"
+    x_label: "Offset vs lead vocal (dB)"
+    unit: " dB"
+    x_range: [-16, 0]
+    rows:
+      - {label: "bass", lo: -6.9, hi: 0}
+      - {label: "drums group", lo: -10.0, hi: 0}
+      - {label: "kick", lo: -10.5, hi: 0}
+      - {label: "snare", lo: -14.1, hi: 0}
+  - entry: balance-fader-offsets-by-genre
+    file: pop-offsets
+    kind: range_chart
+    title: "Pop starting offsets relative to the lead vocal (0 dB)"
+    x_label: "Offset vs lead vocal (dB)"
+    unit: " dB"
+    x_range: [-20, 0]
+    rows:
+      - {label: "backing vocals", lo: -5, hi: 0}
+      - {label: "bass", lo: -7, hi: 0}
+      - {label: "keys", lo: -8, hi: 0}
+      - {label: "acoustic guitar", lo: -8, hi: 0}
+      - {label: "electric guitar", lo: -9, hi: 0}
+      - {label: "horns", lo: -9, hi: 0}
+      - {label: "kick", lo: -10, hi: 0}
+      - {label: "snare", lo: -10, hi: 0}
+      - {label: "toms", lo: -12, hi: 0}
+      - {label: "overheads", lo: -14, hi: 0}
+      - {label: "hi-hat", lo: -18, hi: 0}
+  - entry: comp-starting-points-by-source
+    file: ratio-by-source
+    kind: range_chart
+    title: "Compressor ratio starting windows"
+    x_label: "Ratio (x:1)"
+    unit: ":1"
+    x_range: [1, 5]
+    rows:
+      - {label: "keys", lo: 1.8, hi: 2.5}
+      - {label: "electric guitar", lo: 2, hi: 4}
+      - {label: "acoustic guitar", lo: 2.5, hi: 3.4}
+      - {label: "bass", lo: 2.6, hi: 4}
+      - {label: "lead speech/vocal", lo: 2, hi: 4}
+      - {label: "backing vocals", lo: 3, hi: 4}
+      - {label: "MC", lo: 3, hi: 4}
+      - {label: "kick", lo: 3.5, hi: 4}
+      - {label: "snare", lo: 3.5, hi: 4}
+  - entry: comp-starting-points-by-source
+    file: gain-reduction-by-source
+    kind: range_chart
+    title: "Target gain reduction by source"
+    x_label: "Gain reduction (dB)"
+    unit: " dB"
+    x_range: [0, 10]
+    rows:
+      - {label: "keys", lo: 1, hi: 4}
+      - {label: "acoustic guitar", lo: 2, hi: 5}
+      - {label: "electric guitar", lo: 2, hi: 4}
+      - {label: "kick", lo: 3, hi: 6}
+      - {label: "snare", lo: 3, hi: 6}
+      - {label: "bass", lo: 3, hi: 6}
+      - {label: "lead speech/vocal", lo: 3, hi: 6}
+      - {label: "backing vocals", lo: 4, hi: 8}
+      - {label: "MC", lo: 4, hi: 8}
+  - entry: gate-starting-points-drums
+    file: gate-times
+    kind: range_chart
+    title: "Drum gate hold and release starting windows"
+    x_label: "Time (ms)"
+    unit: " ms"
+    x_range: [0, 300]
+    rows:
+      - {label: "kick hold", lo: 30, hi: 100}
+      - {label: "snare hold", lo: 30, hi: 100}
+      - {label: "tom hold", lo: 50, hi: 150}
+      - {label: "kick release", lo: 50, hi: 150}
+      - {label: "snare release", lo: 80, hi: 200}
+      - {label: "tom release", lo: 100, hi: 250}
+  - entry: wing-meter-protocol-and-automix-nodes
+    file: automix-node-chain
+    kind: signal_flow
+    title: "WING automix: per-channel slot into a gain-sharing group"
+    nodes:
+      - {label: "Channel", note: "post-insert slot AUTO_X or AUTO_Y"}
+      - {label: "On switch and weight", note: "weight -12 to +12"}
+      - {label: "Group X or Y", note: "up to 16 inputs"}
+      - {label: "Gain-shared output"}

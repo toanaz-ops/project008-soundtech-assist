@@ -77,6 +77,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
+    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
+    channel: "Audio University"
+    caption: "Threshold, ratio, attack and release explained with demos (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=_IuQKs61rO0"
+    title: "Visualizing compressor knee - Hard knee vs. soft knee"
+    channel: "Audio Masterclass"
+    caption: "Hard knee versus soft knee visualised (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

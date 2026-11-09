@@ -86,6 +86,21 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=tPxxzswyoVg"
+    title: "Mic Polarity Setup Part 1 of 3 for Live Sound Engineers"
+    channel: "Dave Rat"
+    caption: "Dave Rat on setting mic polarity for live sound, part 1 (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=7cZE1DJN6Xc"
+    title: "Mic Polarity Setup Part 3 of 3 for Live Sound Engineers"
+    channel: "Dave Rat"
+    caption: "Dave Rat on mic polarity, part 3 (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=hTJGvMW8N0k"
+    title: "Time align drum mics? || Live Sound Phase Issues"
+    channel: "Attaway Audio"
+    caption: "Time-aligning drum mics and live sound phase issues (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

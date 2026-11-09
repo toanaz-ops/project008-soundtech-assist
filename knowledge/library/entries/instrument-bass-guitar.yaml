@@ -57,6 +57,11 @@ sources:
   - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Bass guitar"}
 media:
   - {kind: diagram, path: bass-eq.png, caption: "Starting EQ for bass guitar DI", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Cmhd8fZ28fk"
+    title: "Mixing Bass Guitar | Fat Bottomed Tips by Joe Barresi"
+    channel: "Waves Audio"
+    caption: "Joe Barresi on mixing bass guitar (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

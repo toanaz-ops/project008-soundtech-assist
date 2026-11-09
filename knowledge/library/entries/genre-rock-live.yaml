@@ -74,6 +74,11 @@ media:
     title: "Live Sound Mixing Strategy - Updated"
     channel: "Dave Rat"
     caption: "FOH mixing strategy for rock shows (channel inferred from search results, not confirmed on the page)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=v7NhjvB8jUM"
+    title: "FOH Mixing: Live Tips and Tricks by Ozzy’s Mix Engineer"
+    channel: "Waves Audio"
+    caption: "Live FOH tips from an engineer who mixed a major rock act (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

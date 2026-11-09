@@ -78,6 +78,16 @@ media:
     title: "Pre-Delay Tips: How to Use It With Reverb in Your Mix"
     channel: "LANDR"
     caption: "Pre-delay in a mix (found via search; contents not reviewed beyond the title)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=TXAHYFezGiA"
+    title: "The 4 types of reverb EXPLAINED (and when to use each one)."
+    channel: "Jordan McCrae"
+    caption: "Four reverb types and when to use each (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=YA4rZgq0RaI"
+    title: "What You Don't Know About Reverb - Reverb Masterclass"
+    channel: "In The Mix"
+    caption: "Reverb masterclass covering how reverb parameters work (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

@@ -64,6 +64,12 @@ sources:
     accessed: "2026-11-09"
     locator: "Dynamic Damage"
 media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=LNkaGACWuhs"
+    title: "Introduction to FabFilter Pro-MB Multiband Compressor / Expander"
+    channel: "FabFilter"
+    caption: "FabFilter introduction to multiband compression (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

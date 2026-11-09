@@ -59,6 +59,16 @@ sources:
   - {title: "Live Kick Drum EQ", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/live-kick-drum-eq/", accessed: "2026-11-09", locator: "Live Kick Drum EQ Settings"}
 media:
   - {kind: diagram, path: kick-eq.png, caption: "Typical starting EQ for a live kick (values from the cited sources)", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=fU1a_fZvzs0"
+    title: "How to Mic a Kick Drum, by Sweetwater"
+    channel: "Sweetwater"
+    caption: "Sweetwater on miking a kick drum (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=fFtMa5jfUMQ"
+    title: "Quick Tip: Define the Sound of Your Kick Drum Using Mic Placement"
+    channel: "PSL LAB"
+    caption: "How mic position changes the kick sound (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

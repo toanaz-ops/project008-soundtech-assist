@@ -61,6 +61,23 @@ sources:
     url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2"
     accessed: "2026-11-09"
     locator: "return EQ, post-fader sends"
+media:
+  - kind: diagram
+    path: reverb-routing.png
+    caption: "Reverb routing on the WING"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=s_RVSvfmNv8"
+    title: "Wing How To: Episode 07 -  Inserts & Effects"
+    channel: "Behringer Knowledge Base"
+    caption: "Behringer WING how-to episode on inserts and effects (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=y_WgPYZziDI"
+    title: "Behringer Wing FX Basics: Get Pro Sound for Vocals & Instruments"
+    channel: "Alan Hamilton Audio"
+    caption: "WING FX basics for vocals and instruments (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

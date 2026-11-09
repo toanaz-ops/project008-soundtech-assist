@@ -60,6 +60,11 @@ sources:
   - {title: "How to EQ Drums Live", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/eq-drums-live/", accessed: "2026-11-09", locator: "Live Snare EQ"}
 media:
   - {kind: diagram, path: snare-eq.png, caption: "Typical starting EQ for a live snare top mic", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=4gN8ju3V9BM"
+    title: "Snare drum microphone technique using two Shure SM57 microphones"
+    channel: "Jsoundservices"
+    caption: "Snare top and bottom miking with two dynamic mics (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

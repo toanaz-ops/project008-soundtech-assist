@@ -77,8 +77,13 @@ media:
   - kind: video
     url: "https://www.youtube.com/watch?v=2yD4YKnsI7A"
     title: "Q-SYS: Automatic Mixers - Part A (Gain Sharing - Setup)"
-    channel: "Q-SYS"
+    channel: "QSC"
     caption: "Vendor tutorial on the gain-sharing side of the comparison (title seen in search results; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=omx8ZjJwclU"
+    title: "Manage multiple microphones with AUTO-MIX"
+    channel: "Behringer"
+    caption: "Behringer demo of automixing several open microphones (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

@@ -53,8 +53,13 @@ sources:
   - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Acoustic guitar"}
 media:
   - {kind: diagram, path: acoustic-guitar-eq.png, caption: "Starting EQ for an acoustic guitar DI", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=puY8so8eb5A", title: "How to Mic an Acoustic Guitar Featuring 9 Different Shure Mics", channel: "Shure", caption: "Comparison of mic choices on one guitar"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=cfAc1D5D8Wk", title: "How to mount the DPA 4099 Instrument Mic on a guitar with a DPA Clip", channel: "DPA Microphones", caption: "Clip-on mic mounting"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=puY8so8eb5A", title: "How to Mic an Acoustic Guitar Featuring 9 Different Shure Mics", channel: "Shure Creators", caption: "Comparison of mic choices on one guitar"}
+  - {kind: video, url: "https://www.youtube.com/watch?v=cfAc1D5D8Wk", title: "How to mount the DPA 4099 Instrument Mic on a guitar with a DPA Clip", channel: "DPA Microphones A/S", caption: "Clip-on mic mounting"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Lni_H8Ryklk"
+    title: "Compressing Acoustic Guitar | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Compressing a live acoustic guitar (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

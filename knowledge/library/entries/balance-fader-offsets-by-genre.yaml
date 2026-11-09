@@ -66,6 +66,29 @@ sources:
     year: 2017
     accessed: "2026-11-09"
     locator: "survey"
+media:
+  - kind: diagram
+    path: pop-offsets.png
+    caption: "Pop starting offsets relative to the lead vocal"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: diagram
+    path: measured-vs-vocal.png
+    caption: "Measured loudness relative to the lead vocal"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:range_chart"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=faMwXFuxlpM"
+    title: "How To Mix Live Music Chapter 15 - Faders & Groups"
+    channel: "Yamaha Global"
+    caption: "Yamaha chapter on setting a band balance with faders and groups (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=H5S34Hf95gI"
+    title: "Live Sound Mixing Strategy - Updated"
+    channel: "Dave Rat"
+    caption: "Dave Rat on a mix strategy for building balance (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

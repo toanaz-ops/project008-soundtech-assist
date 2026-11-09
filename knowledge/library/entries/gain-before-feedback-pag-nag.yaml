@@ -89,6 +89,21 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=CaXcPTLrZ48"
+    title: "Proper Gain Structure to Avoid Feedback | Sound Advice"
+    channel: "QSC"
+    caption: "QSC Sound Advice on gain structure and feedback (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=svvWsCL7ZS4"
+    title: "How To Position Mics And Speakers To Prevent Feedback"
+    channel: "Audio University Clips"
+    caption: "Positioning mics and speakers to prevent feedback (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=7uDQbjXdJPo"
+    title: "Why EQ Is Not the Answer to Microphone Feedback with Jason Romney"
+    channel: "Nathan Lively"
+    caption: "Why EQ alone does not solve microphone feedback (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

@@ -67,6 +67,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=3SNuOdb62xY"
+    title: "Wing How To: Episode 14 - Automix"
+    channel: "Behringer Knowledge Base"
+    caption: "Behringer WING how-to episode on automix (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=kB6P-AaiCjI"
+    title: "How to Use the Automixer on the Behringer Wing"
+    channel: "Drew Brashler"
+    caption: "Using the automixer on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

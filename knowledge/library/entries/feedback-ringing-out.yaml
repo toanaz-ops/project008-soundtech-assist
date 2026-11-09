@@ -82,6 +82,21 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Pfx0RMHP02I"
+    title: "Ringing Out a Room (Mains and Monitors) to Eliminate Feedback | Sound Advice"
+    channel: "QSC"
+    caption: "QSC Sound Advice on ringing out mains and monitors (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=pu0xjl0rpMU"
+    title: "Ringing Out Monitors (& FOH) With A Behringer X32 & XR18, Midas M32 & MR18 -  Live Sound Tutorial"
+    channel: "Alan Hamilton Audio"
+    caption: "Ringing out monitors and FOH on a digital desk (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=JvjLkQzo7s8"
+    title: "Monitor Mixing - How to Ring Out a Floor Wedge - Ringing Out Floor Monitors"
+    channel: "Drew Brashler"
+    caption: "Ringing out a single floor wedge (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

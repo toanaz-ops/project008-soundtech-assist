@@ -127,7 +127,8 @@ def _axes(svg: Svg, x_lo, x_hi, y_lo, y_hi, x_label="", y_label="", *, x_log=Fal
     svg.frame(box)
     if x_log:
         xs = x_ticks or FREQ_TICKS
-        mx = lambda f: _log_x(f, box)  # noqa: E731
+        mx = lambda f: _lin(math.log10(f), math.log10(x_lo), math.log10(x_hi),  # noqa: E731
+                            left, right)
     else:
         xs = [(v, _fmt(v)) for v in (x_ticks or _ticks(x_lo, x_hi))]
         mx = lambda v: _lin(v, x_lo, x_hi, left, right)  # noqa: E731
@@ -203,9 +204,50 @@ def band_chart(item: dict) -> str:
         colour = SERIES[i % len(SERIES)]
         svg.add(f'<rect x="{x1:.1f}" y="{y:.1f}" width="{x2 - x1:.1f}" height="{row * 0.64:.1f}" '
                 f'rx="3" fill="{colour}" fill-opacity="0.85"/>')
-        label_x = x1 + 8 if x2 - x1 > 150 else x2 + 8
-        svg.text(label_x, y + row * 0.64 / 2 + 5, band["label"], size=14,
-                 fill=_C["background"] if x2 - x1 > 150 else _C["text"], weight="bold")
+        need = len(band["label"]) * 8 + 16
+        inside = x2 - x1 >= need
+        ty = y + row * 0.64 / 2 + 5
+        if inside:
+            svg.text(x1 + 8, ty, band["label"], size=14, fill=_C["background"], weight="bold")
+        elif x2 + need <= W - 10:
+            svg.text(x2 + 8, ty, band["label"], size=14, fill=_C["text"], weight="bold")
+        else:
+            svg.text(x1 - 8, ty, band["label"], size=14, fill=_C["text"], weight="bold", anchor="end")
+    return svg.render()
+
+
+def range_chart(item: dict) -> str:
+    """Horizontal bars, one row per label, spanning lo..hi on a linear value axis."""
+    svg = Svg(item["title"])
+    box = (250, 80, 920, 450)
+    rows = item["rows"]
+    values = [v for r in rows for v in (r["lo"], r["hi"])]
+    x_lo, x_hi = item.get("x_range") or [min(values), max(values)]
+    unit = item.get("unit", "")
+    svg.frame(box)
+    for v in _ticks(x_lo, x_hi):
+        x = _lin(v, x_lo, x_hi, box[0], box[2])
+        svg.line(x, box[1], x, box[3], _C["border"] if v == 0 else _C["grid"])
+        svg.text(x, box[3] + 22, _fmt(v), anchor="middle")
+    svg.text((box[0] + box[2]) / 2, box[3] + 50, item.get("x_label", ""), size=15, anchor="middle")
+    row_h = (box[3] - box[1]) / len(rows)
+    for i, row in enumerate(rows):
+        a, b = sorted((row["lo"], row["hi"]))
+        x1 = _lin(a, x_lo, x_hi, box[0], box[2])
+        x2 = max(_lin(b, x_lo, x_hi, box[0], box[2]), x1 + 3)
+        y = box[1] + i * row_h + row_h * 0.2
+        svg.text(box[0] - 12, y + row_h * 0.3 + 5, row["label"], anchor="end")
+        svg.add(f'<rect x="{x1:.1f}" y="{y:.1f}" width="{x2 - x1:.1f}" height="{row_h * 0.6:.1f}" '
+                f'rx="3" fill="{SERIES[i % len(SERIES)]}" fill-opacity="0.85"/>')
+        text = _fmt(a) if a == b else f"{_fmt(a)} to {_fmt(b)}"
+        label, ty = f"{text}{unit}", y + row_h * 0.3 + 5
+        need = len(label) * 8 + 12
+        if x2 + need <= W - 10:
+            svg.text(x2 + 8, ty, label, size=13, weight="bold")
+        elif x2 - x1 >= need:
+            svg.text(x2 - 8, ty, label, size=13, weight="bold", anchor="end", fill=_C["background"])
+        else:
+            svg.text(x1 - 8, ty, label, size=13, weight="bold", anchor="end")
     return svg.render()
 
 
@@ -310,15 +352,32 @@ def signal_flow(item: dict) -> str:
     return svg.render()
 
 
+def _decade_axis(lo: float, hi: float):
+    """Log axis fitted to non-audio data: whole decades plus 2/5 minor ticks."""
+    if lo <= 0:
+        raise ValueError("x_log needs positive x values")
+    d_lo, d_hi = math.floor(math.log10(lo)), math.ceil(math.log10(hi))
+    if d_hi == d_lo:
+        d_hi += 1
+    mults = (1, 2, 5) if d_hi - d_lo <= 3 else (1,)
+    ticks = [(m * 10.0 ** d, _fmt(m * 10.0 ** d)) for d in range(d_lo, d_hi) for m in mults]
+    ticks.append((10.0 ** d_hi, _fmt(10.0 ** d_hi)))
+    return 10.0 ** d_lo, 10.0 ** d_hi, ticks
+
+
 def xy_plot(item: dict) -> str:
     svg = Svg(item["title"])
     pts_all = [p for s in item["series"] for p in s["points"]]
     xs, ys = [p[0] for p in pts_all], [p[1] for p in pts_all]
     x_log = bool(item.get("x_log"))
-    if x_log:
+    if x_log and min(xs) >= 20 and max(xs) <= 20000:
         mx_axes = _axes(svg, 20, 20000, min(ys), max(ys), item.get("x_label", ""),
                         item.get("y_label", ""), x_log=True)
-        y_lo, y_hi = min(ys), max(ys)
+    elif x_log:
+        x_lo, x_hi, ticks = _decade_axis(min(xs), max(xs))
+        pad = (max(ys) - min(ys)) * 0.08 or 1
+        mx_axes = _axes(svg, x_lo, x_hi, min(ys) - pad, max(ys) + pad, item.get("x_label", ""),
+                        item.get("y_label", ""), x_log=True, x_ticks=ticks)
     else:
         x_lo, x_hi = min(xs), max(xs)
         pad = (max(ys) - min(ys)) * 0.08 or 1
@@ -333,7 +392,7 @@ def xy_plot(item: dict) -> str:
 
 
 KINDS = {"eq_curve": eq_curve, "band_chart": band_chart, "transfer_curve": transfer_curve,
-         "envelope": envelope, "polar_pattern": polar_pattern, "signal_flow": signal_flow,
+         "range_chart": range_chart, "envelope": envelope, "polar_pattern": polar_pattern, "signal_flow": signal_flow,
          "xy_plot": xy_plot}
 
 

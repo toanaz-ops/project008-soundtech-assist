@@ -40,6 +40,17 @@ sources:
   - {title: "What is linear phase EQ?", publisher: "iZotope", kind: article, url: "https://www.izotope.com/en/learn/what-is-linear-phase-eq", accessed: "2026-11-09", locator: "Latency; When to Use Minimum Phase; When to Use Linear Phase"}
   - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Minimum Vs Linear Phase"}
   - {title: "Pro-Q: Dynamic EQ", publisher: "FabFilter", kind: manual, url: "https://fabfilter.com/help/pro-q/using/dynamic-eq", accessed: "2026-11-09", locator: "Linear Phase Limitation"}
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=efKabAQQsPQ"
+    title: "EQ: Linear Phase vs Minimum Phase"
+    channel: "FabFilter"
+    caption: "FabFilter comparison of linear phase and minimum phase EQ (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=2wh3QBE6wco"
+    title: "What's the difference between linear-phase, minimum-phase, and maximum-phase?"
+    channel: "Nathan Lively"
+    caption: "Nathan Lively on linear, minimum and maximum phase (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

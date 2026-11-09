@@ -63,6 +63,21 @@ sources:
   - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Brass section"}
 media:
   - {kind: diagram, path: brass-eq.png, caption: "Starting EQ for a brass section channel", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=XlYNFXVTzYI"
+    title: "beyerdynamic | How to mic a saxophone"
+    channel: "beyerdynamic"
+    caption: "beyerdynamic on miking a saxophone (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=hkQ5LVo-Yw8"
+    title: "How to mount the 4099 Instrument Mic on a trumpet with a DPA Clip"
+    channel: "DPA Microphones A/S"
+    caption: "Mounting a clip-on instrument mic on a trumpet (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=ViYLbc9mdhU"
+    title: "Royer Mic Techniques for Brass Players ft. Wayne Bergeron"
+    channel: "Sweetwater Band & Orchestra"
+    caption: "Ribbon mic techniques for brass players (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

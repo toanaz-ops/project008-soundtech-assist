@@ -93,6 +93,21 @@ media:
     title: "Microphone Selection & Placement for Houses of Worship"
     channel: "Shure"
     caption: "Vocal mic choice and placement basics from a Shure training session (general, not WING-specific)."
+  - kind: video
+    url: "https://www.youtube.com/watch?v=ey715RqVozk"
+    title: "Vocal EQ - How to Mix Live Vocals (feat. Jon Thurlow \"Shout Your Name\")"
+    channel: "Attaway Audio"
+    caption: "Vocal EQ for live vocals (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=8BLsze-hE10"
+    title: "Understanding Compression on Live Vocals"
+    channel: "Attaway Audio"
+    caption: "Compression on live vocals (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=r6Sy7u3pCEo"
+    title: "How to EQ a Vocal - Behringer X32"
+    channel: "Drew Brashler"
+    caption: "EQ of a vocal on a digital desk from low cut to air (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

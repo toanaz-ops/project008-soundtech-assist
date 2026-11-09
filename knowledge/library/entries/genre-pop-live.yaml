@@ -69,6 +69,17 @@ sources:
     accessed: "2026-11-09"
     locator: "Playback and Backing Tracks"
 media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=yB-uyzdDsik"
+    title: "Live Mixing Tips from FOH Engineer Greg Price"
+    channel: "Waves Audio"
+    caption: "FOH engineer Greg Price on live mixing tips (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=cvwbngEThX4"
+    title: "Mixing FOH for J Balvin with Waves Plugins"
+    channel: "Waves Audio"
+    caption: "FOH vocal chains on a Latin pop show (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

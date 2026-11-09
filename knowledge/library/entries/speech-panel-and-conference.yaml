@@ -76,6 +76,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: "scripts/library_diagrams.py"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Cx-S4LBgulw"
+    title: "QSC TouchMix-30 Pro Training: Auto Mixer Part 1"
+    channel: "QSC"
+    caption: "QSC training on the automixer for open microphones (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=omx8ZjJwclU"
+    title: "Manage multiple microphones with AUTO-MIX"
+    channel: "Behringer"
+    caption: "Behringer demo of automixing several microphones (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

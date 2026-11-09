@@ -69,6 +69,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=QIbje7jT1uU"
+    title: "Understanding Delay (Easy Mixing Guide)"
+    channel: "Sara Carter - Simply Mixing"
+    caption: "Delay types and uses explained (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=RIEACMWk_7s"
+    title: "Behringer Wing 301 - Effects Tutorials - Setting Up A Reverb or Delay"
+    channel: "Drew Brashler"
+    caption: "Setting up a reverb or delay on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

@@ -95,6 +95,29 @@ sources:
     kind: article
     url: "https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-eq-tips-for-vocals"
     accessed: "2026-11-09"
+media:
+  - kind: diagram
+    path: cut-regions.png
+    caption: "Starting cut regions by source"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:band_chart"
+  - kind: diagram
+    path: boost-regions.png
+    caption: "Starting boost regions by source"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:band_chart"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=cePwMM-0dDQ"
+    title: "How To Mix Live Music Chapter 12 - EQ for Acoustic Instruments"
+    channel: "Yamaha Global"
+    caption: "Yamaha chapter on EQ for acoustic instruments (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=81RF4964fRY"
+    title: "How to EQ Electric Guitars | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Live EQ of electric guitars (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

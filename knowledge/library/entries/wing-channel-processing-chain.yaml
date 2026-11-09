@@ -65,8 +65,13 @@ media:
   - kind: video
     url: "https://www.youtube.com/watch?v=Yc9hDMyUBGc"
     title: "Wing How To: Episode 06 - EQ & Dynamics"
-    channel: "Behringer (series title as seen in search results; channel unverified)"
+    channel: "Behringer Knowledge Base"
     caption: "Behringer's WING how-to series, EQ and dynamics episode (not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=6kXHJr2zYiA"
+    title: "Fix a Ringing Snare with Dynamic EQ on the Behringer WING"
+    channel: "Drew Brashler"
+    caption: "Dynamic EQ in the gate section of a WING channel (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

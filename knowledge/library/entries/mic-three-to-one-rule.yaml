@@ -87,6 +87,16 @@ media:
     license: CC0-1.0
     attribution: "Generated for wing-parser"
     generated_by: scripts/library_diagrams.py
+  - kind: video
+    url: "https://www.youtube.com/watch?v=_RJQfGm2RAQ"
+    title: "3 to1 Rule | Proper Set-up for Multiple Mics"
+    channel: "Sonic Electronix"
+    caption: "Proper set-up for multiple mics under the 3 to 1 rule (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=LvFKZ-F9gNE"
+    title: "The Spaced Pair Technique and the 3:1 Rule"
+    channel: "Neptune Music"
+    caption: "Spaced pair technique and the 3:1 rule (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

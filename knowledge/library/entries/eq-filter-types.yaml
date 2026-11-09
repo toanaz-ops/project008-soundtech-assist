@@ -43,6 +43,16 @@ media:
   - {kind: diagram, path: hpf-slopes.png, caption: "A 100 Hz high-pass at 6, 12, 18 and 24 dB/oct.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
   - {kind: diagram, path: bell-q-compare.png, caption: "The same +6 dB bell at 1 kHz with Q 0.7, 1.4 and 4.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
   - {kind: diagram, path: shelves.png, caption: "A low shelf cut and a high shelf boost.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=8erPNLiMkpM"
+    title: "Parametric EQ's (EQ Explained)"
+    channel: "Groove3"
+    caption: "Groove3 explanation of parametric EQ bands (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=BsX_O8Hla0s"
+    title: "Understanding EQ Filters: Cut, Shelf, Bell, Notch & Tilt EQ Explained"
+    channel: "Solution Adenuga"
+    caption: "Cut, shelf, bell, notch and tilt filters compared (title and channel confirmed on YouTube; not watched in full)"
 confidence: established
 status: draft
 revision: 1

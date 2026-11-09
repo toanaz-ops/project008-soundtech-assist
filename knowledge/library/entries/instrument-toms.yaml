@@ -56,6 +56,16 @@ sources:
   - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Toms"}
 media:
   - {kind: diagram, path: toms-eq.png, caption: "Starting EQ for a rack tom", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=Os3wSQEoxpw"
+    title: "Basic Drum Miking: The Toms"
+    channel: "Audio-Technica USA"
+    caption: "Audio-Technica basics of tom miking (title and channel confirmed on YouTube; not watched in full)"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=9tArCx0JvhA"
+    title: "How to Gate Toms | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Gating toms in a live mix (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

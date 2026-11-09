@@ -40,6 +40,18 @@ sources:
     author: "Patrick-Gilles Maillot"
     accessed: "2026-11-09"
     locator: "pp. 16-80 (OSC), pp. 86-87 (metering channel)"
+media:
+  - kind: diagram
+    path: automix-node-chain.png
+    caption: "WING automix slot and group chain"
+    license: CC0-1.0
+    attribution: "Generated for wing-parser"
+    generated_by: "scripts/library_diagrams.py:signal_flow"
+  - kind: video
+    url: "https://www.youtube.com/watch?v=3SNuOdb62xY"
+    title: "Wing How To: Episode 14 - Automix"
+    channel: "Behringer Knowledge Base"
+    caption: "Automix function on the WING, the feature whose nodes are listed here (title and channel confirmed on YouTube; not watched in full)"
 confidence: contested
 status: draft
 revision: 1

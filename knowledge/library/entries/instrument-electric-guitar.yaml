@@ -49,6 +49,11 @@ sources:
   - {title: "How to Fix Muddy Electric Guitars", publisher: "Waves Audio", kind: article, url: "https://waves.com/how-to-fix-muddy-electric-guitars", accessed: "2026-11-09", locator: "High-Pass Filtering; Mud Range"}
 media:
   - {kind: diagram, path: electric-guitar-eq.png, caption: "Starting EQ for a miked guitar amp", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+  - kind: video
+    url: "https://www.youtube.com/watch?v=81RF4964fRY"
+    title: "How to EQ Electric Guitars | Live Sound Tutorial"
+    channel: "Fuze Audio"
+    caption: "Live EQ of electric guitars (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

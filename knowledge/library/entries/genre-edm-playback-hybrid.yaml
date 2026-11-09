@@ -70,6 +70,12 @@ sources:
     accessed: "2026-11-09"
     locator: "Playback tracks"
 media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=yyfaHGCLxFA"
+    title: "Seperate Click+Guide to IEM Through Playback App"
+    channel: "Lenny Scolaro"
+    caption: "Sending click and guide to in-ear monitors from a playback app (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1

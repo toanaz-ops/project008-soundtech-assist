@@ -61,6 +61,12 @@ sources:
     accessed: "2026-11-09"
     locator: "Numbers for chorus, vibrato and flanging delay times"
 media: []
+media:
+  - kind: video
+    url: "https://www.youtube.com/watch?v=dXgVVacBUgI"
+    title: "What is Chorus? | How To Use Chorus Effect?"
+    channel: "This Is Onesto"
+    caption: "What chorus is and how to use it (title and channel confirmed on YouTube; not watched in full)"
 confidence: common-practice
 status: draft
 revision: 1
