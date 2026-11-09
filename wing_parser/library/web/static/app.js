@@ -259,7 +259,7 @@
     const actions = (!EXPORT) && h("div", { class: "actions" },
       S.canEdit && h("button", { class: "btn", type: "button", onclick: () => go("edit", id) }, t("edit")),
       h("button", { class: "btn", type: "button", onclick: () => go("hist", id) }, t("history")),
-      S.canEdit && e.status !== "retired" && h("button", { class: "btn danger", type: "button", onclick: () => retireEntry(id) }, t("retire")));
+      S.canEdit && e.status !== "retired" && h("button", { class: "btn danger", type: "button", onclick: () => retireEntry(id, e.revision) }, t("retire")));
     const media = mediaBlocks(e);
     setView(
       h("h1", {}, e.title), e.title_vi && h("div", { class: "vi" }, e.title_vi), badges, actions,
@@ -271,11 +271,17 @@
       h("p", { class: "muted" }, t("rev") + " " + e.revision + " · " + t("by") + " " + e.updated_by + " · " + e.updated_at));
     $("view").focus({ preventScroll: true });
   }
-  async function retireEntry(id) {
+  function writeFail(err) {
+    if (err instanceof ApiError && err.status === 422 && err.body && err.body.issues) {
+      alert(t("validation") + "\n" + err.body.issues.map((i) => i.field + ": " + i.message).join("\n"));
+    } else if (err instanceof ApiError && err.status === 409) alert(t("conflict"));
+    else fatal(err);
+  }
+  async function retireEntry(id, revision) {
     if (EXPORT) return; // dialogs are no-ops on the artifact host; retiring is server-only
     const note = prompt(t("retireAsk"), "");
     if (note === null) return;
-    try { await api("api/entries/" + id + "/retire", { method: "POST", body: { note } }); await afterWrite(id); } catch (err) { fatal(err); }
+    try { await api("api/entries/" + id + "/retire", { method: "POST", body: { note, revision } }); await afterWrite(id); } catch (err) { writeFail(err); await afterWrite(id); }
   }
   async function afterWrite(id) {
     S.detail = {};
@@ -397,7 +403,7 @@
       S.canEdit && h("button", { type: "button", class: "btn", onclick: async (ev) => {
         ev.stopPropagation();
         if (EXPORT || !confirm(t("restoreAsk"))) return;
-        try { await api("api/entries/" + id + "/restore", { method: "POST", body: { rev: r.rev, note: "" } }); await afterWrite(id); } catch (err) { fatal(err); }
+        try { await api("api/entries/" + id + "/restore", { method: "POST", body: { rev: r.rev, note: "", revision: revs[revs.length - 1].rev } }); await afterWrite(id); } catch (err) { writeFail(err); }
       } }, t("restore")))));
     setView(h("h1", {}, t("history") + ": " + id), h("div", { class: "actions" }, h("button", { class: "btn", type: "button", onclick: () => go("e", id) }, t("back"))),
       h("h2", {}, t("revisions")), list, diffBox);

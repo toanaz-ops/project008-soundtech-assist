@@ -43,7 +43,7 @@ rule:
   notes: "Counts come from the opened WING manual mirror excerpt (SETUP > Audio). Weighting and algorithm unverified."
 sources:
   - title: "Behringer WING RACK manual (mirror), SETUP > Audio: AUTOMIX"
-    publisher: "Behringer"
+    publisher: "ManualsLib (mirror of Behringer WING Rack manual)"
     kind: manual
     url: "https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html"
     accessed: "2026-11-09"

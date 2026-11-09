@@ -17,6 +17,7 @@ from pathlib import Path
 
 from wing_parser.library import schema
 from wing_parser.library.store import LibraryStore
+from wing_parser.library.validate import unsafe_media_path
 from wing_parser.library.web import render
 
 _CSS_TAG = '<link rel="stylesheet" href="static/app.css">'
@@ -82,7 +83,12 @@ def export_web(store: LibraryStore, out_dir: Path, *, artifact: bool = False) ->
             if item.get("kind") != "diagram":
                 continue
             rel = str(item.get("path", ""))
-            src = store.media_file(loaded.id, rel) if rel.lower().endswith(".png") else None
+            src = None
+            if rel.lower().endswith(".png") and not unsafe_media_path(rel):
+                try:
+                    src = store.media_file(loaded.id, rel)
+                except (ValueError, OSError):
+                    src = None
             if src is None or not src.is_file():
                 item.pop("src", None)
                 missing.append(f"{loaded.id}/{rel}")

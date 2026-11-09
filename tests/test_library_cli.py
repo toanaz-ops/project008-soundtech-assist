@@ -62,7 +62,7 @@ def test_add_existing_id_fails(lib, tmp_path):
 def test_edit_requires_note_and_checks_revision(lib, tmp_path):
     path = entry_file(tmp_path, entry())
     main(["library", "add", path, "--author", "a"])
-    edited = entry_file(tmp_path, entry(summary="New."), "edit.yaml")
+    edited = entry_file(tmp_path, entry(summary="New.", revision=1), "edit.yaml")
     assert main(["library", "edit", "hpf-basics", edited, "--author", "a"]) == 1  # no note
     assert main(["library", "edit", "hpf-basics", edited, "--author", "a", "--note", "n"]) == 0
     stale = entry_file(tmp_path, entry(summary="Stale.", revision=1), "stale.yaml")
@@ -71,7 +71,7 @@ def test_edit_requires_note_and_checks_revision(lib, tmp_path):
 
 def test_history_diff(lib, tmp_path, capsys):
     main(["library", "add", entry_file(tmp_path, entry()), "--author", "a"])
-    main(["library", "edit", "hpf-basics", entry_file(tmp_path, entry(summary="New."), "b.yaml"),
+    main(["library", "edit", "hpf-basics", entry_file(tmp_path, entry(summary="New.", revision=1), "b.yaml"),
           "--author", "a", "--note", "n"])
     capsys.readouterr()
     assert main(["library", "history", "hpf-basics", "--diff", "2"]) == 0
@@ -93,3 +93,23 @@ def test_validate_exit_codes(lib, tmp_path, capsys):
                                    "updated_by": "x"}), encoding="utf-8")
     assert main(["library", "validate"]) == 1
     assert "bad: error unsourced sources:" in capsys.readouterr().out
+
+
+def test_edit_without_an_integer_revision_is_refused(lib, tmp_path, capsys):
+    main(["library", "add", entry_file(tmp_path, entry()), "--author", "a"])
+    for bad in ({}, {"revision": "1"}):
+        edited = entry_file(tmp_path, entry(summary="New.", **bad), "edit.yaml")
+        assert main(["library", "edit", "hpf-basics", edited, "--author", "a", "--note", "n"]) == 1
+        assert "revision" in capsys.readouterr().err
+
+
+def test_add_does_not_overwrite_a_hand_written_file(lib, tmp_path):
+    (lib / "entries" / "hpf-basics.yaml").write_text(
+        yaml.safe_dump(entry(summary="Mine.")), encoding="utf-8")
+    assert main(["library", "add", entry_file(tmp_path, entry()), "--author", "a"]) == 1
+    assert "Mine." in (lib / "entries" / "hpf-basics.yaml").read_text(encoding="utf-8")
+
+
+def test_history_unknown_id_fails_on_stderr(lib, capsys):
+    assert main(["library", "history", "nope"]) == 1
+    assert "nope" in capsys.readouterr().err

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser import config
-from wing_parser.library import Issue, RevisionConflict, ValidationFailed, errors
+from wing_parser.library import EntryExists, Issue, RevisionConflict, ValidationFailed, errors
 from wing_parser.library.store import LibraryStore, LoadedEntry, default_author
 from wing_parser.ui import state_store
 from wing_parser.ui.library_edit_form import EntryForm
@@ -101,10 +101,14 @@ class EditDialog(QDialog):
     def save(self) -> None:
         entry = self.form.to_entry()
         author = self.author_edit.text().strip() or default_author()
-        expected = int(self._loaded.entry.get("revision") or 0) if self._loaded else 0
+        creating = self._loaded is None
+        expected = None if creating else int(self._loaded.entry.get("revision") or 0)
         try:
             written = self._store.save(entry, author=author, note=self.note_edit.text().strip(),
-                                       expected_revision=expected)
+                                       expected_revision=expected, create=creating)
+        except EntryExists:
+            warn(self, text("library.conflict.title"), text("library.conflict.new"))
+            return
         except RevisionConflict as exc:
             self._on_conflict(exc)
             return

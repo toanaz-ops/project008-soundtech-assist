@@ -69,6 +69,13 @@ def _check_source(index: int, src, vetted: set[str], issues: list[Issue]) -> Non
                             f"publisher {publisher!r} is not in sources.yaml"))
 
 
+def unsafe_media_path(rel) -> bool:
+    """True when a diagram path could leave media/<id>/ (or is not a plain name)."""
+    text = str(rel)
+    return (".." in text.replace("\\", "/").split("/") or "/" in text or "\\" in text
+            or Path(text).is_absolute() or ":" in text)
+
+
 def _check_media(index: int, item, entry_id: str, media_roots: list[Path],
                  issues: list[Issue]) -> None:
     field = f"media[{index}]"
@@ -84,7 +91,10 @@ def _check_media(index: int, item, entry_id: str, media_roots: list[Path],
             if _blank(item.get(key)):
                 issues.append(_err("bad-media", f"{field}.{key}", f"{key} is required"))
         rel = item.get("path")
-        if not _blank(rel) and media_roots:
+        if not _blank(rel) and unsafe_media_path(rel):
+            issues.append(_err("bad-media", f"{field}.path",
+                               "path must be a plain file name (no '..', slashes or drive letters)"))
+        elif not _blank(rel) and media_roots:
             if not any((root / entry_id / str(rel)).is_file() for root in media_roots):
                 issues.append(_err("missing-media-file", f"{field}.path",
                                    f"media/{entry_id}/{rel} does not exist"))

@@ -28,6 +28,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from wing_parser import config
 from wing_parser.library import (
     LibraryStore,
+    EntryExists,
     RevisionConflict,
     ValidationFailed,
     facets,
@@ -45,7 +46,7 @@ CACHE_MAX = 256
 STATIC_FILES = {"app.js": "text/javascript", "app.css": "text/css"}
 CSP = ("default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; "
        "script-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com; "
-       "base-uri 'none'; form-action 'none'")
+       "base-uri 'none'; form-action 'none'; frame-ancestors 'self'")
 
 
 class Upstream(Exception):
@@ -137,6 +138,13 @@ def _token(authorization: str | None) -> str:
     return value.strip()
 
 
+def _opt_int(value) -> int | None:
+    try:
+        return None if value is None else int(value)
+    except (TypeError, ValueError):
+        raise HTTPException(422, "revision_invalid") from None
+
+
 def _issues(items) -> list[dict]:
     return [i.__dict__ for i in items]
 
@@ -190,6 +198,8 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
                 return fn()
         except ValidationFailed as exc:
             return JSONResponse({"detail": "validation", "issues": _issues(exc.issues)}, 422)
+        except EntryExists:
+            return JSONResponse({"detail": "exists"}, 409)
         except RevisionConflict as exc:
             return JSONResponse({"detail": "revision_conflict", "expected": exc.expected,
                                  "actual": exc.actual}, 409)
@@ -252,8 +262,10 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
     @router.get("/api/entries/{entry_id}/history")
     def history(entry_id: str, token: str = Depends(need_view)):
         entry_or_404(entry_id)
-        return {"revisions": [{"rev": r.rev, "at": r.at, "author": r.author, "action": r.action,
-                               "note": r.note} for r in store.history(entry_id)]}
+        revisions, skipped = store.history_report(entry_id)
+        return {"skipped": skipped,
+                "revisions": [{"rev": r.rev, "at": r.at, "author": r.author, "action": r.action,
+                               "note": r.note} for r in revisions]}
 
     @router.get("/api/entries/{entry_id}/diff")
     def diff(entry_id: str, a: int = Query(...), b: int = Query(...), token: str = Depends(need_view)):
@@ -269,14 +281,8 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
         entry = clean(payload)
         author = auth.member(token)["author"]
         entry_id = str(entry.get("id", ""))
-        if schema.ID_RE.match(entry_id):
-            try:
-                store.get(entry_id)
-                return JSONResponse({"detail": "exists"}, 409)
-            except KeyError:
-                pass
         note = note_of(payload, required=False) or "created"
-        return write(lambda: (store.save(entry, author=author, note=note, expected_revision=0),
+        return write(lambda: (store.save(entry, author=author, note=note, create=True),
                               saved(entry_id))[1])
 
     @router.put("/api/entries/{entry_id}")
@@ -298,7 +304,9 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
         entry_or_404(entry_id)
         author = auth.member(token)["author"]
         note = note_of(payload, required=False)
-        return write(lambda: (store.retire(entry_id, author=author, note=note), saved(entry_id))[1])
+        expected = _opt_int(payload.get("revision"))
+        return write(lambda: (store.retire(entry_id, author=author, note=note,
+                                           expected_revision=expected), saved(entry_id))[1])
 
     @router.post("/api/entries/{entry_id}/restore")
     def restore(entry_id: str, payload: dict = Body(...), token: str = Depends(need_edit)):
@@ -309,7 +317,9 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
             raise HTTPException(422, "rev_required") from None
         author = auth.member(token)["author"]
         note = note_of(payload, required=False)
-        return write(lambda: (store.restore(entry_id, rev, author=author, note=note), saved(entry_id))[1])
+        expected = _opt_int(payload.get("revision"))
+        return write(lambda: (store.restore(entry_id, rev, author=author, note=note,
+                                            expected_revision=expected), saved(entry_id))[1])
 
     app.include_router(router)
     if prefix:

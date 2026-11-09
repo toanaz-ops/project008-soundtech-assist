@@ -217,3 +217,28 @@ def test_media_renders_as_links_and_sources_are_numbered(lib):
     markdown = entry_markdown(lib.get("with-media"), lib, {})
     assert "[Clip · Chan · 1:23](<https://example.org/v>)" in markdown
     assert "Licence: CC0-1.0" in markdown and "1. **Compressor basics**" in markdown
+
+
+def test_retiring_a_broken_entry_works_and_a_conflict_warns(page, lib, monkeypatch):
+    monkeypatch.setattr(library_page, "confirm_retire", lambda *a: True)
+    shown = []
+    monkeypatch.setattr(library_page, "warn", lambda *a: shown.append(a))
+    page.tree.select_entry("hand-written")
+    assert lib.get("hand-written").has_errors
+    page.retire_entry()
+    assert lib.get("hand-written").entry["status"] == "retired" and not shown
+    page.tree.select_entry("my-vocal-note")
+    lib.save(_entry("my-vocal-note", "Moved on"), author="x", note="n", expected_revision=1)
+    page.retire_entry()
+    assert len(shown) == 1 and lib.get("my-vocal-note").entry["status"] != "retired"
+
+
+def test_a_new_entry_never_overwrites_an_existing_hand_written_file(qt_app, lib, tmp_path, monkeypatch):
+    shown = []
+    monkeypatch.setattr(library_edit_dialog, "warn", lambda *a: shown.append(a))
+    dialog = library_edit_dialog.EditDialog(lib, None, None, tmp_path / "state")
+    dialog.form.to_entry = lambda: _entry("hand-written", "Overwrite")
+    path = lib.root / "entries" / "hand-written.yaml"
+    before = path.read_text(encoding="utf-8")
+    dialog.save()
+    assert shown and path.read_text(encoding="utf-8") == before

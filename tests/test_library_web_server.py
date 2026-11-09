@@ -198,3 +198,32 @@ def test_cache_expires_and_is_bounded(prj):
     for n in range(10):
         auth_client.permissions(f"tok{n}")
     assert len(auth_client._cache) <= 3
+
+
+def test_retire_a_broken_entry_and_stale_revision_is_409(client, store):
+    (store.root / "entries" / "hand-made.yaml").write_text(
+        "id: hand-made\nrevision: 1\ntitle: x\n", encoding="utf-8")
+    stale = client.post("/library/api/entries/hand-made/retire", json={"revision": 5}, headers=auth())
+    assert stale.status_code == 409
+    ok = client.post("/library/api/entries/hand-made/retire", json={"revision": 1}, headers=auth())
+    assert ok.status_code == 200 and ok.json()["status"] == "retired"
+    stale_restore = client.post("/library/api/entries/hpf-basics/restore",
+                                json={"rev": 1, "revision": 9}, headers=auth())
+    assert stale_restore.status_code == 409
+
+
+def test_create_over_a_hand_written_file_is_409_and_history_survives_a_bad_line(client, store):
+    (store.root / "entries" / "hand-made.yaml").write_text(
+        "id: hand-made\nrevision: 1\n", encoding="utf-8")
+    res = client.post("/library/api/entries", json={"entry": entry("hand-made"), "note": ""}, headers=auth())
+    assert res.status_code == 409 and res.json()["detail"] == "exists"
+    with open(store.root / "history" / "hpf-basics.jsonl", "a", encoding="utf-8") as handle:
+        handle.write('{"rev": 2, "at"')
+    hist = client.get("/library/api/entries/hpf-basics/history", headers=auth())
+    assert hist.status_code == 200 and hist.json()["skipped"] == 1
+    assert client.put("/library/api/entries/hpf-basics", json=body(), headers=auth()).status_code == 200
+
+
+def test_csp_forbids_framing(client):
+    assert "frame-ancestors 'self'" in server.CSP
+    assert "frame-ancestors" in client.get("/library/").headers["content-security-policy"]

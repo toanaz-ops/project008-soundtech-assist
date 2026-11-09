@@ -128,3 +128,12 @@ def test_shell_keeps_full_document_for_server_mode():
     css = static_text("app.css")
     assert ':root[data-theme="light"]' in css and ':root:not([data-theme="dark"])' in css
     assert "100vh" not in css
+
+
+def test_one_bad_media_path_does_not_stop_the_export(store, tmp_path):
+    from wing_parser.library.web.export import export_web
+    path = store.root / "entries" / "with-diagram.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("curve.png", "../../x.png"), encoding="utf-8")
+    result = export_web(store, tmp_path / "out")
+    assert any("x.png" in m for m in result["missing_media"])
+    assert (tmp_path / "out" / "index.html").is_file()

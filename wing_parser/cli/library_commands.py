@@ -11,6 +11,7 @@ from wing_parser import config
 from wing_parser.library import (
     LibraryStore,
     RevisionConflict,
+    EntryExists,
     ValidationFailed,
     dump_entry,
     search,
@@ -96,10 +97,13 @@ def _read_entry(path: str) -> dict | None:
     return data
 
 
-def _save(entry: dict, args, expected: int | None) -> int:
+def _save(entry: dict, args, expected: int | None, create: bool = False) -> int:
     try:
         written = _store().save(entry, author=args.author, note=args.note or "",
-                                expected_revision=expected)
+                                expected_revision=expected, create=create)
+    except EntryExists:
+        print(f"error: entry {entry.get('id')!r} already exists; use `edit`", file=sys.stderr)
+        return 1
     except ValidationFailed as exc:
         for issue in exc.issues:
             print(issue.format(str(entry.get("id", ""))), file=sys.stderr)
@@ -116,12 +120,7 @@ def add(args) -> int:
     if entry is None:
         return 1
     entry.pop("revision", None)
-    try:
-        _store().get(str(entry.get("id", "")))
-    except KeyError:
-        return _save(entry, args, None)
-    print(f"error: entry {entry.get('id')!r} already exists; use `edit`", file=sys.stderr)
-    return 1
+    return _save(entry, args, None, create=True)
 
 
 def edit(args) -> int:
@@ -135,12 +134,23 @@ def edit(args) -> int:
         print("error: --note is required when editing", file=sys.stderr)
         return 1
     expected = entry.get("revision")
-    return _save(entry, args, expected if isinstance(expected, int) else None)
+    if not isinstance(expected, int) or isinstance(expected, bool):
+        print("error: the file needs an integer `revision:` (the revision you edited from; "
+              "`library show ID --json` prints it)", file=sys.stderr)
+        return 1
+    return _save(entry, args, expected)
 
 
 def history(args) -> int:
     store = _store()
-    revisions = store.history(args.id)
+    try:
+        store.get(args.id)
+    except KeyError:
+        print(f"error: no entry {args.id!r}", file=sys.stderr)
+        return 1
+    revisions, skipped = store.history_report(args.id)
+    if skipped:
+        print(f"warning: {skipped} unreadable history line(s) skipped", file=sys.stderr)
     if args.diff is not None:
         order = [r.rev for r in revisions]
         if args.diff not in order or order.index(args.diff) == 0:

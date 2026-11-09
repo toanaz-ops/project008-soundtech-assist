@@ -34,6 +34,12 @@ class RevisionConflict(Exception):
         super().__init__(f"{entry_id}: expected revision {expected}, file is at {actual}")
 
 
+class EntryExists(Exception):
+    def __init__(self, entry_id: str):
+        self.entry_id = entry_id
+        super().__init__(f"{entry_id}: an entry with this id already exists")
+
+
 @dataclass(frozen=True)
 class Revision:
     rev: int
@@ -65,6 +71,17 @@ def default_author() -> str:
         return getpass.getuser() or "unknown"
     except Exception:  # no usable login name in this environment
         return "unknown"
+
+
+def _read_error(path: Path, exc: Exception) -> str:
+    """A message naming the file only; never the server-side directory."""
+    if isinstance(exc, yaml.YAMLError):
+        mark = getattr(exc, "problem_mark", None)
+        where = f" at line {mark.line + 1}" if mark is not None else ""
+        return f"{path.name}: invalid YAML{where}: {getattr(exc, 'problem', None) or 'syntax error'}"
+    if isinstance(exc, UnicodeDecodeError):
+        return f"{path.name}: not valid UTF-8"
+    return f"{path.name}: cannot be read ({type(exc).__name__})"
 
 
 def _now() -> str:
@@ -137,7 +154,8 @@ class LibraryStore:
             with open(path, encoding="utf-8") as handle:
                 data = yaml.safe_load(handle)
         except (OSError, yaml.YAMLError, UnicodeDecodeError) as exc:
-            return LoadedEntry({"id": path.stem}, [Issue("error", "bad-yaml", "", str(exc))], path, layer)
+            return LoadedEntry({"id": path.stem},
+                               [Issue("error", "bad-yaml", "", _read_error(path, exc))], path, layer)
         if not isinstance(data, dict):
             return LoadedEntry({"id": path.stem},
                                [Issue("error", "bad-yaml", "", "file is not a mapping")], path, layer)
@@ -168,17 +186,26 @@ class LibraryStore:
 
     # -- history ---------------------------------------------------------
     def history(self, entry_id: str) -> list[Revision]:
+        return self.history_report(entry_id)[0]
+
+    def history_report(self, entry_id: str) -> tuple[list[Revision], int]:
+        """(revisions, number of unreadable lines skipped), e.g. a truncated last line."""
         path = self._history_path(entry_id)
         if not path.is_file():
-            return []
+            return [], 0
         out: list[Revision] = []
-        with open(path, encoding="utf-8") as handle:
+        skipped = 0
+        with open(path, encoding="utf-8", errors="replace") as handle:
             for line in handle:
-                if line.strip():
+                if not line.strip():
+                    continue
+                try:
                     row = json.loads(line)
                     out.append(Revision(row["rev"], row["at"], row["author"],
                                         row["action"], row.get("note", ""), row["snapshot"]))
-        return out
+                except (ValueError, KeyError, TypeError, AttributeError):
+                    skipped += 1
+        return out, skipped
 
     def _revision(self, entry_id: str, rev: int) -> Revision:
         for item in reversed(self.history(entry_id)):
@@ -200,6 +227,8 @@ class LibraryStore:
         with open(path, "a", encoding="utf-8", newline="\n") as handle:
             for row in rows:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
 
     # -- writing ---------------------------------------------------------
     def _write_atomic(self, path: Path, text: str) -> None:
@@ -210,7 +239,8 @@ class LibraryStore:
         os.replace(tmp, path)
 
     def _commit(self, entry: dict, *, author: str, note: str, action: str,
-                expected_revision: int | None) -> dict:
+                expected_revision: int | None, create: bool = False,
+                validate_content: bool = True) -> dict:
         entry_id = str(entry.get("id", ""))
         path = self._entry_path(entry_id) if schema.ID_RE.match(entry_id) else None
         current = None
@@ -219,6 +249,8 @@ class LibraryStore:
                 current = self.get(entry_id)
             except KeyError:
                 pass
+        if create and current is not None:
+            raise EntryExists(entry_id)
         current_rev = int(current.entry.get("revision", 0) or 0) if current else 0
         if expected_revision is not None and current_rev != expected_revision:
             raise RevisionConflict(entry_id, expected_revision, current_rev)
@@ -227,9 +259,12 @@ class LibraryStore:
         data["revision"] = current_rev + 1
         data["updated_at"] = _now()
         data["updated_by"] = author or default_author()
-        issues = self._check(data)
-        if errors(issues):
-            raise ValidationFailed(issues)
+        if validate_content:
+            issues = self._check(data)
+            if errors(issues):
+                raise ValidationFailed(issues)
+        elif path is None:
+            raise ValidationFailed([Issue("error", "bad-id", "id", f"invalid id {entry_id!r}")])
 
         rows: list[dict] = []
         if current is not None and not any(r.rev == current_rev for r in self.history(entry_id)) \
@@ -249,23 +284,28 @@ class LibraryStore:
         return data
 
     def save(self, entry: dict, *, author: str, note: str = "",
-             expected_revision: int | None = None) -> dict:
+             expected_revision: int | None = None, create: bool = False) -> dict:
         """Create or update an entry. Returns the entry as written.
 
         Raises ValidationFailed (nothing written) on any error and
         RevisionConflict when the file is not at `expected_revision`.
+        With `create=True` an id that exists in either layer raises EntryExists.
         """
         return self._commit(entry, author=author, note=note, action="edit",
-                            expected_revision=expected_revision)
+                            expected_revision=expected_revision, create=create)
 
-    def retire(self, entry_id: str, *, author: str, note: str = "") -> dict:
+    def retire(self, entry_id: str, *, author: str, note: str = "",
+               expected_revision: int | None = None) -> dict:
+        """Mark an entry retired. Content is NOT validated: retiring a broken
+        entry is the remedy, so it must not be blocked by its own errors."""
         entry = dict(self.get(entry_id).entry)
         entry["status"] = "retired"
         return self._commit(entry, author=author, note=note, action="retire",
-                            expected_revision=None)
+                            expected_revision=expected_revision, validate_content=False)
 
-    def restore(self, entry_id: str, rev: int, *, author: str, note: str = "") -> dict:
+    def restore(self, entry_id: str, rev: int, *, author: str, note: str = "",
+                expected_revision: int | None = None) -> dict:
         """Write an earlier snapshot back as a NEW revision (history is never rewritten)."""
         snapshot = dict(self._revision(entry_id, rev).snapshot)
         return self._commit(snapshot, author=author, note=note or f"restore rev {rev}",
-                            action="restore", expected_revision=None)
+                            action="restore", expected_revision=expected_revision)

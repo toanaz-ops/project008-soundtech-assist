@@ -16,9 +16,9 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser import config
-from wing_parser.library import default_author
+from wing_parser.library import RevisionConflict, ValidationFailed, default_author
 from wing_parser.library.store import LibraryStore, LoadedEntry
-from wing_parser.ui.library_edit_dialog import EditDialog, remembered_author
+from wing_parser.ui.library_edit_dialog import EditDialog, remembered_author, warn
 from wing_parser.ui.library_entry_view import EntryView
 from wing_parser.ui.library_history_dialog import HistoryDialog
 from wing_parser.ui.library_support import taxonomy
@@ -169,5 +169,12 @@ class LibraryPage(QWidget):
                               text("library.retire.confirm").format(title=title)):
             return
         author = remembered_author(self._state_dir) or default_author()
-        self.store.retire(loaded.id, author=author, note=text("library.retire.note"))
+        try:
+            self.store.retire(loaded.id, author=author, note=text("library.retire.note"),
+                              expected_revision=int(loaded.entry.get("revision") or 0))
+        except RevisionConflict as exc:
+            warn(self, text("library.conflict.title"),
+                 text("library.conflict.edit").format(actual=exc.actual, expected=exc.expected))
+        except ValidationFailed as exc:
+            warn(self, text("library.conflict.title"), text("library.save_failed").format(error=exc))
         self._after_change(loaded.id)

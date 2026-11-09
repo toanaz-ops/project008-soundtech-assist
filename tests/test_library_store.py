@@ -5,6 +5,7 @@ import pytest
 from tests.library_support import SOURCE, entry, make_root, write_raw
 from wing_parser.library import (
     LibraryStore,
+    EntryExists,
     RevisionConflict,
     ValidationFailed,
     default_author,
@@ -246,3 +247,60 @@ def test_media_lookup_tries_user_then_shipped(layers):
 def test_single_layer_when_shipped_root_equals_root(root):
     store = LibraryStore(root, root)
     assert store.shipped_root is None
+
+
+def test_retire_works_on_an_entry_with_validation_errors(store, root):
+    write_raw(root, entry("hand-made", sources=[]))
+    assert store.get("hand-made").has_errors
+    written = store.retire("hand-made", author="a", note="drop it", expected_revision=1)
+    assert written["status"] == "retired" and written["revision"] == 2
+    assert store.history("hand-made")[-1].action == "retire"
+
+
+def test_retire_still_checks_the_revision(store):
+    store.save(entry("hpf-basics"), author="a", note="n")
+    with pytest.raises(RevisionConflict):
+        store.retire("hpf-basics", author="a", expected_revision=9)
+    # ordinary saves still validate
+    with pytest.raises(ValidationFailed):
+        store.save(entry("hpf-basics", sources=[]), author="a", note="n", expected_revision=1)
+
+
+def test_create_refuses_an_existing_hand_written_file(store, root):
+    path = write_raw(root, entry("hand-made"))
+    before = path.read_text(encoding="utf-8")
+    with pytest.raises(EntryExists):
+        store.save(entry("hand-made", summary="Overwrite."), author="a", note="n", create=True)
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_create_refuses_an_id_in_the_shipped_layer(tmp_path):
+    shipped = make_root(tmp_path / "shipped")
+    LibraryStore(shipped).save(entry("hpf-basics"), author="a", note="n")
+    user = make_root(tmp_path / "user")
+    with pytest.raises(EntryExists):
+        LibraryStore(user, shipped).save(entry("hpf-basics"), author="a", note="n", create=True)
+
+
+def test_history_skips_a_truncated_line(store, root):
+    store.save(entry("hpf-basics"), author="a", note="one")
+    store.save(entry("hpf-basics", summary="Two."), author="a", note="two", expected_revision=1)
+    path = root / "history" / "hpf-basics.jsonl"
+    with open(path, "a", encoding="utf-8", newline="\n") as handle:
+        handle.write('{"rev": 3, "at": "x", "auth')
+    revisions, skipped = store.history_report("hpf-basics")
+    assert [r.rev for r in revisions] == [1, 2] and skipped == 1
+    store.save(entry("hpf-basics", summary="Three."), author="a", note="three", expected_revision=2)
+
+
+def test_load_errors_name_the_file_not_the_server_path(store, root):
+    (root / "entries" / "broken.yaml").write_text("id: [unclosed", encoding="utf-8")
+    message = store.get("broken").issues[0].message
+    assert "broken.yaml" in message and str(root) not in message
+
+
+def test_diagram_path_must_be_a_plain_file_name(root):
+    for bad in ("../x.png", "a/b.png", "a" + chr(92) + "b.png", "/abs.png", "C:/x.png"):
+        diagram = {"kind": "diagram", "path": bad, "caption": "c", "license": "CC0-1.0",
+                   "attribution": "a", "generated_by": "g"}
+        assert ("error", "bad-media") in codes(root, full(media=[diagram])), bad
