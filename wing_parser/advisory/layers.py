@@ -17,6 +17,7 @@ from wing_parser.advisory.loader import _load_yaml, load_rules
 from wing_parser.advisory.models import EVENTS, SEVERITIES, Rule
 from wing_parser.advisory.validation import (
     _optional,
+    _optional_text,
     _validate_any_of,
     _validate_owner_source,
     _validate_where,
@@ -175,8 +176,8 @@ def _as_rules(path: Path, layer: str, key: str,
                 applies_when=dict(entry.get("applies_when") or {}),
                 any_of=any_of,
                 supersedes=tuple(entry.get("supersedes") or ()),
-                title_vi=_optional(entry, "title_vi", ""),
-                message_vi=_optional(entry, "message_vi", ""),
+                title_vi=_optional_text(entry, "title_vi", path),
+                message_vi=_optional_text(entry, "message_vi", path),
             )
         )
     if owner_source:

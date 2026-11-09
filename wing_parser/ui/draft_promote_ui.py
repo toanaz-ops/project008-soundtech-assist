@@ -60,4 +60,7 @@ def promote_clicked(dialog) -> None:
     reload_drafts(dialog)
     callback = getattr(dialog, "_on_promoted", None)
     if callback is not None:
-        callback()
+        try:
+            callback()
+        except Exception as exc:  # the write already succeeded
+            QMessageBox.critical(dialog, text("dryrun.promote_title"), str(exc))

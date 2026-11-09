@@ -91,6 +91,15 @@ def _validate_any_of(raw, path: Path, rule_id: str) -> tuple[dict, ...]:
     return tuple(clauses)
 
 
+def _optional_text(entry: dict, key: str, where: str) -> str:
+    """Optional string field: blank -> "", a non-string is a ValueError."""
+    value = _optional(entry, key, "")
+    if not isinstance(value, str):
+        raise ValueError(f"{where}: rule {entry.get('id')} has a non-string "
+                         f"{key!r} ({type(value).__name__})")
+    return value
+
+
 def _optional(entry: dict, key: str, default):
     """Read an optional field, treating an explicit YAML null as unset.
 
