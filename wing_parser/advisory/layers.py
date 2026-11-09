@@ -15,7 +15,12 @@ from pathlib import Path
 from wing_parser import config
 from wing_parser.advisory.loader import _load_yaml, load_rules
 from wing_parser.advisory.models import EVENTS, SEVERITIES, Rule
-from wing_parser.advisory.validation import _optional, _validate_any_of, _validate_where
+from wing_parser.advisory.validation import (
+    _optional,
+    _validate_any_of,
+    _validate_owner_source,
+    _validate_where,
+)
 
 PRINCIPLES_FILE = "principles.yaml"
 SHOWS_DIR = "shows"
@@ -49,7 +54,9 @@ def _show_rules(directory: Path | None, profile: str | None = None) -> list[Rule
     for suffix in (".yaml", ".yml"):
         path = shows / f"{profile}{suffix}"
         if path.is_file():
-            return load_rules(path, layer="show")
+            rules = load_rules(path, layer="show")
+            _validate_owner_source(rules, path)
+            return rules
 
     available = sorted(
         {p.stem for p in list(shows.glob("*.yaml")) + list(shows.glob("*.yml"))}
@@ -169,6 +176,7 @@ def _as_rules(path: Path, layer: str, key: str) -> list[Rule]:
                 supersedes=tuple(entry.get("supersedes") or ()),
             )
         )
+    _validate_owner_source(rules, path)
     return rules
 
 
