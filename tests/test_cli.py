@@ -194,7 +194,7 @@ def test_doctor_reports_a_typo_d_supersedes_id_without_a_traceback(
         "    hardness: hard\n"
         "    supersedes: [G88]\n"
         "    rationale: field practice\n"
-        "    source: ToanAZ\n"
+        "    source: ToanAZ test fixture 2026-01-01\n"
         "    enabled: true\n",
         encoding="utf-8",
     )
@@ -260,7 +260,7 @@ def _write_small_profile(directory):
     (shows / "small.yaml").write_text(
         yaml.safe_dump(
             {"rules": [{"id": "show.small", "title": "Small show",
-                        "severity": "info", "source": "s", "rationale": "r",
+                        "severity": "info", "source": "ToanAZ test fixture 2026-01-01", "rationale": "r",
                         "supersedes": ["G8"]}]}
         ),
         encoding="utf-8",
