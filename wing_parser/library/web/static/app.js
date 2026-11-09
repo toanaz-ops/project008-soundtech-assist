@@ -1,0 +1,427 @@
+"use strict";
+/* Mixing knowledge library: single-page app. Export mode = data embedded in
+   #library-data (read-only); server mode = JSON API with a PRJ012 bearer token. */
+(function () {
+  const TOKEN_KEY = "sb-abnbrulpqpyfisahdwen-auth-token";
+  const embedded = document.getElementById("library-data");
+  const EXPORT = !!embedded;
+  const $ = (id) => document.getElementById(id);
+
+  const TXT = {
+    vi: {
+      brand: "Thư viện Mix", search: "Tìm kiếm (không cần dấu)…", retired: "Hiện mục đã gỡ", newEntry: "+ Tạo mục",
+      g_topic: "Chủ đề", g_instrument: "Nhạc cụ", g_genre: "Thể loại", g_technique: "Kỹ thuật", g_source: "Nguồn",
+      none: "(chưa có)", empty: "Chọn một mục ở bên trái.", noMatch: "Không có mục nào khớp.", loading: "Đang tải…",
+      summary: "Tóm tắt", sources: "Nguồn tham khảo", media: "Hình ảnh & video", unsourced: "THIẾU NGUỒN",
+      unvetted: "NGUỒN CHƯA DUYỆT", layer_shipped: "bản gốc", layer_user: "đã chỉnh", edit: "Sửa", history: "Lịch sử",
+      retire: "Gỡ mục", back: "Quay lại", rev: "bản", by: "bởi", licence: "giấy phép", credit: "tác giả",
+      forbidden: "Tài khoản của bạn chưa được cấp quyền xem thư viện.", forbiddenHint: "Hãy liên hệ chủ hệ thống để được cấp quyền.",
+      unavailable: "Dịch vụ xác thực tạm thời không khả dụng. Thử lại sau.", errorGeneric: "Có lỗi xảy ra",
+      exportNote: "Bản xuất chỉ đọc", save: "Lưu", cancel: "Huỷ", note: "Ghi chú thay đổi (bắt buộc)",
+      f_id: "Mã (kebab-case, không đổi được)", f_title: "Tiêu đề (EN)", f_title_vi: "Tiêu đề (VI)", f_topic: "Chủ đề",
+      f_tags: "Thẻ (cách nhau bằng dấu phẩy)", f_summary: "Tóm tắt (1-3 câu)", f_body: "Nội dung (Markdown)", f_rule: "rule (JSON, tuỳ chọn)",
+      f_conf: "Độ tin cậy", f_status: "Trạng thái", addSource: "+ Thêm nguồn", addMedia: "+ Thêm media", remove: "Xoá dòng",
+      needSource: "Cần ít nhất một nguồn đầy đủ (tiêu đề, nhà xuất bản, loại, ngày truy cập, URL trừ sách).",
+      needNote: "Cần ghi chú thay đổi.", badJson: "rule không phải JSON hợp lệ.", conflict: "Mục này vừa được người khác sửa. Tải lại rồi sửa lại.",
+      exists: "Mã này đã tồn tại.", saved: "Đã lưu.", revisions: "Các bản", restore: "Khôi phục bản này", restoreAsk: "Khôi phục bản này thành bản mới?",
+      retireAsk: "Gỡ mục này (có thể khôi phục từ lịch sử)? Nhập ghi chú:", baseline: "Bản đầu tiên, không có bản trước.",
+      s_title: "Tiêu đề", s_publisher: "Nhà xuất bản", s_kind: "Loại", s_url: "URL", s_author: "Tác giả", s_year: "Năm",
+      s_accessed: "Ngày truy cập", s_locator: "Vị trí (trang/mm:ss)", m_kind: "Loại", m_path: "Tệp", m_caption: "Chú thích",
+      m_license: "Giấy phép", m_attribution: "Ghi công", m_channel: "Kênh", m_timestamp: "Mốc thời gian (mm:ss)", m_generated_by: "Tạo bởi",
+      m_title: "Tiêu đề", validation: "Chưa hợp lệ:", watch: "Xem video", generated: "Xuất lúc"
+    },
+    en: {
+      brand: "Mix library", search: "Search (diacritics optional)…", retired: "Show retired", newEntry: "+ New entry",
+      g_topic: "Topic", g_instrument: "Instrument", g_genre: "Genre", g_technique: "Technique", g_source: "Source",
+      none: "(none)", empty: "Pick an entry on the left.", noMatch: "No matching entries.", loading: "Loading…",
+      summary: "Summary", sources: "Sources", media: "Images & video", unsourced: "UNSOURCED",
+      unvetted: "UNVETTED SOURCE", layer_shipped: "shipped", layer_user: "edited", edit: "Edit", history: "History",
+      retire: "Retire", back: "Back", rev: "rev", by: "by", licence: "licence", credit: "credit",
+      forbidden: "Your account has not been granted access to the library.", forbiddenHint: "Ask the system owner for access.",
+      unavailable: "The sign-in service is temporarily unavailable. Try again later.", errorGeneric: "Something went wrong",
+      exportNote: "Read-only export", save: "Save", cancel: "Cancel", note: "Change note (required)",
+      f_id: "Id (kebab-case, fixed)", f_title: "Title (EN)", f_title_vi: "Title (VI)", f_topic: "Topic",
+      f_tags: "Tags (comma separated)", f_summary: "Summary (1-3 sentences)", f_body: "Body (Markdown)", f_rule: "rule (JSON, optional)",
+      f_conf: "Confidence", f_status: "Status", addSource: "+ Add source", addMedia: "+ Add media", remove: "Remove row",
+      needSource: "At least one complete source is required (title, publisher, kind, accessed date, URL unless a book).",
+      needNote: "A change note is required.", badJson: "rule is not valid JSON.", conflict: "Someone else just changed this entry. Reload and redo your edit.",
+      exists: "That id already exists.", saved: "Saved.", revisions: "Revisions", restore: "Restore this version", restoreAsk: "Restore this version as a new revision?",
+      retireAsk: "Retire this entry (it can be restored from history)? Enter a note:", baseline: "First revision, nothing before it.",
+      s_title: "Title", s_publisher: "Publisher", s_kind: "Kind", s_url: "URL", s_author: "Author", s_year: "Year",
+      s_accessed: "Accessed", s_locator: "Locator (page/mm:ss)", m_kind: "Kind", m_path: "File", m_caption: "Caption",
+      m_license: "Licence", m_attribution: "Attribution", m_channel: "Channel", m_timestamp: "Timestamp (mm:ss)", m_generated_by: "Generated by",
+      m_title: "Title", validation: "Not valid yet:", watch: "Watch video", generated: "Exported"
+    }
+  };
+
+  const S = { lang: "vi", group: "topic", query: "", retired: false, id: null, data: null, canEdit: false,
+              detail: {}, blobs: {} };
+  const t = (k) => (TXT[S.lang] && TXT[S.lang][k]) || TXT.vi[k] || k;
+
+  /* ---------- helpers ---------- */
+  function h(tag, attrs, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === false || v == null) continue;
+      if (k === "class") el.className = v;
+      else if (k === "html") el.innerHTML = v;
+      else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? "" : v);
+    }
+    for (const kid of kids.flat()) {
+      if (kid == null || kid === false) continue;
+      el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    }
+    return el;
+  }
+  const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d").replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  const lbl = (o) => (S.lang === "vi" && o.vi) || o.en || o.id;
+  const setView = (...nodes) => { const v = $("view"); v.replaceChildren(...nodes); v.scrollTop = 0; };
+  const safeHttp = (u) => /^https?:\/\//i.test(u || "") ? u : null;
+
+  /* ---------- auth + API (server mode) ---------- */
+  function toLogin() { location.href = "/login?next=" + encodeURIComponent(location.pathname); }
+  function token() {
+    let tok = null;
+    try { tok = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); } catch (e) { tok = null; }
+    if (!tok || !tok.access_token || (tok.expires_at && tok.expires_at * 1000 <= Date.now() + 5000)) { toLogin(); throw new Error("login"); }
+    return tok.access_token;
+  }
+  class ApiError extends Error { constructor(status, body) { super(status); this.status = status; this.body = body || {}; } }
+  async function api(path, opts) {
+    opts = opts || {};
+    const headers = { Authorization: "Bearer " + token() };
+    if (opts.body !== undefined) headers["Content-Type"] = "application/json";
+    const res = await fetch(path, { method: opts.method || "GET", headers, body: opts.body === undefined ? undefined : JSON.stringify(opts.body) });
+    if (res.status === 401) { toLogin(); throw new Error("login"); }
+    if (!res.ok) { let b = {}; try { b = await res.json(); } catch (e) { /* not json */ } throw new ApiError(res.status, b); }
+    return opts.blob ? res.blob() : res.json();
+  }
+  function fatal(err) {
+    if (err && err.message === "login") return;
+    if (err instanceof ApiError && err.status === 403) {
+      setView(h("div", { class: "center" }, h("h1", {}, t("brand")), h("p", {}, t("forbidden")), h("p", { class: "muted" }, t("forbiddenHint"))));
+    } else if (err instanceof ApiError && (err.status === 503 || err.status === 502)) {
+      setView(h("div", { class: "banner err" }, t("unavailable")));
+    } else {
+      setView(h("div", { class: "banner err" }, t("errorGeneric") + ": " + (err && err.message || err)));
+    }
+  }
+
+  /* ---------- data ---------- */
+  async function load() {
+    if (EXPORT) { S.data = JSON.parse(embedded.textContent); S.canEdit = false; return; }
+    S.data = await api("api/entries");
+    S.canEdit = !!S.data.can_edit;
+  }
+  async function getDetail(id) {
+    if (EXPORT) return S.data.entries.find((e) => e.id === id);
+    if (!S.detail[id]) S.detail[id] = await api("api/entries/" + encodeURIComponent(id));
+    return S.detail[id];
+  }
+  const topicLabel = (id) => { const tp = S.data.topics.find((x) => x.id === id); return tp ? lbl(tp) : id; };
+  const titleOf = (e) => (S.lang === "vi" && e.title_vi) || e.title;
+
+  /* ---------- sidebar ---------- */
+  function groupKeys(e) {
+    const tags = e.tags || {};
+    switch (S.group) {
+      case "topic": return [e.topic];
+      case "source": return e.publishers || [];
+      default: return tags[S.group] || [];
+    }
+  }
+  function filtered() {
+    const tokens = fold(S.query).split(" ").filter(Boolean);
+    const rows = S.data.entries.filter((e) => (S.retired || e.status !== "retired") &&
+      tokens.every((tk) => e.folded_text.includes(tk)));
+    const score = (e) => tokens.filter((tk) => e.folded_title.includes(tk)).length;
+    return rows.sort((a, b) => score(b) - score(a) || titleOf(a).localeCompare(titleOf(b), S.lang));
+  }
+  function renderTree() {
+    const rows = filtered();
+    const groups = new Map();
+    for (const e of rows) {
+      const keys = groupKeys(e).filter(Boolean);
+      for (const k of keys.length ? keys : [""]) {
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(e);
+      }
+    }
+    const name = (k) => k === "" ? t("none") : S.group === "topic" ? topicLabel(k) : k;
+    const sorted = [...groups.entries()].sort((a, b) => (a[0] === "") - (b[0] === "") || name(a[0]).localeCompare(name(b[0]), S.lang));
+    const tree = $("tree");
+    if (!rows.length) { tree.replaceChildren(h("p", { class: "muted" }, t("noMatch"))); return; }
+    tree.replaceChildren(...sorted.map(([k, list]) => h("details", { open: !!S.query || list.some((e) => e.id === S.id) },
+      h("summary", {}, name(k) + " ", h("span", { class: "n" }, "(" + list.length + ")")),
+      list.map((e) => h("button", { type: "button", class: "item" + (e.id === S.id ? " sel" : "") + (e.status === "retired" ? " retired" : ""),
+        onclick: () => { location.hash = "#/e/" + e.id; document.getElementById("app").classList.remove("menu-open"); } }, titleOf(e))))));
+  }
+  function renderChrome() {
+    document.documentElement.lang = S.lang;
+    $("q").placeholder = t("search");
+    $("retired-label").textContent = t("retired");
+    const gb = $("group-by");
+    gb.replaceChildren(...["topic", "instrument", "genre", "technique", "source"].map((g) =>
+      h("option", { value: g, selected: g === S.group }, t("g_" + g))));
+    $("lang-btn").textContent = S.lang === "vi" ? "EN" : "VI";
+    const nb = $("new-btn");
+    nb.hidden = !S.canEdit;
+    nb.textContent = t("newEntry");
+    document.querySelector(".brand").textContent = t("brand");
+    document.title = t("brand");
+  }
+
+  /* ---------- entry view ---------- */
+  function ytId(url) {
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./, "");
+      if (host === "youtu.be") return u.pathname.slice(1).split("/")[0];
+      if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+        if (u.pathname === "/watch") return u.searchParams.get("v");
+        const m = u.pathname.match(/^\/(embed|shorts|live)\/([\w-]{6,})/);
+        if (m) return m[2];
+      }
+    } catch (e) { /* not a url */ }
+    return null;
+  }
+  function startSeconds(ts) {
+    if (!ts) return 0;
+    const p = String(ts).split(":").map(Number);
+    if (p.some(isNaN)) return 0;
+    return p.reduce((a, n) => a * 60 + n, 0);
+  }
+  function blobImg(src, alt) {
+    const img = h("img", { alt: alt || "", loading: "lazy" });
+    if (EXPORT) { img.src = src; return img; }
+    (S.blobs[src] ? Promise.resolve(S.blobs[src]) : api(src, { blob: true }).then((b) => (S.blobs[src] = URL.createObjectURL(b))))
+      .then((u) => { img.src = u; }).catch(() => { img.alt = "(image unavailable)"; });
+    return img;
+  }
+  function sourceLine(s, i) {
+    const bits = [s.publisher, s.kind, s.author, s.year, s.locator && ("§ " + s.locator), s.accessed && ("↗ " + s.accessed)].filter(Boolean).join(" · ");
+    const url = safeHttp(s.url);
+    return h("li", { id: "src-" + (i + 1) }, url ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, s.title) : s.title,
+      " — ", h("span", { class: "muted" }, bits));
+  }
+  function mediaBlocks(e) {
+    const out = [];
+    for (const m of e.media || []) {
+      if (m.kind === "diagram" && m.src) {
+        out.push(h("figure", {}, blobImg(m.src, m.caption), h("figcaption", {}, m.caption || "")));
+      } else if (m.kind === "image") {
+        const url = safeHttp(m.url);
+        out.push(h("p", {}, "🖼 ", url ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, m.caption || m.url) : (m.caption || ""),
+          h("span", { class: "muted" }, " · " + t("licence") + " " + (m.license || "?") + " · " + t("credit") + " " + (m.attribution || "?"))));
+      } else if (m.kind === "video") {
+        const url = safeHttp(m.url), id = ytId(m.url || "");
+        const block = h("div", { class: "video" });
+        if (id) {
+          const start = startSeconds(m.timestamp);
+          block.append(h("iframe", { src: "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + (start ? "?start=" + start : ""),
+            title: m.title || "video", loading: "lazy", referrerpolicy: "strict-origin-when-cross-origin", allowfullscreen: true,
+            allow: "accelerometer; encrypted-media; gyroscope; picture-in-picture" }));
+        }
+        block.append(h("div", {}, "▶ ", url ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, m.title) : m.title,
+          h("span", { class: "muted" }, " · " + (m.channel || "") + (m.timestamp ? " · " + m.timestamp : "") + (m.caption ? " — " + m.caption : ""))));
+        out.push(block);
+      }
+    }
+    return out;
+  }
+  async function showEntry(id) {
+    setView(h("p", { class: "muted" }, t("loading")));
+    let e;
+    try { e = await getDetail(id); } catch (err) { if (err instanceof ApiError && err.status === 404) e = null; else return fatal(err); }
+    if (!e) return setView(h("div", { class: "banner" }, t("noMatch")));
+    const badges = h("div", { class: "badges" },
+      h("span", { class: "badge " + (e.confidence === "established" ? "ok" : e.confidence === "contested" ? "warn" : "") }, e.confidence),
+      h("span", { class: "badge" + (e.status === "retired" ? " warn" : "") }, e.status),
+      h("span", { class: "badge" }, t("layer_" + e.layer)),
+      h("span", { class: "badge" }, topicLabel(e.topic)),
+      e.unsourced && h("span", { class: "badge danger" }, t("unsourced")),
+      e.unvetted && h("span", { class: "badge amber" }, t("unvetted")),
+      ...["instrument", "genre", "technique"].flatMap((g) => ((e.tags || {})[g] || []).map((v) => h("span", { class: "badge" }, v))));
+    const actions = (!EXPORT) && h("div", { class: "actions" },
+      S.canEdit && h("button", { class: "btn", type: "button", onclick: () => (location.hash = "#/edit/" + id) }, t("edit")),
+      h("button", { class: "btn", type: "button", onclick: () => (location.hash = "#/hist/" + id) }, t("history")),
+      S.canEdit && e.status !== "retired" && h("button", { class: "btn danger", type: "button", onclick: () => retireEntry(id) }, t("retire")));
+    const media = mediaBlocks(e);
+    setView(
+      h("h1", {}, e.title), e.title_vi && h("div", { class: "vi" }, e.title_vi), badges, actions,
+      h("p", { class: "summary" }, e.summary),
+      h("div", { class: "body", html: e.body_html }),
+      media.length ? [h("h2", {}, t("media")), media] : null,
+      h("h2", {}, t("sources")),
+      e.sources.length ? h("ol", { class: "src-list" }, e.sources.map(sourceLine)) : h("p", { class: "badge danger" }, t("unsourced")),
+      h("p", { class: "muted" }, t("rev") + " " + e.revision + " · " + t("by") + " " + e.updated_by + " · " + e.updated_at));
+    $("view").focus({ preventScroll: true });
+  }
+  async function retireEntry(id) {
+    const note = prompt(t("retireAsk"), "");
+    if (note === null) return;
+    try { await api("api/entries/" + id + "/retire", { method: "POST", body: { note } }); await afterWrite(id); } catch (err) { fatal(err); }
+  }
+  async function afterWrite(id) {
+    S.detail = {};
+    await load();
+    renderTree();
+    if (location.hash === "#/e/" + id) route(); else location.hash = "#/e/" + id;
+  }
+
+  /* ---------- edit form ---------- */
+  const SRC_FIELDS = ["title", "publisher", "kind", "url", "author", "year", "accessed", "locator"];
+  const MEDIA_FIELDS = ["kind", "path", "url", "title", "channel", "timestamp", "caption", "license", "attribution", "generated_by"];
+  function field(label, input) { return h("div", {}, h("label", {}, label), input); }
+  function sel(options, value, extra) {
+    return h("select", extra || {}, options.map((o) => h("option", { value: o, selected: o === value }, o)));
+  }
+  function rowCard(fields, values, kindOpts, prefix, onRemove) {
+    const inputs = {};
+    const grid = h("div", { class: "grid" });
+    for (const f of fields) {
+      const input = f === "kind" ? sel(kindOpts, values.kind || kindOpts[0]) :
+        f === "license" && prefix === "m" ? h("input", { value: values[f] || "", list: "licences" }) : h("input", { value: values[f] == null ? "" : values[f] });
+      inputs[f] = input;
+      grid.append(field(t(prefix + "_" + f), input));
+    }
+    const card = h("div", { class: "card" }, grid, h("div", { class: "actions" },
+      h("button", { type: "button", class: "btn danger", onclick: () => card.remove() }, t("remove"))));
+    card.read = () => { const o = {}; for (const f of fields) { const v = inputs[f].value.trim(); if (v !== "") o[f] = (f === "year" && /^\d+$/.test(v)) ? Number(v) : v; } return o; };
+    return card;
+  }
+  async function showForm(id) {
+    if (!S.canEdit) return setView(h("div", { class: "banner err" }, t("forbidden")));
+    const creating = !id;
+    let e = { tags: {}, sources: [], media: [], confidence: "common-practice", status: "draft", topic: S.data.topics[0].id };
+    if (!creating) { try { e = await getDetail(id); } catch (err) { return fatal(err); } }
+    const sch = S.data.schema;
+    const f = {
+      id: h("input", { value: e.id || "", disabled: !creating, placeholder: "my-entry-id" }),
+      title: h("input", { value: e.title || "" }), title_vi: h("input", { value: e.title_vi || "" }),
+      topic: h("select", {}, S.data.topics.map((tp) => h("option", { value: tp.id, selected: tp.id === e.topic }, lbl(tp)))),
+      summary: h("textarea", { rows: 3 }, e.summary || ""), body: h("textarea", { rows: 14 }, e.body || ""),
+      rule: h("textarea", { rows: 4 }, e.rule ? JSON.stringify(e.rule, null, 2) : ""),
+      confidence: sel(sch.confidence, e.confidence), status: sel(sch.status, e.status),
+      note: h("input", { value: "" })
+    };
+    const tagInputs = {};
+    const tagFields = sch.tag_keys.map((k) => { tagInputs[k] = h("input", { value: ((e.tags || {})[k] || []).join(", ") }); return field(k, tagInputs[k]); });
+    const srcBox = h("div", {}), mediaBox = h("div", {});
+    const addSrc = (s) => srcBox.append(rowCard(SRC_FIELDS, s || { accessed: new Date().toISOString().slice(0, 10) }, sch.source_kinds, "s"));
+    const addMedia = (m) => mediaBox.append(rowCard(MEDIA_FIELDS, m || {}, sch.media_kinds, "m"));
+    (e.sources || []).forEach(addSrc); if (!(e.sources || []).length) addSrc();
+    (e.media || []).forEach(addMedia);
+    const msg = h("div", {});
+    const lic = h("datalist", { id: "licences" }, sch.image_licenses.map((l) => h("option", { value: l })));
+    const collect = () => {
+      const split = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
+      const entry = { id: f.id.value.trim(), title: f.title.value.trim(), topic: f.topic.value, summary: f.summary.value.trim(),
+        body: f.body.value, confidence: f.confidence.value, status: f.status.value,
+        tags: Object.fromEntries(sch.tag_keys.map((k) => [k, split(tagInputs[k].value)])),
+        sources: [...srcBox.children].map((c) => c.read()), media: [...mediaBox.children].map((c) => c.read()) };
+      if (f.title_vi.value.trim()) entry.title_vi = f.title_vi.value.trim();
+      if (f.rule.value.trim()) entry.rule = JSON.parse(f.rule.value);
+      return entry;
+    };
+    const problems = (entry) => {
+      const out = [];
+      const okSrc = entry.sources.some((s) => s.title && s.publisher && s.kind && s.accessed && (s.url || s.kind === "book"));
+      if (!okSrc) out.push(t("needSource"));
+      if (!f.note.value.trim() && !creating) out.push(t("needNote"));
+      return out;
+    };
+    const submit = async () => {
+      msg.replaceChildren();
+      let entry;
+      try { entry = collect(); } catch (err) { msg.append(h("div", { class: "banner err" }, t("badJson"))); return; }
+      const errs = problems(entry);
+      if (errs.length) { msg.append(h("div", { class: "banner err" }, errs.map((x) => h("div", {}, x)))); return; }
+      try {
+        const body = { entry, note: f.note.value.trim() };
+        const saved = creating ? await api("api/entries", { method: "POST", body }) :
+          await api("api/entries/" + id, { method: "PUT", body: { ...body, revision: e.revision } });
+        await afterWrite(saved.id);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 422 && err.body.issues) {
+          msg.append(h("div", { class: "banner err" }, t("validation"), h("ul", { class: "issues" },
+            err.body.issues.map((i) => h("li", { class: i.level }, i.field + ": " + i.message)))));
+        } else if (err instanceof ApiError && err.status === 409) {
+          msg.append(h("div", { class: "banner err" }, err.body.detail === "exists" ? t("exists") : t("conflict")));
+        } else fatal(err);
+      }
+    };
+    setView(h("form", { class: "form", onsubmit: (ev) => { ev.preventDefault(); submit(); } },
+      h("h1", {}, creating ? t("newEntry") : t("edit") + ": " + e.title),
+      field(t("f_id"), f.id), field(t("f_title"), f.title), field(t("f_title_vi"), f.title_vi), field(t("f_topic"), f.topic),
+      h("div", { class: "grid" }, tagFields), field(t("f_summary"), f.summary), field(t("f_body"), f.body),
+      h("div", { class: "grid" }, field(t("f_conf"), f.confidence), field(t("f_status"), f.status)),
+      h("h2", {}, t("sources")), srcBox, h("button", { type: "button", class: "btn", onclick: () => addSrc() }, t("addSource")),
+      h("h2", {}, t("media")), mediaBox, h("button", { type: "button", class: "btn", onclick: () => addMedia() }, t("addMedia")),
+      field(t("f_rule"), f.rule), field(t("note"), f.note), lic, msg,
+      h("div", { class: "actions" }, h("button", { type: "submit", class: "btn primary" }, t("save")),
+        h("button", { type: "button", class: "btn", onclick: () => (location.hash = creating ? "#/" : "#/e/" + id) }, t("cancel")))));
+  }
+
+  /* ---------- history ---------- */
+  function diffNode(text) {
+    return h("pre", { class: "diff" }, text.split("\n").map((ln) => h("span", { class: ln.startsWith("@@") ? "hunk" : ln.startsWith("+") && !ln.startsWith("+++") ? "add" : ln.startsWith("-") && !ln.startsWith("---") ? "del" : "" }, ln + "\n")));
+  }
+  async function showHistory(id) {
+    let revs;
+    try { revs = (await api("api/entries/" + id + "/history")).revisions; } catch (err) { return fatal(err); }
+    const diffBox = h("div", {}), list = h("div", {});
+    const pick = async (i) => {
+      [...list.children].forEach((c, j) => c.classList.toggle("sel", j === i));
+      if (i === 0) { diffBox.replaceChildren(h("p", { class: "muted" }, t("baseline"))); return; }
+      try { diffBox.replaceChildren(diffNode((await api("api/entries/" + id + "/diff?a=" + revs[i - 1].rev + "&b=" + revs[i].rev)).diff)); } catch (err) { fatal(err); }
+    };
+    revs.forEach((r, i) => list.append(h("div", { class: "rev", onclick: () => pick(i) },
+      h("strong", {}, "r" + r.rev), h("span", { class: "badge" }, r.action), h("span", {}, r.note),
+      h("span", { class: "muted" }, r.author + " · " + r.at),
+      S.canEdit && h("button", { type: "button", class: "btn", onclick: async (ev) => {
+        ev.stopPropagation();
+        if (!confirm(t("restoreAsk"))) return;
+        try { await api("api/entries/" + id + "/restore", { method: "POST", body: { rev: r.rev, note: "" } }); await afterWrite(id); } catch (err) { fatal(err); }
+      } }, t("restore")))));
+    setView(h("h1", {}, t("history") + ": " + id), h("div", { class: "actions" }, h("button", { class: "btn", type: "button", onclick: () => (location.hash = "#/e/" + id) }, t("back"))),
+      h("h2", {}, t("revisions")), list, diffBox);
+    if (revs.length) pick(revs.length - 1);
+  }
+
+  /* ---------- routing ---------- */
+  function route() {
+    const m = location.hash.match(/^#\/(e|edit|hist)\/([\w-]+)$/);
+    S.id = m && m[1] === "e" ? m[2] : (m ? m[2] : null);
+    renderTree();
+    if (m && m[1] === "e") showEntry(m[2]);
+    else if (m && m[1] === "edit") showForm(m[2]);
+    else if (m && m[1] === "hist" && !EXPORT) showHistory(m[2]);
+    else if (location.hash === "#/new") showForm(null);
+    else setView(h("p", { class: "muted" }, t("empty")), EXPORT && h("p", { class: "muted" }, t("exportNote") + " · " + t("generated") + " " + (S.data.generated_at || "")));
+  }
+  function wire() {
+    $("q").addEventListener("input", (ev) => { S.query = ev.target.value; renderTree(); });
+    $("group-by").addEventListener("change", (ev) => { S.group = ev.target.value; renderTree(); });
+    $("show-retired").addEventListener("change", (ev) => { S.retired = ev.target.checked; renderTree(); });
+    $("lang-btn").addEventListener("click", () => {
+      S.lang = S.lang === "vi" ? "en" : "vi";
+      try { localStorage.setItem("library-lang", S.lang); } catch (e) { /* private mode */ }
+      renderChrome(); route();
+    });
+    $("new-btn").addEventListener("click", () => { location.hash = "#/new"; });
+    $("menu-btn").addEventListener("click", () => $("app").classList.toggle("menu-open"));
+    window.addEventListener("hashchange", route);
+  }
+  (async function main() {
+    try { S.lang = localStorage.getItem("library-lang") || "vi"; } catch (e) { S.lang = "vi"; }
+    wire();
+    renderChrome();
+    setView(h("p", { class: "muted" }, t("loading")));
+    try { await load(); } catch (err) { return fatal(err); }
+    renderChrome();
+    route();
+  })();
+})();

@@ -18,18 +18,20 @@ llm-openai = ["openai>=1.50"]
 mcp = ["mcp>=1.2,<2"]
 ingest = ["openpyxl>=3.1"]
 ui = ["PySide6>=6.11", "qtawesome>=1.4"]
+library-web = ["fastapi>=0.110", "uvicorn>=0.29", "markdown>=3.5"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "openpyxl>=3.1"]
 
 [project.scripts]
 wing = "wing_parser.cli.__main__:main"
 wing-mcp = "wing_parser.mcp.server:main"
 wing-ui = "wing_parser.ui.__main__:main"
+wing-library-web = "wing_parser.library.web.server:main"
 
 [tool.setuptools.packages.find]
 include = ["wing_parser*"]
 
 [tool.setuptools.package-data]
-wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "net/data/*.yaml", "net/watch/data/*.yaml", "edit/data/*.yaml"]
+wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "net/data/*.yaml", "net/watch/data/*.yaml", "edit/data/*.yaml", "library/web/static/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

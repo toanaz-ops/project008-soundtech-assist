@@ -154,6 +154,24 @@ def history(args) -> int:
     return 0
 
 
+def export_web(args) -> int:
+    from pathlib import Path
+
+    from wing_parser.library.web import render
+    from wing_parser.library.web.export import export_web as run_export
+
+    try:
+        result = run_export(_store(), Path(args.out_dir))
+    except render.MissingDependency as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    for item in result["missing_media"]:
+        print(f"warning: diagram not exported (missing or not PNG): {item}", file=sys.stderr)
+    print(f"exported {result['entries']} entries, {result['media']} images, "
+          f"{result['bytes'] / 1024:.0f} KiB -> {Path(args.out_dir) / 'index.html'}")
+    return 0
+
+
 def register(sub) -> None:
     node = sub.add_parser("library", help="the mixing knowledge library")
     inner = node.add_subparsers(dest="library_command", required=True)
@@ -194,4 +212,6 @@ def register(sub) -> None:
     p.add_argument("--diff", type=int, default=None, metavar="REV",
                    help="show REV against its predecessor")
     p.set_defaults(handler=history)
-
+    p = inner.add_parser("export-web", help="write a static, read-only web export of the library")
+    p.add_argument("out_dir")
+    p.set_defaults(handler=export_web)
