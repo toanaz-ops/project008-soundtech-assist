@@ -926,6 +926,11 @@ same loss that made D1-D18 a rescue job.
        produces can no longer be reverted -- the button is disabled with a
        tooltip, `revert_all` steps over it, and `route_revert` raises
        `ValueError`. Reverting one used to put `,s "None"` on the wire.
+       **Second half closed 2026-11-09** (wave-6 Q2) -- `ImmediateWrite` now
+       refuses a failed or unanswered pre-flight read via `on_error`
+       (`console.write.preflight_failed`); nothing is submitted. Test:
+       `test_immediate_refuses_when_the_preflight_read_fails`. The `None`
+       guards stay for old write-log rows.
     10. The end-to-end revert-all test asserts order but not strictly "the
         second did not start before the first settled" (task 13);
         serialisation is proven by a separate base-round mutation test.
