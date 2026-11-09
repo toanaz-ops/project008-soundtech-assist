@@ -117,7 +117,7 @@ LOG_TEXTS_VI: dict[str, str] = {
     "dryrun.col.before": "Trước",
     "dryrun.col.after": "Sau",
     "dryrun.col.added": "+Mới",
-    "dryrun.col.removed": "\u2212Mất",
+    "dryrun.col.removed": "-Mất",
     "dryrun.col.error": "Lỗi",
     "dryrun.col.change": "Đổi",
     "dryrun.col.rule": "Rule",
