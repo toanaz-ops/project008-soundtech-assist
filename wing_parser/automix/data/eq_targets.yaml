@@ -1,0 +1,119 @@
+# Per-source EQ and HPF targets (wave 12). Research outcome 2026-11-09: vendor and magazine guidance, few dB/Q numbers.
+# Record rules: `hz` is a number or a [lo, hi] range (engine takes the geometric centre); a missing `db`/`q`
+# means "no source gave one" and the engine uses `defaults` below, tagging the change eng_default.
+# Every record carries src (ids in sources.yaml) or confidence: eng_default.
+version: 1
+defaults:
+  cut:   {db: -3, q: 2.0, src: [], confidence: eng_default, note: "engineering convention: moderate cut, narrower than a boost"}
+  boost: {db: 2,  q: 1.0, src: [], confidence: eng_default, note: "engineering convention: gentle broad boost; live prefers cuts (S3)"}
+  shelf: {db: 2,  q: 0.8, src: [], confidence: eng_default, note: "engineering convention"}
+  hpf:   {slope: "12", src: [kb_core], confidence: medium, note: "Core-Skills-Overview L686 gives 12-18 dB/oct"}
+
+# Windows already enforced by Doctor base rules PB2-PB5, PC1, PC6. A target is clamped into the window so
+# automix never creates a finding the existing cited rules would raise (AM-9). Keyed by raw classifier kind,
+# then by family kind.
+doctor_windows:
+  drums.hihat:      {hz: [160, 250], rule: PB2, src: [kb_rider], confidence: medium}
+  drums.ride:       {hz: [200, 300], rule: PB3, src: [kb_rider], confidence: medium}
+  drums.overhead:   {hz: [160, 450], rule: PB4, src: [kb_core], confidence: medium}
+  drums.kick:       {hz: [20, 45],   rule: PB5, src: [kb_core], confidence: medium}
+  instrument.bass:  {hz: [20, 45],   rule: PB5, src: [kb_core], confidence: medium}
+  speech.lectern:   {hz: [90, 160],  rule: PC1, src: [kb_corp, kb_core], confidence: medium}
+  speech.panel:     {hz: [100, 160], rule: PC6, src: [kb_corp], confidence: medium}
+
+kinds:
+  drums.kick:
+    hpf: {hz: 35, src: [S2, S4], confidence: low, note: "range 25-60 Hz; S4 30-40"}
+    cuts:
+      - {hz: [200, 500], why: boxiness, src: [S1, S2], confidence: low}
+      - {hz: 600, why: honk, src: [S5], confidence: low}
+    boosts:
+      - {hz: [60, 90], q: 1.0, why: punch, src: [S1, S4], confidence: low}
+      - {hz: [1000, 5000], q: 1.0, why: beater click, src: [S1, S2, S4], confidence: low}
+  drums.snare:
+    hpf: {hz: 100, src: [S2], confidence: low, note: "range 80-200 Hz"}
+    cuts:
+      - {hz: [400, 700], why: ring and box, src: [S1, S2], confidence: low}
+      - {hz: [900, 1500], why: papery, src: [S1, S2], confidence: low}
+    boosts:
+      - {hz: [150, 250], why: body, src: [S1], confidence: low}
+      - {hz: [2000, 3500], why: snap, src: [S1], confidence: low}
+    shelf: {hz: 8000, why: crack, src: [S1], confidence: low}
+  drums.tom:
+    hpf: {hz: 60, src: [S2, S5], confidence: low, note: "exact numbers not confirmed"}
+    cuts:
+      - {hz: 250, why: mud, src: [S1], confidence: low}
+    boosts:
+      - {hz: [60, 120], why: body, src: [S1], confidence: low}
+      - {hz: [800, 1500], why: attack, src: [S1], confidence: low}
+  drums.hihat:
+    hpf: {hz: 300, src: [S1, S2], confidence: low, note: "S1 'lightly', S2 300-500; clamped to the PB2 window"}
+    cuts:
+      - {hz: [3000, 7000], why: harshness, src: [S1, S2], confidence: low}
+    shelf: {hz: 12000, why: sheen, src: [S2, S5], confidence: low}
+  drums.overhead:
+    hpf: {hz: 250, src: [S1], confidence: low}
+    cuts:
+      - {hz: 4000, q: 1.0, why: harshness, src: [S1], confidence: low}
+    shelf: {hz: [8000, 12000], why: shimmer, src: [S1, S5], confidence: low}
+  drums.ride:
+    hpf: {hz: 300, src: [S2], confidence: low}
+    cuts:
+      - {hz: [5000, 7000], why: ping harshness, src: [S2], confidence: low}
+    shelf: {hz: 10000, why: sheen, src: [S5], confidence: low}
+  instrument.bass:
+    hpf: {hz: 35, src: [S4], confidence: low, note: "numeric range is an engineering default"}
+    cuts:
+      - {hz: [200, 400], why: mud, src: [S1], confidence: low}
+    boosts:
+      - {hz: [220, 300], q: 1.0, why: character; pairs with the kick dip near 180 Hz, src: [S4], confidence: low}
+      - {hz: [800, 1000], q: 1.0, why: articulation, src: [S1], confidence: low}
+  instrument.guitar.electric:
+    hpf: {hz: 100, src: [S1], confidence: low}
+    cuts:
+      - {hz: [200, 300], why: tubbiness, src: [S1], confidence: low}
+      - {hz: [3000, 6000], why: fizz and vocal clearance, src: [S1, S7], confidence: low}
+    boosts:
+      - {hz: 4000, db: 3, q: 1.0, why: presence (Shure +3 dB), src: [S3, S5], confidence: low}
+  instrument.guitar.acoustic:
+    hpf: {hz: 70, src: [S1], confidence: low}
+    cuts:
+      - {hz: [150, 400], why: tubby, src: [S1, S5], confidence: low}
+    boosts:
+      - {hz: 1500, why: presence, src: [S1], confidence: low}
+    shelf: {hz: [8000, 12000], why: air, src: [S1], confidence: low}
+  instrument.keys:
+    hpf: {hz: 60, src: [], confidence: eng_default, note: "no source found"}
+    cuts:
+      - {hz: [200, 500], why: mud, src: [S1], confidence: low}
+      - {hz: [2000, 4000], why: vocal room, src: [S1], confidence: low}
+  instrument.strings:
+    hpf: {hz: 120, src: [S1, S5], confidence: low}
+    cuts:
+      - {hz: [200, 500], why: mud, src: [S1], confidence: low}
+      - {hz: [1000, 4000], why: harshness, src: [S1], confidence: low}
+    shelf: {hz: 10000, why: air, src: [S1], confidence: low}
+  instrument.horns:
+    hpf: {hz: 150, src: [S1], confidence: low}
+    cuts:
+      - {hz: [500, 800], why: boxy, src: [S1], confidence: low}
+      - {hz: [1000, 5000], why: harsh, src: [S1], confidence: low}
+    shelf: {hz: 5000, why: air, src: [S1], confidence: low}
+  speech.vocal:
+    hpf: {hz: 100, src: [S5, S1], confidence: low, note: "S5 male 80, female 140; S1 100-250"}
+    cuts:
+      - {hz: [200, 500], why: mud and proximity, src: [S7], confidence: low}
+      - {hz: [500, 1200], why: nasal, src: [S1, S5, S7], confidence: low}
+    boosts:
+      - {hz: 4000, db: 3, q: 1.0, why: presence, src: [S5, S7], confidence: low}
+      - {hz: [1000, 1500], db: 3, q: 1.0, why: intelligibility, src: [S5], confidence: low}
+    note: "Sibilance (5-8 kHz, -6..-12 dB narrow) is left to a de-esser as S5/S7 prefer; air shelf (S1) is not applied to vocals."
+  speech.mc:
+    hpf: {hz: 100, src: [S5], confidence: low}
+    cuts:
+      - {hz: 300, db: -3, q: 1.4, why: proximity / lowmid (matches Doctor PC2), src: [kb_corp, S7], confidence: medium}
+    boosts:
+      - {hz: 3000, db: 2, q: 1.0, why: consonant articulation (matches Doctor PC3), src: [kb_corp, S5], confidence: medium}
+    note: "No lectern-specific outside source; the cut and boost reproduce the repository's corporate preset so Doctor PC2/PC3 stay quiet."
+  utility.playback:
+    note: "Mastered material: no HPF, no instrument EQ."

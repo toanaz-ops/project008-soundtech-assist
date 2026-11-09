@@ -1,0 +1,60 @@
+# Fader balance relative to the lead vocal (wave 12). Offsets are FADER dB re the lead, not loudness.
+# Only the relative LOUDNESS of kick/snare/bass/drums vs vocal was measured (F1, De Man 2014: re vocal =
+# kick -10.5, snare -14.1, drums group -10.0, bass -6.9 LU); everything else is engineering judgement.
+# A kind with no row in a genre is left alone. Backing vocals use the kind `vocal.backing`.
+version: 1
+anchor:
+  lead_clamp_db: [-10, 0]
+  default_db: -5
+  src: [F4]
+  confidence: low
+  note: "F4: balance with the fader near unity; lead vocal -5..0 leaves push room. The -5 default itself is an engineering choice."
+headroom:
+  nominal_dbfs: -18
+  ceiling_dbfs: -3
+  src: [F4]
+  confidence: low
+  note: "-18 dBFS is a DAW nominal (F4); the -3 dBFS ceiling is an engineering default."
+venue:
+  small: {delta_db: -3, kinds: [drums.kick, drums.snare, drums.tom, drums.hihat, drums.overhead, drums.ride, instrument.guitar.electric], src: [], confidence: eng_default, note: "AM-12: stage volume in small rooms"}
+genres:
+  pop:
+    src: [F1]
+    confidence: low
+    offsets: {speech.vocal: 0, vocal.backing: -5, speech.mc: 0, drums.kick: -10, drums.snare: -10, drums.tom: -12, drums.hihat: -18, drums.overhead: -14, drums.ride: -16, instrument.bass: -7, instrument.guitar.electric: -9, instrument.guitar.acoustic: -8, instrument.keys: -8, instrument.strings: -10, instrument.horns: -9, utility.playback: -6}
+  rock:
+    src: [F1]
+    confidence: low
+    offsets: {speech.vocal: 0, vocal.backing: -5, speech.mc: 0, drums.kick: -8, drums.snare: -8, drums.tom: -12, drums.hihat: -18, drums.overhead: -14, drums.ride: -16, instrument.bass: -6, instrument.guitar.electric: -6, instrument.guitar.acoustic: -8, instrument.keys: -10, instrument.strings: -10, instrument.horns: -9, utility.playback: -6}
+  ballad:
+    src: [F1]
+    confidence: low
+    offsets: {speech.vocal: 0, vocal.backing: -5, speech.mc: 0, drums.kick: -14, drums.snare: -16, drums.tom: -14, drums.hihat: -18, drums.overhead: -14, drums.ride: -16, instrument.bass: -9, instrument.guitar.electric: -9, instrument.guitar.acoustic: -4, instrument.keys: -6, instrument.strings: -10, instrument.horns: -9, utility.playback: -6}
+  jazz:
+    src: []
+    confidence: eng_default
+    note: "no source; overheads and ride kept prominent"
+    offsets: {speech.vocal: 0, vocal.backing: -5, speech.mc: 0, drums.kick: -12, drums.snare: -14, drums.tom: -14, drums.hihat: -18, drums.overhead: -10, drums.ride: -10, instrument.bass: -5, instrument.guitar.electric: -10, instrument.guitar.acoustic: -6, instrument.keys: -8, instrument.strings: -8, instrument.horns: -6, utility.playback: -6}
+  edm:
+    src: []
+    confidence: eng_default
+    note: "no source; playback 3-6 dB under the live vocal, kick and bass sit inside the playback"
+    offsets: {speech.vocal: 0, vocal.backing: -5, speech.mc: 0, utility.playback: -4.5}
+  bolero:
+    src: []
+    confidence: eng_default
+    note: "no source for bolero / cai luong; ballad profile with strings and horns at -8"
+    offsets: {speech.vocal: 0, vocal.backing: -5, speech.mc: 0, drums.kick: -14, drums.snare: -16, drums.tom: -14, drums.hihat: -18, drums.overhead: -14, drums.ride: -16, instrument.bass: -9, instrument.guitar.electric: -9, instrument.guitar.acoustic: -4, instrument.keys: -6, instrument.strings: -8, instrument.horns: -8, utility.playback: -6}
+  speech:
+    src: []
+    confidence: eng_default
+    note: "speech kinds at the anchor; music and playback 12-18 dB under speech (midpoint -15)"
+    offsets: {speech.vocal: 0, vocal.backing: 0, speech.mc: 0, utility.playback: -15, instrument.guitar.electric: -15, instrument.guitar.acoustic: -15, instrument.keys: -15, instrument.bass: -15, instrument.strings: -15, instrument.horns: -15}
+# WING gain-sharing automix group for speech channels (AM-16). weight_db is the postins.w leaf; the 4 dB
+# moderator weight reproduces Doctor PC7 (corporate preset: moderator +3 to +6 dB).
+inserts:
+  mode: AUTO_X
+  weight_db: {default: 0, speech.mc: 4}
+  src: [maillot, kb_corp]
+  confidence: low
+  note: "the weight unit is undocumented in the protocol document; treated as dB"

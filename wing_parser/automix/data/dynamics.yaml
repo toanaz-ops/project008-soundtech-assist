@@ -1,0 +1,30 @@
+# Compressor and gate starting points (wave 12). Ranges are [lo, hi]; the engine takes the midpoint.
+# Gate `range` is the depth in dB as the WING leaf stores it (sources quote it as a negative number).
+# Thresholds cannot be derived offline (no meters): the engine assumes a -12 dBFS peak (AM-23, eng_default).
+version: 1
+comp:
+  assumptions: {peak_est_dbfs: -12, knee: 2, thr_range: [-40, -5], src: [], confidence: eng_default, note: "AM-23"}
+  kinds:
+    speech.vocal:    {ratio: [2, 4],     att: [2, 10],  rel: [40, 100],  gr: [3, 6], src: [F5, F3], confidence: low}
+    vocal.backing:   {ratio: [3, 4],     att: [5, 15],  rel: [50, 150],  gr: [4, 8], src: [F5], confidence: low, note: "derived from the lead vocal row"}
+    speech.mc:       {ratio: [3, 4],     att: [5, 10],  rel: [100, 200], gr: [4, 8], src: [], confidence: eng_default, note: derived}
+    drums.kick:      {ratio: [3.5, 4],   att: [20, 80], rel: [100, 300], gr: [3, 6], src: [F5, F3], confidence: low}
+    drums.snare:     {ratio: [3.5, 4],   att: [10, 78], rel: [50, 300],  gr: [3, 6], src: [F5, F3], confidence: low}
+    instrument.bass: {ratio: [2.6, 4],   att: [20, 45], rel: [100, 190], gr: [3, 6], src: [F5], confidence: low}
+    instrument.guitar.acoustic: {ratio: [2.5, 3.4], att: [10, 30], rel: [150, 400], gr: [2, 5], src: [F5], confidence: low, note: "F5 lists an 1127 ms attack: an artefact, clamped"}
+    instrument.keys: {ratio: [1.8, 2.5], att: [5, 30],  rel: [50, 112],  gr: [1, 4], src: [F5], confidence: low}
+  notes: "Electric guitar is usually left uncompressed (no source row) and playback is never compressed."
+gate:
+  assumptions: {thr: -40, thr_range: [-80, -20], src: [], confidence: eng_default, note: "AM-23: no meters offline"}
+  kinds:
+    drums.kick:  {att: [0, 1], hld: [30, 100], rel: [50, 150],  range: [12, 30], src: [F6, F7], confidence: low}
+    drums.snare: {att: [0, 1], hld: [30, 100], rel: [80, 200],  range: [12, 20], src: [F6, F7], confidence: low, note: "partial range keeps ghost notes"}
+    drums.tom:   {att: [0, 1], hld: [50, 150], rel: [100, 250], range: [20, 40], src: [F6], confidence: low, note: "gate every mic except overheads (F6)"}
+# Applied on top of the per-kind rows. gr_add shifts the gain-reduction midpoint; ratio_min/ratio_max clamp it;
+# `kinds` limits a delta to those families. No source states these deltas (eng_default).
+genre_deltas:
+  jazz:   {gr_add: -1.5, ratio_min: 1.5, ratio_max: 2.5, src: [], confidence: eng_default, note: "lighter compression"}
+  rock:   {gr_add: 3, ratio_min: 4, src: [], confidence: eng_default, note: "heavier, 4:1 and up"}
+  pop:    {gr_add: 2.5, kinds: [speech.vocal], src: [], confidence: eng_default, note: "more on the lead vocal"}
+  edm:    {gr_range: [6, 10], ratio_min: 4, kinds: [speech.vocal], src: [], confidence: eng_default, note: "hard-compressed live vocal"}
+  speech: {ratio_range: [3, 4], kinds: [speech.vocal, speech.mc], src: [], confidence: eng_default, note: "steady 3-4:1; Doctor PC5 caps speech at 4:1"}

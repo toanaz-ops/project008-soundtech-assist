@@ -33,10 +33,16 @@ docs/knowledge-base/
 │   ├── Corporate-B2B-Events.md
 │   ├── Tech-Expos-Hackathons.md
 │   └── Live-Entertainment-Shows.md
-└── 04-templates-and-matrices/
-    ├── Master-Run-Of-Show-ROS.md
-    ├── Technical-Rider-Spec.md
-    └── Risk-Contingency-Matrix.md
+├── 04-templates-and-matrices/
+│   ├── Master-Run-Of-Show-ROS.md
+│   ├── Technical-Rider-Spec.md
+│   └── Risk-Contingency-Matrix.md
+└── 05-mixing-targets/
+    ├── README.md                      (automix knowledge: EQ, balance, dynamics, FX, WING FX/meters)
+    ├── eq.md
+    ├── balance-and-dynamics.md
+    ├── effects.md
+    └── wing-fx-and-meters.md
 ```
 
 ---
