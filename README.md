@@ -814,6 +814,12 @@ is required beyond re-running the command.
   `supersedes` list naming the base rule ids it switches off. A
   principle whose only job is to suppress a base rule needs no `when`
   block of its own.
+- **Source rule for the `toanaz` and `show` layers** — every rule in
+  `principles.yaml` or a `shows/<name>.yaml` file must have a `source:` that
+  contains `ToanAZ` and an ISO date (`YYYY-MM-DD`); otherwise loading fails
+  with the file and rule id. A missing `source:` fails too. No rule may be
+  attributed to the owner without his words and a date. Base rules are not
+  checked.
 - **Add a show-specific override** — drop a `.yaml` or `.yml` file into
   `knowledge/toanaz/shows/`, using the same rule shape as a base rule.
   The filename (without its extension) becomes the profile name; the
