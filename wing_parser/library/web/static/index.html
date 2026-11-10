@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script id="prefs-bootstrap">(function(){var d=document.documentElement,s="light",n="compact",l="vi";try{var p=JSON.parse(localStorage.getItem("az.prefs.v1")||"{}");if(p&&(p.skin==="light"||p.skin==="dark"||p.skin==="sodium"||p.skin==="tet"))s=p.skin;if(p&&(p.density==="compact"||p.density==="comfortable"))n=p.density}catch(e){}try{var g=localStorage.getItem("az.language");if(g==="vi"||g==="en")l=g;else{var o=localStorage.getItem("library-lang");if(o==="vi"||o==="en")l=o}}catch(e){}d.setAttribute("data-skin",s);d.setAttribute("data-density",n);d.lang=l})()</script>
+<script id="prefs-bootstrap">(function(){var d=document.documentElement,s="light",n="compact",f="condensed",l="vi";try{var p=JSON.parse(localStorage.getItem("az.prefs.v1")||"{}");if(p&&(p.skin==="light"||p.skin==="dark"||p.skin==="sodium"||p.skin==="tet"))s=p.skin;if(p&&(p.density==="compact"||p.density==="comfortable"))n=p.density;if(p&&(p.font==="default"||p.font==="condensed"))f=p.font}catch(e){}try{var g=localStorage.getItem("az.language");if(g==="vi"||g==="en")l=g;else{var o=localStorage.getItem("library-lang");if(o==="vi"||o==="en")l=o}}catch(e){}d.setAttribute("data-skin",s);d.setAttribute("data-density",n);d.setAttribute("data-font",f);d.lang=l})()</script>
 <title>Thư viện Mix</title>
 <link rel="stylesheet" href="static/app.css">
 </head>
@@ -14,8 +14,9 @@
     <a class="brand" href="#">Thư viện Mix</a>
     <span class="spacer"></span>
     <button id="new-btn" class="btn primary" type="button" hidden></button>
+    <button id="lang-btn" class="btn" type="button">EN</button>
     <div class="display-wrap">
-      <button id="display-btn" class="btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="display-menu">Giao diện</button>
+      <button id="display-btn" class="btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="display-menu">&#9680;</button>
       <div id="display-menu" class="display-menu" role="group" hidden></div>
     </div>
   </header>

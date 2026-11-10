@@ -79,6 +79,10 @@ def test_healthz_and_shell_need_no_auth(client, prj):
     assert "script-src 'self'" in shell.headers["content-security-policy"]
     assert client.get("/library/static/app.js").status_code == 200
     assert client.get("/library/static/secret.txt").status_code == 404
+    font = client.get("/library/static/fonts/saira-condensed-700-vietnamese.woff2")
+    assert font.status_code == 200 and font.headers["content-type"] == "font/woff2" and font.content[:4] == b"wOF2"
+    assert "font-src 'self'" in shell.headers["content-security-policy"]
+    assert client.get("/library/static/fonts/secret.woff2").status_code == 404
     assert prj.calls == []
 
 

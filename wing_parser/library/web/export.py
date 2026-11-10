@@ -32,6 +32,26 @@ def static_text(name: str) -> str:
     return (resources.files("wing_parser.library.web") / "static" / name).read_text(encoding="utf-8")
 
 
+def static_bytes(name: str) -> bytes:
+    return (resources.files("wing_parser.library.web") / "static" / name).read_bytes()
+
+
+_FONT_URL = re.compile(r"url\(fonts/([\w.-]+\.woff2)\)")
+
+
+def _font_names() -> list[str]:
+    return sorted(set(_FONT_URL.findall(static_text("app.css"))))
+
+
+def _css(inline_fonts: bool) -> str:
+    """app.css for embedding: font files become data: URIs (artifact, ~106 KB) or static/fonts/ paths (full export)."""
+    css = static_text("app.css")
+    if inline_fonts:
+        return _FONT_URL.sub(lambda m: "url(data:font/woff2;base64,"
+                             + base64.b64encode(static_bytes("fonts/" + m.group(1))).decode("ascii") + ")", css)
+    return _FONT_URL.sub(lambda m: f"url(static/fonts/{m.group(1)})", css)
+
+
 def script_json(payload: dict) -> str:
     """JSON safe to embed in a <script> element."""
     text = json.dumps(payload, ensure_ascii=False, default=str)
@@ -39,13 +59,13 @@ def script_json(payload: dict) -> str:
                 .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
 
 
-def _fill(page: str, payload: dict) -> str:
+def _fill(page: str, payload: dict, inline_fonts: bool = False) -> str:
     for needle in (_CSS_TAG, _JS_TAG, _DATA_MARK):
         if needle not in page:
             raise RuntimeError(f"static/index.html lost its marker {needle!r}")
     data = f'<script type="application/json" id="library-data">{script_json(payload)}</script>'
     js = static_text("app.js").replace("</script", "<\\/script")
-    css = f"<style>\n{static_text('app.css')}\n</style>"
+    css = f"<style>\n{_css(inline_fonts)}\n</style>"
     return (page.replace(_CSS_TAG, css)
                 .replace(_DATA_MARK, data)
                 .replace(_JS_TAG, f"<script>\n{js}\n</script>"))
@@ -64,7 +84,7 @@ def build_fragment(payload: dict) -> str:
     if boot is None:
         raise RuntimeError("static/index.html lost its prefs-bootstrap script")
     # The fragment has no <head>: the bootstrap goes first so it still runs before the app markup paints.
-    inner = _fill(boot.group(0) + "\n" + _CSS_TAG + "\n" + match.group(1).strip(), payload)
+    inner = _fill(boot.group(0) + "\n" + _CSS_TAG + "\n" + match.group(1).strip(), payload, inline_fonts=True)
     return ('<title>Thư viện Mix</title>\n'
             '<meta name="claude:viewport-fit-sides" content="cover">\n' + inner + "\n")
 
@@ -119,6 +139,10 @@ def export_web(store: LibraryStore, out_dir: Path, *, artifact: bool = False) ->
     else:
         page = build_page(payload)
         target = out / "index.html"
-        size = len(page.encode("utf-8")) + sum(p.stat().st_size for p in media_out.rglob("*") if p.is_file())
+        fonts_out = out / "static" / "fonts"
+        fonts_out.mkdir(parents=True, exist_ok=True)
+        for name in _font_names():
+            (fonts_out / name).write_bytes(static_bytes("fonts/" + name))
+        size = len(page.encode("utf-8")) + sum(p.stat().st_size for d in (media_out, fonts_out) for p in d.rglob("*") if p.is_file())
     target.write_text(page, encoding="utf-8", newline="\n")
     return {"entries": len(views), "media": media_count, "missing_media": missing, "bytes": size, "path": target}

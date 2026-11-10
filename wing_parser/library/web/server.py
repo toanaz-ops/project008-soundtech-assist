@@ -39,7 +39,7 @@ from wing_parser.library import (
 )
 from wing_parser.library import schema
 from wing_parser.library.web import render
-from wing_parser.library.web.export import static_text
+from wing_parser.library.web.export import static_bytes, static_text
 
 log = logging.getLogger("wing_library_web")
 AUTH_BASE_DEFAULT = "https://master.azsoundtech.com"
@@ -47,6 +47,8 @@ VIEW, EDIT = "knowledge_library.view", "knowledge_library.edit"
 CACHE_TTL = 60.0
 CACHE_MAX = 256
 STATIC_FILES = {"app.js": "text/javascript", "app.css": "text/css"}
+FONT_FILES = {  # self-hosted Saira Condensed (SIL OFL), the head-font fallback for devices without Bahnschrift / DIN Condensed
+    f"saira-condensed-{w}-{s}.woff2" for w in (600, 700) for s in ("latin", "latin-ext", "vietnamese")}
 def _bootstrap_hash() -> str:
     """CSP hash source for the inline prefs bootstrap in index.html (it must run before first paint)."""
     m = re.search(r'<script id="prefs-bootstrap">(.*?)</script>', static_text("index.html"), re.S)
@@ -56,7 +58,7 @@ def _bootstrap_hash() -> str:
     return "'sha256-" + base64.b64encode(digest).decode("ascii") + "'"
 
 
-CSP = ("default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; "
+CSP = ("default-src 'self'; img-src 'self' blob: data:; font-src 'self'; style-src 'self' 'unsafe-inline'; "
        f"script-src 'self' {_bootstrap_hash()}; connect-src 'self'; frame-src https://www.youtube-nocookie.com; "
        "base-uri 'none'; form-action 'none'; frame-ancestors 'self'")
 
@@ -238,6 +240,13 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
             raise HTTPException(404, "not_found")
         return Response(static_text(name), media_type=STATIC_FILES[name],
                         headers={"Cache-Control": "no-cache"})
+
+    @router.get("/static/fonts/{name}")
+    def static_font(name: str):
+        if name not in FONT_FILES:
+            raise HTTPException(404, "not_found")
+        return Response(static_bytes("fonts/" + name), media_type="font/woff2",
+                        headers={"Cache-Control": "public, max-age=86400"})
 
     # -- reads --------------------------------------------------------------
     @router.get("/api/me")
