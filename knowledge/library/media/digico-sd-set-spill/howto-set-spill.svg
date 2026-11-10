@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Set Spill: build, assign to a macro, lock banks</text>
+<rect x="30.0" y="64.0" width="900.0" height="308.0" rx="10" fill="#131519" stroke="#2b2f37"/>
+<text x="42.0" y="82.0" font-size="12" fill="#5c636e" text-anchor="start" font-weight="bold">SD10 - Layout &gt; Set Spill and Layout &gt; Fader Banks</text>
+<rect x="48.0" y="88.6" width="396.0" height="178.6" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="56.0" y="105.6" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Set Spill: channel list</text>
+<text x="206.6" y="138.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Set 1</text>
+<text x="364.9" y="138.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Set 2</text>
+<line x1="52.0" y1="151.8" x2="440.0" y2="151.8" stroke="#1d2128" stroke-width="1"/>
+<text x="56.0" y="176.0" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 1 Lead</text>
+<polyline points="199.6,170.4 204.6,176.4 214.6,164.4" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="52.0" y1="189.0" x2="440.0" y2="189.0" stroke="#1d2128" stroke-width="1"/>
+<text x="56.0" y="213.1" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 2 BV1</text>
+<polyline points="199.6,207.5 204.6,213.5 214.6,201.5" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="52.0" y1="226.1" x2="440.0" y2="226.1" stroke="#1d2128" stroke-width="1"/>
+<text x="56.0" y="250.3" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 3 BV2</text>
+<polyline points="357.9,244.7 362.9,250.7 372.9,238.7" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="480.0" y="94.8" width="198.0" height="43.1" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="579.0" y="121.4" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Set Name:</text>
+<rect x="714.0" y="94.8" width="180.0" height="43.1" rx="6" fill="#ff9f1c" stroke="#ff9f1c"/>
+<text x="804.0" y="121.4" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">Spill:</text>
+<rect x="480.0" y="162.6" width="414.0" height="43.1" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="687.0" y="189.1" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Assign Macro:</text>
+<rect x="480.0" y="224.2" width="198.0" height="43.1" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="579.0" y="250.7" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">lock</text>
+<rect x="48.0" y="285.8" width="846.0" height="73.9" rx="4" fill="#131519" stroke="#2b2f37"/>
+<line x1="100.9" y1="307.8" x2="100.9" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="91.9" y="313.7" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="206.6" y1="307.8" x2="206.6" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="197.6" y="318.1" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="312.4" y1="307.8" x2="312.4" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="303.4" y="322.5" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="418.1" y1="307.8" x2="418.1" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="409.1" y="313.7" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="523.9" y1="307.8" x2="523.9" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="514.9" y="318.1" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="629.6" y1="307.8" x2="629.6" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="620.6" y="322.5" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="735.4" y1="307.8" x2="735.4" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="726.4" y="313.7" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="841.1" y1="307.8" x2="841.1" y2="351.7" stroke="#2b2f37" stroke-width="3"/>
+<rect x="832.1" y="318.1" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<text x="54.0" y="300.8" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Fader Banks</text>
+<circle cx="440.0" cy="90.6" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="440.0" y="95.6" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<circle cx="890.0" cy="164.6" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="890.0" y="169.6" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<circle cx="674.0" cy="226.2" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="674.0" y="231.2" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<circle cx="41" cy="404" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<text x="62.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Choose a Set column, touch the boxes of the channels to include (Vocals set)</text>
+<circle cx="41" cy="433" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<text x="62.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Touch Assign Macro:, then pick a Macro button (one key per set)</text>
+<circle cx="41" cy="462" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="467.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<text x="62.0" y="467.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Fader Banks: highlight a bank, touch lock</text>
+<text x="930.0" y="530.0" font-size="11" fill="#5c636e" text-anchor="end" font-weight="normal">Schematic - not a screenshot</text>
+</svg>

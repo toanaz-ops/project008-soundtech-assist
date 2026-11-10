@@ -51,6 +51,7 @@ body: |
 
   - **Track count wording.** The introduction describes "128 channels of recording and playback (64 in x 64 out)" while the Pro Tools chapter says up to 128 channels of I/O. Used here: the Pro Tools chapter, since the 8.0 documents quote larger counts too.
   - Full Pro Tools system requirements and qualified Mac models (live in the Live Recording Guide and a Knowledge Base article, both not opened).
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (đã xác minh)
 
@@ -86,6 +87,7 @@ body_vi: |
 
   - **Cách ghi số kênh.** Phần giới thiệu viết "128 channels of recording and playback (64 in x 64 out)" còn chương Pro Tools nói tới 128 kênh I/O. Ở đây dùng chương Pro Tools, vì các tài liệu 8.0 cũng nêu số lớn hơn.
   - Yêu cầu hệ thống Pro Tools đầy đủ và các đời Mac được chứng nhận (nằm trong Live Recording Guide và một bài Knowledge Base, cả hai chưa mở).
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
   publisher: Avid
@@ -128,8 +130,15 @@ media:
   channel: Avid Live Sound
   caption: Avid on the VENUE 8.0 Virtual Soundcheck changes (title and channel verified via YouTube oEmbed; not watched)
   caption_vi: Avid nói về thay đổi Virtual Soundcheck trong VENUE 8.0 (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+- kind: diagram
+  path: howto-virtual-soundcheck.png
+  caption: On-desk steps 1-3, schematic drawn from the manual's description (System Guide 7.2, pp. 392-395), not a screenshot.
+  caption_vi: Các bước 1–3 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (System Guide 7.2, tr. 392-395), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 5
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

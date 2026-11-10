@@ -31,7 +31,7 @@ body: |
 
   ## How to use it on a show
 
-  1. Open Global Scope first. Decide what no snapshot may ever touch: input gains and phantom on a shared desk, graphic EQs, FX settings. Set those to red X.
+  1. Open Global Scope first. Decide what no snapshot may ever touch: input gains and phantom on a shared desk (the Input Devices row of Global Scope; set it to red X). Graphic EQs and FX settings have their own SAFE; use that instead.
   2. Use the individual Recall Scope to make narrow cues, for example a cue that only recalls mutes and fader positions.
   3. Use channel Safes for one-off protection, such as a channel the operator is riding by hand during a number.
   4. To fix a later cue, use Surface Offline, fire the cue, edit, Update Selected, then RTN To Audio.
@@ -51,6 +51,7 @@ body: |
 
   - Number of snapshots possible in practice (the manual says memory only).
   - Which firmware first offered each scope column.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -66,7 +67,7 @@ body_vi: |
 
   ## Cách dùng trên show
 
-  1. Mở Global Scope trước. Quyết định thứ gì không snapshot nào được đụng: gain input và phantom trên desk dùng chung, graphic EQ, setting FX. Đặt các thứ đó thành X đỏ.
+  1. Mở Global Scope trước. Quyết định thứ gì không snapshot nào được đụng: gain input và phantom trên desk share rack (hàng Input Devices trong Global Scope; đặt thành X đỏ). Graphic EQ và setting FX có SAFE riêng; dùng SAFE đó.
   2. Dùng Recall Scope riêng để làm cue hẹp, ví dụ cue chỉ recall mute và vị trí fader.
   3. Dùng Safes của channel cho bảo vệ tạm, như channel mà operator đang tự tay riding trong một bài.
   4. Muốn sửa cue sau: Surface Offline, bắn cue, sửa, Update Selected, rồi RTN To Audio.
@@ -86,6 +87,7 @@ body_vi: |
 
   - Số snapshot thực tế tối đa (manual chỉ nói giới hạn bởi bộ nhớ).
   - Firmware nào đầu tiên có từng cột scope.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -107,8 +109,15 @@ media:
   channel: DiGiCo Consoles
   caption: Official DiGiCo overview of snapshots on the SD range (title and channel verified via oEmbed; not watched)
   caption_vi: Video chính thức của DiGiCo về snapshot trên dòng SD (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-recall-scope.png
+  caption: On-desk steps 1-4. Schematic drawn from the manual's description (Issue H, p. 99-100, 107), not a screenshot.
+  caption_vi: Các bước 1–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 99-100, 107), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 6
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

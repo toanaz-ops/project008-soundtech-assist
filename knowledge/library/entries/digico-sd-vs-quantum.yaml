@@ -51,13 +51,13 @@ body_vi: |
 
   - **Mustard channel** (1.7): model tube/pre-amp, EQ, compressor với bốn model và gate/ducker, chạy song song với strip SD thường trên engine Quantum.
   - **Spice Rack** (2.6.2): rack xử lý trên engine Quantum, gồm Chilli 6 multiband compressor và Naga 6 dynamic EQ sáu band.
-  - **Nodal processing** (aux node), **True Solo**, **Mix Minus** (1.4.15: feed mono ở Direct Output của channel với tín hiệu của chính channel đó được bỏ ra) và **vị trí insert**: năm vị trí insert chọn được (pre-fade, mid EQ/dyn, pre-EQ/dyn, pre-processing, post-fade) dùng chung bởi Insert A, B và Mustard trên Quantum.
+  - **Nodal processing** (aux node), **True Solo**, **Mix Minus** (1.4.15: feed mono ở Direct Output của channel với tín hiệu của chính channel đó được bỏ ra) và **vị trí insert**: năm vị trí insert chọn được (pre-fade, mid EQ/dyn, pre-EQ/dyn, pre-processing, post-fade) mà Insert A, B và Mustard cùng chọn trên Quantum.
   - Các chương Q8 (channel macro, Macroder) và Quantum Home cũng là mục của Quantum.
 
   ## SD10 có gì thay vào
 
   - **Hai điểm insert mỗi channel:** Insert A phía trên EQ (pre-processing, sau các filter) và Insert B sau dynamics thứ hai. Tới 32 input channel mono trên SD có thể chuyển Insert B thành insert post-fader.
-  - **Tính năng dùng chung:** snapshot, macro, control group, dynamic EQ, DiGiTube, channel dynamics và Set Spill được mô tả chung cho SD và Quantum, nên không phải riêng của SD. Cái dòng SD có thêm so với một desk tổng quát là cả bộ kết hợp (Recall Scope cộng Safes, các chế độ CG, Set Spill, macro với advanced trigger).
+  - **Tính năng có cả trên hai dòng:** snapshot, macro, control group, dynamic EQ, DiGiTube, channel dynamics và Set Spill được mô tả cho cả SD và Quantum, nên không phải riêng của SD. Cái dòng SD có thêm so với một desk tổng quát là cả bộ kết hợp (Recall Scope cộng Safes, các chế độ CG, Set Spill, macro với advanced trigger).
   - **Chế độ có licence:** theatre và broadcast là bản nâng cấp trả phí cho SD10 (System > Enable Extensions). Chúng thêm gì thì các trang đã đọc không mô tả.
   - **Waves:** manual mô tả Enable External Waves là option mua thêm, cho plug-in Waves bên cạnh FX của console, dùng SuperRack SoundGrid (gồm ProLink từ V1742). Trang sản phẩm ghi module SoundGrid tuỳ chọn thêm 32 MultiRack stereo, mỗi cái tới 8 plug-in, và 128 I/O thêm.
   - **Tích hợp Fourier transform.engine** xuất hiện trong manual như mục V20xx; có áp dụng cho SD10 hay không thì chưa kiểm tra.
@@ -103,6 +103,6 @@ media:
   caption_vi: Video walk-through xử lý Quantum chính thức, giúp thấy SD10 thiếu gì (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:38+07:00'
-updated_by: agent:review-fix
+revision: 3
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

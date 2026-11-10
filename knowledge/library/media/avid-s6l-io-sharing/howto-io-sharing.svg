@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Assigning shared I/O slots on the Master</text>
+<rect x="30.0" y="64.0" width="900.0" height="308.0" rx="10" fill="#131519" stroke="#2b2f37"/>
+<text x="42.0" y="82.0" font-size="12" fill="#5c636e" text-anchor="start" font-weight="bold">VENUE external screen on the Input Master</text>
+<rect x="66.0" y="88.6" width="522.0" height="110.9" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="74.0" y="105.6" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Options &gt; Devices: Output Slot ownership</text>
+<text x="278.6" y="132.2" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Master</text>
+<text x="484.9" y="132.2" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Follower</text>
+<line x1="70.0" y1="141.6" x2="584.0" y2="141.6" stroke="#1d2128" stroke-width="1"/>
+<text x="74.0" y="159.1" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Output slot J</text>
+<polyline points="271.6,155.1 276.6,161.1 286.6,149.1" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="70.0" y1="168.6" x2="584.0" y2="168.6" stroke="#1d2128" stroke-width="1"/>
+<text x="74.0" y="186.1" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Output slot K</text>
+<polyline points="477.9,182.0 482.9,188.0 492.9,176.0" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="66.0" y="230.3" width="522.0" height="92.4" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="74.0" y="247.3" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Patchbay tabs</text>
+<text x="74.0" y="268.3" font-size="13" font-family="monospace" fill="#e8eaed">Green tab: you own it</text>
+<text x="74.0" y="286.3" font-size="13" font-family="monospace" fill="#e8eaed">Yellow tab: you follow it</text>
+<circle cx="584.0" cy="90.6" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="584.0" y="95.6" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<circle cx="584.0" cy="232.3" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="584.0" y="237.3" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<circle cx="41" cy="404" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<text x="62.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Options &gt; Devices on the Master: assign stage Output slots to the monitor system</text>
+<circle cx="41" cy="433" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<text x="62.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Patchbay: green tabs = yours, yellow tabs = followed</text>
+<text x="930.0" y="530.0" font-size="11" fill="#5c636e" text-anchor="end" font-weight="normal">Schematic - not a screenshot</text>
+</svg>

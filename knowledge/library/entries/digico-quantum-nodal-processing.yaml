@@ -43,6 +43,7 @@ body: |
   - First software version for Nodal Processing and any licence (the datasheet options list does not include it).
   - Whether WING has an equivalent per-send processing: not checked here.
   - Whether the aux send's pre/post position changes where nodal processing sits relative to the fader: not stated in the pages read.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Nó là gì (đã xác minh, reference manual PDF tr. 35-37, 114)
 
@@ -71,6 +72,7 @@ body_vi: |
   - Phiên bản software đầu tiên có Nodal Processing và licence (danh sách option của datasheet không có).
   - WING có tính năng xử lý theo từng send tương đương không: chưa kiểm ở đây.
   - Vị trí pre/post của aux send có ảnh hưởng chỗ nodal processing so với fader không: các trang đã đọc không nêu.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual, Issue E, February 2022, V1528+
   publisher: DiGiCo
@@ -104,8 +106,15 @@ media:
   channel: DiGiCo Consoles
   caption: Official DiGiCo video on Nodal Processing (title and channel verified via YouTube oEmbed; not watched)
   caption_vi: Video chính thức của DiGiCo về Nodal Processing (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
+- kind: diagram
+  path: howto-aux-nodes.png
+  caption: On-desk steps 1-5, schematic drawn from the manual's description (Issue E, PDF pp. 35-37), not a screenshot.
+  caption_vi: Các bước 1-5 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue E, tr. 35-37), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

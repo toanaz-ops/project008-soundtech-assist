@@ -25,6 +25,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 import library_diagram_dsp as dsp  # noqa: E402
+import library_diagram_ui as ui  # noqa: E402
 
 W, H = 960, 540
 PLOT = (90, 80, 920, 450)  # left, top, right, bottom
@@ -392,9 +393,14 @@ def xy_plot(item: dict) -> str:
     return svg.render()
 
 
+def ui_steps(item: dict) -> str:
+    from types import SimpleNamespace
+    return ui.ui_steps(item, SimpleNamespace(Svg=Svg, C=_C, wrap=_wrap))
+
+
 KINDS = {"eq_curve": eq_curve, "band_chart": band_chart, "transfer_curve": transfer_curve,
          "range_chart": range_chart, "envelope": envelope, "polar_pattern": polar_pattern, "signal_flow": signal_flow,
-         "xy_plot": xy_plot}
+         "xy_plot": xy_plot, "ui_steps": ui_steps}
 
 
 def render_item(item: dict) -> str:

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Scope, User Aux Scope and Recall Safe screens</text>
+<rect x="30.0" y="64.0" width="900.0" height="308.0" rx="10" fill="#131519" stroke="#2b2f37"/>
+<text x="42.0" y="82.0" font-size="12" fill="#5c636e" text-anchor="start" font-weight="bold">VENUE external screen: Snapshots page</text>
+<rect x="66.0" y="88.6" width="396.0" height="86.2" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="74.0" y="105.6" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Scope data type buttons and channel faders</text>
+<text x="167.0" y="126.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Fader</text>
+<text x="285.0" y="126.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Mute</text>
+<text x="403.0" y="126.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">EQ</text>
+<line x1="70.0" y1="133.4" x2="458.0" y2="133.4" stroke="#1d2128" stroke-width="1"/>
+<text x="74.0" y="145.6" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 1</text>
+<polyline points="160.0,142.8 165.0,148.8 175.0,136.8" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="278.0,142.8 283.0,148.8 293.0,136.8" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="70.0" y1="152.1" x2="458.0" y2="152.1" stroke="#1d2128" stroke-width="1"/>
+<text x="74.0" y="164.3" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 2</text>
+<rect x="516.0" y="88.6" width="378.0" height="86.2" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="524.0" y="105.6" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Recall Safe: Inputs and Outputs tabs, On</text>
+<text x="670.1" y="126.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Fader</text>
+<text x="819.4" y="126.8" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">EQ</text>
+<line x1="520.0" y1="133.4" x2="890.0" y2="133.4" stroke="#1d2128" stroke-width="1"/>
+<text x="524.0" y="145.6" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Lead Vox</text>
+<line x1="664.1" y1="136.8" x2="676.1" y2="148.8" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="664.1" y1="148.8" x2="676.1" y2="136.8" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="813.4" y1="136.8" x2="825.4" y2="148.8" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="813.4" y1="148.8" x2="825.4" y2="136.8" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="520.0" y1="152.1" x2="890.0" y2="152.1" stroke="#1d2128" stroke-width="1"/>
+<text x="524.0" y="164.3" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Spare mic</text>
+<line x1="664.1" y1="155.5" x2="676.1" y2="167.5" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="664.1" y1="167.5" x2="676.1" y2="155.5" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="813.4" y1="155.5" x2="825.4" y2="167.5" stroke="#ff5a4e" stroke-width="3"/>
+<line x1="813.4" y1="167.5" x2="825.4" y2="155.5" stroke="#ff5a4e" stroke-width="3"/>
+<rect x="66.0" y="211.8" width="396.0" height="86.2" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="74.0" y="228.8" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">User Aux Scope (AUX/USR)</text>
+<text x="202.1" y="250.0" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">IEM 3</text>
+<text x="375.4" y="250.0" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">IEM 4</text>
+<line x1="70.0" y1="256.6" x2="458.0" y2="256.6" stroke="#1d2128" stroke-width="1"/>
+<text x="74.0" y="268.8" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Gtr 1</text>
+<polyline points="195.1,266.0 200.1,272.0 210.1,260.0" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="70.0" y1="275.3" x2="458.0" y2="275.3" stroke="#1d2128" stroke-width="1"/>
+<text x="74.0" y="287.5" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Vox</text>
+<rect x="516.0" y="211.8" width="378.0" height="86.2" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="524.0" y="228.8" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Scope Sets (Filing page)</text>
+<text x="524.0" y="249.8" font-size="13" font-family="monospace" fill="#e8eaed">Scope Set: Clean</text>
+<circle cx="458.0" cy="90.6" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="458.0" y="95.6" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<circle cx="890.0" cy="90.6" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="890.0" y="95.6" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<circle cx="458.0" cy="213.8" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="458.0" y="218.8" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<circle cx="890.0" cy="213.8" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="890.0" y="218.8" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<circle cx="41" cy="404" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<text x="62.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Scope = per-snapshot choice; Recall Safe = global veto</text>
+<circle cx="41" cy="433" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<text x="62.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Recall Safe: lead vocal fader and EQ, spare mic,</text>
+<text x="62.0" y="455.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">plug-ins</text>
+<circle cx="491" cy="404" r="11" fill="#ff9f1c"/>
+<text x="491.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<text x="512.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">User Aux Scope: scope only the requested Aux</text>
+<circle cx="491" cy="433" r="11" fill="#ff9f1c"/>
+<text x="491.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<text x="512.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Festival changeover: load a clean Scope Set</text>
+<text x="930.0" y="530.0" font-size="11" fill="#5c636e" text-anchor="end" font-weight="normal">Schematic - not a screenshot</text>
+</svg>

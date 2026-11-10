@@ -51,6 +51,7 @@ body: |
 
   - Limits on the number of commands per macro.
   - Whether every command listed in the Macro Editor works on the SD10 (the manual covers SD and Quantum together).
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -86,6 +87,7 @@ body_vi: |
 
   - Giới hạn số lệnh trong một macro.
   - Mọi lệnh trong Macro Editor có chạy trên SD10 hay không (manual gộp SD và Quantum).
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -119,8 +121,15 @@ media:
   channel: Michael Leckrone
   caption: Third-party tutorial on building macros on a DiGiCo (title and channel verified via oEmbed; not watched)
   caption_vi: Hướng dẫn của bên thứ ba về dựng macro trên DiGiCo (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-macro-editor.png
+  caption: On-desk steps 2-4. Schematic drawn from the manual's description (Issue H, p. 161-165), not a screenshot.
+  caption_vi: Các bước 2–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 161-165), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix
