@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from wing_parser.ui import automix_tables as tables
+from wing_parser.ui import settings_automix
 from wing_parser.ui.automix_controls import OptionsPanel
 from wing_parser.ui.texts import text
 
@@ -63,6 +64,10 @@ class AutomixDialog(QDialog):
         buttons = QHBoxLayout()
         buttons.addWidget(self.propose_btn)
         buttons.addWidget(self.apply_btn)
+        self.live_btn = QPushButton(text("automix.full_auto"))
+        self.live_btn.setVisible(settings_automix.current_mode() == "full_auto")
+        self.live_btn.clicked.connect(self._open_live)
+        buttons.addWidget(self.live_btn)
         buttons.addStretch(1)
         buttons.addWidget(QPushButton(text("settings.close"), clicked=self.reject))
         layout = QVBoxLayout(self)
@@ -72,6 +77,13 @@ class AutomixDialog(QDialog):
         layout.addWidget(self.summary)
         layout.addWidget(self.tabs, 1)
         layout.addWidget(self.detail)
+
+    def _open_live(self) -> None:
+        """Full auto lives in its own non-modal panel (loaded on demand)."""
+        from wing_parser.ui.automix_live import open_live
+
+        self.reject()
+        open_live(self._window)
 
     def _names(self) -> dict:
         names = {}

@@ -158,3 +158,4 @@ class DoctorPage(QWidget):
         """W14: dead while a Revert-all run is going, alive again on Stop."""
         self.level_box.setEnabled(enabled)
         self.arm_button.setEnabled(enabled)
+        self.detail_panel.set_repair_locked(not enabled)

@@ -43,7 +43,7 @@ from wing_parser.ui.worker_registry import register, shutdown_all, wait_all  # n
 TIMEOUTS = {
     "proposal": 120, "guesses": 180, "probe": 30,
     "connect": 5, "walk": 60, "snapshot": 90,
-    "write": 10,
+    "write": 10, "tick": 60,
 }
 
 

@@ -62,6 +62,7 @@ class DetailPanel(QWidget):
         self.evidence_label = _wrapped()
         self.no_repair_label = _wrapped()
 
+        self.repair_locked = False
         self.repair_button = QPushButton("")
         self.repair_button.clicked.connect(self._repair)
 
@@ -107,10 +108,15 @@ class DetailPanel(QWidget):
 
         repair = repairs.load_repairs().get(finding.rule_id)
         self.repair_button.setVisible(repair is not None)
-        self.repair_button.setEnabled(repair is not None)
+        self.repair_button.setEnabled(repair is not None and not self.repair_locked)
         self.repair_button.setText(repair.label if repair else "")
         self.repair_button.setToolTip(repair.rationale.strip() if repair else "")
         self.no_repair_label.setText("" if repair else text("detail.no_repair"))
+
+    def set_repair_locked(self, locked: bool) -> None:
+        """Automix / a Revert-all run holds the wire: Repair stays dead."""
+        self.repair_locked = locked
+        self.repair_button.setEnabled(not locked and not self.repair_button.isHidden())
 
     def _clear(self) -> None:
         for label in (

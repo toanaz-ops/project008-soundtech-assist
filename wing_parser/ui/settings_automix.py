@@ -62,3 +62,6 @@ class AutomixRow(QWidget):
         window = self.window().parent()
         if window is not None and hasattr(window, "_automix_action"):
             sync_menu(window)
+        live = getattr(window, "_automix_live", None)
+        if live is not None:
+            live.mode_changed(self.combo.itemData(index))

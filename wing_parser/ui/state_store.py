@@ -37,8 +37,8 @@ DEFAULTS: dict = {"geometry": None, "page": None, "recent": [], "consoles": [],
                   "automix_mode": "draft"}
 
 #: Automix mode (wave 12, AM-6). A string enum so phase 2 only appends
-#: "full_auto"; until then a stored "full_auto" reads back as the default.
-AUTOMIX_MODES = ("disabled", "draft")
+#: "full_auto" (added in phase 2).
+AUTOMIX_MODES = ("disabled", "draft", "full_auto")
 
 
 def _last_show(raw) -> dict | None:

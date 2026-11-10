@@ -55,6 +55,7 @@ class ImmediateWrite(QObject):
         self._on_sent = on_sent or (lambda _p, _r: None)
         self._on_error = on_error or (lambda _e: None)
         self._runner = CallRunner(self)
+        gate.begin_pending(self)            # until submitted or refused
         self._runner.start(
             "connect", (transport or live_write.REAL).read,
             gate.host(), patch.path,
@@ -66,15 +67,18 @@ class ImmediateWrite(QObject):
         """D-52 #9: a failed or unanswered read refuses, like Delayed --
         nothing is sent, so no new row can carry `desk_before=None` (older
         write-log rows still do; their guards stay)."""
+        self._gate.end_pending(self)
         self._on_error(RuntimeError(text("console.write.preflight_failed")))
 
     def _write(self, desk_before) -> None:
         if desk_before is None:                             # read: no answer
             self._refuse()
             return
-        if not self._gate.ready():                          # GATE 4 (§8.4)
+        if self._gate.held or not self._gate.ready():       # GATE 4 (§8.4)
+            self._gate.end_pending(self)
             self._on_error(GateClosed(text("console.write.gate_closed")))
             return
+        self._gate.end_pending(self)        # the queue's in_flight takes over
         self._desk_before = desk_before
         # W13: copied NOW; `gate.close()` clears both before this settles.
         self._identity = self._gate.arm.identity

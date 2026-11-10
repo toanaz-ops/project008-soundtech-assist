@@ -106,5 +106,5 @@ def install_write_gate(window, page, *, transport=None, timeout=None) -> WriteGa
             changes.ledger.run_started.connect(
                 lambda: doctor.set_controls_enabled(False))
             changes.ledger.run_finished.connect(
-                lambda: doctor.set_controls_enabled(True))
+                lambda: doctor.set_controls_enabled(not gate.held))
     return gate
