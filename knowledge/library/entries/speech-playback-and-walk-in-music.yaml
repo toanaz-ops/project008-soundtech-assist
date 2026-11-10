@@ -68,13 +68,13 @@ body_vi: |
 
   **Ducking là gì.** Harman mô tả ducking là một dạng sidechain compression: một kênh điều khiển, ví dụ một mic, kích một compressor trên kênh khác. Khi tín hiệu điều khiển vượt mức đã đặt, nhạc bị giảm; khi nó rớt xuống lại, nhạc trở về. Rất phổ biến cho event, diễn thuyết và lớp fitness. Bài viết chỉ bàn về cài đặt Threshold và không cho con số nào; phần còn lại là tùy bạn.
 
-  **Giá trị xuất phát (gợi ý, không lấy từ các trang được trích dẫn).** Hạ vừa phải khoảng 6-12 dB là đủ cho hầu hết event; sâu hơn (20 dB trở lên) làm nhạc gần như biến mất. Dùng Attack nhanh (hàng chục mili-giây, để từ đầu tiên không bị che), Hold một phần giây để các quãng nghỉ ngắn không làm nhạc "thở", và Release khoảng 0.5-1.5 s để nhạc trở lại mượt. Đặt Threshold sao cho mic MC kích được duck nhưng tiếng phòng và tiếng ồn xung quanh trên mic đó thì không.
+  **Giá trị xuất phát (gợi ý, không lấy từ các trang được trích dẫn).** Hạ vừa phải khoảng 6-12 dB là đủ cho hầu hết event; sâu hơn (20 dB trở lên) làm nhạc gần như biến mất. Dùng Attack nhanh (hàng chục mili-giây, để từ đầu tiên không bị che), Hold một phần giây để các quãng nghỉ ngắn không làm nhạc "thở", và Release khoảng 0.5-1.5 s để nhạc trở lại mượt. Đặt Threshold sao cho mic MC kích được duck nhưng room noise và tiếng ồn xung quanh trên mic đó thì không.
 
   **Trên WING.** Kiểm tra phần dynamics của music bus hoặc channel xem có key/sidechain source và chế độ expander hoặc ducker không (xác nhận tên chế độ chính xác trong manual WING), đặt key là mic MC, rồi đặt depth/Ratio, Attack, Hold và Release. Nếu key source của mixer không dùng được, ride fader nhạc trên VCA bằng tay: đơn giản và thường tốt hơn automation với một MC hay giật mình.
 
   **Nhạc walk-in và giờ nghỉ.** Đặt ở mức cho phép mọi người nói chuyện (mức nền bạn thỏa thuận với khách), và giữ nó tránh xa vùng sân khấu để không bị feedback vào mic MC. Khi MC bắt đầu, hoặc duck tự động hoặc fade tay xuống thấp hơn khoảng 6-10 dB, tuyệt đối không mute đột ngột. Khi bài phát biểu kết thúc, đưa nhạc lên từ từ.
 
-  **Lỗi thường gặp:** ducker bị kích bởi mic có nhiều tiếng phòng (nhạc cứ pump), duck quá sâu làm nhạc cảm giác như một cái gate, Attack quá chậm (từ đầu tiên bị che), và dùng cùng một mức cho nhạc walk-in và nhạc nền (underscore).
+  **Lỗi thường gặp:** ducker bị kích bởi mic có nhiều room noise (nhạc cứ pump), duck quá sâu làm nhạc cảm giác như một cái gate, Attack quá chậm (từ đầu tiên bị che), và dùng cùng một mức cho nhạc walk-in và nhạc nền (underscore).
 rule:
   applies_to:
     source_type:
@@ -129,6 +129,6 @@ media:
   caption_vi: Đường tín hiệu từ cue tới loa trong QLab (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:47+07:00'
 updated_by: agent:translator-vi

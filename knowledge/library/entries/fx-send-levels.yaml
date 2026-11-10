@@ -56,7 +56,7 @@ body: |
 body_vi: |
   ## Ai có effect
 
-  Hướng dẫn trong các bài về reverb khá nhất quán về mô hình. Lead vocal và snare nhận nhiều reverb nhất, tom ít hơn một chút, còn kick, overhead và bass không có hoặc rất ít, vì low end của chúng biến thành bùn trong phần đuôi. Guitar điện hợp với một chút cả reverb lẫn delay; guitar acoustic dùng một ít reverb; keys và pad hiếm khi cần. MC hay người phát biểu nên để khô. Send lấy post-fader để effect đi theo fader, và các return chạy 100 percent wet.
+  Hướng dẫn trong các bài về reverb khá nhất quán về mô hình. Lead vocal và snare nhận nhiều reverb nhất, tom ít hơn một chút, còn kick, overhead và bass không có hoặc rất ít, vì low end của chúng biến thành mud (đục, dày) trong phần đuôi. Guitar điện hợp với một chút cả reverb lẫn delay; guitar acoustic dùng một ít reverb; keys và pad hiếm khi cần. MC hay người phát biểu nên để dry (không effect). Send lấy post-fader để effect đi theo fader, và các return chạy 100 percent wet.
 
   Một bài của iZotope đưa ra một quy tắc ngón tay cái hữu ích: khi không chắc, hãy giảm reverb 10 đến 25 percent, vì dễ nhận ra reverb thiếu ở những ô nhịp nhẹ hơn là nhận ra hơi thừa ở những đoạn to.
 
@@ -78,7 +78,7 @@ body_vi: |
 
   ## Giới hạn
 
-  Đây là các offset cho một stereo return thông thường ở mức vừa phải. Nếu return fader nằm xa 0 dB, hãy dịch các send theo chiều ngược lại. Thứ tự tương đối (vocal và snare ướt nhất, kick và bass khô) là phần đáng tin; con số tuyệt đối thì không.
+  Đây là các offset cho một stereo return thông thường ở mức vừa phải. Nếu return fader nằm xa 0 dB, hãy dịch các send theo chiều ngược lại. Thứ tự tương đối (vocal và snare wet nhất, kick và bass dry) là phần đáng tin; con số tuyệt đối thì không.
 rule:
   kind: send_level
   applies_to:
@@ -208,9 +208,9 @@ media:
   title: Stop Dry Vocals in Your In-Ears! Reverb Routing on Behringer WING Explained
   channel: Technically Church
   caption: Reverb routing so in-ear mixes are not dry on the Behringer WING (title and channel confirmed on YouTube; not watched in full)
-  caption_vi: Routing reverb để in-ear mix không bị khô trên Behringer WING (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+  caption_vi: Routing reverb để in-ear mix không bị dry trên Behringer WING (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:14+07:00'
 updated_by: agent:translator-vi

@@ -67,9 +67,9 @@ body_vi: |
   ## EQ khởi đầu
 
   - High-pass đủ mạnh để dọn low end: khoảng 250 Hz trong một hướng dẫn live, khoảng 112 Hz trong một hướng dẫn khác (slope nhẹ), và iZotope cảnh báo bất cứ thứ gì dưới 150 Hz là xung đột low end với kick và bass.
-  - 300-600 Hz: cut nhỏ để giảm bleed của snare và tom.
-  - Quanh 4 kHz: cut nhỏ nếu cymbal nghe gắt; iZotope xếp độ chói ở đây và ở hi-hat trong khoảng 3-7 kHz, và gợi ý xử lý panning, level, polarity hoặc sidechain compression trước khi EQ.
-  - 8-12 kHz là air; trim 8-10 kHz nếu crash nghe loe.
+  - 300-600 Hz: cut nhỏ để giảm bleed (tiếng rò từ mic khác) của snare và tom.
+  - Quanh 4 kHz: cut nhỏ nếu cymbal nghe abrasive (gắt, chói tai); iZotope xếp harshness ở đây và ở hi-hat trong khoảng 3-7 kHz, và gợi ý xử lý panning, level, polarity hoặc sidechain compression trước khi EQ.
+  - 8-12 kHz là air; trim 8-10 kHz nếu crash nghe splashy.
 
   ## Dynamics
 
@@ -78,7 +78,7 @@ body_vi: |
   ## Vấn đề thường gặp
 
   - **Overhead làm snare bị dẹt:** polarity so với mic snare sai, hoặc cặp mic không cách đều snare.
-  - **Cymbal quá sáng trong PA:** kéo fader xuống, đừng chỉ dùng EQ.
+  - **Cymbal quá bright trong PA:** kéo fader xuống, đừng chỉ dùng EQ.
   - **Có vocal lọt vào overhead:** chuyển sang close mic trên stage to.
 
   ## Mẹo live và WING
@@ -166,6 +166,6 @@ media:
   caption_vi: So sánh các kỹ thuật đặt mic overhead (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:00+07:00'
 updated_by: agent:translator-vi

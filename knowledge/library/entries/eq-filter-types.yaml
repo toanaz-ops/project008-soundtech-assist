@@ -36,7 +36,7 @@ body_vi: |
   Mỗi band EQ trên console là một trong vài dạng. Hiểu mỗi dạng tác động thế nào lên các tần số lân cận quan trọng hơn nhiều so với nhớ số.
 
   ## High-pass và low-pass (bộ lọc cắt)
-  High-pass filter (HPF, "low cut") bỏ mọi thứ dưới điểm cắt (Corner); low-pass (LPF, "high cut") bỏ mọi thứ trên Corner. **Slope** cho biết tín hiệu biến mất nhanh thế nào sau Corner: filter bậc một dốc 6 dB mỗi octave, mỗi bậc thêm cộng thêm 6 dB/oct, nên 12, 18 và 24 dB/oct là phổ biến. Slope thoải nghe tự nhiên nhưng còn để lại rumble tần thấp; Slope dốc làm sạch hơn nhưng đổi tiếng gần Corner và có thể ringing hoặc nghe "chặt". Trong diagram đầu, cùng một Corner 100 Hz được vẽ ở bốn Slope, để bạn thấy còn lại bao nhiêu ở dưới một octave.
+  High-pass filter (HPF, "low cut") bỏ mọi thứ dưới điểm cắt (Corner); low-pass (LPF, "high cut") bỏ mọi thứ trên Corner. **Slope** cho biết tín hiệu biến mất nhanh thế nào sau Corner: filter bậc một dốc 6 dB mỗi octave, mỗi bậc thêm cộng thêm 6 dB/oct, nên 12, 18 và 24 dB/oct là phổ biến. Slope thoải nghe tự nhiên nhưng còn để lại rumble tần thấp; Slope dốc làm sạch hơn nhưng đổi tiếng gần Corner và có thể ringing hoặc nghe "tight" (chặt). Trong diagram đầu, cùng một Corner 100 Hz được vẽ ở bốn Slope, để bạn thấy còn lại bao nhiêu ở dưới một octave.
 
   ## Shelf
   Shelf nâng hoặc hạ mọi thứ vượt qua Corner một lượng như nhau, nên đáp tuyến phẳng ra thay vì tiếp tục leo. Vì vậy Shelf là cách nhẹ nhàng để thêm air hoặc bớt weight cho một nguồn, và Shelf boost ít gây quá tải hơn Bell boost.
@@ -47,7 +47,7 @@ body_vi: |
   ## Rule of thumb thực tế (điểm khởi đầu, không phải luật)
   - Dùng Q hẹp cho cut loại bỏ một lỗi cụ thể; dùng Q rộng cho boost tạo hình tiếng. Boost hẹp nghe thiếu tự nhiên và dễ ring.
   - Ưu tiên boost vài dB; cut hẹp có thể sâu hơn nhiều.
-  - Nếu channel tối vì nội dung vốn không có, boost chỉ thêm noise chứ không thêm chi tiết.
+  - Nếu channel dull (tối) vì nội dung vốn không có, boost chỉ thêm noise chứ không thêm chi tiết.
   - Check bypass thường xuyên; so sánh ở cùng loudness.
 
   ## Trên WING
@@ -119,6 +119,6 @@ media:
   caption_vi: So sánh các filter cut, Shelf, Bell, Notch và tilt (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:44+07:00'
 updated_by: agent:translator-vi

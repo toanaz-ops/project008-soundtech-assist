@@ -44,3 +44,5 @@ publishers:
   - {name: "SoundGirls", why: "professional live-sound community with engineer-written articles"}
   - {name: "ProSoundWeb", aliases: ["Live Sound International"], why: "live sound trade publication"}
   - {name: "Mix", aliases: ["Mix Magazine", "Mixonline"], why: "professional audio trade magazine"}
+  - {name: "DiGiCo", aliases: ["DiGiCo UK", "DiGiCo UK Ltd"], why: "manufacturer documentation for SD and Quantum consoles"}
+  - {name: "Avid", aliases: ["Avid Technology", "Avid Technology, Inc."], why: "manufacturer documentation for VENUE S6L consoles"}

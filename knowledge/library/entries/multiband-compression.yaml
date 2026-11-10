@@ -57,11 +57,11 @@ body_vi: |
 
   ## Khi nào nó thật sự giúp
 
-  - **Chộp cổ các gai tần số cao** như tiếng pick trên acoustic guitar hoặc tiếng dùi chạm cymbal: dùng band trên cùng với Attack nhanh, Release nhanh, và Ratio thường trên 5:1.
-  - **Làm đều độ gắt trên vocal**, khi các nguyên âm sáng nhảy ra: Ratio nhẹ (khoảng 2:1) và khoảng 6 dB Gain Reduction ở band trên, kèm Makeup Gain.
-  - **Kiểm soát âm xuýt (De-essing)** khi bạn không có de-esser chuyên dụng: một band hẹp quanh vùng sibilance, ví dụ gần 8 kHz (xem entry de-esser).
-  - **Hiệu ứng tiệm cận (Proximity Effect) hoặc dồn tiếng của phòng**: một band thấp, dưới khoảng 300 Hz trên vocal mic gần, dưới khoảng 100 Hz trên upright bass hoặc cộng hưởng bass-amp, hoặc các cú thump sub trên DI bass.
-  - **Một vùng gắt** trên vocal hoặc electric guitar, nơi một EQ cut sẽ làm tối cả tiếng.
+  - **Chộp cổ các spike tần số cao** như tiếng pick trên acoustic guitar hoặc tiếng dùi chạm cymbal: dùng band trên cùng với Attack nhanh, Release nhanh, và Ratio thường trên 5:1.
+  - **Làm đều harshness (độ gắt) trên vocal**, khi các nguyên âm bright nhảy ra: Ratio nhẹ (khoảng 2:1) và khoảng 6 dB Gain Reduction ở band trên, kèm Makeup Gain.
+  - **Kiểm soát De-essing (xử lý âm xuýt)** khi bạn không có de-esser chuyên dụng: một band hẹp quanh vùng sibilance, ví dụ gần 8 kHz (xem entry de-esser).
+  - **Proximity Effect (mic càng gần, bass càng phình) hoặc dồn tiếng của phòng**: một band thấp, dưới khoảng 300 Hz trên vocal mic gần, dưới khoảng 100 Hz trên upright bass hoặc cộng hưởng bass-amp, hoặc các cú thump sub trên DI bass.
+  - **Một vùng harsh** trên vocal hoặc electric guitar, nơi một EQ cut sẽ làm tối cả tiếng.
 
   ## Thao tác thực chiến
 
@@ -79,13 +79,13 @@ body_vi: |
 
   ## Trên mix bus và PA
 
-  Trên main bus, multiband compressor có thể kiểm soát low-end ù do một căn phòng cụ thể, nhưng nó đổi màu âm của cả PA, nên chỉ dùng khi EQ cố định không sửa được, và giữ lượng nhỏ. Tránh dùng nó làm công cụ tăng độ lớn trong hệ thống live: nó sẽ pump theo nhạc.
+  Trên main bus, multiband compressor có thể kiểm soát low end boomy do một căn phòng cụ thể, nhưng nó đổi màu âm của cả PA, nên chỉ dùng khi EQ cố định không sửa được, và giữ lượng nhỏ. Tránh dùng nó làm công cụ tăng độ lớn trong hệ thống live: nó sẽ pump theo nhạc.
 
   ## Lỗi thường gặp
 
   - Với tay lấy nó đầu tiên. Dynamic EQ hoặc EQ thường có thể phù hợp hơn.
   - Thiết lập set-and-forget cho sibilance; Threshold có thể cần được rê.
-  - Boost mid để bù độ gắt; làm vậy các tần số khác cũng nghe gắt theo.
+  - Boost mid để bù harshness; làm vậy các tần số khác cũng nghe harsh theo.
 rule:
   applies_to:
     source_type:
@@ -129,6 +129,6 @@ media:
   caption_vi: Giới thiệu multiband compression của FabFilter (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:07:43+07:00'
 updated_by: agent:translator-vi

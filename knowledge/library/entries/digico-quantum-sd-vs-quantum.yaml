@@ -1,0 +1,120 @@
+id: digico-quantum-sd-vs-quantum
+title: 'Quantum vs SD: what is Quantum-only and what is shared'
+title_vi: 'Quantum so với SD: cái gì chỉ có trên Quantum, cái gì dùng chung'
+topic: digico-quantum
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-quantum
+  - comparison
+  - snapshots
+  - macros
+  event:
+  - touring
+  - theatre
+summary: 'Quantum-only per the DiGiCo reference manual: Mustard, Nodal Processing, True Solo, Spice Rack, five insert positions (plus Mix Minus in the later Issue H manual). Shared with SD: the core channel strip, DiGiTube, snapshots, macros, Aux Nodes panel. The 338 adds an optional Theatre software.'
+summary_vi: 'Chỉ có trên Quantum theo reference manual DiGiCo: Mustard, Nodal Processing, True Solo, Spice Rack, năm vị trí insert (cộng Mix Minus trong manual Issue H mới hơn). Dùng chung với SD: channel strip lõi, DiGiTube, Snapshot, Macro, panel Aux Nodes. Bản 338 còn có Theatre software tùy chọn.'
+body: |
+  ## Quantum-only (marked in the manual, Issue E V1528+)
+
+  | Feature | Manual locator (PDF page) | Entry |
+  |---|---|---|
+  | Mustard channels | 51-55 | `digico-quantum-mustard-channel` |
+  | Nodal Processing | 35-37 | `digico-quantum-nodal-processing` |
+  | True Solo | 38 | `digico-quantum-true-solo` |
+  | Insert positions (5) | 24, 39 | `digico-quantum-insert-positions` |
+  | Spice Rack | 122-125 | `digico-quantum-spice-rack` |
+  | Mix Minus (Issue H only, section 1.4.15; absent from Issue E) | Issue H printed p. 41 | `digico-sd-vs-quantum` |
+
+  ## Shared with SD
+
+  - Channel strip: 4-band EQ or Dynamic EQ, two dynamics sections (compressor, multiband, de-esser, gate, ducker), EQ/dynamics order, DiGiTube, delay, filters (manual p. 12 channel strip; datasheet).
+  - Aux Nodes panel and KLANG nodes (not marked Quantum only).
+  - Snapshots and macros: same menus. The Quantum additions sit in the scopes: the Mustard input position is in the Input/Trim scope (p. 98), each nodal processor has its own scope entry (p. 36), aux-node safes include nodal processing and node solo (p. 33).
+  - The datasheet also lists macros (triggered from fader movement, GPI, MIDI, keyboard), snapshots and Virtual Soundcheck for the Q338.
+
+  ## Quantum 338 specifics
+
+  Pulse (paid) raises counts; the optional Theatre software lists Auto Update, Aliases, Players, advanced CG programming and matrix nodal delays, with a 36x36 matrix (datasheet). The Theatre features guide was not read.
+
+  ## Licences and versions
+
+  Only Pulse is documented as a paid upgrade (DiGiCo announcement). The Issue E manual (V1528+) states no licence per feature, but the later Issue H manual (V20+) describes Theatre and Broadcast modes as purchasable upgrades via System > Enable Extensions (see `digico-sd-vs-quantum`); Theatre, Optocore and SoundGrid are options in the datasheet. Manual version read: Issue E, February 2022, V1528+.
+
+  ## Practical use (common practice)
+
+  Taking an SD-style session onto Quantum keeps the SD strip; Mustard, Nodal, Spice Rack and True Solo are extras you can add. In the other direction expect those extras to be unavailable.
+
+  ## What is NOT verified
+
+  - Moving files from Quantum to SD: what happens to Mustard/Nodal data was not found in the opened pages.
+  - The Theatre features guide (not opened).
+  - Other differences (surface, I/O) between a named SD model and the Q338.
+body_vi: |
+  ## Chỉ có trên Quantum (được ghi trong manual, Issue E V1528+)
+
+  | Tính năng | Vị trí trong manual (trang PDF) | Mục |
+  |---|---|---|
+  | Mustard channels | 51-55 | `digico-quantum-mustard-channel` |
+  | Nodal Processing | 35-37 | `digico-quantum-nodal-processing` |
+  | True Solo | 38 | `digico-quantum-true-solo` |
+  | Vị trí insert (5) | 24, 39 | `digico-quantum-insert-positions` |
+  | Spice Rack | 122-125 | `digico-quantum-spice-rack` |
+  | Mix Minus (chỉ có trong Issue H, mục 1.4.15; Issue E không có) | Issue H, trang in 41 | `digico-sd-vs-quantum` |
+
+  ## Dùng chung với SD
+
+  - Channel strip: EQ 4 band hoặc Dynamic EQ, hai khối dynamics (compressor, multiband, de-esser, gate, ducker), thứ tự EQ/dynamics, DiGiTube, delay, filter (manual tr. 12 phần channel strip; datasheet).
+  - Panel Aux Nodes và KLANG nodes (không ghi Quantum only).
+  - Snapshot và Macro: cùng menu. Phần Quantum thêm nằm trong scope: vị trí input Mustard thuộc scope Input/Trim (tr. 98), mỗi nodal processor có mục scope riêng (tr. 36), safe của aux node bao gồm nodal processing và node solo (tr. 33).
+  - Datasheet cũng liệt kê macro (kích bằng chuyển động fader, GPI, MIDI, bàn phím), Snapshot và Virtual Soundcheck cho Q338.
+
+  ## Đặc thù của Quantum 338
+
+  Pulse (trả phí) nâng số lượng; Theatre software tùy chọn gồm Auto Update, Aliases, Players, công cụ lập trình CG nâng cao và matrix nodal delays, matrix 36x36 (datasheet). Theatre features guide chưa đọc.
+
+  ## Licence và phiên bản
+
+  Chỉ Pulse được ghi rõ là bản nâng cấp trả phí (thông báo của DiGiCo). Manual Issue E (V1528+) không nêu licence theo từng tính năng, nhưng manual Issue H mới hơn (V20+) mô tả Theatre và Broadcast mode là bản nâng cấp mua thêm qua System > Enable Extensions (xem `digico-sd-vs-quantum`); Theatre, Optocore và SoundGrid là option trong datasheet. Phiên bản manual đã đọc: Issue E, tháng 2/2022, V1528+.
+
+  ## Dùng thực tế (kinh nghiệm thông thường)
+
+  Đem session kiểu SD lên Quantum thì strip SD vẫn còn; Mustard, Nodal, Spice Rack và True Solo là phần thêm bạn có thể bổ sung. Chiều ngược lại, hãy coi như các phần thêm đó không có.
+
+  ## Điều CHƯA được xác minh
+
+  - Chuyển file từ Quantum sang SD: không thấy trong các trang đã mở chuyện gì xảy ra với dữ liệu Mustard/Nodal.
+  - Theatre features guide (chưa mở).
+  - Các khác biệt khác (surface, I/O) giữa một model SD cụ thể và Q338.
+sources:
+- title: SD & Quantum Software Reference Manual, Issue E, February 2022, V1528+
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2022/03/SD-Quantum-Software-Reference-Issue-E-V1528.pdf
+  accessed: '2026-11-10'
+  locator: PDF pp. 5, 12, 24, 33, 35-39, 51-55, 98, 122-125
+- title: Quantum 338 / Pulse datasheet
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2026/08/DiGiCo-Quantum-338-Pulse-Data-Sheet.pdf
+  accessed: '2026-11-10'
+  locator: pages 1-4 (features, options, Theatre software)
+- title: DiGiCo announces Pulse software updates for Quantum338, Quantum338T and Quantum225
+  publisher: DiGiCo
+  kind: article
+  url: https://digico.biz/digico-announces-pulse-software-updates-for-quantum338-quantum338t-and-quantum225-consoles
+  accessed: '2026-11-10'
+  locator: whole page (read through a page summary tool)
+media:
+- kind: video
+  url: https://www.youtube.com/watch?v=BN3wlha2e_g
+  title: DiGiCo Quantum 338 Sales Overview
+  channel: DiGiCo Consoles
+  caption: Official overview of what Quantum adds (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Video tổng quan chính thức về phần Quantum bổ sung (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

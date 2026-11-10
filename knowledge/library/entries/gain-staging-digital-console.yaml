@@ -74,11 +74,11 @@ body_vi: |
 
   ## Vì sao trần digital là "cứng"
 
-  Đẩy mixer analogue quá mức nominal thường chỉ ăn vào Headroom và tiếng bẩn dần. Vượt 0 dBFS ở converter thì khác: nó clipping đột ngột và harmonic rất gắt. Vì vậy trên desk digital bạn phải chủ động chừa dư địa, vì một cú snare hay một tiếng hét của ca sĩ có thể cao hơn mức trung bình 15-20 dB.
+  Đẩy mixer analogue quá mức nominal thường chỉ ăn vào Headroom và tiếng bẩn dần. Vượt 0 dBFS ở converter thì khác: nó clipping đột ngột và harmonic rất harsh (chói, gắt). Vì vậy trên desk digital bạn phải chủ động chừa dư địa, vì một cú snare hay một tiếng hét của ca sĩ có thể cao hơn mức trung bình 15-20 dB.
 
   ## Trim trước, fader sau
 
-  **Trim / preamp gain** quyết định tín hiệu vào converter nóng cỡ nào và mọi thứ phía sau. **Channel fader** chỉ quyết định channel đó to cỡ nào trong mix. Đừng dùng fader để chữa cho gain đặt sai: channel quá nhỏ ở converter thì sàn nhiễu (Noise floor) tệ hơn, còn channel quá nóng có thể đã méo trước khi fader giúp được gì.
+  **Trim / preamp gain** quyết định tín hiệu vào converter nóng cỡ nào và mọi thứ phía sau. **Channel fader** chỉ quyết định channel đó to cỡ nào trong mix. Đừng dùng fader để chữa cho gain đặt sai: channel quá nhỏ ở converter thì noise floor (sàn nhiễu) tệ hơn, còn channel quá nóng có thể đã méo trước khi fader giúp được gì.
 
   **Thao tác thực chiến:**
 
@@ -145,6 +145,6 @@ media:
   caption_vi: Đặt input level cho live sound (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 3
-updated_at: '2026-11-10T08:46:41+07:00'
+revision: 4
+updated_at: '2026-11-10T14:09:24+07:00'
 updated_by: agent:translator-vi

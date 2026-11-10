@@ -22,7 +22,7 @@ summary: |
   Backing vocals should support the lead rather than compete with it. Group them, thin their low
   end, control their level with a shared compressor, and be careful about running many open
   singer mics, since every extra open mic costs gain before feedback.
-summary_vi: Backing vocal phải nâng đỡ lead chứ không cạnh tranh với lead. Gom chúng thành group, làm mỏng low end, kiểm soát level bằng một compressor chung, và cẩn thận khi chạy nhiều mic ca sĩ mở cùng lúc, vì mỗi mic mở thêm là mất bớt gain trước ngưỡng hú rít (feedback).
+summary_vi: Backing vocal phải nâng đỡ lead chứ không cạnh tranh với lead. Gom chúng thành group, thin low end, kiểm soát level bằng một compressor chung, và cẩn thận khi chạy nhiều mic ca sĩ mở cùng lúc, vì mỗi mic mở thêm là mất bớt gain trước ngưỡng feedback (hú rít).
 body: |
   **Mix for the lead first.** Set vocal levels while the singers perform at full volume, with the
   lead on top of the band. Only then bring the backing singers in behind. Check the balance
@@ -64,7 +64,7 @@ body_vi: |
 
   **Gom nhóm.** Đưa các mic backing vào một group hoặc bus. Một fader và một compressor trên group cho bạn cách nhanh để ride cả bè cùng lúc, và compressor chung dính các giọng rời thành một section. Giữ channel riêng của từng ca sĩ cho gain, HPF và EQ thô.
 
-  **Làm mỏng low end.** Giọng chồng lên nhau ở vùng low-mid. Một backing singer nam dưới lead nữ nghe dày hơn cả lead, nên hướng dẫn live-vocals của Carvin gợi ý giảm low của backing để hòa vào tốt hơn. Nâng HPF trên các channel backing cao hơn HPF của lead (khoảng xuất phát điển hình 100-150 Hz, chỉnh theo tai) và cut trước khi boost: một cú boost cao lạc lõng là nguyên nhân thường gặp nhất của feedback trên mic vocal.
+  **Thin low end (làm mỏng phần low).** Giọng chồng lên nhau ở vùng low-mid. Một backing singer nam dưới lead nữ nghe dày hơn cả lead, nên hướng dẫn live-vocals của Carvin gợi ý giảm low của backing để hòa vào tốt hơn. Nâng HPF trên các channel backing cao hơn HPF của lead (khoảng xuất phát điển hình 100-150 Hz, chỉnh theo tai) và cut trước khi boost: một cú boost cao lạc lõng là nguyên nhân thường gặp nhất của feedback trên mic vocal.
 
   **Dynamics.** Backing singer thường hát nhẹ ở verse và đẩy mạnh ở chorus. Một compressor nhẹ trên group (khoảng 2:1 đến 3:1) làm đều chuyện đó. Nếu channel không có compressor, bản thân ca sĩ có thể tự quản level bằng cách làm việc với mic: gần hơn cho câu nhẹ, lùi xa cho câu to, và bè tự nhiên nằm sau lead.
 
@@ -72,7 +72,7 @@ body_vi: |
 
   **Effects.** Backing vocal thường ăn reverb nhiều hơn lead, để đẩy chúng lùi ra sau. Một plate hoặc room ngắn, chặt giữ cho lời đọc được; đuôi dài làm nhòe hòa âm. Ride cả effect return chứ không chỉ fader.
 
-  **Lỗi thường gặp:** dùng cùng HPF với lead (bè bị đục), không có group bus, quên rằng nhiều mic mở hơn nghĩa là ít gain hơn trước feedback, và dùng speech automixer cho choir.
+  **Lỗi thường gặp:** dùng cùng HPF với lead (bè bị muddy), không có group bus, quên rằng nhiều mic mở hơn nghĩa là ít gain hơn trước feedback, và dùng speech automixer cho choir.
 rule:
   applies_to:
     source_type:
@@ -124,6 +124,6 @@ media:
   caption_vi: So sánh mic cho choir trong bối cảnh live (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:04+07:00'
 updated_by: agent:translator-vi

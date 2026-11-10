@@ -20,7 +20,7 @@ tags:
   - awards
   - conference
 summary: At a corporate event the message is the product. Prioritise intelligible speech, pick and place mics for feedback margin, and keep music beds from masking the voice.
-summary_vi: Ở sự kiện doanh nghiệp, thông điệp chính là sản phẩm. Ưu tiên độ rõ lời, chọn và đặt mic sao cho còn đủ biên chống hú rít (Feedback), và đừng để nhạc nền che giọng.
+summary_vi: Ở sự kiện doanh nghiệp, thông điệp chính là sản phẩm. Ưu tiên intelligibility (độ rõ lời), chọn và đặt mic sao cho còn đủ biên chống feedback (hú rít), và đừng để nhạc nền che giọng.
 body: |
   ## Balance
 
@@ -53,7 +53,7 @@ body: |
 body_vi: |
   ## Cân bằng
 
-  Speech đứng đầu, trước nhạc, video và effects. Phụ âm mang nghĩa, và phân tích của DPA đặt chúng chủ yếu trên 500 Hz, tập trung quanh 2 đến 4 kHz, với 1 đến 4 kHz có tầm quan trọng cao. Loại bỏ mọi thứ dưới 500 Hz chỉ mất khoảng 5% độ rõ lời, nên hãy high-pass các channel speech khá dứt khoát và dồn công sức vào mid và high.
+  Speech đứng đầu, trước nhạc, video và effects. Phụ âm mang nghĩa, và phân tích của DPA đặt chúng chủ yếu trên 500 Hz, tập trung quanh 2 đến 4 kHz, với 1 đến 4 kHz có tầm quan trọng cao. Loại bỏ mọi thứ dưới 500 Hz chỉ mất khoảng 5% intelligibility (độ rõ lời), nên hãy high-pass các channel speech khá dứt khoát và dồn công sức vào mid và high.
 
   ## Mic và feedback
 
@@ -61,7 +61,7 @@ body_vi: |
 
   ## Nhạc nền và playback
 
-  DPA coi nhạc nền dưới lời dẫn là nhiễu và nói cắt parametric 5 đến 10 dB trong khoảng 1 đến 4 kHz của nhạc sẽ cải thiện độ rõ lời; bài đó nhắm tới lời dẫn, nhưng nguyên tắc áp dụng được cho presenter nói trên nhạc. Cách làm thực tế: khoét chỗ cho giọng trong nhạc, đừng chỉ kéo nhạc xuống. Nhạc vào và nhạc ra có thể to và đầy hơn; kéo về mức bed trước khi người nói bắt đầu.
+  DPA coi nhạc nền dưới lời dẫn là nhiễu và nói cắt parametric 5 đến 10 dB trong khoảng 1 đến 4 kHz của nhạc sẽ cải thiện intelligibility; bài đó nhắm tới lời dẫn, nhưng nguyên tắc áp dụng được cho presenter nói trên nhạc. Cách làm thực tế: khoét chỗ cho giọng trong nhạc, đừng chỉ kéo nhạc xuống. Nhạc vào và nhạc ra có thể to và đầy hơn; kéo về mức bed trước khi người nói bắt đầu.
 
   ## Awards show
 
@@ -73,7 +73,7 @@ body_vi: |
 
   ## Lỗi thường gặp
 
-  - Boost low trên lav cho "ấm", làm che mất phụ âm.
+  - Boost low trên lav cho warmth (độ ấm), làm che mất phụ âm.
   - Để nhạc nền full-range nằm dưới speech.
   - Nâng lav trong phòng ồn thay vì chuyển sang headset.
   - Để mic mở khi không ai nói ("mic biến thành máy hút rác").
@@ -130,6 +130,6 @@ media:
   caption_vi: Hướng dẫn live sound về EQ cho mic MC (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:40+07:00'
 updated_by: agent:translator-vi

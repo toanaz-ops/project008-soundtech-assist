@@ -1,0 +1,105 @@
+id: avid-s6l-system-architecture
+title: 'S6L system architecture: control surface, E6L engine, Stage racks, AVB'
+title_vi: 'Kiến trúc hệ thống S6L: control surface, E6L engine, Stage rack, AVB'
+topic: avid-s6l
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-avid-s6l
+  - system-architecture
+  - avb
+  event:
+  - festival
+  - touring
+  - live-sound
+summary: 'An S6L system is three kinds of box on one Ethernet AVB network: a control surface (S6L-48D/32D/24D/24C/16C), an E6L engine that does all the DSP, and Stage I/O racks. The same VENUE software runs across Avid''s live family, so Show files travel between systems.'
+summary_vi: 'Hệ S6L gồm ba loại thiết bị nối với nhau trên mạng Ethernet AVB: control surface (S6L-48D/32D/24D/24C/16C), E6L engine lo toàn bộ DSP, và các Stage I/O rack. Cùng một phần mềm VENUE chạy trên cả dòng live của Avid nên Show file mang qua lại giữa các hệ được.'
+body: |
+  ## What the manual says (verified, System Guide 7.2 unless noted)
+
+  **Three building blocks.** The VENUE | S6L system is the control surface, the E6L engine, up to six Stage I/O units (Stage 64, Stage 48, Stage 32 or Stage 16) and up to two Local 16 units, all joined by Ethernet AVB. The engine is the processing brain; the surface is only the control and mix-position I/O.
+
+  **Control surfaces.** Five models: S6L-48D, 32D, 24D, 24C and 16C, with 48 / 32 / 24 / 24 / 16 channel strips (plus two assignable faders on the Master Live Module). Every Channel Knob Module (CKM) has 32 encoders with displays. The D models have a Master Touch Screen plus Channel Touch Modules (5, 3 and 2 on the 48D, 32D and 24D); the 24C has the Master Touch Screen only and the 16C has no integrated touch screen, so it relies on the external screen. Each surface has two system-network AVB connections, A and B (etherCON copper or SFP fibre, one medium per port), plus two further etherCON AVB ports, C and D, for Pro Tools (System Guide 7.2, PDF p. 58).
+
+  **Engine (E6L-192 / 144 / 112, 96 kHz).** Input channels 192 / 144 / 112; mix buses 96 / 64 / 48 plus L-R and C/Mono; matrixes 24x24 / 16x16 / 16x16; 48 VCAs; 400 plug-in rack slots; one HDX-192 DSP card, expandable to four (E6L-192) or two (E6L-144, E6L-112). I/O sharing between systems needs two AVB-192 cards. Per-channel processing on inputs: HPF, LPF, 4-band PEQ, expander/gate, compressor/limiter, delay, 4 plug-in inserts and a hardware insert; outputs get a 7-band PEQ, compressor/limiter, delay, 4 plug-in inserts and hardware inserts, with 31-band graphic EQs on buses.
+
+  **Stage racks.** Stage 64: up to 64 in / 32 out, 12 card slots, 10U. Stage 48: 48 analog in / 24 out, 8U; needs VENUE 7.0 or later and two AVB-192 cards. Stage 32: 32 channels, 5U, 4 card slots, up to four units. Stage 16: 16 in / 8 out plus 4 AES out, 4U, up to four units, copper only. Stated cable limits: copper 100 m, fibre 500 m (Stage 32 also lists 10,000 m on single-mode fibre). Stage 64, 48 and 32 also have MADI outputs for a digital split of their inputs.
+
+  **One software family.** The manual says VENUE software is shared across Avid's live systems, giving Show file portability. A free Standalone version lets you build routing, channel settings, snapshots and events offline and move them by USB (Handbook 8.0, p.7).
+
+  **Newer hardware (Handbook 8.0, edition 01/25).** The handbook lists a third-generation E6LX-256 engine: 256 input channels, mix buses 192 + 64 matrixes + L-R and C/Mono, up to four HDX-192 cards. The System Guide 7.2 predates it, so check which engine your rental house owns.
+
+  ## Why a live engineer cares
+
+  - The engine is a separate 5U rack, so the surface can sit at FOH while the DSP lives in a rack case. Whether processing survives a dead surface is not stated in the manual; do not assume it, test it.
+  - Cabling is Ethernet: copper to 100 m or fibre to 500 m per hop, with ports A and B on the surface for the system network, two AVB-192 network cards of two ports each in the E6L (early engines had one card; PDF p. 61), and AVB ports on each Stage rack (count per the rack spec).
+  - Know your capacity before the rider arrives: 192 inputs on an E6L-192, but only as many mic preamps as the Stage cards you actually hired.
+
+  ## What is NOT verified
+
+  - **"Universal Slot."** The term does not occur anywhere in the System Guide 7.2 text; do not use it for S6L.
+  - **Weights, power draw, AVB ring versus star wiring details.** Not read here beyond the capacity tables.
+  - **Stage 48 count.** The Stage 48 paragraph of the System Guide repeats "three Stage 64 racks" (looks like copy-paste); Handbook 8.0 says up to 3x Stage 48. Chosen: the handbook.
+  - **Comparison with WING.** WING keeps its processing in the console and uses a different I/O network; that comparison comes from general knowledge, not from these documents.
+body_vi: |
+  ## Manual nói gì (đã xác minh, System Guide 7.2 trừ khi ghi khác)
+
+  **Ba khối chính.** Hệ VENUE | S6L gồm control surface, E6L engine, tối đa sáu Stage I/O (Stage 64, Stage 48, Stage 32 hoặc Stage 16) và tối đa hai Local 16, tất cả nối nhau bằng Ethernet AVB. Engine là bộ não xử lý; surface chỉ lo điều khiển và I/O tại vị trí mix.
+
+  **Control surface.** Năm model: S6L-48D, 32D, 24D, 24C và 16C, với 48 / 32 / 24 / 24 / 16 channel strip (cộng hai fader gán được trên Master Live Module). Mỗi Channel Knob Module (CKM) có 32 encoder kèm màn hình. Dòng D có Master Touch Screen cộng các Channel Touch Module (5, 3 và 2 trên 48D, 32D, 24D); 24C chỉ có Master Touch Screen, còn 16C không có màn hình cảm ứng tích hợp nên dựa vào external screen. Mỗi surface có hai kết nối AVB cho mạng hệ thống là A và B (etherCON đồng hoặc SFP quang, mỗi cổng chỉ dùng một loại), cộng thêm hai cổng AVB etherCON C và D cho Pro Tools (System Guide 7.2, PDF tr. 58).
+
+  **Engine (E6L-192 / 144 / 112, 96 kHz).** Input channel 192 / 144 / 112; mix bus 96 / 64 / 48 cộng L-R và C/Mono; matrix 24x24 / 16x16 / 16x16; 48 VCA; 400 slot plug-in; một card HDX-192 DSP, mở rộng lên bốn (E6L-192) hoặc hai (E6L-144, E6L-112). Chia sẻ I/O giữa các hệ cần hai card AVB-192. Xử lý mỗi input: HPF, LPF, PEQ 4 band, expander/gate, compressor/limiter, delay, 4 insert plug-in và một hardware insert; output có PEQ 7 band, compressor/limiter, delay, 4 insert plug-in và hardware insert, cùng Graphic EQ 31 band trên bus.
+
+  **Stage rack.** Stage 64: tối đa 64 in / 32 out, 12 slot card, 10U. Stage 48: 48 analog in / 24 out, 8U; cần VENUE 7.0 trở lên và hai card AVB-192. Stage 32: 32 kênh, 5U, 4 slot card, tối đa bốn máy. Stage 16: 16 in / 8 out cộng 4 AES out, 4U, tối đa bốn máy, chỉ cáp đồng. Giới hạn cáp theo manual: đồng 100 m, quang 500 m (Stage 32 còn ghi 10.000 m với sợi single-mode). Stage 64, 48 và 32 còn có ngõ MADI để chia digital các input.
+
+  **Một họ phần mềm.** Manual nói phần mềm VENUE dùng chung cho các hệ live của Avid, nên Show file mang đi được. Bản Standalone miễn phí cho bạn dựng routing, cài đặt channel, snapshot và event offline rồi chuyển bằng USB (Handbook 8.0, tr.7).
+
+  **Phần cứng mới hơn (Handbook 8.0, bản 01/25).** Handbook liệt kê engine thế hệ thứ ba E6LX-256: 256 input channel, mix bus 192 + 64 matrix + L-R và C/Mono, tối đa bốn card HDX-192. System Guide 7.2 ra trước nên chưa có; hãy kiểm tra đơn vị cho thuê của bạn đang có engine nào.
+
+  ## Vì sao dân live quan tâm
+
+  - Engine là một rack 5U riêng, nên surface ngồi ở FOH còn DSP nằm trong rack case. Surface chết thì processing có sống tiếp không, manual không nói; đừng giả định, hãy tự test.
+  - Đi cáp bằng Ethernet: đồng tới 100 m hoặc quang tới 500 m mỗi chặng, surface dùng cổng A và B cho mạng hệ thống, E6L có hai card mạng AVB-192 mỗi card hai cổng (engine đời đầu chỉ một card; PDF tr. 61), và mỗi Stage rack có cổng AVB riêng (số lượng theo spec của rack).
+  - Biết rõ công suất trước khi rider tới: E6L-192 có 192 input, nhưng số mic preamp chỉ bằng số card Stage bạn thuê thực tế.
+
+  ## Điều CHƯA được xác minh
+
+  - **"Universal Slot."** Thuật ngữ này không xuất hiện ở đâu trong System Guide 7.2; đừng dùng cho S6L.
+  - **Trọng lượng, công suất điện, chi tiết đi mạng ring hay star.** Chưa đọc ngoài các bảng công suất.
+  - **Số lượng Stage 48.** Đoạn Stage 48 trong System Guide lặp lại "ba Stage 64" (có vẻ copy-paste nhầm); Handbook 8.0 nói tối đa 3x Stage 48. Đã chọn: handbook.
+  - **So sánh với WING.** WING xử lý ngay trong thân console và dùng mạng I/O khác; phần so sánh này từ hiểu biết chung, không lấy từ các tài liệu trên.
+sources:
+- title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/a2.e4.87.VENUES6LSystemGuidev72en.PDF
+  year: 2023
+  accessed: '2026-11-10'
+  locator: 'PDF pp.13-22 (printed pp.1-10): Introduction, features tables; p.17 E6L table; p.19-21 Stage 48/32/16'
+- title: VENUE | S6L Handbook, VENUE 8.0 edition (dated 01/25) (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/f6.88.85.VENUES6LHandbookv80en.PDF
+  year: 2025
+  accessed: '2026-11-10'
+  locator: PDF p.7 (Standalone), p.11 (system components), p.23 (E6LX-256 table)
+media:
+- kind: diagram
+  path: s6l-system-chain.png
+  caption: 'Simplified S6L signal chain: Stage racks, AVB network, engine, control surface'
+  caption_vi: 'Chuỗi hệ thống S6L qua AVB (đơn giản hóa): Stage rack, mạng AVB, engine, control surface'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=bcoEk8pyjk8
+  title: Avid VENUE | S6L – The Next Stage in Live Sound
+  channel: Avid
+  caption: Avid's launch overview of the S6L system (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Video giới thiệu hệ S6L của Avid (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

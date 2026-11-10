@@ -67,9 +67,9 @@ body_vi: |
 
   ## Nghe gì
 
-  - Sustain và đuôi room của snare hoặc cả bộ drum nổi lên mà cú đánh không mất độ giòn.
-  - Với vocal, âm mềm và hơi thở nổi lên; đây cũng chính là thứ làm tăng noise và nguy cơ hú rít (feedback), nên phải cẩn thận với wedge hoặc mic mở.
-  - Trong phòng nhỏ, năng lượng mức thấp thêm vào có thể làm tiếng phòng to lên. Hãy nghe ở level lúc show.
+  - Sustain và đuôi room của snare hoặc cả bộ drum nổi lên mà cú đánh không mất crack (độ giòn, độ bốp).
+  - Với vocal, âm mềm và hơi thở nổi lên; đây cũng chính là thứ làm tăng noise và nguy cơ feedback (hú rít), nên phải cẩn thận với wedge hoặc mic mở.
+  - Trong phòng nhỏ, năng lượng mức thấp thêm vào có thể làm room tone (tiếng nền của phòng) to lên. Hãy nghe ở level lúc show.
 
   ## Lỗi thường gặp
 
@@ -117,6 +117,6 @@ media:
   caption_vi: Greg Price nói về mix live với Waves, gồm cả parallel drum compression của ông (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:08+07:00'
 updated_by: agent:translator-vi

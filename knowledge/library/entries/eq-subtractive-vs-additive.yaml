@@ -43,7 +43,7 @@ body_vi: |
   Hai cách đi đến cùng một sự cân bằng: hạ cái quá to, hoặc nâng cái quá nhỏ. Chúng không ngang nhau về âm thanh lẫn rủi ro.
 
   ## Vì sao nên cắt trước
-  Boost dễ bị nghe ra là "EQ" hơn, và một boost hẹp với Q cao có thể ringing ngay tại tâm. Cut loại bỏ đúng vùng gây vấn đề, đồng thời làm các tần số lân cận nghe sáng hơn tương đối mà không thêm gain. Trên bàn live, mỗi channel đều đổ vào một PA có Headroom hạn chế và trần hú rít (Feedback), nên lấy bớt năng lượng đi thường an toàn hơn. Nhiều nguồn đồng ý với nguyên tắc "cut để sửa, boost để tô điểm".
+  Boost dễ bị nghe ra là "EQ" hơn, và một boost hẹp với Q cao có thể ringing ngay tại tâm. Cut loại bỏ đúng vùng gây vấn đề, đồng thời làm các tần số lân cận nghe bright hơn tương đối mà không thêm gain. Trên bàn live, mỗi channel đều đổ vào một PA có Headroom hạn chế và trần feedback (hú rít), nên lấy bớt năng lượng đi thường an toàn hơn. Nhiều nguồn đồng ý với nguyên tắc "cut để sửa, boost để tô điểm".
 
   ## Khi nào boost là đúng
   - Nguồn đơn giản là thiếu một chất mà mic đã thu được: nâng rộng, nhẹ vài dB.
@@ -63,7 +63,7 @@ body_vi: |
   4. Chỉ sau đó mới thêm boost rộng nếu tiếng vẫn còn thiếu.
 
   ## Lỗi thường gặp
-  - Boost một vocal bị tối rồi cắt mọi thứ còn lại để bù: bạn mất Headroom và giới hạn feedback.
+  - Boost một vocal bị dark rồi cắt mọi thứ còn lại để bù: bạn mất Headroom và giới hạn feedback.
   - Đánh giá khi solo; phải quyết định trong mix.
   - Với tay lấy EQ khi nguyên nhân là vị trí mic, sai mic, hoặc spill từ sân khấu.
 rule:
@@ -119,6 +119,6 @@ media:
   caption_vi: Slate Digital nói về khi nào dùng additive và subtractive EQ (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:27+07:00'
 updated_by: agent:translator-vi

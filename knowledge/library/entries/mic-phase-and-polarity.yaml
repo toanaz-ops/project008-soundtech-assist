@@ -68,19 +68,19 @@ body_vi: |
   ## Hai vấn đề khác nhau
 
   - **Polarity** là một cú đảo đơn giản: dạng sóng bị đảo, dương thành âm. Mic quay về phía bên kia của mặt trống thấy chuyển động ngược lại, nên một cặp như snare top và snare bottom có xu hướng triệt nhau cho tới khi flip một bên.
-  - **Delay (lệch thời gian)** gây hiệu ứng răng lược (Comb filtering). Mic thứ hai ở xa nguồn hơn nghe cùng âm thanh trễ hơn một chút; khi cộng hai kênh, vài tần số cộng lại còn vài tần số triệt nhau.
+  - **Delay (lệch thời gian)** gây Comb filtering (hiệu ứng răng lược). Mic thứ hai ở xa nguồn hơn nghe cùng âm thanh trễ hơn một chút; khi cộng hai kênh, vài tần số cộng lại còn vài tần số triệt nhau.
 
   Kiểm tra polarity trước, rồi mới tới timing.
 
   ## Toán của comb filter
 
-  Với độ trễ t mili-giây giữa hai tín hiệu bằng nhau, điểm triệt sâu đầu tiên rơi ở 1000 / (2 t) Hz, và các notch tiếp theo lặp lại ở các bội số của tần số delay. Độ trễ 1 ms (chênh đường đi khoảng 34 cm) cho null ở 500 Hz, 1.5 kHz, 2.5 kHz và cứ thế, với các đỉnh nằm giữa. Biểu đồ minh họa cho bản sao chỉ nhỏ hơn 1 dB (notch sâu) và cho bản sao nhỏ hơn 10 dB (gợn chỉ vài dB). Đó chính là ý nghĩa của quy tắc 3:1: giữ bản sao bị trễ thấp hơn hẳn âm trực tiếp. Sự nhuộm màu nghe thấy được xuất hiện với độ trễ tới khoảng 25 ms.
+  Với độ trễ t mili-giây giữa hai tín hiệu bằng nhau, điểm triệt sâu đầu tiên rơi ở 1000 / (2 t) Hz, và các notch tiếp theo lặp lại ở các bội số của tần số delay. Độ trễ 1 ms (chênh đường đi khoảng 34 cm) cho null ở 500 Hz, 1.5 kHz, 2.5 kHz và cứ thế, với các đỉnh nằm giữa. Biểu đồ minh họa cho bản sao chỉ nhỏ hơn 1 dB (notch sâu) và cho bản sao nhỏ hơn 10 dB (gợn chỉ vài dB). Đó chính là ý nghĩa của quy tắc 3:1: giữ bản sao bị trễ thấp hơn hẳn âm trực tiếp. Coloration (nhuộm màu) nghe thấy được xuất hiện với độ trễ tới khoảng 25 ms.
 
   ## Kiểm tra thực tế
 
   1. **Snare top/bottom**: solo cả hai, flip polarity mic bottom, và giữ cách nghe đầy hơn và giữ snare chắc ở mono.
   2. **Kick in / kick out**: solo cả hai, flip một bên và giữ bên nào cho low-end nặng nhất.
-  3. **Close mic vs overhead**: thử kick và snare với overhead; nếu trống bị mỏng, thử flip polarity hoặc nhích mic một chút.
+  3. **Close mic vs overhead**: thử kick và snare với overhead; nếu trống bị thin, thử flip polarity hoặc nhích mic một chút.
   4. **Time alignment**: nếu flip chưa đủ, delay mic gần hơn vài mili-giây cho transient thẳng hàng. Mẹo sơ bộ là khoảng 1 ms mỗi foot (khoảng 0.34 ms mỗi 10 cm). Đừng align room mic, chúng được đặt để nghe trễ hơn.
   5. Luôn kiểm tra tổng ở mono.
 
@@ -149,6 +149,6 @@ media:
   caption_vi: Time-align mic trống và các vấn đề phase trong live sound (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:29+07:00'
 updated_by: agent:translator-vi

@@ -1,0 +1,104 @@
+id: digico-quantum-true-solo
+title: 'True Solo: hear an input as the artist''s mix processes it'
+title_vi: 'True Solo: nghe input như mix của nghệ sĩ xử lý nó'
+topic: digico-quantum
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-quantum
+  - true-solo
+  - monitors
+  - solo
+  event:
+  - touring
+summary: True Solo, Quantum only, copies the processing on an output buss to the solo buss so a soloed input is heard the way the artist hears it. It is opened from the Solos panel or by a macro.
+summary_vi: True Solo, chỉ có trên Quantum, chép xử lý của một output buss sang solo buss để input được solo nghe đúng như nghệ sĩ nghe. Mở từ panel Solos hoặc bằng macro.
+body: |
+  ## What it is (verified, reference manual PDF p. 38 plus brochure)
+
+  The manual (Quantum only) says it copies any internal processing used on an output buss to the solo buss so you get a true representation of what the artist hears, and that changes to the buss processing update on the solo buss in real time. Controls are in the Solos panel, or a macro can open the True Solo panel directly. The brochure adds that you select the artist's output buss in the True Solo panel and then solo inputs. It frames True Solo as building on Nodal Processing for monitor engineers.
+
+  ## Why it matters
+
+  Without it, a PFL or AFL solo gives the raw channel and you guess what a wedge or IEM mix sounds like after buss EQ, compression and limiting. With it, soloing a channel through the artist's output processing shows what actually reaches that artist.
+
+  ## How to use it on a show
+
+  1. Open the Solos panel (or the macro).
+  2. Pick the artist's output buss in True Solo.
+  3. Solo inputs in your headphones and check that the mix is clear after buss processing.
+  4. Change the buss processing and hear the effect immediately.
+
+  ## Related option in the manual
+
+  "Solo displays aux nodal processing" opens the node view when an aux master is soloed (p. 114).
+
+  ## What is NOT verified
+
+  - Whether it covers external (outboard) processing: the manual says "internal processing" only.
+  - Software version that introduced it, and licence; the datasheet lists True Solo as a feature, not an option.
+  - Which solo bus (1 or 2) it uses, latency versus the normal solo, and the exact panel layout: not in the pages read.
+body_vi: |
+  ## Nó là gì (đã xác minh, reference manual PDF tr. 38 cộng brochure)
+
+  Manual (Quantum only) nói nó chép mọi xử lý nội bộ dùng trên một output buss sang solo buss để bạn có hình ảnh thật về cái nghệ sĩ nghe, và các thay đổi trên xử lý buss được cập nhật trên solo buss theo thời gian thực. Điều khiển nằm trong panel Solos, hoặc tạo macro để mở thẳng panel True Solo. Brochure bổ sung: chọn output buss của nghệ sĩ trong panel True Solo rồi solo các input. Brochure xếp True Solo là bước phát triển từ Nodal Processing cho monitor engineer.
+
+  ## Vì sao nó quan trọng
+
+  Không có nó, solo PFL hay AFL chỉ cho bạn tín hiệu thô của channel và bạn phải đoán mix wedge hay IEM nghe ra sao sau EQ, compression và limiting trên buss. Có nó, solo một channel qua xử lý output của nghệ sĩ cho thấy cái thật sự tới tai nghệ sĩ đó.
+
+  ## Cách dùng trên show
+
+  1. Mở panel Solos (hoặc macro).
+  2. Chọn output buss của nghệ sĩ trong True Solo.
+  3. Solo các input trong headphone và nghe xem mix có rõ sau khi qua xử lý buss không.
+  4. Đổi xử lý buss và nghe tác động ngay.
+
+  ## Tuỳ chọn liên quan trong manual
+
+  "Solo displays aux nodal processing" mở view node khi solo một aux master (tr. 114).
+
+  ## Điều CHƯA được xác minh
+
+  - Có bao gồm xử lý ngoài (outboard) không: manual chỉ nói "internal processing".
+  - Phiên bản software đưa nó vào và licence; datasheet liệt kê True Solo là tính năng chứ không phải option.
+  - Dùng solo bus nào (1 hay 2), độ trễ so với solo thường, và bố cục panel chính xác: không có trong các trang đã đọc.
+sources:
+- title: SD & Quantum Software Reference Manual, Issue E, February 2022, V1528+
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2022/03/SD-Quantum-Software-Reference-Issue-E-V1528.pdf
+  accessed: '2026-11-10'
+  locator: PDF p. 38 (True Solo, Quantum only); p. 114 (Solo options)
+- title: Quantum 338 brochure (2020)
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2020/03/Quantum-338-Brochure.pdf
+  accessed: '2026-11-10'
+  locator: 'page 4: True Solo'
+- title: Quantum 338 / Pulse datasheet
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2026/08/DiGiCo-Quantum-338-Pulse-Data-Sheet.pdf
+  accessed: '2026-11-10'
+  locator: page 1 key features, page 3
+media:
+- kind: diagram
+  path: true-solo-path.png
+  caption: True Solo copies output-bus processing onto the solo bus
+  caption_vi: True Solo chép xử lý của output buss sang solo bus
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=BN3wlha2e_g
+  title: DiGiCo Quantum 338 Sales Overview
+  channel: DiGiCo Consoles
+  caption: Official overview that lists True Solo among Quantum features (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Video tổng quan chính thức, có nhắc True Solo trong các tính năng Quantum (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 1
+updated_at: '2026-11-10T14:13:02+07:00'
+updated_by: agent:console-digico-quantum

@@ -45,7 +45,7 @@ body: |
 body_vi: |
   ## Fundamental mới chỉ là một phần bức tranh
 
-  Các biểu đồ nhạc cụ đã xuất bản chủ yếu cho thấy tần số cơ bản (**fundamental**), tức cao độ người chơi thật sự bấm. Cái bạn nghe, và cái bạn EQ, còn bao gồm các harmonic kéo dài lên cao hơn nhiều so với các dải này. Fundamental của trumpet dừng gần 1 kHz, nhưng độ sáng và độ cắn của nó đến từ các overtone cao hơn vài kHz.
+  Các biểu đồ nhạc cụ đã xuất bản chủ yếu cho thấy tần số cơ bản (**fundamental**), tức cao độ người chơi thật sự bấm. Cái bạn nghe, và cái bạn EQ, còn bao gồm các harmonic kéo dài lên cao hơn nhiều so với các dải này. Fundamental của trumpet dừng gần 1 kHz, nhưng brightness và bite của nó đến từ các overtone cao hơn vài kHz.
 
   ## Dải fundamental dùng trong biểu đồ
 
@@ -61,10 +61,10 @@ body_vi: |
 
   Từ bảng cheat sheet EQ của iZotope, các vùng mixer hay cut hoặc thêm:
 
-  - **200-500 Hz:** mud trên hầu hết nhạc cụ (kick 200-500 Hz boxiness, tiếng thùng của electric guitar, mud của acoustic guitar và piano).
+  - **200-500 Hz:** mud (đục, dày, các tiếng dính vào nhau) trên hầu hết nhạc cụ (kick 200-500 Hz boxiness (nghe như bị bọng, bị nhốt trong một chiếc hộp), tubbiness của electric guitar, mud của acoustic guitar và piano).
   - **500-800 Hz:** tiếng honk trên brass.
-  - **1-5 kHz:** attack và click (kick), vùng rối ở dải vocal và độ chói trên guitar, piano, brass.
-  - **3-7 kHz:** độ chói của hi-hat và cymbal.
+  - **1-5 kHz:** attack và click (kick), vùng rối ở dải vocal và harshness trên guitar, piano, brass.
+  - **3-7 kHz:** harshness của hi-hat và cymbal.
   - **8-12 kHz:** air trên cymbal và acoustic guitar.
 
   Biểu đồ bên dưới gộp các dải chơi với những vùng có tên này. Chỗ nào các vùng chồng nhau, nhạc cụ tranh chỗ nhau: đó là lý do mixer high-pass những nguồn không cần low end và nhường các quãng tám thấp nhất cho bass và kick.
@@ -130,6 +130,6 @@ media:
   caption_vi: Giải thích các dải tần số từ sub bass đến brilliance (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:49+07:00'
 updated_by: agent:translator-vi

@@ -79,7 +79,7 @@ body_vi: |
   - Nó nhắm vào level của mic thứ hai. Nếu một nguồn to ở gần cả hai mic, hoặc một mic hướng thiên về nguồn kia, chênh lệch level thực tế thay đổi.
   - Nó không sửa vấn đề polarity; xem mic-phase-and-polarity.
   - Mic directional thường chịu hệ số khoảng cách tốt hơn omni, và với hơn hai mic kề nhau bạn có thể cần xa hơn nữa.
-  - Càng nhiều mic mở thì gain before feedback càng ít, vì mỗi mic mở thêm là một đường hú rít (Feedback) mới. Xem gain-before-feedback-pag-nag.
+  - Càng nhiều mic mở thì gain before feedback càng ít, vì mỗi mic mở thêm là một đường feedback (hú rít) mới. Xem gain-before-feedback-pag-nag.
 rule:
   applies_to:
     technique:
@@ -139,6 +139,6 @@ media:
   caption_vi: Kỹ thuật spaced pair và quy tắc 3:1 (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:07:43+07:00'
 updated_by: agent:translator-vi

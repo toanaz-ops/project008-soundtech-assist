@@ -1,0 +1,109 @@
+id: avid-s6l-scope-recall-safe
+title: S6L Scope, User Aux Scope, Recall Safe and Automation Safe
+title_vi: Scope, User Aux Scope, Recall Safe và Automation Safe trên S6L
+topic: avid-s6l
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-avid-s6l
+  - snapshots
+  - recall-safe
+  - scope
+  event:
+  - festival
+  - theatre
+  - touring
+summary: 'Four filters decide what a snapshot recall may touch: per-snapshot Scope (data types by channels), the User Aux Scope grid, a global Recall Safe matrix, and per-channel Automation Safe. Together they are how S6L engineers protect a vocal or a monitor mix from a song change.'
+summary_vi: 'Bốn lớp lọc quyết định một lần recall snapshot được chạm vào đâu: Scope riêng từng snapshot (data type nhân channel), lưới User Aux Scope, ma trận Recall Safe toàn cục và Automation Safe theo từng channel. Dân S6L dùng chúng để bảo vệ giọng hát hay mix monitor khỏi chuyện đổi bài.'
+body: |
+  ## What the manual says (verified, System Guide 7.2)
+
+  **Scope = data types x channels.** Each snapshot stores everything, but only the scoped data types on the scoped channels are recalled. Data type buttons (Fader, Mute, EQ, Dyn, Pan, Bus, In, Out, H/W, VCA, Pre, Name, MTX, LAYT, Aux Mon, Aux FX, AUX USR, Dly, MIDI, Plug-Ins, Med) and the red/gray channel faders on the Snapshots page show and set it. ALL and NONE buttons exist for both; double-tapping the channel ALL or NONE applies to every channel in the system. You can rescope any time without re-storing. One detail from the table: Mute Group state is not snapshottable, only explicit mutes and VCA mutes.
+
+  **Aux classification.** In Options > Snapshots you label each Aux as Aux Mon or Aux FX so the two kinds can be scoped separately. It only affects snapshot scope, not how the bus works.
+
+  **User Aux Scope.** A grid of Aux (columns) by input channel (rows), switched on by the AUX/USR data type. The manual's example: a snapshot stores "Gtr 1 solo +2 dB" with only the IEM 3 Aux scoped on the guitar channel, so recalling it raises the guitar for that one player and no one else. The grid can be saved as presets.
+
+  **Recall Safe.** A global matrix (parameter by channel, Inputs and Outputs tabs) that blocks recall for every snapshot at once. It has a master On button, is stored with the Show file, and shows the tab in red when active. Scope Sets are its presets and can be transferred on the Filing page. Three global checkboxes (MIDI output, Plug-Ins, Media transport) sit outside the matrix and do not follow the master On button. There is also a CHANNEL SAFE column mirroring Automation Safe.
+
+  **Automation Safe.** Makes one channel ignore snapshots entirely. The Channel Safe switch on a strip can act as Bank Safe, Automation Safe or Solo Safe, chosen globally in Options > Interaction; it only does Automation Safe when you set that mode. You can also use the CKM's Auto Sf encoder or the Channel Menu. The strip shows an A LED in green; the external screen shows B for Bank Safe, A for Automation Safe and S for Solo Safe.
+
+  ## How to use it on a show
+
+  - Scope versus Recall Safe: Scope is the per-snapshot decision ("this song changes these things"); Recall Safe is the global veto ("whatever any song says, never touch these").
+  - Typical Recall Safe targets: lead vocal fader and EQ when you ride it by hand, a spare mic channel, plug-in settings if you tweak delays live.
+  - Monitor world: scope only the single Aux a musician asked about, via User Aux Scope, so a +2 dB request cannot leak into other mixes.
+  - Before a festival changeover, load a clean Scope Set so the previous act's Recall Safe choices do not follow you.
+
+  ## Pitfalls
+
+  - If the Channel Safe switches are in Bank Safe mode, pressing Safe will not protect the channel from snapshots. Check the letter shown.
+  - Recall Safe being off or nothing safed shows the tab in gray; a red tab means something is being blocked, which can explain "why did my fader not move".
+  - MIDI, plug-in and Media safes are separate from the master On button; turning Recall Safe off does not release them.
+
+  ## What is NOT verified
+
+  How these screens look in VENUE 8.x, and whether the Automation Safe switch behaviour changed. This entry follows the 7.2 System Guide.
+body_vi: |
+  ## Manual nói gì (đã xác minh, System Guide 7.2)
+
+  **Scope = data type nhân channel.** Mỗi snapshot lưu hết mọi thứ, nhưng chỉ data type nào được scope trên channel nào được scope mới bị recall. Các nút data type (Fader, Mute, EQ, Dyn, Pan, Bus, In, Out, H/W, VCA, Pre, Name, MTX, LAYT, Aux Mon, Aux FX, AUX USR, Dly, MIDI, Plug-Ins, Med) và các fader đỏ/xám trên trang Snapshots hiển thị và đặt scope. Cả hai có nút ALL và NONE; chạm đúp ALL hoặc NONE của channel thì áp cho mọi channel trong hệ thống. Bạn đổi scope lúc nào cũng được mà không cần store lại. Một chi tiết trong bảng: trạng thái Mute Group không snapshot được, chỉ có mute riêng lẻ và mute qua VCA.
+
+  **Phân loại Aux.** Trong Options > Snapshots bạn gán nhãn từng Aux là Aux Mon hoặc Aux FX để scope riêng hai loại. Nó chỉ ảnh hưởng scope snapshot, không đổi cách bus hoạt động.
+
+  **User Aux Scope.** Lưới Aux (cột) nhân input channel (hàng), bật bằng data type AUX/USR. Ví dụ của manual: snapshot lưu "Gtr 1 solo +2 dB" chỉ với Aux IEM 3 được scope trên channel guitar, nên recall nó chỉ nâng guitar trong tai nghe của đúng một người, không ai khác bị đụng. Lưới này lưu được thành preset.
+
+  **Recall Safe.** Ma trận toàn cục (thông số nhân channel, hai tab Inputs và Outputs) chặn recall cho mọi snapshot cùng lúc. Có nút On tổng, lưu cùng Show file, và tab hiện màu đỏ khi đang hoạt động. Scope Set là preset của nó, chuyển qua trang Filing. Ba checkbox toàn cục (MIDI output, Plug-Ins, Media transport) nằm ngoài ma trận và không theo nút On tổng. Còn có cột CHANNEL SAFE phản chiếu Automation Safe.
+
+  **Automation Safe.** Cho một channel bỏ qua hoàn toàn snapshot. Công tắc Channel Safe trên strip có thể là Bank Safe, Automation Safe hoặc Solo Safe, chọn toàn cục trong Options > Interaction; nó chỉ làm Automation Safe khi bạn đặt đúng chế độ đó. Bạn cũng dùng được encoder Auto Sf trên CKM hoặc Channel Menu. Strip báo đèn A xanh; external screen hiện B cho Bank Safe, A cho Automation Safe, S cho Solo Safe.
+
+  ## Dùng trên show thế nào
+
+  - Scope và Recall Safe khác nhau: Scope là quyết định theo từng snapshot ("bài này đổi những thứ này"); Recall Safe là quyền phủ quyết toàn cục ("bài nào nói gì cũng không được đụng mấy thứ này").
+  - Mục tiêu hay dùng cho Recall Safe: fader và EQ của lead vocal khi bạn tự rải tay, một channel mic dự phòng, các setting plug-in nếu bạn chỉnh delay live.
+  - Thế giới monitor: chỉ scope đúng một Aux mà nghệ sĩ yêu cầu, qua User Aux Scope, để yêu cầu +2 dB không rò sang mix của người khác.
+  - Trước giờ đổi nghệ sĩ ở festival, load một Scope Set sạch để lựa chọn Recall Safe của ban trước không theo sang ban sau.
+
+  ## Bẫy thường gặp
+
+  - Nếu công tắc Channel Safe đang ở chế độ Bank Safe thì bấm Safe không bảo vệ channel khỏi snapshot. Hãy nhìn chữ hiển thị.
+  - Recall Safe tắt hoặc chưa safe gì thì tab màu xám; tab màu đỏ nghĩa là đang chặn thứ gì đó, có thể giải thích "sao fader tôi không chạy".
+  - Safe của MIDI, plug-in và Media tách khỏi nút On tổng; tắt Recall Safe không nhả chúng ra.
+
+  ## Điều CHƯA được xác minh
+
+  Các màn hình này trông thế nào trong VENUE 8.x, và hành vi công tắc Automation Safe có đổi hay không. Mục này theo System Guide 7.2.
+sources:
+- title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/a2.e4.87.VENUES6LSystemGuidev72en.PDF
+  year: 2023
+  accessed: '2026-11-10'
+  locator: PDF pp.251-252, 261-262 (printed 239-240, 249-250) scope; 279-285 (267-273) classify aux, User Aux Scope; 286-290 (274-278) Recall Safe; 291-294 (279-282) Automation Safe, Table 6
+media:
+- kind: diagram
+  path: scope-filter-layers.png
+  caption: The filter layers between a snapshot and the live mix
+  caption_vi: 'Các lớp lọc giữa một snapshot và live mix: data type, channel, User Aux, Recall Safe, Automation Safe'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=zSVnjn-7TC0
+  title: Snapshots in VENUE | S6L make on-the-fly adjustments effortless
+  channel: Avid
+  caption: Avid clip on snapshot adjustments on the S6L (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Clip của Avid về chỉnh snapshot nhanh trên S6L (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+- kind: video
+  url: https://www.youtube.com/watch?v=a2eyqzce5u4
+  title: VENUE | S6L Events and Momentary Snapshots — Guitar Solo EQ
+  channel: Avid
+  caption: Avid example of Momentary snapshots with Events (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Ví dụ của Avid về Momentary snapshot kết hợp Event (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

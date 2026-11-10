@@ -50,15 +50,15 @@ body_vi: |
   Dynamic mic thường là khởi đầu: SM57 và Sennheiser e906 phổ biến, và đỉnh presence của chúng làm nổi độ crunch của guitar. Condenser large-diaphragm nghe rộng và mở hơn nhưng thiếu đỉnh đó, nên khó xuyên qua band. Ribbon nghe mượt và dễ chịu nhưng mong manh trên stage to.
 
   - **Hướng vào một loa đang chạy.** Với 2x12 hoặc 4x12, hãy chắc bạn đang hướng vào driver thực sự phát tiếng.
-  - Vị trí đổi tiếng: hướng về dust cap thì sáng và gắt hơn; hướng về mép cone thì tối và ấm hơn. Các hướng dẫn thực tế bất đồng về điểm ngọt (mép cap hay nửa đường ra), nên bắt đầu cách grille khoảng một hai inch và chỉnh bằng tai. Gần hơn thì thêm low end qua hiệu ứng tiệm cận (Proximity effect).
+  - Vị trí đổi tiếng: hướng về dust cap thì bright và aggressive hơn; hướng về mép cone thì dark và warm hơn. Các hướng dẫn thực tế bất đồng về điểm ngọt (mép cap hay nửa đường ra), nên bắt đầu cách grille khoảng một hai inch và chỉnh bằng tai. Gần hơn thì thêm low end qua Proximity effect (mic càng gần, bass càng phình).
   - Đánh giá vị trí từ tín hiệu trên desk hoặc headphone, đừng dựa vào tiếng amp trong phòng.
   - Một mic cho kết quả lặp lại được, ít vấn đề phase hơn. Hai mic hoặc mic cộng DI cần check polarity.
 
   ## EQ khởi đầu
 
   - High-pass quanh 80-100 Hz với Slope thoải; Slope dốc có thể tách guitar khỏi bass.
-  - Mud nằm ở 200-500 Hz; cut nhẹ tâm ở chỗ đục nhất, đừng cắt mất phần body (iZotope: body 150-300 Hz, core 300 Hz đến 1.5 kHz).
-  - Độ gắt hoặc hung hãn nằm ở 2-5 kHz và thường cần cắt bớt quanh 3-6 kHz.
+  - Mud nằm ở 200-500 Hz; cut nhẹ tâm ở chỗ muddy nhất, đừng cắt mất phần body (iZotope: body 150-300 Hz, core 300 Hz đến 1.5 kHz).
+  - Harshness hoặc aggression nằm ở 2-5 kHz và thường cần cắt bớt quanh 3-6 kHz.
   - Nhớ rằng guitar mic từ amp đã có roll-off của chính cabinet ở trên vài kHz.
 
   ## Vấn đề thường gặp
@@ -71,7 +71,7 @@ body_vi: |
 
   ## Mẹo live và WING
 
-  Xin tiếng to nhất và nhỏ nhất ở soundcheck để biết dải level, và set channel gain theo tiếng to nhất. Trên WING, một HPF cộng một hai band EQ thường là đủ; xử lý độ gắt bằng cut trước, boost sau. Cân nhắc blend một DI hoặc output modelled phía dưới mic để có body không spill.
+  Xin tiếng to nhất và nhỏ nhất ở soundcheck để biết dải level, và set channel gain theo tiếng to nhất. Trên WING, một HPF cộng một hai band EQ thường là đủ; xử lý harshness bằng cut trước, boost sau. Cân nhắc blend một DI hoặc output modelled phía dưới mic để có body không spill.
 rule:
   applies_to:
     source_type:
@@ -127,6 +127,6 @@ media:
   caption_vi: EQ live cho guitar điện (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:36+07:00'
 updated_by: agent:translator-vi

@@ -1,0 +1,130 @@
+id: avid-s6l-snapshots
+title: 'S6L Snapshots: list, Parent/Child, Momentary, crossfade, Preview'
+title_vi: 'Snapshot trên S6L: danh sách, Parent/Child, Momentary, crossfade, Preview'
+topic: avid-s6l
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-avid-s6l
+  - snapshots
+  - scenes
+  event:
+  - festival
+  - theatre
+  - touring
+summary: A Show file holds up to 999 snapshots, recalled by hand, by Events or by time code. The S6L adds Parent/Child numbering, Momentary snapshots that do not move your place in the list, per-snapshot crossfade for faders, and an offline Preview mode for working ahead.
+summary_vi: Một Show file chứa tối đa 999 snapshot, recall bằng tay, bằng Event hoặc bằng time code. S6L có thêm Parent/Child, Momentary snapshot không làm xê dịch vị trí trong danh sách, crossfade riêng cho fader từng snapshot, và chế độ Preview offline để làm trước.
+body: |
+  ## What the manual says (verified, System Guide 7.2, Snapshots chapter)
+
+  **Basics.** Snapshots live inside the Show file, up to 999 per Show. They can be recalled manually, by Events, or by incoming time code. New captures the full state; a new snapshot inherits the channel and data-type scope of the currently targeted one. MIDI and plug-in data are not captured by New; you add them from the MIDI/Plug-Ins lists.
+
+  **Target, then recall.** Targeting a snapshot shows which data types and channels it will touch (channel faders show the target position in bright red, target mutes outlined in yellow) before you press Recall. The PREV/NEXT buttons recall in one step and work from the currently recalled snapshot, not the targeted one.
+
+  **Parent and Child.** A two-level list. Up to 99 Child snapshots per Parent, numbered 001.1, 001.2 and so on. When you store, update, delete or duplicate a Parent you choose Selected Only or All children. An Event action, Store to Parent of Recalled Snapshot, updates the Parent while a Child is recalled; it exists only as an Event action.
+
+  **Momentary snapshots.** No number; recalling one does not change the recalled or targeted position. The manual's example: a vocal mic dies, you recall a Momentary snapshot that only re-patches that vocal channel to a spare mic. Child snapshots cannot become Momentary; Momentary ones can join Snapshot Groups.
+
+  **Groups and Lock.** Snapshot Groups (letters A to Z, then AA to ZZ and so on) let one Store, Update or Edit hit every snapshot in the group. A locked snapshot can still be recalled, moved and duplicated, but not overwritten, renamed or rescoped; locked ones cannot be put in a group.
+
+  **Crossfade.** 0 to 99.9 s in 0.1 s steps, set per snapshot, with a default in Options > Snapshots. It moves channel faders; pan, balance and width follow only if enabled. All other controls jump instantly. Recalling the same snapshot again during a crossfade cancels the fade, applies the whole snapshot and resets scoped parameters you touched. A repeated MIDI program change or MTC trigger does not cancel it.
+
+  **Preview mode.** Takes the console offline from the live mix so you can recall, edit and store snapshots ahead of time. Leaving Preview without storing discards your changes. Undo (up to 100 levels) works in Preview; undoing a recall on the live mix may interrupt audio.
+
+  **Other controls.** Confirm Snapshot Recall (a dialog before each recall), a Disable button that suspends storing and recalling, Chase MTC/LTC, and a Pre option that decides which preamp values (gain, pad, phase, +48V, HPF) the Pre data type recalls.
+
+  ## How to use it on a show
+
+  1. Make the first snapshot the baseline for the whole Show; scope later ones only for what changes song to song.
+  2. Lock finished snapshots so nobody overwrites them mid-tour.
+  3. Keep one Momentary snapshot per known failure (spare vocal mic, spare DI) and put it on a Function key via an Event.
+  4. During a long set, enter Preview, tidy the next song, Store, then exit Preview.
+  5. Turn on Confirm Snapshot Recall when a second person has fingers on the surface.
+
+  ## Pitfalls
+
+  - Undoing a recall can interrupt audio; do not use Undo as a safety net on a live mix.
+  - If an Event recalls Next after a Recall of a specific snapshot, you can create a loop (see the Events entry).
+  - Common practice, not from the manual: keep Pre out of scope unless you mean to move gain and phantom power between songs.
+
+  ## What is NOT verified
+
+  Menu layouts in VENUE 8.0 and 8.2; this entry follows the 7.2 System Guide. The What's New 8.0 and 8.2 guides were only checked by their contents pages for snapshot items, and none are listed.
+body_vi: |
+  ## Manual nói gì (đã xác minh, System Guide 7.2, chương Snapshots)
+
+  **Cơ bản.** Snapshot nằm trong Show file, tối đa 999 snapshot mỗi Show. Có thể recall bằng tay, bằng Event hoặc bằng time code. New chụp toàn bộ trạng thái; snapshot mới tự kế thừa scope channel và data type của snapshot đang target. New không chụp dữ liệu MIDI và plug-in; bạn thêm chúng từ các danh sách MIDI/Plug-Ins.
+
+  **Target trước, recall sau.** Target một snapshot cho bạn thấy nó sẽ chạm vào data type và channel nào (fader hiện vị trí đích bằng màu đỏ sáng, mute đích viền vàng) trước khi bấm Recall. Nút PREV/NEXT recall ngay một bước và tính từ snapshot đang được recall, không phải snapshot đang target.
+
+  **Parent và Child.** Danh sách hai tầng. Tối đa 99 Child cho mỗi Parent, đánh số 001.1, 001.2... Khi store, update, delete hoặc duplicate một Parent, bạn chọn Selected Only hoặc All các Child. Event action Store to Parent of Recalled Snapshot cập nhật Parent trong lúc một Child đang được recall; tính năng này chỉ có qua Event.
+
+  **Momentary snapshot.** Không có số; recall nó không làm đổi vị trí recalled hay targeted. Ví dụ của manual: mic hát hỏng, bạn recall một Momentary snapshot chỉ patch lại channel vocal sang mic dự phòng. Child không thành Momentary được; Momentary thì vào Snapshot Group được.
+
+  **Group và Lock.** Snapshot Group (chữ A tới Z, rồi AA tới ZZ...) cho phép một lần Store, Update hoặc Edit tác động lên mọi snapshot trong nhóm. Snapshot đã lock vẫn recall, di chuyển, duplicate được, nhưng không ghi đè, đổi tên hay đổi scope được; snapshot đã lock không đưa vào group được.
+
+  **Crossfade.** Từ 0 đến 99,9 giây, bước 0,1 giây, đặt riêng cho từng snapshot, giá trị mặc định trong Options > Snapshots. Nó di chuyển fader channel; pan, balance, width chỉ chạy theo khi bật tùy chọn. Mọi điều khiển khác nhảy tức thì. Recall lại đúng snapshot đó giữa chừng crossfade sẽ hủy fade, áp cả snapshot và reset các thông số trong scope mà bạn vừa chạm. MIDI program change hoặc MTC trigger lặp lại thì không hủy.
+
+  **Preview mode.** Đưa console ra khỏi live mix để bạn recall, sửa và store snapshot trước. Thoát Preview mà không Store thì mất thay đổi. Undo (tối đa 100 mức) dùng được trong Preview; undo một recall trên live mix có thể làm gián đoạn âm thanh.
+
+  **Điều khiển khác.** Confirm Snapshot Recall (hộp thoại trước mỗi lần recall), nút Disable tạm tắt store và recall, Chase MTC/LTC, và tùy chọn Pre quyết định data type Pre recall những giá trị preamp nào (gain, pad, phase, +48V, HPF).
+
+  ## Dùng trên show thế nào
+
+  1. Snapshot đầu tiên là baseline cho cả Show; các snapshot sau chỉ scope phần thay đổi giữa các bài.
+  2. Lock các snapshot đã xong để không ai ghi đè giữa tour.
+  3. Mỗi sự cố đã biết (mic hát dự phòng, DI dự phòng) giữ một Momentary snapshot và gán lên phím Function bằng Event.
+  4. Set dài thì vào Preview, chỉnh bài kế tiếp, Store rồi thoát Preview.
+  5. Bật Confirm Snapshot Recall khi có người thứ hai đụng tay vào surface.
+
+  ## Bẫy thường gặp
+
+  - Undo một recall có thể làm đứt tiếng; đừng coi Undo là lưới an toàn trên live mix.
+  - Nếu một Event recall Next sau khi recall một snapshot cụ thể, bạn có thể tạo vòng lặp (xem mục Events).
+  - Kinh nghiệm chung, không từ manual: để Pre ngoài scope trừ khi bạn thật sự muốn dời gain và phantom power giữa các bài.
+
+  ## Điều CHƯA được xác minh
+
+  Cách bố trí menu trong VENUE 8.0 và 8.2; mục này theo System Guide 7.2. Các guide What's New 8.0 và 8.2 chỉ được kiểm qua trang mục lục để tìm thay đổi về snapshot, và không có mục nào được liệt kê.
+sources:
+- title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/a2.e4.87.VENUES6LSystemGuidev72en.PDF
+  year: 2023
+  accessed: '2026-11-10'
+  locator: PDF pp.246-258 (printed 234-246), 260-264 (248-252), 269-270 (257-258), 279-280 (267-268), 294 (282, Table 6)
+- title: What's New in VENUE Software 8.0 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/72.c1.bb.WhatsNewinVENUE80.PDF
+  year: 2025
+  accessed: '2026-11-10'
+  locator: PDF pp.3-5 contents only (no snapshot items listed)
+- title: What's New in VENUE Software 8.2 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/fa.2d.ba.AVIDVENUE8.2ReleaseNotes.pdf
+  year: 2026
+  accessed: '2026-11-10'
+  locator: PDF p.3 contents only
+media:
+- kind: diagram
+  path: snapshot-recall-flow.png
+  caption: 'What a snapshot recall actually changes: stores everything, passes Scope and Recall Safe, then updates the mix'
+  caption_vi: 'Một lần recall snapshot thật sự thay đổi gì: lưu hết, qua Scope, qua Recall Safe, rồi mới tới live mix'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=RLKGRFMaBbE
+  title: Using Avid VENUE | S6L Snapshots
+  channel: Avid
+  caption: Avid tutorial on S6L snapshots (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Video hướng dẫn snapshot S6L của Avid (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

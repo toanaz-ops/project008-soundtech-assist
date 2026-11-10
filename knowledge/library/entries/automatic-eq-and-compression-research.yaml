@@ -16,7 +16,7 @@ tags:
   event:
   - concert
 summary: Research systems set EQ to reduce masking between tracks and set compressor ratio, threshold, knee, attack and release from the signal's own features. In one test the automatic compression matched or beat semi-professional manual mixes, but the evidence is small and studio-based.
-summary_vi: Các hệ thống nghiên cứu tự set EQ để giảm hiện tượng che lấp tiếng (Masking) giữa các track, và tự set Ratio, Threshold, Knee, Attack, Release của compressor từ chính đặc trưng của tín hiệu. Trong một bài test, compression tự động ngang hoặc hơn bản mix tay của người bán chuyên, nhưng bằng chứng còn ít và làm trong studio.
+summary_vi: Các hệ thống nghiên cứu tự set EQ để giảm Masking (hiện tượng che lấp tiếng) giữa các track, và tự set Ratio, Threshold, Knee, Attack, Release của compressor từ chính đặc trưng của tín hiệu. Trong một bài test, compression tự động ngang hoặc hơn bản mix tay của người bán chuyên, nhưng bằng chứng còn ít và làm trong studio.
 body: |
   ## Automatic EQ
 
@@ -133,6 +133,6 @@ media:
   caption_vi: Josh Reiss nói về nghiên cứu automated mixing, liên quan đến automatic EQ và compression (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:06+07:00'
 updated_by: agent:translator-vi

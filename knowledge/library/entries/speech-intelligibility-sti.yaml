@@ -64,7 +64,7 @@ body_vi: |
 
   **Đọc một con số thế nào.** Tóm tắt thang đánh giá của Rational Acoustics: trên khoảng 0.76 là chất lượng phòng thu; 0.66-0.76 hợp với nhà hát, auditorium và teleconferencing; 0.54-0.66 là lớp học, nhà thờ và văn phòng; 0.42-0.54 là không gian khó; dưới 0.42 không phù hợp cho PA speech. Các khoảng này chỉ là hướng dẫn, không phải điểm đỗ cho sự kiện của bạn: một ballroom có STI gần 0.55 vẫn có thể chạy tốt nếu mic ở gần miệng và phòng không quá nhiều vang.
 
-  **Lời nằm ở đâu.** Ghi chú của DPA tách nguyên âm (mang cao độ và thân tiếng, tắt nhanh trên khoảng 1 kHz) khỏi phụ âm (chủ yếu trên 500 Hz và tập trung nhất ở 2-4 kHz). Bỏ hết mọi thứ dưới 500 Hz chỉ mất khoảng 5 phần trăm độ dễ hiểu, nhưng low-pass ở 1 kHz có thể kéo nó xuống dưới 40 phần trăm. Vì vậy tiếng nói "to, dày bass" vẫn có thể không nghe ra chữ, và boost low end chẳng giúp gì cho độ rõ.
+  **Lời nằm ở đâu.** Ghi chú của DPA tách nguyên âm (mang cao độ và body (thân tiếng), tắt nhanh trên khoảng 1 kHz) khỏi phụ âm (chủ yếu trên 500 Hz và tập trung nhất ở 2-4 kHz). Bỏ hết mọi thứ dưới 500 Hz chỉ mất khoảng 5 phần trăm độ dễ hiểu, nhưng low-pass ở 1 kHz có thể kéo nó xuống dưới 40 phần trăm. Vì vậy tiếng nói "to, dày bass" vẫn có thể không nghe ra chữ, và boost low end chẳng giúp gì cho độ rõ.
 
   **Cái gì làm hỏng nó:**
 
@@ -75,7 +75,7 @@ body_vi: |
 
   **Quy trình thực tế ở sự kiện doanh nghiệp.** Chọn mic ở gần miệng, hướng loa vào khán giả (không hướng vào tường), giữ nhạc nền thấp hơn tiếng nói ít nhất khoảng 15 dB (xem `speech-playback-and-walk-in-music`), chỉ dùng một cú nâng rộng nhỏ ở vùng 2-4 kHz khi giọng cần, và đi bộ quanh phòng lúc rehearsal. Nếu STI của venue quan trọng (thông báo khẩn cấp, quy định), hãy đo; đừng khai một con số bạn chưa đo.
 
-  **Lỗi thường gặp:** vặn to level trong phòng nhiều vang (reverb to theo cùng), cut dải 2-4 kHz để tránh chói mà không kiểm tra độ rõ lời, và nhầm độ lớn với độ rõ.
+  **Lỗi thường gặp:** vặn to level trong phòng nhiều vang (reverb to theo cùng), cut dải 2-4 kHz để tránh harshness (độ gắt) mà không kiểm tra độ rõ lời, và nhầm độ lớn với độ rõ.
 rule:
   applies_to:
     source_type:
@@ -126,6 +126,6 @@ media:
   caption_vi: Webinar của JBL Professional về STI và speech intelligibility (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:32+07:00'
 updated_by: agent:translator-vi

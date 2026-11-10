@@ -1,6 +1,6 @@
 id: de-esser
 title: 'De-esser: taming sibilance'
-title_vi: 'De-esser: giảm âm xì (sibilance)'
+title_vi: 'De-esser: giảm sibilance (âm xì)'
 topic: dynamics
 tags:
   instrument:
@@ -15,7 +15,7 @@ tags:
   - corporate
   - concert
 summary: A de-esser is a compressor whose detector listens to the sibilance band, so it only turns the voice down on harsh S and T sounds. Choose split-band for transparency and wideband when you need to reduce the whole signal.
-summary_vi: De-esser là một compressor mà detector chỉ "nghe" dải âm xuýt (Sibilance), nên nó chỉ hạ tiếng khi gặp âm S và T gắt. Chọn split-band khi cần trong trẻo, chọn wideband khi cần giảm cả tín hiệu.
+summary_vi: De-esser là một compressor mà detector chỉ "nghe" dải sibilance (âm xuýt chữ s, x, ch), nên nó chỉ hạ tiếng khi gặp âm S và T harsh. Chọn split-band khi cần trong trẻo, chọn wideband khi cần giảm cả tín hiệu.
 body: |
   Sibilance is the sharp, hissy energy of "s", "sh" and "t" sounds. Close vocal mics, bright capsules, and heavy high-frequency EQ make it worse, and in a PA it is one of the first things that sounds harsh and fatiguing.
 
@@ -53,34 +53,34 @@ body: |
   - Stacking one heavy de-esser rather than two gentle passes.
   - Leaving it static as the singer's level changes; automate or adjust the threshold when the performer gets louder.
 body_vi: |
-  Âm xuýt (Sibilance) là phần năng lượng sắc, xì xì của các âm "s", "sh" và "t". Mic vocal đặt sát, capsule sáng và EQ tăng nhiều treble đều làm nó tệ hơn; trên PA, đây là một trong những thứ đầu tiên nghe gắt và gây mệt tai.
+  Sibilance (âm xuýt) là phần năng lượng sắc, xì xì của các âm "s", "sh" và "t". Mic vocal đặt sát, capsule bright và EQ tăng nhiều treble đều làm nó tệ hơn; trên PA, đây là một trong những thứ đầu tiên nghe harsh và gây mệt tai.
 
   ## Nó nằm ở đâu
 
-  Phần lớn năng lượng xuýt nằm quanh 3 đến 6 kHz, nơi tai nhạy nhất, và còn thêm ở trên 10 kHz. iZotope đưa ra khoảng rộng hơn, chừng 4 đến 10 kHz, và lưu ý với vài giọng và mic nó có thể xuống tận 1.5 kHz. Giọng nữ thường có âm "s" ở tần số cao hơn giọng nam. Điểm chính xác phụ thuộc người nói và mic, nên bạn phải tìm bằng tai: loop một âm "s" trên bản thu, hoặc đẩy một band EQ hẹp rồi quét tới khi nghe tệ nhất. Nhiều mic vocal còn có presence boost quanh 5 kHz làm nó nặng thêm.
+  Phần lớn năng lượng sibilance nằm quanh 3 đến 6 kHz, nơi tai nhạy nhất, và còn thêm ở trên 10 kHz. iZotope đưa ra khoảng rộng hơn, chừng 4 đến 10 kHz, và lưu ý với vài giọng và mic nó có thể xuống tận 1.5 kHz. Giọng nữ thường có âm "s" ở tần số cao hơn giọng nam. Điểm chính xác phụ thuộc người nói và mic, nên bạn phải tìm bằng tai: loop một âm "s" trên bản thu, hoặc đẩy một band EQ hẹp rồi quét tới khi nghe tệ nhất. Nhiều mic vocal còn có presence boost quanh 5 kHz làm nó nặng thêm.
 
   ## De-esser hoạt động thế nào
 
-  De-esser là một compressor có sidechain được lọc để chỉ nghe dải xuýt. Khi dải đó lớn, nó giảm gain.
+  De-esser là một compressor có sidechain được lọc để chỉ nghe dải sibilance. Khi dải đó lớn, nó giảm gain.
 
-  - **Wideband (full-band)** giảm toàn bộ tín hiệu khi detector kích hoạt. Đơn giản và chắc chắn, nhưng phần thân của nguyên âm cũng bị tụt theo, nên dùng quá tay thì giọng nghe như bị ducking hoặc ngọng.
+  - **Wideband (full-band)** giảm toàn bộ tín hiệu khi detector kích hoạt. Đơn giản và chắc chắn, nhưng phần body của nguyên âm cũng bị tụt theo, nên dùng quá tay thì giọng nghe như bị ducking hoặc ngọng.
   - **Split-band** chỉ giảm phần nội dung phía trên crossover (hoặc trong một band), để phần còn lại nguyên vẹn. Trong trẻo hơn và thường là lựa chọn đầu tiên. Nó hoạt động giống một multiband compressor một band.
 
   ## Cách set
 
-  1. Đặt tần số ở chỗ âm xuýt gắt nhất.
-  2. Hạ Threshold tới khi nghe nó tác động lên các âm "s", rồi nới lại tới khi hết gắt nhưng người nói vẫn nghe tự nhiên.
+  1. Đặt tần số ở chỗ sibilance harsh nhất.
+  2. Hạ Threshold tới khi nghe nó tác động lên các âm "s", rồi nới lại tới khi hết harsh nhưng người nói vẫn nghe tự nhiên.
   3. Giữ mức tác động vừa phải. Hầu hết de-esser có Attack và Release tự động; cứ để nguyên trừ khi nghe thấy artifact.
-  4. Nghe phần bị giảm nếu thiết bị có chế độ "listen", để chắc là nó chỉ bắt âm xuýt.
+  4. Nghe phần bị giảm nếu thiết bị có chế độ "listen", để chắc là nó chỉ bắt sibilance.
 
   Điểm xuất phát: dải tần khoảng 4 đến 8 kHz, giảm vài dB ở những âm "s" tệ nhất. Coi đây là khoảng tham khảo, không phải luật.
 
   ## Đặc thù khi live
 
-  - Trên console không có de-esser riêng, dùng compressor với key filter được boost quanh dải xuýt, hoặc multiband compressor với một band cao hẹp. Sound On Sound nêu cả hai cách này.
-  - Cắt EQ tĩnh làm giọng bị tối mọi lúc, trong khi de-esser chỉ tác động khi cần. Với mic gắt, thử cắt nhẹ trước, rồi thêm de-esser để xử lý các đỉnh.
+  - Trên console không có de-esser riêng, dùng compressor với key filter được boost quanh dải sibilance, hoặc multiband compressor với một band cao hẹp. Sound On Sound nêu cả hai cách này.
+  - Cắt EQ tĩnh làm giọng bị dull mọi lúc, trong khi de-esser chỉ tác động khi cần. Với mic harsh, thử cắt nhẹ trước, rồi thêm de-esser để xử lý các đỉnh.
   - Mic headset không dây dùng cho speech thường cần de-esser nhiều hơn mic cầm tay hát, vì capsule nằm rất gần miệng.
-  - De-ess trước effects send. Reverb hoặc delay sáng sẽ biến âm xuýt thành một mảng loang chói.
+  - De-ess trước effects send. Reverb hoặc delay bright sẽ biến sibilance thành một mảng splashy.
 
   ## Lỗi thường gặp
 
@@ -118,7 +118,7 @@ media:
 - kind: diagram
   path: sibilance-bands.png
   caption: Where sibilance sits compared with the vocal body and presence region
-  caption_vi: Âm xuýt nằm ở đâu so với phần thân vocal và vùng presence
+  caption_vi: Sibilance nằm ở đâu so với phần body vocal và vùng presence
   license: CC0-1.0
   attribution: Generated for wing-parser
   generated_by: scripts/library_diagrams.py
@@ -127,9 +127,9 @@ media:
   title: Introduction to FabFilter Pro-DS Intelligent De-esser
   channel: FabFilter
   caption: FabFilter introduction to an intelligent de-esser and how sibilance is detected (title and channel confirmed on YouTube; not watched in full)
-  caption_vi: FabFilter giới thiệu intelligent de-esser và cách phát hiện âm xuýt (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+  caption_vi: FabFilter giới thiệu intelligent de-esser và cách phát hiện sibilance (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:09+07:00'
 updated_by: agent:translator-vi

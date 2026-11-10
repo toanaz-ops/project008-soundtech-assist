@@ -19,7 +19,7 @@ tags:
   - concert
   - club
 summary: 'Acoustic jazz is reinforced, not remade: keep the natural dynamics, favour balance over EQ boosts, and manage feedback on open mics and the upright bass.'
-summary_vi: 'Jazz acoustic là khuếch đại chứ không làm lại: giữ dynamics tự nhiên, ưu tiên balance hơn EQ boost, và kiểm soát hú rít (Feedback) trên các mic mở và upright bass.'
+summary_vi: 'Jazz acoustic là khuếch đại chứ không làm lại: giữ dynamics tự nhiên, ưu tiên balance hơn EQ boost, và kiểm soát feedback (hú rít) trên các mic mở và upright bass.'
 body: |
   ## Balance and approach
 
@@ -51,13 +51,13 @@ body: |
 body_vi: |
   ## Balance và cách tiếp cận
 
-  Mục tiêu là làm nhạc cụ to hơn mà vẫn giữ nguyên chất của chúng. Nhạc cụ jazz thường chơi acoustic, nên xử lý nặng tay sẽ nghe giả rất nhanh. Hãy dựa vào balance trước, và dùng EQ cắt thay vì boost. Hướng dẫn church-sound của Shure do Mike Sokol viết bắt đầu từ việc lắng nghe: nghe từng nhạc cụ riêng trước, nhờ người chơi chơi để bạn biết tông tự nhiên của nó trước khi định hình. Sau đó rời khỏi console và nghe phòng.
+  Mục tiêu là làm nhạc cụ to hơn mà vẫn giữ nguyên character (chất riêng) của chúng. Nhạc cụ jazz thường chơi acoustic, nên xử lý nặng tay sẽ nghe giả rất nhanh. Hãy dựa vào balance trước, và dùng EQ cắt thay vì boost. Hướng dẫn church-sound của Shure do Mike Sokol viết bắt đầu từ việc lắng nghe: nghe từng nhạc cụ riêng trước, nhờ người chơi chơi để bạn biết tông tự nhiên của nó trước khi định hình. Sau đó rời khỏi console và nghe phòng.
 
   Entry này ngoại suy từ hướng dẫn chung về acoustic và live bass; tôi không tìm được nguồn riêng cho việc mix jazz acoustic qua PA, nên hãy coi nó là khung xuất phát chứ không phải sách luật của jazz.
 
   ## Low end
 
-  Bass thường là vấn đề trong một band chơi nhỏ. Lấy DI từ upright hoặc bass điện tránh được spill và low end sân khấu ì ầm; nếu thêm cả mic, kiểm tra polarity giữa hai bên vì phase cancellation làm bass mỏng đi (Burton, SOS). Boost deep bass dè dặt vì dễ làm quá tải woofer PA (Sokol, Shure). Trong band có bass, giảm low end của guitar acoustic để mix trong và vocal rõ lời; với solo hoặc duo thì có thể để lại nhiều low end hơn (Korff, SOS).
+  Bass thường là vấn đề trong một band chơi nhỏ. Lấy DI từ upright hoặc bass điện tránh được spill và low end sân khấu boomy (ù, rền); nếu thêm cả mic, kiểm tra polarity giữa hai bên vì phase cancellation làm bass thin đi (Burton, SOS). Boost deep bass dè dặt vì dễ làm quá tải woofer PA (Sokol, Shure). Trong band có bass, giảm low end của guitar acoustic để mix trong và vocal vẫn intelligible (rõ lời); với solo hoặc duo thì có thể để lại nhiều low end hơn (Korff, SOS).
 
   ## Dynamics
 
@@ -133,6 +133,6 @@ media:
   caption_vi: Làm cho acoustic bass nghe hay trong mix jazz (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:59+07:00'
 updated_by: agent:translator-vi

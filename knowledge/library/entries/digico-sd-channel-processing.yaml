@@ -1,0 +1,109 @@
+id: digico-sd-channel-processing
+title: 'SD channel processing: dynamic EQ bands, DYN 1 and DYN 2, 8-band bus EQ'
+title_vi: 'Xử lý channel trên SD: band Dynamic EQ, DYN 1 và DYN 2, bus EQ 8 band'
+topic: digico-sd
+tags:
+  instrument:
+  - vocals
+  genre: []
+  technique:
+  - console-digico-sd
+  - dynamic-eq
+  - multiband-compressor
+  - de-esser
+  - dynamics
+  event:
+  - festival
+  - touring
+summary: 'Every SD input channel has filters, a 4-band EQ whose bands can each be dynamic, and two dynamics modules: DYN 1 (compressor, multiband compressor or de-esser) and DYN 2 (gate, ducker or compressor). Output buses on the SD10 can have 8 EQ bands.'
+summary_vi: 'Mỗi input channel của SD có filter, EQ 4 band mà từng band có thể thành dynamic, và hai module dynamics: DYN 1 (compressor, multiband compressor hoặc de-esser) và DYN 2 (gate, ducker hoặc compressor). Bus output của SD10 có thể có 8 band EQ.'
+body: |
+  ## What the manual says (Issue H, V20+)
+
+  - **Filters:** a low-pass and a high-pass on input channels, each with its own on/off and 24 dB/oct roll-off, directly after the input section.
+  - **Input EQ:** four bands (HF, HMF, LMF, LF), each can be made dynamic. Gain range +/-18 dB, frequency 20 Hz to 20 kHz, with Q. Bands can be bell or high/low shelf. On SD5, SD7 and Q3, a second function of the bell button switches between "prec" (Q narrower on cut than boost) and "class" (cut and boost Q equal); the SD10 is not named for that feature. The default order is EQ then dynamics; a button reverses it.
+  - **Dynamic EQ:** a band can work in Over or Under mode. Over: when the signal passes the threshold, the EQ adjustment (set by frequency, Q and gain) starts, up to the band's gain. Under: the full adjustment is applied when the signal is below the threshold and reduces to none at the threshold. Attack, release and ratio shape how fast it moves. The manual says Over mode is generally used with a gain reduction at a given frequency, for example to tame a tonal change as a singer pushes harder.
+  - **Dynamics:** DYN 1 is a compressor, a multiband compressor or a de-esser; DYN 2 is a gate, a ducker, or a compressor, with high-pass and low-pass filtering on a self or external sidechain. Compressor: threshold, attack, release, ratio, gain, auto gain and a hard/mid/soft knee. Multiband: each band has the compressor parameters, crossovers 20 Hz to 20 kHz, per-band on, and a listen button (destructive audition). De-esser: band-pass sidechain with centre frequency and width; a listen button; no makeup gain.
+  - **Output EQ:** on SD5, SD7 and SD10, output buses have eight bands, four pre-insert and four post-insert. The pre-insert bands can switch the top or bottom two to 24 dB/oct filters, and do not have dynamic EQ or bell/shelf switching.
+  - The product page lists 218 Dynamic EQ and 218 multiband compressor instances on the SD10 and a gate/compressor/ducker in DYN 2.
+  - Safes, presets and copy-to are on the EQ and dynamics displays.
+
+  ## How to use it on a show
+
+  1. Vocals that get harsh when pushed: make one upper-mid band dynamic in Over mode, cut by a few dB at the harsh frequency, and set the threshold so the band only acts on loud peaks. Start with gentle gain and listen with the band on and off.
+  2. Sibilance: use the DYN 1 de-esser with the band-pass on the sibilant region, and use listen to find it.
+  3. Drum bus or full-range sources: use the multiband compressor in DYN 1 and set the crossovers to match the problem.
+  4. Use DYN 2 as a gate on toms, or a ducker for talkback over playback.
+  5. Output buses: use the extra bands to correct a wedge or a PA zone, keeping the pre-insert bands for filters.
+
+  ## Pitfalls
+
+  - The DEQ and multiband counts are product-page totals; how the console reports usage was not checked.
+  - The de-esser has no makeup gain, so you do not need to compensate, but watch for level change if you switch types.
+  - Reversing the EQ/dynamics order changes the sound of the compressor. Decide once and keep it consistent across a show.
+
+  ## What is NOT verified
+
+  - Starting values for threshold, ratio or Q (the manual does not give recommendations; the steps above are working practice).
+  - Whether the "prec" and "class" EQ shapes exist on the SD10.
+body_vi: |
+  ## Manual nói gì (Issue H, V20+)
+
+  - **Filters:** một low-pass và một high-pass trên input channel, mỗi cái có on/off riêng và roll-off 24 dB/oct, nằm ngay sau phần input.
+  - **Input EQ:** bốn band (HF, HMF, LMF, LF), mỗi band có thể thành dynamic. Dải gain +/-18 dB, tần số 20 Hz đến 20 kHz, có Q. Band có thể là bell hoặc high/low shelf. Trên SD5, SD7 và Q3, chức năng thứ hai của nút bell chuyển giữa "prec" (Q hẹp hơn ở cut so với boost) và "class" (Q của cut và boost bằng nhau); manual không nêu tên SD10 cho tính năng đó. Thứ tự mặc định là EQ rồi dynamics; có nút đảo ngược.
+  - **Dynamic EQ:** một band có thể chạy ở mode Over hoặc Under. Over: khi tín hiệu vượt threshold, phần chỉnh EQ (do frequency, Q và gain quyết định) bắt đầu áp dụng, tối đa tới gain của band. Under: phần chỉnh đầy đủ được áp khi tín hiệu dưới threshold và giảm dần về không tại threshold. Attack, release và ratio quyết định nó di chuyển nhanh thế nào. Manual nói Over mode thường dùng với việc giảm gain ở một tần số, ví dụ để kiềm sự đổi màu âm khi ca sĩ hát mạnh lên.
+  - **Dynamics:** DYN 1 là compressor, multiband compressor hoặc de-esser; DYN 2 là gate, ducker, hoặc compressor, có lọc high-pass và low-pass trên sidechain nội hoặc ngoài. Compressor: Threshold, Attack, Release, Ratio, Gain, auto gain và knee hard/mid/soft. Multiband: mỗi band có đủ tham số compressor, crossover 20 Hz đến 20 kHz, on theo từng band, và nút listen (nghe thử kiểu destructive). De-esser: sidechain band-pass với tần số trung tâm và độ rộng; có nút listen; không có makeup gain.
+  - **Output EQ:** trên SD5, SD7 và SD10, bus output có tám band, bốn pre-insert và bốn post-insert. Band pre-insert có thể chuyển hai band trên hoặc dưới thành filter 24 dB/oct, và không có dynamic EQ hay chuyển bell/shelf.
+  - Trang sản phẩm ghi 218 Dynamic EQ và 218 multiband compressor trên SD10, và DYN 2 có gate/compressor/ducker.
+  - Safes, preset và copy-to nằm trong màn hình EQ và dynamics.
+
+  ## Cách dùng trên show
+
+  1. Vocal bị harsh khi hát mạnh: cho một band upper-mid thành dynamic ở mode Over, cắt vài dB ở tần số harsh, và chỉnh Threshold để band chỉ tác động lên đỉnh to. Bắt đầu với gain nhẹ và nghe khi bật và tắt band.
+  2. Sibilance (âm xuýt chữ s, x, ch): dùng de-esser của DYN 1 với band-pass đặt vào vùng sibilant, dùng listen để tìm nó.
+  3. Drum bus hoặc nguồn full-range: dùng multiband compressor ở DYN 1 và chỉnh crossover khớp với vấn đề.
+  4. Dùng DYN 2 làm gate cho tom, hoặc ducker để talkback đè playback.
+  5. Bus output: dùng các band thêm để sửa wedge hoặc một vùng PA, giữ band pre-insert cho filter.
+
+  ## Bẫy thường gặp
+
+  - Số DEQ và multiband là tổng theo trang sản phẩm; console báo mức sử dụng thế nào thì chưa kiểm tra.
+  - De-esser không có makeup gain, nên không cần bù, nhưng để ý thay đổi mức khi đổi loại.
+  - Đảo thứ tự EQ/dynamics làm đổi âm của compressor. Chọn một lần và giữ nhất quán cả show.
+
+  ## Điều CHƯA được xác minh
+
+  - Giá trị khởi đầu cho Threshold, Ratio hoặc Q (manual không đưa khuyến nghị; các bước trên là cách làm thực tế).
+  - Hình dạng EQ "prec" và "class" có trên SD10 hay không.
+sources:
+- title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
+  publisher: DiGiCo
+  kind: manual
+  url: https://support.digico.biz/hc/en-gb/article_attachments/37137993915665
+  accessed: '2026-11-10'
+  locator: 'PDF p.47-53 (1.6 Channel Signal Processing: filters, EQ, Dynamic EQ, output EQ, dynamics), PDF p.46 (1.5.4 Buss EQ)'
+- title: SD10 product page
+  publisher: DiGiCo
+  kind: article
+  url: https://digico.biz/consoles/sd10
+  accessed: '2026-11-10'
+  locator: Processing counts and channel tools (read via web fetch)
+media:
+- kind: diagram
+  path: sd-channel-chain.png
+  caption: SD input channel chain with default EQ-then-dynamics order
+  caption_vi: Chuỗi xử lý input channel SD với thứ tự mặc định EQ rồi dynamics
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=wHIZiT-7fYo
+  title: 3 Dynamics Processing
+  channel: DiGiCo Consoles
+  caption: DiGiCo video on dynamics processing; which console it uses was not checked (title and channel verified via oEmbed; not watched)
+  caption_vi: Video về dynamics processing của DiGiCo; chưa kiểm tra dùng console nào (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

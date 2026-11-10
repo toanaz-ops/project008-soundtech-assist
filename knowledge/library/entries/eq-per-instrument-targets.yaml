@@ -72,27 +72,27 @@ body_vi: |
 
   ## Drums
 
-  - **Kick**: high-pass khoảng 25 đến 60 Hz (35 Hz là điển hình). Cut 200 đến 500 Hz cho bớt boxy; một chỗ lõm gần 180 Hz giúp bass ngồi vào. Boost 60 đến 90 Hz cho punch và 1 đến 5 kHz (khoảng 3 đến 4 kHz) cho beater click. Tránh boost sub dưới khoảng 40 Hz khi live.
-  - **Snare**: high-pass 80 đến 200 Hz. Cut 400 đến 700 Hz cho bớt ring và 900 đến 1500 Hz nếu nghe papery. Boost 150 đến 250 Hz cho thân tiếng, 2 đến 3.5 kHz cho snap, một shelf gần 8 kHz cho độ giòn. Vùng 2 đến 4 kHz tranh chỗ với presence của vocal.
-  - **Toms**: high-pass khoảng 40 đến 100 Hz (con số chính xác chưa xác nhận). Cut gần 250 Hz cho bớt mud; boost 60 đến 120 Hz cho thân tiếng và 800 đến 1500 Hz cho attack.
-  - **Hi-hat và ride**: high-pass 150 đến 500 Hz (hai nguồn bất đồng về mức mạnh tay). Cut 3 đến 7 kHz nếu chói; một shelf gần 10 đến 12 kHz thêm độ bóng.
-  - **Overheads**: high-pass 150 đến 500 Hz, một cut rộng gần 4 kHz nếu chói, một shelf ở 8 đến 12 kHz cho shimmer.
+  - **Kick**: high-pass khoảng 25 đến 60 Hz (35 Hz là điển hình). Cut 200 đến 500 Hz cho bớt boxy (nghe như bị bọng, bị nhốt trong một chiếc hộp); một chỗ lõm gần 180 Hz giúp bass ngồi vào. Boost 60 đến 90 Hz cho punch và 1 đến 5 kHz (khoảng 3 đến 4 kHz) cho beater click. Tránh boost sub dưới khoảng 40 Hz khi live.
+  - **Snare**: high-pass 80 đến 200 Hz. Cut 400 đến 700 Hz cho bớt ring và 900 đến 1500 Hz nếu nghe papery. Boost 150 đến 250 Hz cho body (thân tiếng), 2 đến 3.5 kHz cho snap, một shelf gần 8 kHz cho crack. Vùng 2 đến 4 kHz tranh chỗ với presence của vocal.
+  - **Toms**: high-pass khoảng 40 đến 100 Hz (con số chính xác chưa xác nhận). Cut gần 250 Hz cho bớt mud (đục, dày, các tiếng dính vào nhau); boost 60 đến 120 Hz cho body và 800 đến 1500 Hz cho attack.
+  - **Hi-hat và ride**: high-pass 150 đến 500 Hz (hai nguồn bất đồng về mức mạnh tay). Cut 3 đến 7 kHz nếu harsh (chói, gắt); một shelf gần 10 đến 12 kHz thêm sheen.
+  - **Overheads**: high-pass 150 đến 500 Hz, một cut rộng gần 4 kHz nếu harsh, một shelf ở 8 đến 12 kHz cho shimmer.
 
   ## Bass và guitars
 
-  - **Bass**: high-pass khoảng 30 đến 45 Hz (khoảng này là quy ước của lane nghiên cứu, không phải số có nguồn). Cut 200 đến 400 Hz cho bớt mud; boost 220 đến 300 Hz cho chất tiếng và 800 Hz đến 1 kHz cho độ rõ nốt.
-  - **Electric guitar**: high-pass 80 đến 120 Hz. Cut 200 đến 300 Hz cho bớt tiếng thùng và 3 đến 6 kHz cho bớt fizz; một boost rộng gần 4 kHz thêm presence (một nguồn gợi ý +3 dB). Tuyệt đối không scoop mids khi live, phần lõi của guitar nằm ở 300 Hz đến 1.5 kHz.
-  - **Acoustic guitar**: high-pass 60 đến 100 Hz. Cut 150 đến 400 Hz nếu bị thùng; boost gần 1.5 kHz cho presence và một shelf ở 8 đến 12 kHz cho air. Dễ hú rít (feedback) ở 100 đến 250 Hz, nên ưu tiên cut.
+  - **Bass**: high-pass khoảng 30 đến 45 Hz (khoảng này là quy ước của lane nghiên cứu, không phải số có nguồn). Cut 200 đến 400 Hz cho bớt mud; boost 220 đến 300 Hz cho character và 800 Hz đến 1 kHz cho articulation.
+  - **Electric guitar**: high-pass 80 đến 120 Hz. Cut 200 đến 300 Hz cho bớt tubbiness (tiếng thùng) và 3 đến 6 kHz cho bớt fizz; một boost rộng gần 4 kHz thêm presence (một nguồn gợi ý +3 dB). Tuyệt đối không scoop mids khi live, phần lõi của guitar nằm ở 300 Hz đến 1.5 kHz.
+  - **Acoustic guitar**: high-pass 60 đến 100 Hz. Cut 150 đến 400 Hz nếu bị tubby; boost gần 1.5 kHz cho presence và một shelf ở 8 đến 12 kHz cho air. Dễ feedback (hú rít) ở 100 đến 250 Hz, nên ưu tiên cut.
 
   ## Keys, strings, horns
 
   - **Keys**: cut 200 đến 500 Hz cho bớt mud và 2 đến 4 kHz để chừa chỗ cho vocal. High-pass (40 đến 100 Hz) không có nguồn.
-  - **Strings**: high-pass 100 đến 150 Hz; cut 200 đến 500 Hz cho bớt mud và 1 đến 4 kHz cho bớt chói; shelf gần 10 kHz cho air.
-  - **Horns**: high-pass 100 đến 200 Hz; cut 500 đến 800 Hz nếu boxy và 1 đến 5 kHz nếu chói; shelf gần 5 kHz.
+  - **Strings**: high-pass 100 đến 150 Hz; cut 200 đến 500 Hz cho bớt mud và 1 đến 4 kHz cho bớt harshness; shelf gần 10 kHz cho air.
+  - **Horns**: high-pass 100 đến 200 Hz; cut 500 đến 800 Hz nếu boxy và 1 đến 5 kHz nếu harsh; shelf gần 5 kHz.
 
   ## Voice
 
-  - **Vocal và MC**: high-pass 80 đến 150 Hz (một nguồn nói khoảng 80 Hz cho giọng nam và 140 Hz cho giọng nữ). Cut 200 đến 500 Hz cho bớt mud và 500 Hz đến 1.2 kHz cho bớt chất mũi; âm xuýt (sibilance) nằm ở 5 đến 8 kHz, dùng de-esser tốt hơn là khoét notch sâu. Boost rộng 3 đến 4 kHz cho presence và 1 đến 1.5 kHz cho độ dễ nghe, khoảng +3 dB.
+  - **Vocal và MC**: high-pass 80 đến 150 Hz (một nguồn nói khoảng 80 Hz cho giọng nam và 140 Hz cho giọng nữ). Cut 200 đến 500 Hz cho bớt mud và 500 Hz đến 1.2 kHz cho bớt nasal; sibilance (âm xuýt) nằm ở 5 đến 8 kHz, dùng de-esser tốt hơn là khoét notch sâu. Boost rộng 3 đến 4 kHz cho presence và 1 đến 1.5 kHz cho intelligibility, khoảng +3 dB.
 
   ## Chỗ các nguồn bất đồng
 
@@ -339,6 +339,6 @@ media:
   caption_vi: EQ live cho electric guitar (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:02+07:00'
 updated_by: agent:translator-vi

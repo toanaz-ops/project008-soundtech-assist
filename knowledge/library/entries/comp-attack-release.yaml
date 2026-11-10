@@ -16,7 +16,7 @@ tags:
   - pumping
   event: []
 summary: Attack sets how quickly gain reduction grabs after the threshold is crossed, release sets how quickly it lets go. Slow attack keeps punch, fast attack tames peaks, and release must be matched to the rhythm of the source to avoid pumping.
-summary_vi: Attack quyết định Gain Reduction bắt vào nhanh cỡ nào sau khi vượt Threshold, Release quyết định nó nhả ra nhanh cỡ nào. Attack chậm giữ được độ punch, Attack nhanh kìm peak, còn Release phải khớp nhịp của nguồn âm, nếu không bạn sẽ nghe hiện tượng bơm (pumping).
+summary_vi: Attack quyết định Gain Reduction bắt vào nhanh cỡ nào sau khi vượt Threshold, Release quyết định nó nhả ra nhanh cỡ nào. Attack chậm giữ được punch, Attack nhanh kìm peak, còn Release phải khớp nhịp của nguồn âm, nếu không bạn sẽ nghe pumping (hiện tượng bơm).
 body: |
   Attack and release are **speeds of gain change**, not delays. Attack is how fast the compressor turns the signal down once it is over the threshold. Release is how fast it returns to unity gain after the signal falls back under it.
 
@@ -63,14 +63,14 @@ body_vi: |
   ## Attack
 
   - **Attack chậm (khoảng 20 đến 40 ms trở lên)**: phần đầu của tiếng đánh lọt qua trước khi Compressor kịp phản ứng. Trống nghe punch và dứt khoát hơn, nhưng đuôi sau tiếng đánh bị kéo xuống nên sustain giảm.
-  - **Attack nhanh (khoảng 1 ms trở xuống)**: chộp cổ transient ngay từ đầu, peak được kiểm soát, tiếng đặc hơn và bớt gắt. Nhưng Attack quá nhanh trên vocal thì giọng bị bẹp và tối.
+  - **Attack nhanh (khoảng 1 ms trở xuống)**: chộp cổ transient ngay từ đầu, peak được kiểm soát, tiếng đặc hơn và bớt gắt. Nhưng Attack quá nhanh trên vocal thì giọng bị bẹp và dull (xỉn, tối).
   - Tác động cực nhanh trên nguồn âm thấp có thể gây méo, vì Compressor bắt đầu hoạt động ngay trong từng chu kỳ của tiếng bass.
 
   Ví dụ từ Sound On Sound: với Attack 100 ms và Ratio 4:1, một peak cao hơn Threshold 8 dB chỉ đạt 6 dB Gain Reduction sau 100 ms; peak ngắn hơn mức đó đã qua mất trước khi Compressor kịp tác động đầy đủ.
 
   ## Release
 
-  - **Quá nhanh**: level lên xuống thấy rõ theo từng câu hát, đó là hiệu ứng bơm (pumping). Với nguồn nhiều low-end, nó còn nghe như méo.
+  - **Quá nhanh**: level lên xuống thấy rõ theo từng câu hát, đó là pumping (hiệu ứng bơm). Với nguồn nhiều low-end, nó còn nghe như méo.
   - **Quá chậm**: Compressor chưa kịp hồi trước tiếng đánh kế tiếp, nên transient sau bị bẹp và tiếng bị dẹt.
   - Mục tiêu tốt là gain về khoảng 90 đến 100 phần trăm unity ngay trước tiếng đánh kế tiếp. Với nhạc, đặt Release theo tempo; với giọng nói, Release mức vừa thường nghe tự nhiên nhất.
 
@@ -87,7 +87,7 @@ body_vi: |
   ## Thao tác thực chiến
 
   1. Đặt Threshold sao cho kim Gain Reduction nhúc nhích ở những đoạn to.
-  2. Bắt đầu với Attack chậm và nghe transient. Tăng tốc dần cho tới khi peak được kiểm soát mà tiếng không bị tối.
+  2. Bắt đầu với Attack chậm và nghe transient. Tăng tốc dần cho tới khi peak được kiểm soát mà tiếng không bị dull.
   3. Sau đó chỉnh Release trong khi nhìn meter: bạn muốn kim trả về 0 giữa các câu hoặc các tiếng đánh mà không bị chattering.
 
   ## Lỗi thường gặp
@@ -153,6 +153,6 @@ media:
   caption_vi: Audio University hướng dẫn Threshold, Ratio, Attack, Release và hơn nữa (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
-updated_by: agent:translator-vi
+revision: 4
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

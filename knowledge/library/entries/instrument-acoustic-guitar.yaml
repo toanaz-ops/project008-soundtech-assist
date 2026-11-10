@@ -1,6 +1,6 @@
 id: instrument-acoustic-guitar
 title: 'Acoustic guitar: pickup DI, mics and feedback control'
-title_vi: 'Guitar acoustic: DI từ pickup, mic và chống hú'
+title_vi: 'Guitar acoustic: DI từ pickup, mic và chống feedback'
 topic: instruments
 tags:
   instrument:
@@ -17,7 +17,7 @@ tags:
   - concert
   - corporate
 summary: In a band, a pickup DI is usually safer than a mic; a mic near the soundhole sounds better but invites feedback and tone shift. A cut around 150-250 Hz tames boxiness.
-summary_vi: Trong band, DI từ pickup thường an toàn hơn mic; mic gần soundhole nghe hay hơn nhưng dễ feedback và đổi âm sắc. Cut quanh 150-250 Hz để bớt tiếng hộp.
+summary_vi: Trong band, DI từ pickup thường an toàn hơn mic; mic gần soundhole nghe hay hơn nhưng dễ feedback và đổi âm sắc. Cut quanh 150-250 Hz để bớt boxy (nghe như bị bọng, bị nhốt trong một chiếc hộp).
 body: |
   ## DI or mic?
 
@@ -56,9 +56,9 @@ body_vi: |
 
   Trên stage to tiếng, close-mic một cây acoustic rất khó: để mic đủ gần mà loại được spill thì âm sắc đổi mỗi khi người chơi dịch chuyển, và kết quả có thể không giống tiếng cây đàn. Vì vậy lời khuyên của Paul White cho các gig không phải acoustic là dùng DI từ pickup của đàn.
 
-  - Piezo cơ bản dưới saddle có thể nghe chói và cần EQ mạnh hoặc một acoustic preamp/processor.
+  - Piezo cơ bản dưới saddle có thể nghe harsh (chói gắt) và cần EQ mạnh hoặc một acoustic preamp/processor.
   - Hệ thống tốt hơn kết hợp pickup với một mic nhỏ gắn bên trong và cần chỉnh ít hơn nhiều.
-  - Khi pickup nghe mỏng dính, mic có thể thêm chút ấm ở low-mid, blend nhẹ dưới DI.
+  - Khi pickup nghe tinny (mỏng, the thé), mic có thể thêm chút warmth ở low-mid, blend nhẹ dưới DI.
 
   ## Mic khi bạn dùng mic
 
@@ -67,9 +67,9 @@ body_vi: |
   ## EQ khởi đầu
 
   - High-pass khoảng 70-100 Hz; iZotope lưu ý dưới 70 Hz có lẽ không cần thiết.
-  - Cut ở 150-250 Hz giảm tiếng hộp (White); iZotope xếp body/mud ở 200-400 Hz.
-  - Presence hoặc độ chói ở 1.5-2.5 kHz; trim ở đó nếu pickup bị quack.
-  - 8-12 kHz là air; nâng nhẹ có thể trả lại độ lấp lánh mà piezo thiếu.
+  - Cut ở 150-250 Hz giảm boxy (nghe như bị bọng, bị nhốt trong một chiếc hộp) (White); iZotope xếp body/mud ở 200-400 Hz.
+  - Presence hoặc harshness ở 1.5-2.5 kHz; trim ở đó nếu pickup bị quack.
+  - 8-12 kHz là air; nâng nhẹ có thể trả lại sparkle mà piezo thiếu.
 
   ## Dynamics
 
@@ -145,6 +145,6 @@ media:
   caption_vi: Nén guitar acoustic khi chơi live (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:21+07:00'
 updated_by: agent:translator-vi

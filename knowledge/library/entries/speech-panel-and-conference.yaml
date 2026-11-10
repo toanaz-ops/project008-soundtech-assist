@@ -72,7 +72,7 @@ body_vi: |
 
   **Khi nào không dùng gain sharing.** Với dàn hợp xướng hát hoặc một mix nhạc, speech gain-sharing automixer sẽ dồn gần hết gain cho giọng to nhất. Xem `vocal-backing-and-choir`.
 
-  **Xử lý cho từng mic.** Cho mỗi mic một HPF riêng (khoảng 100 Hz làm điểm khởi đầu), một chút presence lift rộng và nhẹ nếu cần (xem `speech-intelligibility-sti`), và chỉ notch ở chỗ nào rít. Dùng cùng pickup pattern và khoảng cách trên mọi mic bàn để automixer thấy các level tương tự. Test với tất cả người nói ở âm lượng bình thường tại đúng vị trí thật của họ.
+  **Xử lý cho từng mic.** Cho mỗi mic một HPF riêng (khoảng 100 Hz làm điểm khởi đầu), một chút presence lift rộng và nhẹ nếu cần (xem `speech-intelligibility-sti`), và chỉ notch ở chỗ nào ring. Dùng cùng pickup pattern và khoảng cách trên mọi mic bàn để automixer thấy các level tương tự. Test với tất cả người nói ở âm lượng bình thường tại đúng vị trí thật của họ.
 
   **Lỗi thường gặp:** để mọi mic bàn mở "phòng khi cần", đặt Threshold automix thấp đến mức ambient noise điều khiển gain, coi gain-sharing automixer như một noise gate, và quên mute các mic đeo người khi diễn giả rời bàn.
 
@@ -127,6 +127,6 @@ media:
   caption_vi: Demo của Behringer về automix nhiều mic (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:47+07:00'
 updated_by: agent:translator-vi

@@ -64,17 +64,17 @@ body: |
 body_vi: |
   **Vị trí đặt thắng xử lý.** Với mic gooseneck, đặt cách miệng người nói vài ngón tay đến một gang tay (khoảng 15-25 cm) và lệch trục nhẹ sang một bên hoặc thấp hơn tầm miệng, để hơi thở và plosive "p/b" không đập thẳng vào đầu capsule. Mức tuân theo luật bình phương nghịch đảo: giảm nửa khoảng cách cho khoảng +6 dB, gấp đôi khoảng cách cho khoảng -6 dB, nên người nói ngả người ra sau hoặc quay sang màn hình sẽ làm mức đổi rất nhiều. Vị trí gần cũng cho nhiều gain before feedback hơn, vì tại capsule giọng to hơn phòng và loa. Văn bản đi kèm của Mike Senior cũng nêu cùng ý: khoảng cách đổi nhỏ gây mức đổi lớn.
 
-  **Pattern và proximity.** Gooseneck cardioid hoặc supercardioid sẽ có hiệu ứng tiệm cận (Proximity Effect) nếu người nói ghé sát (xem `vocal-proximity-effect`), nên chuẩn bị sẵn cho low-end ù ở người nói gần mic. Pattern hypercardioid chịu được khoảng cách xa hơn một chút nhưng nhạy hơn với thứ nằm phía sau capsule, như wedge monitor hoặc loa của lectern.
+  **Pattern và proximity.** Gooseneck cardioid hoặc supercardioid sẽ có Proximity Effect (mic càng gần, bass càng phình) nếu người nói ghé sát (xem `vocal-proximity-effect`), nên chuẩn bị sẵn cho low end boomy (ù, rền) ở người nói gần mic. Pattern hypercardioid chịu được khoảng cách xa hơn một chút nhưng nhạy hơn với thứ nằm phía sau capsule, như wedge monitor hoặc loa của lectern.
 
-  **High-pass filter.** Speech có rất ít thông tin hữu ích dưới khoảng 100 Hz với đa số giọng, và bass không thêm gì cho độ rõ. Bắt đầu với HPF khoảng 100 Hz (nâng lên cho người nói giọng mỏng hoặc phòng ù; chỉ hạ xuống nếu giọng trầm đang mất độ nặng). Trên WING, dùng low-cut của channel và nghe khi người nói đang nói, không phải trong solo với tone thử.
+  **High-pass filter.** Speech có rất ít thông tin hữu ích dưới khoảng 100 Hz với đa số giọng, và bass không thêm gì cho độ rõ. Bắt đầu với HPF khoảng 100 Hz (nâng lên cho người nói giọng thin (mỏng) hoặc phòng boomy; chỉ hạ xuống nếu giọng trầm đang mất độ nặng). Trên WING, dùng low-cut của channel và nghe khi người nói đang nói, không phải trong solo với tone thử.
 
-  **EQ cho độ rõ lời.** Ghi chú về speech intelligibility của DPA đặt vùng phụ âm quan trọng ở khoảng 2-4 kHz, với 1-4 kHz mang phần lớn độ rõ lời. Một lift rộng, nhẹ vài dB ở vùng 2-4 kHz giúp người nói lầm bầm; một cut nhẹ quanh 200-500 Hz loại bỏ tiếng hộp nếu lectern hoặc phòng gây ra. Chỉ dùng cut hẹp ở các tần số dễ feedback, và để ý sibilance khi nâng trên 4 kHz. Đừng làm thay đổi lớn: EQ cho speech phải nhỏ và rộng.
+  **EQ cho độ rõ lời.** Ghi chú về speech intelligibility của DPA đặt vùng phụ âm quan trọng ở khoảng 2-4 kHz, với 1-4 kHz mang phần lớn độ rõ lời. Một lift rộng, nhẹ vài dB ở vùng 2-4 kHz giúp người nói lầm bầm; một cut nhẹ quanh 200-500 Hz loại bỏ boxy (nghe như bị bọng, nhốt trong hộp) nếu lectern hoặc phòng gây ra. Chỉ dùng cut hẹp ở các tần số dễ feedback, và để ý sibilance khi nâng trên 4 kHz. Đừng làm thay đổi lớn: EQ cho speech phải nhỏ và rộng.
 
   **Gain before feedback.** Set gain với người nói thật ở khoảng cách thật, rồi nâng fader đến khi feedback bắt đầu ring, và lùi lại vài dB. Giữ loa ở phía trước mic (hướng ra xa nó), tránh đặt floor monitor ở lectern trừ khi cần, và cân nhắc một cut hẹp ở tần số ring đầu tiên. Nếu người nói quá nhỏ mà chưa ring, cách sửa thường là đặt gần hơn, không phải thêm fader.
 
   **Hướng dẫn người nói.** Nhờ presenter giữ cùng một khoảng cách, nói ngang qua mic thay vì thẳng vào nó, và báo cho bạn nếu họ bước ra xa. Một lượt đi thử ngắn với chính presenter trước giờ mở cửa thắng mọi cách sửa giữa bài phát biểu.
 
-  **Lỗi thường gặp:** gooseneck chĩa vào trán, mic quá xa (người nói khi đó là nguồn nhỏ trong phòng ồn), boost 3-5 kHz quá tay đến mức giọng nghe chói, và để mic lectern mở khi không có người nói (thêm nhiễu và ăn gain before feedback).
+  **Lỗi thường gặp:** gooseneck chĩa vào trán, mic quá xa (người nói khi đó là nguồn nhỏ trong phòng ồn), boost 3-5 kHz quá tay đến mức giọng nghe sharp (chói), và để mic lectern mở khi không có người nói (thêm nhiễu và ăn gain before feedback).
 rule:
   applies_to:
     source_type:
@@ -124,6 +124,6 @@ media:
   caption_vi: Hướng dẫn live sound về EQ cho mic speech (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:32+07:00'
 updated_by: agent:translator-vi

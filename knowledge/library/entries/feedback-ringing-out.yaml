@@ -14,7 +14,7 @@ tags:
   - concert
   - corporate
 summary: Raise gain until the first frequency rings, cut that frequency with a very narrow filter, repeat a few times, then back off. Narrow cuts remove the ring without dulling the sound.
-summary_vi: Tăng gain đến khi tần số đầu tiên rít, cut tần số đó bằng một filter rất hẹp, lặp lại vài lần rồi lùi lại. Cut hẹp loại bỏ tiếng rít mà không làm tiếng bị tối.
+summary_vi: Tăng gain đến khi tần số đầu tiên ring (rít lên), cut tần số đó bằng một filter rất hẹp, lặp lại vài lần rồi lùi lại. Cut hẹp loại bỏ ring mà không làm tiếng bị dull (tối, mất sáng).
 body: |
   ## Goal
 
@@ -65,22 +65,22 @@ body: |
 body_vi: |
   ## Mục tiêu
 
-  Ringing out là tìm ra những tần số mà hệ thống gần hú rít (Feedback) nhất và chỉ xử lý đúng những tần số đó, để bạn có thêm gain dùng được trước khi hú. Làm riêng cho từng mix: mỗi wedge mix và main cư xử khác nhau.
+  Ringing out là tìm ra những tần số mà hệ thống gần feedback (hú rít) nhất và chỉ xử lý đúng những tần số đó, để bạn có thêm gain dùng được trước khi hú. Làm riêng cho từng mix: mỗi wedge mix và main cư xử khác nhau.
 
   ## Thao tác thực chiến
 
   1. Đặt mic gain như lúc sẽ dùng thật, và đặt send của monitor hoặc main ở mức dễ chịu khi mic đang mở.
-  2. Tăng send từ từ đến khi một tần số bắt đầu rít. Giữ tay trên fader: feedback có thể gây hại cho tai và làm hỏng loa.
-  3. Tìm tần số đó. Trên parametric EQ, boost một dải hẹp và sweep đến khi tiếng rít to lên; trên graphic EQ, kéo slider tương ứng.
+  2. Tăng send từ từ đến khi một tần số bắt đầu ring. Giữ tay trên fader: feedback có thể gây hại cho tai và làm hỏng loa.
+  3. Tìm tần số đó. Trên parametric EQ, boost một dải hẹp và sweep đến khi ring to lên; trên graphic EQ, kéo slider tương ứng.
   4. Cut nó bằng một band parametric **hẹp** (Q cao) để vết cut chỉ rộng bằng đúng vấn đề.
-  5. Tăng send lại, tìm tiếng rít kế tiếp, cut. Lặp lại. Khi có từ ba tần số trở lên rít cùng lúc, hoặc sau khoảng năm đến bảy lần cut, bạn đã chạm giới hạn thực tế của mix đó.
+  5. Tăng send lại, tìm ring kế tiếp, cut. Lặp lại. Khi có từ ba tần số trở lên ring cùng lúc, hoặc sau khoảng năm đến bảy lần cut, bạn đã chạm giới hạn thực tế của mix đó.
   6. Kéo level lùi lại vài dB. Hệ thống giờ đã ổn định chứ không còn đứng ở mép vực.
 
   ## Vì sao phải hẹp
 
-  Một notch hẹp chỉ lấy đi một lát mỏng của phổ. Một cut rộng cùng độ sâu lấy đi cả khối âm thanh xung quanh và làm vocal mỏng dính hoặc tối. So sánh hai đường cong trong biểu đồ: notch Q 10 và cut Q 8 chỉ ảnh hưởng vùng quanh 2 kHz, còn cut Q 1 lan ra nhiều octave.
+  Một notch hẹp chỉ lấy đi một lát mỏng của phổ. Một cut rộng cùng độ sâu lấy đi cả khối âm thanh xung quanh và làm vocal thin hoặc dull. So sánh hai đường cong trong biểu đồ: notch Q 10 và cut Q 8 chỉ ảnh hưởng vùng quanh 2 kHz, còn cut Q 1 lan ra nhiều octave.
 
-  **Thông số khởi đầu (chỉnh bằng tai):** Q khoảng 8-12 cho một tiếng rít đơn lẻ, độ sâu vừa đủ để dập nó (thường 3-9 dB), và chỉ dùng số band bạn cần. Các tần số hay rít thường nằm trong vùng 400 Hz - 4 kHz, nhưng còn tùy phòng, mic và wedge.
+  **Thông số khởi đầu (chỉnh bằng tai):** Q khoảng 8-12 cho một ring đơn lẻ, độ sâu vừa đủ để dập nó (thường 3-9 dB), và chỉ dùng số band bạn cần. Các tần số hay ring thường nằm trong vùng 400 Hz - 4 kHz, nhưng còn tùy phòng, mic và wedge.
 
   ## Lưu ý
 
@@ -149,6 +149,6 @@ media:
   caption_vi: Ringing out một floor wedge đơn lẻ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:03+07:00'
 updated_by: agent:translator-vi

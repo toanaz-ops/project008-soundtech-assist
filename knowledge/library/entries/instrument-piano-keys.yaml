@@ -63,8 +63,8 @@ body_vi: |
 
   Mic đặt xa không khả thi khi khuếch đại do giới hạn gain before feedback, nên chuẩn là đặt mic gần hoặc bên trong đàn. Condenser thường được ưu tiên vì giữ được toàn dải; Shure liệt kê Beta 181, KSM137 và PGA81 trong các model phù hợp.
 
-  - **Trên dây treble:** sáng hơn. **Trên dây bass:** nhiều low end hơn.
-  - **Gần búa (hammer):** Attack sắc hơn. **Xa hơn:** tiếng mềm, hòa vào nhau.
+  - **Trên dây treble:** bright hơn. **Trên dây bass:** nhiều low end hơn.
+  - **Gần búa (hammer):** Attack sharper. **Xa hơn:** tiếng mềm, hòa vào nhau.
   - **Hai mic, một trên treble và một trên bass,** là điểm xuất phát phổ biến; cho balance và khả năng kiểm soát mix, và có thể pan để mở rộng.
   - **Boundary mic dưới nắp đàn:** tăng độ cách ly và giảm feedback; Beta 181 có thể gắn nằm ngang để nắp vẫn đóng được. Khép một phần hoặc đóng hẳn nắp cũng giảm spill.
   - Mic kẹp nhỏ gọn (loại DPA 4099) tiết kiệm chỗ chân mic trên sân khấu đông.
@@ -79,8 +79,8 @@ body_vi: |
 
   - 20-60 Hz: năng lượng sub, live thường không cần; high-pass quanh 40-80 Hz khi có full band.
   - 60-200 Hz: body; cắt bớt nếu nó chen với bass và kick.
-  - 200-500 Hz: có thể bị mud.
-  - 2-4 kHz: có thể gắt.
+  - 200-500 Hz: có thể bị mud (đục, dày, các tiếng dính vào nhau).
+  - 2-4 kHz: có thể harsh (chói gắt).
 
   Patch pad và strings thường chen ở 200-500 Hz; một shelf cắt nhẹ ở đó chừa chỗ cho vocal và guitar.
 
@@ -90,13 +90,13 @@ body_vi: |
 
   ## Vấn đề thường gặp
 
-  - **Piano ì hoặc feedback gần monitor:** đưa mic lại gần dây hơn, rời khỏi soundboard, hoặc dùng boundary mic.
+  - **Piano boom hoặc feedback gần monitor:** đưa mic lại gần dây hơn, rời khỏi soundboard, hoặc dùng boundary mic.
   - **Piano rộng bị sập trong PA mono:** kiểm tra polarity giữa hai mic.
   - **Level patch synth nhảy:** nhờ người chơi chạy các patch to nhất ở soundcheck.
 
   ## Mẹo live và WING
 
-  Dùng một band EQ tĩnh để dằn độ gắt ở các patch sáng thay vì dùng tới dynamics. Giữ DI của keyboard ra khỏi đường trực tiếp của monitor wedge để tránh ringing.
+  Dùng một band EQ tĩnh để dằn harshness ở các patch bright thay vì dùng tới dynamics. Giữ DI của keyboard ra khỏi đường trực tiếp của monitor wedge để tránh ringing.
 rule:
   applies_to:
     source_type:
@@ -170,6 +170,6 @@ media:
   caption_vi: Mix piano và synth pad cho worship (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:00+07:00'
 updated_by: agent:translator-vi

@@ -53,7 +53,7 @@ body: |
 body_vi: |
   ## Các nguồn đồng ý với nhau ở điểm nào
 
-  Hướng dẫn đã xuất bản mang tính định tính và nhất quán: bài càng bận rộn và nhanh thì reverb càng nên ngắn; bài thưa và chậm có thể mang đuôi dài. Pre-delay (khoảng trễ trước khi reverb bắt đầu) giữ cho vocal rõ chữ: vài mili giây hợp với ambience ngắn, còn reverb dài thường cần khoảng 30 đến 70 ms. Một bài của hãng cho cửa sổ rộng hơn theo từng nguồn (vocal khoảng 20 đến 80 ms, drum khoảng 5 đến 50 ms, guitar khoảng 40 đến 100 ms), và một bài trên tạp chí ghi chú rằng lead vocal có thể vượt quá 100 ms. Thời gian tàn (Decay) phụ thuộc vào algorithm: patch ambience chỉ một phần của giây, hall và church kéo dài vài giây. Vocal ballad có thể dùng reverb nhiều lớp 3 đến 4 s.
+  Hướng dẫn đã xuất bản mang tính định tính và nhất quán: bài càng bận rộn và nhanh thì reverb càng nên ngắn; bài thưa và chậm có thể mang đuôi dài. Pre-delay (khoảng trễ trước khi reverb bắt đầu) giữ cho vocal rõ chữ: vài mili giây hợp với ambience ngắn, còn reverb dài thường cần khoảng 30 đến 70 ms. Một bài của hãng cho cửa sổ rộng hơn theo từng nguồn (vocal khoảng 20 đến 80 ms, drum khoảng 5 đến 50 ms, guitar khoảng 40 đến 100 ms), và một bài trên tạp chí ghi chú rằng lead vocal có thể vượt quá 100 ms. Decay (thời gian tàn) phụ thuộc vào algorithm: patch ambience chỉ một phần của giây, hall và church kéo dài vài giây. Vocal ballad có thể dùng reverb nhiều lớp 3 đến 4 s.
 
   Xử lý return là phần dân nghề hay quên. Filter phần low end của return, khoảng 100 đến 300 Hz, và roll off phần top từ khoảng 7 kHz để đuôi không thêm mud hay hiss. Chạy reverb như một aux return ở 100 phần trăm wet, lấy từ các send post-fader, để lượng reverb đi theo fader.
 
@@ -65,9 +65,9 @@ body_vi: |
   - **Rock**: room ngắn hoặc ambience trên drum, plate trên vocal; Decay 0.3 đến 1.2 s, pre-delay rất ít hoặc không có trên drum (một nguồn tạp chí nói pre-delay ngắn hoặc không có hợp với drum rock).
   - **Ballad**: plate hoặc hall; Decay 1.8 đến 3.5 s, pre-delay 40 đến 100 ms.
   - **Jazz**: room hoặc chamber; Decay 1.0 đến 2.2 s. Không tìm được nguồn riêng cho jazz, nên đây là suy ra từ lời khuyên về không gian tự nhiên.
-  - **EDM**: reverb ngắn trên drum, đuôi lớn hơn trên vocal; Decay 0.8 đến 2.5 s. Không có nguồn; gợi ý duy nhất là các phong cách hiện đại khô hay dựa vào delay.
+  - **EDM**: reverb ngắn trên drum, đuôi lớn hơn trên vocal; Decay 0.8 đến 2.5 s. Không có nguồn; gợi ý duy nhất là các phong cách hiện đại dry hay dựa vào delay.
   - **Bolero**: xử lý như ballad. Không tìm được nguồn uy tín cho genre này; đây là ngoại suy.
-  - **Speech**: tắt hoặc một room rất ngắn. Đây là lựa chọn của sản phẩm, ưu tiên độ rõ lời (intelligibility); một nguồn ghi chú đuôi dài làm vocal bớt nổi.
+  - **Speech**: tắt hoặc một room rất ngắn. Đây là lựa chọn của sản phẩm, ưu tiên intelligibility (độ rõ lời); một nguồn ghi chú đuôi dài làm vocal bớt nổi.
 
   ## Chỗ các nguồn bất đồng
 
@@ -222,6 +222,6 @@ media:
   caption_vi: Reverb room, hall, plate và spring và khi nào dùng loại nào (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: contested
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:46+07:00'
 updated_by: agent:translator-vi

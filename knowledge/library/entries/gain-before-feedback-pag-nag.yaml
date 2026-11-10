@@ -16,7 +16,7 @@ tags:
   - corporate
   - concert
 summary: Feedback starts when loop gain reaches unity. PAG is the most gain the room allows; NAG is the gain the audience needs. Keep NAG below PAG with a margin, and the geometry of mic, speaker and listener decides how much room you have.
-summary_vi: Hú rít (Feedback) bắt đầu khi loop gain đạt unity. PAG là mức gain tối đa mà phòng cho phép; NAG là mức gain khán giả cần. Giữ NAG thấp hơn PAG có chừa margin, và hình học giữa mic, loa và người nghe quyết định bạn còn bao nhiêu chỗ.
+summary_vi: Feedback (hú rít) bắt đầu khi loop gain đạt unity. PAG là mức gain tối đa mà phòng cho phép; NAG là mức gain khán giả cần. Giữ NAG thấp hơn PAG có chừa margin, và hình học giữa mic, loa và người nghe quyết định bạn còn bao nhiêu chỗ.
 body: |
   ## The idea
 
@@ -74,7 +74,7 @@ body: |
 body_vi: |
   ## Ý tưởng
 
-  Mic thu tiếng loa, loa khuếch đại lại, mic lại thu tiếp. Khi vòng khuếch đại (Loop gain) đạt unity ở một tần số nào đó, nó hú rít (Feedback). Hai con số mô tả tình huống:
+  Mic thu tiếng loa, loa khuếch đại lại, mic lại thu tiếp. Khi loop gain (vòng khuếch đại) đạt unity ở một tần số nào đó, nó ring, tức feedback (hú rít). Hai con số mô tả tình huống:
 
   - **PAG (potential acoustic gain)**: mức gain lớn nhất hệ thống có thể có trước khi feedback, do hình học và phòng quyết định.
   - **NAG (needed acoustic gain)**: mức gain cần thiết để người nghe xa nhất nghe người nói như thể đang ở gần.
@@ -95,7 +95,7 @@ body_vi: |
   PAG = 20 log10 (D0 × D1 / (D2 × Ds)) - 10 log10 (NOM) - 6 dB
   NAG = 20 log10 (D0 / Dn)
 
-  6 dB cuối cùng là margin ổn định feedback: hệ thống chạy thấp hơn PAG khoảng 6 dB thường không bị rít. Bạn cần NAG ≤ PAG.
+  6 dB cuối cùng là margin ổn định feedback: hệ thống chạy thấp hơn PAG khoảng 6 dB thường không bị ring. Bạn cần NAG ≤ PAG.
 
   ## Phương trình bảo bạn làm gì
 
@@ -169,6 +169,6 @@ media:
   caption_vi: Vì sao chỉ EQ không giải quyết được feedback của mic (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:14+07:00'
 updated_by: agent:translator-vi

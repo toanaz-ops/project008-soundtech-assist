@@ -1,0 +1,94 @@
+id: digico-sd-snapshot-groups-auto-update
+title: 'Snapshot Groups, Edit Range and Auto Update: change many cues at once'
+title_vi: 'Snapshot Groups, Edit Range và Auto Update: sửa nhiều cue cùng lúc'
+topic: digico-sd
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-sd
+  - snapshots
+  - snapshot-groups
+  event:
+  - theatre
+  - festival
+summary: 'DiGiCo lets you apply one change to many snapshots: Update Group (relative or non-relative), Edit Range, and Auto Update. This is how you fix a vocal level across a whole set without re-editing every cue.'
+summary_vi: 'DiGiCo cho phép áp một thay đổi lên nhiều snapshot: Update Group (relative hoặc non-relative), Edit Range và Auto Update. Đây là cách sửa mức vocal cho cả set mà không phải sửa lại từng cue.'
+body: |
+  ## What the manual says (Issue H, V20+)
+
+  - **Snapshot Groups:** a snapshot can be a member of a Group (red or blue entry in the list). Pressing Update Group applies your change to the other members, using the Group Update mode.
+  - **Relative mode (red):** dB controls such as faders and aux sends move relatively. If a fader is raised 10 dB in one snapshot, it is raised 10 dB in all group members, whatever their starting level. Non-dB controls (dynamics times, EQ frequency and Q, pans) change only in members that had the same value before the change.
+  - **Non-relative mode (blue):** all controls behave like the non-dB controls above: a change is applied only where the value was the same as in the current snapshot before the change.
+  - **Group and Auto Update scope:** a global grid (like Recall Scope) says which elements Update Group and Auto Update may change, and each snapshot has its own Group and Auto Update scope. Anything with a red X is not updated.
+  - **Edit Range:** write control changes into several snapshots at once. Pressing a snapshot only selects it; nothing fires. Only controls you touch while Edit is active change, and only in the selected snapshots. Scopes and crossfade times can also be edited this way. Confirm to keep the changes.
+  - **Auto Update:** the current snapshot updates itself whenever a control changes, controlled by the same scope. The manual advises leaving it off unless you are sure.
+
+  ## How to use it on a show
+
+  1. Put all songs of one artist, or all verse cues of one song, in a Group.
+  2. Choose Relative mode when you want "everything 2 dB hotter". Choose Non-relative when you want to push the same final value.
+  3. Set the Auto scope first (Global, then per snapshot) so input gains and phantom are never rewritten.
+  4. Use Edit Range when you fix one channel across a block of cues but do not want a Group.
+  5. Check two or three members afterwards: fire them and read the changed channel.
+
+  ## Pitfalls
+
+  - Non-dB controls in a group that differ between members are skipped silently.
+  - Auto Update changes cues without any explicit press. Leave it off during a show.
+
+  ## What is NOT verified
+
+  - Whether Group Update works across the output side the same way. The manual describes controls in general only.
+body_vi: |
+  ## Manual nói gì (Issue H, V20+)
+
+  - **Snapshot Groups:** một snapshot có thể là thành viên của Group (mục màu đỏ hoặc xanh trong list). Bấm Update Group sẽ áp thay đổi của bạn lên các thành viên khác, theo Group Update mode.
+  - **Relative mode (đỏ):** các control dB như fader và aux send dịch chuyển theo kiểu tương đối. Nếu một fader tăng 10 dB ở một snapshot thì nó tăng 10 dB ở mọi thành viên group, bất kể mức xuất phát. Control không phải dB (thời gian dynamics, tần số và Q của EQ, pan) chỉ đổi ở thành viên có cùng giá trị trước khi đổi.
+  - **Non-relative mode (xanh):** mọi control hành xử như các control không phải dB nói trên: thay đổi chỉ áp ở nơi có giá trị giống snapshot hiện tại trước khi đổi.
+  - **Group và Auto Update scope:** một lưới global (như Recall Scope) nói phần tử nào Update Group và Auto Update được đổi, và mỗi snapshot có Group và Auto Update scope riêng. Cái nào có X đỏ thì không bị update.
+  - **Edit Range:** ghi thay đổi control vào nhiều snapshot cùng lúc. Bấm snapshot lúc đó chỉ là chọn, không bắn. Chỉ những control bạn đụng vào khi Edit đang bật mới đổi, và chỉ ở các snapshot đã chọn. Scope và crossfade time cũng sửa được theo cách này. Confirm để giữ thay đổi.
+  - **Auto Update:** snapshot hiện tại tự update mỗi khi một control đổi, theo cùng scope. Manual khuyên để tắt trừ khi chắc chắn.
+
+  ## Cách dùng trên show
+
+  1. Gom tất cả bài của một nghệ sĩ, hoặc mọi cue verse của một bài, vào một Group.
+  2. Chọn Relative mode khi muốn "tất cả nóng hơn 2 dB". Chọn Non-relative khi muốn đẩy về cùng một giá trị cuối.
+  3. Đặt Auto scope trước (Global rồi từng snapshot) để gain input và phantom không bao giờ bị ghi đè.
+  4. Dùng Edit Range khi sửa một channel trên một đoạn cue mà không muốn lập Group.
+  5. Sau đó kiểm tra hai ba thành viên: bắn chúng và đọc channel vừa đổi.
+
+  ## Bẫy thường gặp
+
+  - Control không phải dB mà các thành viên có giá trị khác nhau sẽ bị bỏ qua mà không báo.
+  - Auto Update đổi cue mà bạn không bấm gì. Đừng để bật trong lúc show.
+
+  ## Điều CHƯA được xác minh
+
+  - Update Group có chạy y hệt phía output hay không. Manual chỉ mô tả control nói chung.
+sources:
+- title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
+  publisher: DiGiCo
+  kind: manual
+  url: https://support.digico.biz/hc/en-gb/article_attachments/37137993915665
+  accessed: '2026-11-10'
+  locator: PDF p.94-98 (2.4.4 Edit Range, 2.4.10 Snapshot Groups, Group and Auto Update Scope), p.107-108 (2.4.20 Auto Update)
+media:
+- kind: diagram
+  path: group-update.png
+  caption: How Update Group decides which snapshots receive your change
+  caption_vi: Update Group quyết định snapshot nào nhận thay đổi của bạn như thế nào
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=4KS8gfwP0BA
+  title: DiGiCo SD Range - An Overview of Snapshots
+  channel: DiGiCo Consoles
+  caption: Official DiGiCo snapshot overview; whether it covers groups was not checked (title and channel verified via oEmbed; not watched)
+  caption_vi: Video snapshot chính thức của DiGiCo; chưa kiểm tra có nói về group không (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

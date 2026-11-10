@@ -1,6 +1,6 @@
 id: mic-polar-patterns
 title: Microphone polar patterns and what they mean on stage
-title_vi: Đặc tuyến cực (polar pattern) của micro và ý nghĩa trên sân khấu
+title_vi: Polar pattern (đặc tuyến cực) của micro và ý nghĩa trên sân khấu
 topic: mic-technique
 tags:
   instrument:
@@ -66,7 +66,7 @@ body_vi: |
 
   ## Các pattern phổ biến
 
-  - **Omnidirectional (omni)**: thu đều mọi hướng. Nó hứng nhiều tiếng phòng hơn và dễ hú rít (feedback) hơn với monitor trên sân khấu. Nó không có hiệu ứng tiệm cận (proximity effect).
+  - **Omnidirectional (omni)**: thu đều mọi hướng. Nó hứng nhiều tiếng phòng hơn và dễ feedback (hú rít) hơn với monitor trên sân khấu. Nó không có proximity effect (mic càng gần, bass càng phình).
   - **Cardioid**: nhạy tối đa ở phía trước, kém nhạy nhất thẳng phía sau (180 độ). Nó hứng ít tiếng môi trường hơn nhiều so với omni, và là mặc định cho vocal và nhạc cụ trên sân khấu.
   - **Supercardioid**: vùng thu phía trước hẹp hơn (khoảng 115 độ), góc kém nhạy nhất ở khoảng 125 độ lệch trục (off-axis). Nó loại bỏ tốt hơn ở hai bên nhưng không "điếc" bằng ở thẳng phía sau.
   - **Hypercardioid**: hẹp hơn nữa (khoảng 105 độ), null ở khoảng 110 độ lệch trục; loại bỏ thẳng phía sau cũng yếu hơn cardioid.
@@ -127,6 +127,6 @@ media:
   caption_vi: Austrian Audio nói về pattern cardioid (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:29+07:00'
 updated_by: agent:translator-vi

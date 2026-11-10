@@ -1,0 +1,126 @@
+id: digico-sd-macros
+title: 'Macros and smart keys: one press runs a list of console commands'
+title_vi: 'Macro và smart key: một lần bấm chạy cả danh sách lệnh của console'
+topic: digico-sd
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-sd
+  - macros
+  - smart-keys
+  - automation
+  event:
+  - theatre
+  - festival
+  - broadcast
+summary: A Macro is an ordered list of console commands that you fire from a smart key, F key, GPI, OSC, MIDI program change or a snapshot. Almost any console command can go in it, including processing changes and panel openers.
+summary_vi: Macro là danh sách lệnh của console theo thứ tự, bạn bắn từ smart key, phím F, GPI, OSC, MIDI program change hoặc từ snapshot. Gần như mọi lệnh của console đều đưa vào được, kể cả đổi processing và mở panel.
+body: |
+  ## What the manual says (Issue H, V20+)
+
+  - Setup > Macros opens the Macros display, also opened by the assign button in the macros area. Macros can be assigned to smart keys or macro buttons on the surface, to F buttons on the external keyboard, and to GPIs. They can be fired by touching them in the list.
+  - The macro area holds 8 or 40 macros depending on the console (one bank of eight, four banks of ten, or eight banks of five). The SD10 product page lists 40 smart-key macros in four layers of 10 RGB keys.
+  - **Macro Editor:** virtually any command in the console can be included, from opening master panels to changing in-channel processing. Commands run in the order listed.
+  - Two ways to add commands: **Capture** (turn it on and do the actions on the console; they are recorded) or choose from the command types list. FX parameters are only available once FX units are in use in the session.
+  - Values (from, to, value) are adjusted with the Touch-Turn encoder or typed. A comma in the macro name inserts a line break in the smart key label.
+  - Every key press gives an On action; the next press gives an Off action. The two can be inverses, for example mute on then mute off, with different colours and text per state.
+  - A **Fire Macro** button tests it. Duplicate, Edit, Assign and Delete are available from the Macros display, and there is a text search of the command list.
+  - **Advanced triggers (V19xx+):** only one trigger type per macro. Tabs: Smart Keys; External (GPI, incoming OSC, MIDI program change); Snapshots (one or more snapshots, but a snapshot can only trigger a single Macro); Other (F keys, Audio Mastership switch A or B, the surface prev and next snapshot buttons); and Advanced (conditional triggers from fader level, mute, solo or meter level, with ANY or ALL conditions, meter positions pre-trim, post-trim, pre-fader or post-fader, value "sp" meaning signal present).
+  - **MacroOSC:** a macro can send an OSC message (integer, float, string or address only) to a device defined under Setup > External Control.
+
+  ## How to use it on a show
+
+  1. Start with the jobs you repeat: mute a set of mics, open a panel, spill a Set, change a tempo or key setting on an effect.
+  2. Build the macro with Capture, then fire it with Fire Macro to test.
+  3. Put it on a smart key with an On/Off pair so the key shows state.
+  4. For a cue sequence, trigger a macro from a snapshot, so the macro runs automatically when the cue is fired.
+  5. Keep one macro per purpose. If a snapshot needs several macro functions, build one macro that contains them all, as the manual says.
+
+  ## Pitfalls
+
+  - A macro runs commands in list order. A wrong order can leave a channel unmuted for a moment.
+  - Macros that depend on selected channels or open panels behave according to what is selected when fired. Test with the surface in a normal state.
+  - Advanced and snapshot triggers need V19xx+.
+
+  ## Compared with WING
+
+  WING has user-assignable buttons and custom controls; this entry did not check how they compare for chaining commands.
+
+  ## What is NOT verified
+
+  - Limits on the number of commands per macro.
+  - Whether every command listed in the Macro Editor works on the SD10 (the manual covers SD and Quantum together).
+body_vi: |
+  ## Manual nói gì (Issue H, V20+)
+
+  - Setup > Macros mở màn hình Macros, cũng mở được bằng nút assign trong khu macro. Macro có thể gán vào smart key hoặc nút macro trên surface, vào phím F của bàn phím ngoài, và vào GPI. Có thể bắn chúng bằng cách chạm vào trong danh sách.
+  - Khu macro chứa 8 hoặc 40 macro tuỳ console (một bank tám, bốn bank mười, hoặc tám bank năm). Trang sản phẩm SD10 ghi 40 macro smart key chia bốn layer, mỗi layer 10 phím RGB.
+  - **Macro Editor:** gần như mọi lệnh của console đều đưa vào được, từ mở master panel đến đổi processing trong channel. Lệnh chạy theo thứ tự trong danh sách.
+  - Hai cách thêm lệnh: **Capture** (bật lên rồi thao tác trên console, lệnh được ghi lại) hoặc chọn từ danh sách loại lệnh. Tham số FX chỉ có khi FX unit đã được dùng trong session.
+  - Giá trị (from, to, value) chỉnh bằng encoder Touch-Turn hoặc gõ. Dấu phẩy trong tên macro chèn xuống dòng trong nhãn smart key.
+  - Mỗi lần bấm phím cho một action On; lần bấm kế tiếp cho action Off. Hai action có thể là nghịch đảo của nhau, ví dụ mute on rồi mute off, với màu và chữ khác nhau cho từng trạng thái.
+  - Nút **Fire Macro** để test. Màn hình Macros có Duplicate, Edit, Assign và Delete, và có ô tìm kiếm chữ trong danh sách lệnh.
+  - **Advanced triggers (V19xx+):** mỗi macro chỉ một loại trigger. Các tab: Smart Keys; External (GPI, OSC đến, MIDI program change); Snapshots (một hoặc nhiều snapshot, nhưng một snapshot chỉ trigger được một Macro); Other (phím F, công tắc Audio Mastership A hoặc B, nút prev và next snapshot trên surface); và Advanced (trigger có điều kiện theo mức fader, mute, solo hoặc mức meter, với điều kiện ANY hoặc ALL, vị trí meter pre-trim, post-trim, pre-fader hoặc post-fader, giá trị "sp" nghĩa là có tín hiệu).
+  - **MacroOSC:** một macro có thể gửi tin OSC (integer, float, string hoặc chỉ address) đến thiết bị khai báo ở Setup > External Control.
+
+  ## Cách dùng trên show
+
+  1. Bắt đầu với những việc lặp lại: mute một nhóm mic, mở một panel, spill một Set, đổi tempo hoặc key của một effect.
+  2. Dựng macro bằng Capture, rồi bắn bằng Fire Macro để test.
+  3. Đặt lên một smart key với cặp On/Off để phím hiển thị trạng thái.
+  4. Với chuỗi cue, trigger macro từ snapshot, để macro tự chạy khi cue được bắn.
+  5. Mỗi macro một mục đích. Nếu snapshot cần nhiều chức năng macro, dựng một macro chứa tất cả, như manual nói.
+
+  ## Bẫy thường gặp
+
+  - Macro chạy lệnh theo thứ tự danh sách. Sai thứ tự có thể để một channel unmute trong chốc lát.
+  - Macro phụ thuộc channel đang chọn hoặc panel đang mở sẽ chạy theo cái đang chọn lúc bắn. Test với surface ở trạng thái bình thường.
+  - Trigger advanced và snapshot cần V19xx+.
+
+  ## So với WING
+
+  WING có nút user-assignable và custom control; mục này chưa kiểm tra chúng so với macro về khả năng nối chuỗi lệnh.
+
+  ## Điều CHƯA được xác minh
+
+  - Giới hạn số lệnh trong một macro.
+  - Mọi lệnh trong Macro Editor có chạy trên SD10 hay không (manual gộp SD và Quantum).
+sources:
+- title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
+  publisher: DiGiCo
+  kind: manual
+  url: https://support.digico.biz/hc/en-gb/article_attachments/37137993915665
+  accessed: '2026-11-10'
+  locator: PDF p.160-168 (2.12.12 Macros, 2.12.13 Macro Editor, 2.12.14 Advanced Macro Triggers, MacroOSC)
+- title: SD10 product page
+  publisher: DiGiCo
+  kind: article
+  url: https://digico.biz/consoles/sd10
+  accessed: '2026-11-10'
+  locator: 40 smart-key macros, four layers of 10 (read via web fetch)
+media:
+- kind: diagram
+  path: macro-flow.png
+  caption: A macro is a trigger, an ordered command list and the console actions it runs
+  caption_vi: Macro gồm trigger, danh sách lệnh có thứ tự và các action console mà nó chạy
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=6AS-iken6ao
+  title: Macro Overview + Our Top 10 Macros
+  channel: DiGiCo Consoles
+  caption: Official DiGiCo macro overview; it may be recorded on a console other than the SD10 (title and channel verified via oEmbed; not watched)
+  caption_vi: Tổng quan macro chính thức của DiGiCo; có thể quay trên console khác SD10 (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: video
+  url: https://www.youtube.com/watch?v=YUGwCItfhXE
+  title: How to Build Macros on DiGiCo
+  channel: Michael Leckrone
+  caption: Third-party tutorial on building macros on a DiGiCo (title and channel verified via oEmbed; not watched)
+  caption_vi: Hướng dẫn của bên thứ ba về dựng macro trên DiGiCo (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

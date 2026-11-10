@@ -13,7 +13,7 @@ tags:
   - concert
   - corporate
 summary: Boost-and-sweep finds problem frequencies quickly but biases you toward harshness; combine it with ear training and judge decisions in context, not solo.
-summary_vi: Boost-and-sweep tìm ra tần số có vấn đề rất nhanh nhưng dễ làm tai bạn nghiêng về phía chói; hãy kết hợp với luyện tai và quyết định trong ngữ cảnh mix, không phải khi solo.
+summary_vi: Boost-and-sweep tìm ra tần số có vấn đề rất nhanh nhưng dễ làm tai bạn nghiêng về harshness; hãy kết hợp với luyện tai và quyết định trong ngữ cảnh mix, không phải khi solo.
 body: |
   ## Boost-and-sweep
   Set a narrow-to-medium bell (a Q around 1 to 4, depending on the source) and boost strongly. Sweep slowly across the spectrum and listen for regions that sound ugly or ringy. When one stands out, stop, flip the boost into a cut and tune how deep and wide it needs to be.
@@ -48,16 +48,16 @@ body_vi: |
   Đặt một bell từ hẹp đến vừa (Q khoảng 1 đến 4, tùy nguồn) và boost mạnh. Quét chậm qua phổ và nghe những vùng nghe xấu hoặc ringy. Khi một vùng nổi bật, dừng lại, đảo boost thành cut rồi chỉnh độ sâu và độ rộng cho vừa đủ.
 
   **Ưu:** nhanh, làm vấn đề lộ rõ, giúp học được mỗi vùng tần số nghe như thế nào.
-  **Nhược:** boost lớn thì chỗ nào cũng chói, nên bạn có thể cắt nhầm thứ vốn ổn. Q hẹp có thể tìm ra các tần số ringing mà thật ra không phải vấn đề với người nghe. Sau khi cut, luôn so sánh với bypass.
+  **Nhược:** boost lớn thì chỗ nào cũng harsh, nên bạn có thể cắt nhầm thứ vốn ổn. Q hẹp có thể tìm ra các tần số ringing mà thật ra không phải vấn đề với người nghe. Sau khi cut, luôn so sánh với bypass.
 
   ## Luyện tai
   - Gọi tên thứ bạn nghe ("boomy", "nasal", "harsh") trước khi động vào núm.
-  - Tập đoán tần số trước, rồi kiểm tra bằng cách sweep. Làm vậy mới tránh được thiên lệch do boost chói.
+  - Tập đoán tần số trước, rồi kiểm tra bằng cách sweep. Làm vậy mới tránh được thiên lệch do boost harsh.
   - Học đặc tính của từng vùng (xem mục frequency regions) với vài bài tham chiếu và vài giọng quen thuộc.
   - Giữ mức monitoring thực tế: âm sắc cảm nhận thay đổi theo độ to.
 
   ## Solo và trong ngữ cảnh
-  Solo giúp tìm một lỗi cụ thể như hum hoặc buzz. Nhưng các quyết định về âm sắc phải làm khi cả band đang chơi, vì tiếng solo to và bóng bẩy thường chiếm chỗ của nguồn khác. Riêng bass có thể như biến mất khi các nguồn còn lại vào.
+  Solo giúp tìm một lỗi cụ thể như hum hoặc buzz. Nhưng các quyết định về âm sắc phải làm khi cả band đang chơi, vì tiếng solo big và shiny thường chiếm chỗ của nguồn khác. Riêng bass có thể như biến mất khi các nguồn còn lại vào.
 
   ## Quy trình live
   1. Ở line check, sweep nhanh một channel trên một nguồn đơn và ghi lại lỗi.
@@ -65,7 +65,7 @@ body_vi: |
   3. Trong bài hát, đánh giá lại khi mọi thứ đều mở.
   4. So sánh với bypass; reset về flat nếu không có ích.
 
-  ## Hú rít (Feedback) thì khác
+  ## Feedback (hú rít) thì khác
   Ringing out một monitor hay hệ thống main bằng cách boost đến khi rít rồi cut cũng là một kiểu sweep, nhưng với mục đích riêng: dùng notch hẹp và cẩn thận với level.
 
   ## Lỗi thường gặp
@@ -107,6 +107,6 @@ sources:
   locator: Understanding What EQ Frequencies Sound Like
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:28+07:00'
 updated_by: agent:translator-vi
