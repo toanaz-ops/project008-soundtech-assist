@@ -134,7 +134,8 @@ def test_shell_keeps_full_document_for_server_mode():
     head = shell.split("</head>")[0]
     assert 'id="prefs-bootstrap"' in head and "az.prefs.v1" in head and "az.language" in head and "data-skin" in head
     assert "prefers-color-scheme" not in shell and "data-theme" not in shell and 'name="color-scheme"' not in shell
-    assert 's="light",n="compact",l="vi"' in head
+    assert 's="light",n="compact",f="condensed",l="vi"' in head and 'p.font==="default"' in head and 'data-font' in head
+    assert ':root[data-font="default"]' in css
     # original look: system condensed face first, self-hosted OFL fallback last, no per-skin type indirection
     assert '"Bahnschrift", "DIN Condensed", "Arial Narrow", "Saira Condensed"' in css
     assert "--head-track" not in css and "--head-case" not in css

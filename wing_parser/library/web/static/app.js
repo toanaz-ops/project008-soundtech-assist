@@ -17,7 +17,7 @@
       retire: "Gỡ mục", back: "Quay lại", rev: "bản", by: "bởi", licence: "giấy phép", credit: "tác giả",
       forbidden: "Tài khoản của bạn chưa được cấp quyền xem thư viện.", forbiddenHint: "Hãy liên hệ chủ hệ thống để được cấp quyền.",
       unavailable: "Dịch vụ xác thực tạm thời không khả dụng. Thử lại sau.", errorGeneric: "Có lỗi xảy ra",
-      display: "Giao diện", language: "Ngôn ngữ", skin: "Giao diện màu", density: "Mật độ",
+      display: "Giao diện", language: "Ngôn ngữ", skin: "Giao diện màu", density: "Mật độ", font: "Kiểu chữ", font_condensed: "Condensed", font_default: "Thường",
       lang_vi: "Tiếng Việt", lang_en: "English", skin_light: "Sáng", skin_dark: "Tối", skin_sodium: "Sodium Rack", skin_tet: "Tết",
       dens_comfortable: "Thoáng", dens_compact: "Gọn",
       exportNote: "Bản xuất chỉ đọc", save: "Lưu", cancel: "Huỷ", note: "Ghi chú thay đổi (bắt buộc)",
@@ -43,7 +43,7 @@
       retire: "Retire", back: "Back", rev: "rev", by: "by", licence: "licence", credit: "credit",
       forbidden: "Your account has not been granted access to the library.", forbiddenHint: "Ask the system owner for access.",
       unavailable: "The sign-in service is temporarily unavailable. Try again later.", errorGeneric: "Something went wrong",
-      display: "Display", language: "Language", skin: "Skin", density: "Density",
+      display: "Display", language: "Language", skin: "Skin", density: "Density", font: "Font", font_condensed: "Condensed", font_default: "Default",
       lang_vi: "Tiếng Việt", lang_en: "English", skin_light: "Light", skin_dark: "Dark", skin_sodium: "Sodium Rack", skin_tet: "Tet",
       dens_comfortable: "Comfortable", dens_compact: "Compact",
       exportNote: "Read-only export", save: "Save", cancel: "Cancel", note: "Change note (required)",
@@ -445,33 +445,34 @@
     else setView(h("p", { class: "muted" }, t("empty")), EXPORT && h("p", { class: "muted" }, t("exportNote") + " · " + t("generated") + " " + (S.data.generated_at || "")));
   }
   // -- display prefs, shared with the PRJ012 app (same origin): az.prefs.v1 {skin, density} + az.language -------------------
-  const SKINS = ["light", "dark", "sodium", "tet"], DENSITIES = ["comfortable", "compact"], LANGS = ["vi", "en"];
+  const SKINS = ["light", "dark", "sodium", "tet"], DENSITIES = ["comfortable", "compact"], FONTS = ["condensed", "default"], LANGS = ["vi", "en"];
   const PREFS_KEY = "az.prefs.v1", LANG_KEY = "az.language";
-  const P = { skin: "light", density: "compact" };
+  const P = { skin: "light", density: "compact", font: "condensed" };
   function readPrefs() {
-    let skin = "light", density = "compact", lang = "vi";
+    let skin = "light", density = "compact", font = "condensed", lang = "vi";
     try {
       const p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
       if (p && SKINS.includes(p.skin)) skin = p.skin;
       if (p && DENSITIES.includes(p.density)) density = p.density;
+      if (p && FONTS.includes(p.font)) font = p.font;
     } catch (e) { /* storage blocked or bad JSON: defaults */ }
     try {
       const g = localStorage.getItem(LANG_KEY);
       if (LANGS.includes(g)) lang = g;
       else { const old = localStorage.getItem("library-lang"); if (LANGS.includes(old)) lang = old; }
     } catch (e) { /* defaults */ }
-    P.skin = skin; P.density = density; S.lang = lang;
+    P.skin = skin; P.density = density; P.font = font; S.lang = lang;
   }
   function applyPrefs() {
     const d = document.documentElement;
-    d.setAttribute("data-skin", P.skin); d.setAttribute("data-density", P.density); d.lang = S.lang;
+    d.setAttribute("data-skin", P.skin); d.setAttribute("data-density", P.density); d.setAttribute("data-font", P.font); d.lang = S.lang;
   }
   function savePrefs() {
     try {  // merge: keep keys the app may store alongside ours
       let p = {};
       try { p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch (e) { p = {}; }
       if (!p || typeof p !== "object" || Array.isArray(p)) p = {};
-      p.skin = P.skin; p.density = P.density;
+      p.skin = P.skin; p.density = P.density; p.font = P.font;
       localStorage.setItem(PREFS_KEY, JSON.stringify(p));
       localStorage.setItem(LANG_KEY, S.lang);
     } catch (e) { /* private mode */ }
@@ -491,7 +492,8 @@
     const active = document.activeElement, keep = menu.contains(active) && active.dataset ? active.dataset.value : null;
     menu.replaceChildren(...group("language", "lang-switcher", "lang", LANGS, S.lang, "lang_"),
       ...group("skin", "skin-picker", "skin", SKINS, P.skin, "skin_"),
-      ...group("density", "role-switcher", "density", DENSITIES, P.density, "dens_"));
+      ...group("density", "role-switcher", "density", DENSITIES, P.density, "dens_"),
+      ...group("font", "lang-switcher", "font", FONTS, P.font, "font_"));
     if (keep) { const again = menu.querySelector('[data-value="' + keep + '"]'); if (again) again.focus(); }
   }
   function wireDisplayMenu() {

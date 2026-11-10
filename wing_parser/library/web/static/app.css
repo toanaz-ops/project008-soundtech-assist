@@ -60,6 +60,9 @@
   --radius: 10px; --radius-lg: 10px;
   color-scheme: light;
 }
+:root[data-font="default"] { --head: var(--body); }
+:root[data-font="default"] .brand, :root[data-font="default"] .tree summary, :root[data-font="default"] h1,
+:root[data-font="default"] h2, :root[data-font="default"] .badge, :root[data-font="default"] .display-menu h3 { text-transform: none; letter-spacing: 0; }
 :root[data-density="comfortable"] { --density-control-h: 44px; --density-row-py: 10px; --density-gap: 10px; }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
