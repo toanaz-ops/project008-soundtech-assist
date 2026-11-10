@@ -377,6 +377,12 @@ cập nhật bằng `git pull` + `docker compose -f deploy/library-web/docker-co
 (volume `library-web_library_user` giữ bài sửa trên web). Exe `dist\wlib\wing-ui.exe` (75.283.066 bytes),
 zip `dist\wing-ui-20261110-library.zip`, ảnh `dist-shots\exe-20261110-library-en\`. Chờ chủ dự án gán
 `knowledge_library.view/edit` ở PRJ012 UI-15.
+**(Cập nhật 2026-11-10, tiếng Việt):** chủ dự án: "Bấm đổi VI/EN vẫn là nội dung tiếng Anh" → PR #64
+(`818d535`) thêm `summary_vi`/`body_vi`/`caption_vi` cho cả 72 mục, giọng văn theo bài kỹ thuật của ông
+(`knowledge/library/STYLE_VI.md`: thuật ngữ giữ tiếng Anh, ý Việt trước + thuật ngữ trong ngoặc). Dịch bằng
+agent rồi lưu qua `LibraryStore.save` (author `agent:translator-vi`) để có lịch sử — đừng sửa YAML tay.
+**Bẫy:** `Start-Process exe -ArgumentList` với mảng không tự bọc ngoặc đường dẫn có dấu cách → exe thoát mã 2;
+truyền một chuỗi, đường dẫn đặt trong dấu nháy kép.
 
 ## 2026-11-09 — Fable review cả phase wave 8–11 → PR #56 (đã merge)
 

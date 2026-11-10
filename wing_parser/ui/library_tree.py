@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QTreeWidget, QTreeWidgetItem
 from wing_parser.library import facets, search
 from wing_parser.library.store import LoadedEntry
 from wing_parser.ui.library_support import topic_label
-from wing_parser.ui.texts import text
+from wing_parser.ui.texts import current_language, text
 
 GROUP_KEYS = ("topic", "instrument", "genre", "technique", "publisher")
 ID_ROLE = Qt.ItemDataRole.UserRole
@@ -24,7 +24,8 @@ def _group_label(group_by: str, value: str, topics: dict) -> str:
 
 
 def _title(loaded: LoadedEntry) -> str:
-    title = str(loaded.entry.get("title") or loaded.id)
+    vi = loaded.entry.get("title_vi") if current_language() == "vi" else None
+    title = str(vi or loaded.entry.get("title") or loaded.id)
     return f"{title}  !" if loaded.has_errors else title
 
 
