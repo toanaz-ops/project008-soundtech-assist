@@ -70,7 +70,7 @@ body: |
 body_vi: |
   ## Hai thang đo, một chuỗi tín hiệu
 
-  Thiết bị analogue đo bằng **dBu** (một điện áp), digital đo bằng **dBFS** (decibel dưới trần của converter, tức 0 dBFS). Console dùng A/D converter phải ánh xạ cái này sang cái kia. Có hai alignment phổ biến: một cái gắn 0 dBu với -18 dBFS, cái kia gắn +4 dBu với -20 dBFS. Desk nào theo chuẩn nào tùy hãng, nên hãy xem hiệu chuẩn meter của console trước khi tin vào một quy tắc ngón tay cái.
+  Thiết bị analogue đo bằng **dBu** (một điện áp), digital đo bằng **dBFS** (decibel dưới trần của converter, tức 0 dBFS). Console dùng A/D converter phải ánh xạ cái này sang cái kia. Có hai alignment phổ biến: một cái gắn 0 dBu với -18 dBFS, cái kia gắn +4 dBu với -20 dBFS. Desk nào theo chuẩn nào tùy hãng, nên hãy xem hiệu chuẩn meter của console trước khi tin vào một con số mặc định nào đó.
 
   ## Vì sao trần digital là "cứng"
 
@@ -145,6 +145,6 @@ media:
   caption_vi: Đặt input level cho live sound (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T08:46:41+07:00'
 updated_by: agent:translator-vi

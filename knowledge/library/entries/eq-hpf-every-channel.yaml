@@ -69,7 +69,7 @@ body_vi: |
   Slope bậc nhất (6-12 dB/oct) nghe tự nhiên; slope dốc hơn (18-24 dB/oct) cắt sâu hơn nhưng có thể bị ringing gần tần số cắt. Khi cắt hẳn nghe mỏng, dùng shelf thay thế.
 
   ## Lưu ý và ý kiến trái chiều
-  Đa số engineer filter gần như mọi thứ; một số ít cảnh báo không nên HPF trên mọi guitar hoặc ở nơi nguồn cần độ nặng. Tuyệt đối không cắt theo thói quen: để channel flat trừ khi bạn gọi được tên vấn đề.
+  Đa số engineer filter gần như mọi thứ; một số ít cảnh báo không nên HPF trên mọi guitar hoặc ở nơi nguồn cần độ nặng. Đừng cắt theo thói quen: cứ để channel flat, trừ khi bạn gọi được tên vấn đề.
 
   ## Trên WING
   Mỗi channel có low-cut với tần số và slope chỉnh được trên Channel strip; set nó trước các band EQ và kiểm tra lại sau soundcheck, khi band đang chơi.
@@ -159,6 +159,6 @@ media:
   caption_vi: Kiến thức cơ bản live sound về high-pass filter (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T08:46:41+07:00'
 updated_by: agent:translator-vi
