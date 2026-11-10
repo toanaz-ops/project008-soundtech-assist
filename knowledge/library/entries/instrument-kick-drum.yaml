@@ -16,7 +16,7 @@ tags:
   event:
   - concert
 summary: Where to put the mic on a live kick (inside for attack, outside for weight), a conservative starting EQ, and gate/phase habits that keep the kick tight.
-summary_vi: Đặt mic ở đâu trên kick live (bên trong cho attack, bên ngoài cho độ nặng), EQ khởi điểm thận trọng, và thói quen gate/phase giữ cho kick chặt.
+summary_vi: Đặt mic ở đâu trên kick live (bên trong cho attack, bên ngoài cho weight), EQ khởi điểm thận trọng, và thói quen gate/phase giữ cho kick tight.
 body: |
   ## Mic choice and placement
 
@@ -53,11 +53,11 @@ body: |
 body_vi: |
   ## Chọn mic và vị trí đặt
 
-  **Vấn đề:** kick live gánh hai việc: độ nặng ở low-end và attack của beater. Một vị trí mic hiếm khi làm được cả hai, nên engineer chọn vị trí theo việc mà mix cần nhất.
+  **Vấn đề:** kick live gánh hai việc: weight ở low-end và attack của beater. Một vị trí mic hiếm khi làm được cả hai, nên engineer chọn vị trí theo việc mà mix cần nhất.
 
-  - **Bên trong trống** (mic hướng vào batter head, cách beater vài inch) cho attack chặt, đanh và loại spill từ phần còn lại của bộ trống.
-  - **Ngay ngoài resonant head hoặc ở port hole** nghe ấm và đầy hơn, ít click hơn.
-  - Nhiều show dùng **cả hai**: mic bên trong cho attack và một dynamic large-diaphragm bên ngoài cho độ nặng. Các cuộc phỏng vấn drummer của Shure mô tả đúng cách ghép hai mic khác nhau trên một trống.
+  - **Bên trong trống** (mic hướng vào batter head, cách beater vài inch) cho attack tight, punchy và loại spill từ phần còn lại của bộ trống.
+  - **Ngay ngoài resonant head hoặc ở port hole** nghe warm và đầy hơn, ít click hơn.
+  - Nhiều show dùng **cả hai**: mic bên trong cho attack và một dynamic large-diaphragm bên ngoài cho weight. Các cuộc phỏng vấn drummer của Shure mô tả đúng cách ghép hai mic khác nhau trên một trống.
   - Tránh vị trí phía pedal; drummer đá vào chân mic và tiếng kẽo kẹt của pedal lọt vào.
 
   ## EQ khởi điểm (không phải công thức)
@@ -66,7 +66,7 @@ body_vi: |
 
   - High-pass khoảng 40 Hz để bỏ sub-rumble mà PA không dùng được (một hướng dẫn xuống tới 20 Hz cho thận trọng).
   - Boost vài dB quanh 60 Hz cho fundamental; iZotope đặt vùng punch ở 60-80 Hz.
-  - Cut ở đâu đó giữa 150 và 500 Hz để bỏ tiếng hộp và bìa các-tông. Với mic ngoài, Burton khoét 200-400 Hz.
+  - Cut ở đâu đó giữa 150 và 500 Hz để bỏ chất boxy (nghe như bị bọng, bị nhốt trong hộp) và tiếng cardboard (đục như gõ thùng các-tông). Với mic ngoài, Burton khoét 200-400 Hz.
   - Một chút 2-5 kHz cho beater click nếu kick bị chìm sau guitar.
   - Một bài còn boost 50-100 Hz và cut 80-120 Hz; hai vùng này chồng nhau, nên sweep và nghe thay vì áp dụng cả hai.
 
@@ -76,13 +76,13 @@ body_vi: |
 
   ## Vấn đề thường gặp
 
-  - **Low-end mỏng khi có hai mic kick:** hai mic lệch polarity một phần. Đảo polarity một mic và giữ cái đầy hơn.
-  - **Kick ù, một nốt:** resonant head được lên dây thấp hoặc mic nằm ở điểm standing-wave; dời mic trước khi với tay lấy EQ.
+  - **Low-end thin khi có hai mic kick:** hai mic lệch polarity một phần. Đảo polarity một mic và giữ cái đầy hơn.
+  - **Kick boomy (ù, rền), một nốt:** resonant head được lên dây thấp hoặc mic nằm ở điểm standing-wave; dời mic trước khi với tay lấy EQ.
   - **Click nhưng yếu:** bạn chỉ có mic bên trong; trộn thêm mic ngoài.
 
   ## Mẹo live và WING
 
-  Trên WING dùng high-pass của channel để cắt rumble, một band EQ để boost body và một band để cut tiếng hộp, và gate của channel với key filter set vào beater. Kiểm tra polarity bằng một tai nghe ngay trong phòng, không chỉ trên headphone. Giữ gain sao cho fader nằm gần vạch unity để có độ phân giải.
+  Trên WING dùng high-pass của channel để cắt rumble, một band EQ để boost body và một band để cut boxy, và gate của channel với key filter set vào beater. Kiểm tra polarity bằng một tai nghe ngay trong phòng, không chỉ trên headphone. Giữ gain sao cho fader nằm gần vạch unity để có độ phân giải.
 rule:
   applies_to:
     source_type:
@@ -167,6 +167,6 @@ media:
   caption_vi: Vị trí mic thay đổi âm kick ra sao (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
-updated_by: agent:translator-vi
+revision: 4
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

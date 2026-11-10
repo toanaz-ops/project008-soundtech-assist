@@ -84,7 +84,7 @@ body_vi: |
 
   - **Mic vocal cardioid**: kém nhạy nhất ngay phía sau (180 độ), nên một wedge duy nhất đặt trước ca sĩ, hướng ngược về phía sau mic, là giải pháp kinh điển.
   - **Supercardioid / hypercardioid**: kém nhạy nhất ở khoảng 125 và 110 độ lệch trục (off-axis), nên một wedge nằm ngay sau mic là lựa chọn tồi; hãy đặt wedge sang hai bên ở góc đó (thường là một cặp chếch ra ngoài).
-  - **Mic omnidirectional**: không có null, nên dễ hú rít (feedback) hơn với wedge.
+  - **Mic omnidirectional**: không có null, nên dễ feedback (hú rít) hơn với wedge.
 
   Kiểm tra polar plot thật của con mic đang dùng; góc null khác nhau giữa các model. Dời wedge một đoạn ngắn thường có ích hơn là thêm hàng loạt notch filter.
 
@@ -92,8 +92,8 @@ body_vi: |
 
   1. Bắt đầu bằng giọng hoặc nhạc cụ của chính người biểu diễn, đủ lớn để bắt cao độ và nhịp.
   2. Chỉ thêm các cue họ yêu cầu: kick và snare cho tay trống, bass cho tay guitar, một click hoặc cue vocal khi cần.
-  3. Giữ monitor mix mỏng ở low end. Roll off phần thấp trên các send vocal bằng HPF (thường 100-150 Hz làm điểm bắt đầu) và đừng gửi bass lớn vào mọi wedge.
-  4. Để tiếng tràn sân khấu (stage wash) cho âm lượng sân khấu lo, không phải wedge.
+  3. Giữ monitor mix thin ở low end. Roll off phần thấp trên các send vocal bằng HPF (thường 100-150 Hz làm điểm bắt đầu) và đừng gửi bass lớn vào mọi wedge.
+  4. Để stage wash (tiếng tràn sân khấu) cho âm lượng sân khấu lo, không phải wedge.
   5. Tuyệt đối không gửi dàn hợp xướng hay các mic mở khác vào cùng wedge mà một mic có thể nghe thấy; đó là cách nhanh nhất để gây feedback.
 
   ## Level và quy trình
@@ -158,6 +158,6 @@ media:
   caption_vi: Mix monitor wedge từ front of house ở venue nhỏ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:07:43+07:00'
 updated_by: agent:translator-vi

@@ -20,7 +20,7 @@ tags:
   - concert
   - corporate
 summary: Brass wants a little distance and an on- or off-axis choice for brightness; saxophone can be miked at the bell or the body; EQ is mostly gentle cuts of honk and harshness.
-summary_vi: Brass cần một chút khoảng cách và lựa chọn on-axis hay off-axis để chỉnh độ sáng; saxophone có thể đặt mic ở bell hoặc thân kèn; EQ chủ yếu là cut nhẹ phần honk và độ gắt.
+summary_vi: Brass cần một chút khoảng cách và lựa chọn on-axis hay off-axis để chỉnh brightness; saxophone có thể đặt mic ở bell hoặc thân kèn; EQ chủ yếu là cut nhẹ phần honk (tiếng mũi) và harshness (độ gắt).
 body: |
   ## Brass (trumpet, trombone, tuba)
 
@@ -68,14 +68,14 @@ body_vi: |
 
   Brass cần một khoảng cách để tiếng kịp nở; đặt quá sát làm lệch tone. Shure gợi ý bắt đầu cách bell khoảng một đến hai feet. Đặt gần thì tiếng chặt hơn, giảm leakage và feedback, còn xa hơn thì thêm chiều sâu.
 
-  - **On-axis ở bell:** sáng hơn, sắc hơn, nhiều bite hơn.
-  - **Off-axis:** mềm hơn, bớt cạnh.
+  - **On-axis ở bell:** bright (sáng) hơn, sharp hơn, nhiều bite hơn.
+  - **Off-axis:** mềm hơn, bớt edge.
   - Mic clip-on condenser/instrument (Beta 98H/C, PGA98H, SM137) hợp với việc nghệ sĩ di chuyển trên sân khấu và monitor to.
   - Với một section, mỗi người một mic cho dễ kiểm soát; một mic chung cho hai người là cách dung hòa nhanh trên sân khấu nhỏ.
 
   ## Saxophone
 
-  Mic có đáp ứng định hình kiểu vocal hợp với sax. Hướng vào bell từ cách vài inch cho tiếng sáng, ít feedback và spill hơn. Mic đặt cách các lỗ thoát âm vài inch cho tone ấm và đầy hơn nhưng bắt cả tiếng ngón tay và phím, nên tránh xa các lỗ bấm.
+  Mic có đáp ứng định hình kiểu vocal hợp với sax. Hướng vào bell từ cách vài inch cho tiếng bright, ít feedback và spill hơn. Mic đặt cách các lỗ thoát âm vài inch cho tone warm và đầy hơn nhưng bắt cả tiếng ngón tay và phím, nên tránh xa các lỗ bấm.
 
   ## Flute
 
@@ -86,9 +86,9 @@ body_vi: |
   Các vùng của brass section theo iZotope:
 
   - Dưới 150 Hz: low end cần cắt (trừ tuba).
-  - 500-800 Hz: honkiness hoặc boxiness; cut nhẹ sẽ giúp.
-  - 1-5 kHz: attack hoặc độ gắt.
-  - 5 kHz trở lên: độ hung hoặc air, tùy ngữ cảnh.
+  - 500-800 Hz: honkiness (tiếng mũi) hoặc boxiness (nghe như bị bọng, bị nhốt trong một chiếc hộp); cut nhẹ sẽ giúp.
+  - 1-5 kHz: attack hoặc harshness (độ gắt).
+  - 5 kHz trở lên: aggression hoặc air, tùy ngữ cảnh.
 
   Giữ các cú chỉnh nhỏ; như iZotope nói, "less is always more."
 
@@ -98,8 +98,8 @@ body_vi: |
 
   ## Vấn đề thường gặp
 
-  - **Trumpet on-axis bị gắt:** xoay mic hơi lệch trục trước khi nghĩ đến EQ.
-  - **Sax bị tiếng lách cách:** dời mic ra xa các phím hoặc hướng về phía bell.
+  - **Trumpet on-axis bị harsh:** xoay mic hơi lệch trục trước khi nghĩ đến EQ.
+  - **Sax bị clack (tiếng phím lách cách):** dời mic ra xa các phím hoặc hướng về phía bell.
   - **Feedback khi kèn đứng gần wedge:** mic gần hơn, pattern hẹp hơn, góc wedge đúng.
 
   ## Mẹo live và WING
@@ -171,6 +171,6 @@ media:
   caption_vi: Kỹ thuật dùng ribbon mic cho người chơi brass (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:36+07:00'
 updated_by: agent:translator-vi

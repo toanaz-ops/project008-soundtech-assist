@@ -59,7 +59,7 @@ body: |
 body_vi: |
   ## Các con số này đến từ đâu
 
-  Phần lớn các khoảng giá trị lấy từ một blog âm thanh nhà thờ (Sharefaith) có lập bảng các thiết lập tiêu biểu; blog này không nằm trong danh sách nguồn uy tín nên trọng số thấp. Các giới hạn chung (Attack 5 đến 250 ms, Release 5 đến 3000 ms, ngắn hơn cho nguồn percussive, soft knee cho độ trong suốt) lấy từ một bài báo đã công bố về intelligent multitrack compression. Một bài của hãng về gain staging bổ sung quy tắc: compressor phải làm việc trên mức đã set đúng, không phải để cứu một mức sai. Mọi thứ chỉ là điểm xuất phát.
+  Phần lớn các khoảng giá trị lấy từ một blog âm thanh nhà thờ (Sharefaith) có lập bảng các thiết lập tiêu biểu; blog này không nằm trong danh sách nguồn uy tín nên trọng số thấp. Các giới hạn chung (Attack 5 đến 250 ms, Release 5 đến 3000 ms, ngắn hơn cho nguồn percussive, soft knee cho transparency (độ trong suốt)) lấy từ một bài báo đã công bố về intelligent multitrack compression. Một bài của hãng về gain staging bổ sung quy tắc: compressor phải làm việc trên mức đã set đúng, không phải để cứu một mức sai. Mọi thứ chỉ là điểm xuất phát.
 
   ## Các khoảng khởi điểm
 
@@ -79,11 +79,11 @@ body_vi: |
 
   ## Vì sao nguồn yếu lại quan trọng
 
-  Mục tiêu Gain Reduction 3 đến 6 dB đến từ các đoạn trích thứ cấp. Một con Compressor lúc nào cũng gánh nặng như vậy trên vocal live sẽ nâng sàn nhiễu (Noise floor) của phòng giữa các câu hát và tăng nguy cơ feedback. Vì thế phải kiểm tra bằng tai và nhìn kim Gain Reduction, đừng tin vào con số.
+  Mục tiêu Gain Reduction 3 đến 6 dB đến từ các đoạn trích thứ cấp. Một con Compressor lúc nào cũng gánh nặng như vậy trên vocal live sẽ nâng Noise floor (sàn nhiễu) của phòng giữa các câu hát và tăng nguy cơ feedback. Vì thế phải kiểm tra bằng tai và nhìn kim Gain Reduction, đừng tin vào con số.
 
   ## Giới hạn
 
-  Attack của kick và snare lên gần 80 ms, khá chậm; muốn cú đánh chặt hơn thì dùng đầu nhanh hơn. Không có nghiên cứu nào ở đây thử các thiết lập này trong phòng live.
+  Attack của kick và snare lên gần 80 ms, khá chậm; muốn cú đánh tight hơn thì dùng đầu nhanh hơn. Không có nghiên cứu nào ở đây thử các thiết lập này trong phòng live.
 rule:
   kind: comp_start
   applies_to:
@@ -280,6 +280,6 @@ media:
   caption_vi: Compress acoustic guitar live mà không bị over-compress (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:08+07:00'
 updated_by: agent:translator-vi

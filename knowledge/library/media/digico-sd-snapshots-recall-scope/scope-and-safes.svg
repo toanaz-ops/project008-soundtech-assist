@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">What a fired snapshot may change (all gates must allow it)</text>
+<rect x="40.0" y="200" width="148.8" height="110" rx="8" fill="#1b1e24" stroke="#ff9f1c" stroke-width="2"/>
+<text x="114.4" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Snapshot stores</text>
+<text x="114.4" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">everything</text>
+<line x1="192.8" y1="255.0" x2="214.8" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="222.8,255.0 212.8,249.0 212.8,261.0" fill="#868d98"/>
+<rect x="222.8" y="200" width="148.8" height="110" rx="8" fill="#1b1e24" stroke="#5fc9ff" stroke-width="2"/>
+<text x="297.2" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Global Recall</text>
+<text x="297.2" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Scope</text>
+<text x="297.2" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">per control type</text>
+<line x1="375.6" y1="255.0" x2="397.6" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="405.6,255.0 395.6,249.0 395.6,261.0" fill="#868d98"/>
+<rect x="405.6" y="200" width="148.8" height="110" rx="8" fill="#1b1e24" stroke="#6ee7a0" stroke-width="2"/>
+<text x="480.0" y="240.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Individual</text>
+<text x="480.0" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">snapshot Recall</text>
+<text x="480.0" y="280.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Scope</text>
+<line x1="558.4" y1="255.0" x2="580.4" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="588.4,255.0 578.4,249.0 578.4,261.0" fill="#868d98"/>
+<rect x="588.4" y="200" width="148.8" height="110" rx="8" fill="#1b1e24" stroke="#ff5a4e" stroke-width="2"/>
+<text x="662.8" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Channel / EQ /</text>
+<text x="662.8" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">dynamics Safes</text>
+<text x="662.8" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">red = untouched</text>
+<line x1="741.2" y1="255.0" x2="763.2" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="771.2,255.0 761.2,249.0 761.2,261.0" fill="#868d98"/>
+<rect x="771.2" y="200" width="148.8" height="110" rx="8" fill="#1b1e24" stroke="#ffc24d" stroke-width="2"/>
+<text x="845.6" y="250.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Controls that</text>
+<text x="845.6" y="270.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">actually change</text>
+</svg>

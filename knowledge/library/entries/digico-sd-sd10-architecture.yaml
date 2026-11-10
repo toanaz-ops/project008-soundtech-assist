@@ -1,0 +1,114 @@
+id: digico-sd-sd10-architecture
+title: 'SD10 architecture and capacity: Stealth processing, Session Structure, options'
+title_vi: 'Kiến trúc và dung lượng SD10: Stealth processing, Session Structure, các option'
+topic: digico-sd
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-sd
+  - console-architecture
+  - session-setup
+  event:
+  - festival
+  - touring
+summary: The SD10 is DiGiCo's 144-input, 64-bus console on Stealth Digital Processing; you decide how many channels of each type exist in Session Structure. This entry lists the capacity from the product page and what the manual says about restructuring, rack connections and licensed modes.
+summary_vi: SD10 là console 144 input, 64 bus của DiGiCo, chạy Stealth Digital Processing; số channel mỗi loại do bạn chia trong Session Structure. Mục này ghi dung lượng theo trang sản phẩm và những gì manual nói về restructure, kết nối rack và các chế độ mua thêm.
+body: |
+  ## Capacity (manufacturer product page, SD10)
+
+  These numbers come from DiGiCo's SD10 page, not from the software manual:
+
+  - 144 input channels and 64 assignable busses (aux or group), plus a master bus; 2 stereo solo busses.
+  - A 24 x 24 matrix and 24 control groups; 24 graphic EQs of 32 bands and 24 stereo FX processors.
+  - Processing is described as Stealth Digital Processing on FPGA hardware, up to 40-bit floating point internally, 48 or 96 kHz; typical processing delay 2 ms at 48 kHz and 1.1 ms at 96 kHz.
+  - Per-channel tools: channel delay, two inserts, 24 dB/oct HPF and LPF, 4-band EQ, DYN 1 and DYN 2. The page lists 218 Dynamic EQ, 218 multiband compressor and 218 DiGiTube instances.
+  - Surface: 37 motorised faders (three banks of 12 plus master), a 15 inch touchscreen, 40 smart-key macros in four layers of 10.
+  - Racks: SD-Rack and others over MADI or Optocore (up to 14 SD-Racks and five redundant engine consoles on one loop, per the page).
+
+  ## What the software manual says (Issue H, V20+)
+
+  - **Session Structure** (Files menu) is where you set the sample rate and how many input, aux, group, matrix and control-group channels exist. Changes only take effect when you press Restructure. The manual advises setting this before you configure the session.
+  - Clear All wipes non-default routing and processing from the channels on restructure. Auto-route patches physical inputs and outputs to channels in order, and the manual warns it overwrites previous routing.
+  - On some consoles matrix inputs, matrix outputs and control group counts are fixed. Processing channels are reserved for the master bus, talkback and stereo solos.
+  - Theatre mode (SD10 listed) and broadcast mode (SD10 listed) are licensed upgrades bought from DiGiCo or a dealer; the licence is activated in System > Enable Extensions.
+  - Two consoles of the same type can be mirrored for full redundancy; the manual says the SD7, Q7 and Q8 have two engines built in. Whether the SD10 has one or two engines is not stated in the pages read.
+
+  ## How to use it on a show
+
+  1. Before building the session, decide the sample rate, then fill Session Structure: inputs, then aux (mono vs stereo for IEM), groups, matrix.
+  2. Press Restructure once, and only on a session you can afford to rebuild. Do not use Clear All on a session with routing you want to keep.
+  3. Save the session under a new name before any restructure. Restructure on show day is a risk.
+  4. Keep the product-page counts in mind when planning: 144 inputs is the ceiling, and the bus count is shared between aux and group types.
+
+  ## What is NOT verified
+
+  - Exact SD10 maximum firmware and which manual features (tagged 1272+, V1445+, V19xx+ in the manual) it can run. Check your console's software version against the tag.
+  - Whether the SD10 has DMI card slots (the manual's DMI chapters refer to consoles with DMI slots; the product page does not list DMI).
+  - The product-page figures were read through a web fetch of the page, not from a datasheet PDF. Confirm against the SD10 data sheet before quoting.
+  - Comparison with WING: no capacity comparison was checked.
+body_vi: |
+  ## Dung lượng (trang sản phẩm của hãng, SD10)
+
+  Các con số này lấy từ trang SD10 của DiGiCo, không phải từ software manual:
+
+  - 144 input channel và 64 bus gán được (aux hoặc group), thêm master bus; 2 solo bus stereo.
+  - Matrix 24 x 24 và 24 control group; 24 graphic EQ 32 band và 24 bộ FX stereo.
+  - Xử lý được mô tả là Stealth Digital Processing trên phần cứng FPGA, tới 40-bit floating point bên trong, 48 hoặc 96 kHz; độ trễ xử lý điển hình 2 ms ở 48 kHz và 1.1 ms ở 96 kHz.
+  - Công cụ trên mỗi channel: channel delay, hai insert, HPF và LPF 24 dB/oct, EQ 4 band, DYN 1 và DYN 2. Trang này ghi 218 Dynamic EQ, 218 multiband compressor và 218 DiGiTube.
+  - Surface: 37 fader motor (ba bank 12 fader cộng master), màn hình cảm ứng 15 inch, 40 macro smart key chia bốn layer, mỗi layer 10 phím.
+  - Rack: SD-Rack và các loại khác qua MADI hoặc Optocore (theo trang này, tối đa 14 SD-Rack và năm console redundant engine trên một loop).
+
+  ## Software manual nói gì (Issue H, V20+)
+
+  - **Session Structure** (menu Files) là nơi đặt sample rate và số input, aux, group, matrix, control group. Thay đổi chỉ có hiệu lực khi bấm Restructure. Manual khuyên đặt cái này trước khi cấu hình session.
+  - Clear All sẽ xoá routing và processing không phải mặc định khỏi các channel khi restructure. Auto-route patch input và output vật lý vào channel theo thứ tự; manual cảnh báo nó ghi đè routing trước đó.
+  - Trên một số console, số matrix input, matrix output và control group là cố định. Một phần processing channel được giữ cho master bus, talkback và solo stereo.
+  - Theatre mode (có SD10 trong danh sách) và broadcast mode (có SD10) là bản nâng cấp có licence, mua từ DiGiCo hoặc đại lý; kích hoạt ở System > Enable Extensions.
+  - Hai console cùng loại có thể mirror để redundant hoàn toàn; manual nói SD7, Q7 và Q8 có sẵn hai engine. SD10 có một hay hai engine thì các trang đã đọc không nói.
+
+  ## Cách dùng trên show
+
+  1. Trước khi dựng session, chốt sample rate, rồi điền Session Structure: input, rồi aux (mono hay stereo cho IEM), group, matrix.
+  2. Bấm Restructure một lần, và chỉ trên session mà bạn chấp nhận dựng lại. Đừng bấm Clear All trên session có routing muốn giữ.
+  3. Save session thành tên mới trước mọi lần restructure. Restructure ngay ngày show là rủi ro.
+  4. Nhớ con số trên trang sản phẩm khi lên kế hoạch: 144 input là trần, và số bus dùng chung cho aux và group.
+
+  ## Điều CHƯA được xác minh
+
+  - Firmware tối đa của SD10 và tính năng nào trong manual (gắn nhãn 1272+, V1445+, V19xx+) chạy được trên nó. Đối chiếu version phần mềm của console với nhãn đó.
+  - SD10 có khe DMI hay không (chương DMI của manual nói về console có khe DMI; trang sản phẩm không liệt kê DMI).
+  - Số liệu trang sản phẩm được đọc qua một lần fetch trang web, không phải từ datasheet PDF. Đối chiếu với data sheet SD10 trước khi trích dẫn.
+  - So sánh với WING: chưa kiểm tra so sánh dung lượng.
+sources:
+- title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
+  publisher: DiGiCo
+  kind: manual
+  url: https://support.digico.biz/hc/en-gb/article_attachments/37137993915665
+  accessed: '2026-11-10'
+  locator: PDF p.71-74, 2.1.14 Enable Extensions, 2.2.2 Session Structure; PDF p.147 (mirroring)
+- title: SD10 product page
+  publisher: DiGiCo
+  kind: article
+  url: https://digico.biz/consoles/sd10
+  accessed: '2026-11-10'
+  locator: 'Specifications: channels, busses, processing, surface (read via web fetch)'
+media:
+- kind: diagram
+  path: sd10-capacity.png
+  caption: SD10 capacity from the manufacturer product page (not from the software manual)
+  caption_vi: Dung lượng SD10 theo trang sản phẩm của hãng (không phải từ software manual)
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:range_chart
+- kind: video
+  url: https://www.youtube.com/watch?v=dYyA3CBIFWA
+  title: SD10 Launch Video
+  channel: DiGiCo Consoles
+  caption: DiGiCo launch video for the SD10 (title and channel verified via oEmbed; not watched)
+  caption_vi: Video ra mắt SD10 của DiGiCo (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 1
+updated_at: '2026-11-10T14:16:52+07:00'
+updated_by: agent:console-digico-sd

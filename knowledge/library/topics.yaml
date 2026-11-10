@@ -15,3 +15,6 @@ topics:
   - {id: system, en: "PA system & loudness", vi: "Hệ thống PA & độ lớn"}
   - {id: genre, en: "Genre approaches", vi: "Theo thể loại"}
   - {id: wing-console, en: "Behringer WING", vi: "Behringer WING"}
+  - {id: digico-sd, en: "DiGiCo SD series (SD10)", vi: "DiGiCo dòng SD (SD10)"}
+  - {id: digico-quantum, en: "DiGiCo Quantum 338", vi: "DiGiCo Quantum 338"}
+  - {id: avid-s6l, en: "Avid VENUE S6L", vi: "Avid VENUE S6L"}

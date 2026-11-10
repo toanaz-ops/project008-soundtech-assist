@@ -1,0 +1,139 @@
+id: avid-s6l-io-sharing
+title: S6L I/O Sharing between FOH and monitor systems
+title_vi: Chia sẻ I/O (I/O Sharing) giữa hệ FOH và hệ monitor trên S6L
+topic: avid-s6l
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-avid-s6l
+  - io-sharing
+  - gain
+  - monitors
+  event:
+  - touring
+  - festival
+  - live-sound
+summary: Two (VENUE 6.3) or three (VENUE 7.0) S6L systems can share Stage racks on one AVB network. One system is the Input Master of a rack and owns the analog preamp gain; the others are Followers and adjust only digital trim. Outputs are owned per slot, so each system can drive its own stage outputs.
+summary_vi: Hai hệ (VENUE 6.3) hoặc ba hệ (VENUE 7.0) S6L có thể dùng chung Stage rack trên một mạng AVB. Một hệ là Input Master của rack và nắm analog gain của preamp; các hệ còn lại là Follower, chỉ chỉnh được digital trim. Output được sở hữu theo từng slot, nên mỗi hệ điều khiển được ngõ ra sân khấu của riêng mình.
+body: |
+  ## What the manual says (verified, System Guide 7.2, printed pp.75-78; Handbook 8.0)
+
+  **Versions.** Handbook 8.0: VENUE 6.3 or later for two systems sharing I/O, VENUE 7.0 or later for three, in a redundant star using qualified Luminex Gigacore switches. VENUE 8.2 adds Netgear M4250 Pro AV switches as an alternative (What's New 8.2, p.15). Systems sharing I/O need two AVB-192 cards in each E6L.
+
+  **Roles.** The E6L to which a Stage rack is assigned is that rack's Input Master; every other E6L on the network is an Input Follower. The Master owns all Input slots (A to H) on the rack; individual input slots cannot be split between systems. By default the Master also claims all Output slots (J to M), and can assign each Output slot to another system in Options > Devices. Stage 16 cannot be split: the Master controls all its inputs and outputs, and output-slot ownership cannot be assigned for a Stage 16 or a Local 16.
+
+  **Difference between Master and Follower (manual table).**
+
+  | Function | Master | Follower |
+  |---|---|---|
+  | Mic preamp control | Analog gain | Digital trim |
+  | Pad | Analog pad | Digital pad |
+  | Patch Stage inputs to input channels | Yes | Yes |
+  | Routing to Stage outputs | n/a | Yes |
+  | Routing to/from local I/O (console and engine) | Yes | No |
+  | Gain Tracking | Yes | No |
+  | Unassign a Stage 64 | Yes | No |
+
+  **Indications.** The Devices page shows In Master / In Slave and Out Claimed / Out Waived / Out Mixed. In the Patchbay, Master Stage tabs are green and Follower tabs yellow; Waived output slots are greyed.
+
+  **True Gain pickoff (7.2).** The Matrix pickoff "True Gain" is a post-gain tap that includes the digital portion of input gain, including any gain compensation in I/O Sharing.
+
+  **Power-up order.** With more than one system sharing I/O, power the Clock Master system first.
+
+  ## How to use it on a show
+
+  1. Decide which desk is Input Master: normally FOH, so the engineer there owns analog gain.
+  2. Give the monitor system the Output slots that feed the stage (wedges, IEM transmitters) by assigning those slots in Options > Devices on the Master.
+  3. Tell the monitor engineer they trim digitally; they cannot change analog preamp gain.
+  4. Check each desk's Patchbay: green tabs for what you own, yellow for what you follow.
+  5. Power the Clock Master system first.
+
+  ## Pitfalls
+
+  - Reassigning an output patch that already exists in the same Show file asks for confirmation; read the dialog.
+  - A Follower cannot unassign the Stage rack, so only the Master can restructure ownership.
+  - Cabling is the hard part: all participating E6Ls need two AVB-192 cards, and a star needs qualified switches.
+
+  ## What is NOT verified
+
+  - **Gain Tracking and gain compensation.** The table lists "Gain Tracking: Yes (Master), No (Follower)" and the manual refers to "gain compensation in I/O Sharing", but the pages read do not explain what the engine does when the Master changes analog gain. Check the Avid Knowledge Base before promising anything about level shifts.
+  - **Comparison with WING.** Not researched here, so no comparison is made.
+body_vi: |
+  ## Manual nói gì (đã xác minh, System Guide 7.2, trang in 75-78; Handbook 8.0)
+
+  **Phiên bản.** Handbook 8.0: VENUE 6.3 trở lên cho hai hệ chia I/O, VENUE 7.0 trở lên cho ba hệ, trong mạng redundant star dùng switch Luminex Gigacore đạt chuẩn. VENUE 8.2 thêm switch Netgear M4250 Pro AV làm phương án thay thế (What's New 8.2, tr.15). Các hệ chia I/O cần hai card AVB-192 trong mỗi E6L.
+
+  **Vai trò.** E6L mà Stage rack được gán vào là Input Master của rack đó; mọi E6L khác trên mạng là Input Follower. Master sở hữu toàn bộ Input slot (A tới H) của rack; từng input slot không chia được giữa các hệ. Mặc định Master cũng claim hết Output slot (J tới M), và có thể gán từng Output slot cho hệ khác trong Options > Devices. Stage 16 không chia được: Master điều khiển mọi input và output của nó, và quyền sở hữu output slot không gán được cho Stage 16 hay Local 16.
+
+  **Khác biệt Master và Follower (bảng của manual).**
+
+  | Chức năng | Master | Follower |
+  |---|---|---|
+  | Điều khiển mic preamp | Analog gain | Digital trim |
+  | Pad | Analog pad | Digital pad |
+  | Patch input Stage vào input channel | Có | Có |
+  | Routing tới ngõ ra Stage | n/a | Có |
+  | Routing tới/từ I/O local (console và engine) | Có | Không |
+  | Gain Tracking | Có | Không |
+  | Bỏ gán một Stage 64 | Có | Không |
+
+  **Chỉ báo.** Trang Devices hiện In Master / In Slave và Out Claimed / Out Waived / Out Mixed. Trong Patchbay, tab Stage của Master màu xanh lá, của Follower màu vàng; output slot đã Waived bị xám.
+
+  **Pickoff True Gain (7.2).** Pickoff "True Gain" của Matrix là điểm lấy sau gain, gồm phần digital của gain input, kể cả mọi gain compensation trong I/O Sharing.
+
+  **Thứ tự bật nguồn.** Khi có nhiều hệ chia I/O, bật hệ Clock Master trước.
+
+  ## Dùng trên show thế nào
+
+  1. Quyết định bàn nào là Input Master: thường là FOH, để kỹ sư ở đó nắm analog gain.
+  2. Giao cho hệ monitor các Output slot nuôi sân khấu (wedge, bộ phát IEM) bằng cách gán các slot đó trong Options > Devices trên Master.
+  3. Báo kỹ sư monitor rằng họ chỉ trim digital; không đổi được analog gain của preamp.
+  4. Kiểm tra Patchbay trên từng bàn: tab xanh lá là thứ bạn sở hữu, tab vàng là thứ bạn đi theo.
+  5. Bật hệ Clock Master trước.
+
+  ## Bẫy thường gặp
+
+  - Gán lại một output patch đã có trong cùng Show file sẽ hỏi xác nhận; hãy đọc hộp thoại.
+  - Follower không bỏ gán được Stage rack, nên chỉ Master mới tái cấu trúc quyền sở hữu.
+  - Phần khó là đi cáp: mọi E6L tham gia cần hai card AVB-192, và mạng star cần switch đạt chuẩn.
+
+  ## Điều CHƯA được xác minh
+
+  - **Gain Tracking và gain compensation.** Bảng ghi "Gain Tracking: Có (Master), Không (Follower)" và manual nhắc tới "gain compensation in I/O Sharing", nhưng các trang đã đọc không giải thích engine làm gì khi Master đổi analog gain. Hãy kiểm tra Avid Knowledge Base trước khi hứa gì về chuyện mức bị dịch.
+  - **So sánh với WING.** Chưa nghiên cứu ở đây nên không so sánh.
+sources:
+- title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/a2.e4.87.VENUES6LSystemGuidev72en.PDF
+  year: 2023
+  accessed: '2026-11-10'
+  locator: PDF pp.87-90 (printed 75-78) Shared I/O configurations, Table of Master/Follower; p.77 power-up; p.179 (167) True Gain pickoff
+- title: VENUE | S6L Handbook, VENUE 8.0 edition (dated 01/25) (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/f6.88.85.VENUES6LHandbookv80en.PDF
+  year: 2025
+  accessed: '2026-11-10'
+  locator: 'PDF pp.11, 16-19: Configuration pages, I/O sharing versions and redundant star'
+- title: What's New in VENUE Software 8.2 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/fa.2d.ba.AVIDVENUE8.2ReleaseNotes.pdf
+  year: 2026
+  accessed: '2026-11-10'
+  locator: 'PDF p.15: AVB switch support updates'
+media:
+- kind: diagram
+  path: io-sharing-roles.png
+  caption: 'Shared Stage rack: Input Master holds analog gain, Follower adjusts digital trim'
+  caption_vi: 'Stage rack dùng chung: Input Master giữ analog gain, Follower chỉ chỉnh digital trim'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

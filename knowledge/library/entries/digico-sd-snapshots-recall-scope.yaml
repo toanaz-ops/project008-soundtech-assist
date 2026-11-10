@@ -1,0 +1,114 @@
+id: digico-sd-snapshots-recall-scope
+title: 'Snapshots with Recall Scope and Safes: control what a recall can change'
+title_vi: 'Snapshot với Recall Scope và Safes: kiểm soát những gì một lần recall được đổi'
+topic: digico-sd
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-sd
+  - snapshots
+  - recall-scope
+  - safes
+  event:
+  - theatre
+  - festival
+  - corporate
+summary: A DiGiCo snapshot stores the whole console, but a recall only changes what Global Recall Scope, the snapshot's own Recall Scope and the channel Safes all allow. This is the core of safe show recall on the SD range.
+summary_vi: Một snapshot của DiGiCo lưu toàn bộ console, nhưng khi recall chỉ đổi những gì Global Recall Scope, Recall Scope riêng của snapshot và các Safes của channel đều cho phép. Đây là lõi của việc recall an toàn trên dòng SD.
+body: |
+  ## What the manual says (Issue H, V20+)
+
+  - A snapshot saves all current console settings. The number of snapshots is limited only by system memory. Recall Scope decides how much a fired snapshot affects, set per controller type or per channel.
+  - **Global Recall Scope** is a grid. Rows are sections of the console, columns are control types, each cell a green tick (included) or red X (excluded). A red X means that element is not recalled by any snapshot. The manual's own example excludes rack and local input sockets so gains and phantom power never change on recall.
+  - **Individual Snapshot Recall Scope** works inside the global scope: an element in the global scope can still be blocked by a snapshot's own scope. Categories include input/trim (analogue gains and phantom, digital trim, routes), delay, filters, EQ, dynamics, inserts, sends, fader, mute, panner, outputs, external controllers, control group members, gangs and banks. Recall scope can be copied from another snapshot.
+  - **Safes** are a third layer. Every channel part, graphic EQ and effect has a SAFE; if active, snapshots cannot change it. In the channel Setup display the Safes area covers parts of the channel, and the SAFE button at the bottom of the strip safes the whole channel (red = full safe). EQ and dynamics can be safed inside their own displays. Safed channels show red text and a red name background.
+  - Safes protect against snapshot recall only. The manual says they do not protect against Copy From, Copy To or presets.
+  - **Snapshot Undo:** firing a snapshot first stores a hidden snapshot of the whole console; Undo fires that with the previous scope.
+  - **Crossfades:** a crossfade time in seconds and frames can be set per control type (input trims, filters, EQ, dynamics, sends, faders, pans) and per channel; zero is off. A faders & panners wait time delays the start. A Cancel Crossfade button skips it.
+  - **Surface Offline / RTN To Audio** (not on SD11): hold Surface Offline and the surface stops talking to the audio engine, so you can fire, edit and update another snapshot without changing audio. RTN To Audio drops the changes and returns to the earlier state. Pressing Surface Offline a second time applies the surface state to live audio; the manual warns to be careful.
+  - Snapshots can send MIDI, MMC and GPO states, be fired by MIDI controller messages, and carry notes. A Locked snapshot cannot be updated.
+
+  ## How to use it on a show
+
+  1. Open Global Scope first. Decide what no snapshot may ever touch: input gains and phantom on a shared desk, graphic EQs, FX settings. Set those to red X.
+  2. Use the individual Recall Scope to make narrow cues, for example a cue that only recalls mutes and fader positions.
+  3. Use channel Safes for one-off protection, such as a channel the operator is riding by hand during a number.
+  4. To fix a later cue, use Surface Offline, fire the cue, edit, Update Selected, then RTN To Audio.
+  5. Test the scope on a spare snapshot: fire it with a known channel changed and confirm only the intended controls moved.
+
+  ## Pitfalls
+
+  - A red X in Global Scope is silent. A snapshot will appear to recall but a whole group of controls will not move.
+  - Safes do not stop Copy To or presets, so a channel can still be overwritten by hand.
+  - Auto Update, if left on, rewrites the current snapshot whenever a control moves. The manual advises leaving it off unless sure.
+
+  ## Compared with WING (home console)
+
+  WING has its own scenes and safes system, but this entry did not check WING's manual, so no direct comparison is made here.
+
+  ## What is NOT verified
+
+  - Number of snapshots possible in practice (the manual says memory only).
+  - Which firmware first offered each scope column.
+body_vi: |
+  ## Manual nói gì (Issue H, V20+)
+
+  - Snapshot lưu toàn bộ setting hiện tại của console. Số snapshot chỉ bị giới hạn bởi bộ nhớ hệ thống. Recall Scope quyết định một snapshot khi bắn sẽ ảnh hưởng bao nhiêu, đặt theo loại controller hoặc theo channel.
+  - **Global Recall Scope** là một lưới. Hàng là các phần của console, cột là loại control, mỗi ô là dấu tick xanh (có) hoặc X đỏ (không). X đỏ nghĩa là phần đó không snapshot nào recall. Ví dụ trong manual loại input socket của rack và local ra, nên gain và phantom không bao giờ đổi khi recall.
+  - **Recall Scope riêng của từng snapshot** nằm trong global scope: một thứ đã có trong global scope vẫn có thể bị scope riêng của snapshot chặn. Các nhóm gồm input/trim (gain analogue và phantom, digital trim, route), delay, filters, EQ, dynamics, inserts, sends, fader, mute, panner, outputs, external controller, control group members, gangs và banks. Có thể copy recall scope từ snapshot khác.
+  - **Safes** là lớp thứ ba. Mỗi phần channel, graphic EQ và effect đều có SAFE; bật là snapshot không đổi được. Trong màn Setup của channel, khu Safes chọn từng phần, còn nút SAFE ở cuối strip safe cả channel (đỏ = full safe). EQ và dynamics cũng safe được trong màn hình của chúng. Channel đã safe hiện chữ đỏ và nền tên màu đỏ.
+  - Safes chỉ bảo vệ khi recall snapshot. Manual nói chúng không bảo vệ khỏi Copy From, Copy To hay preset.
+  - **Snapshot Undo:** khi bắn snapshot, console lưu một snapshot ẩn của toàn bộ trước; Undo bắn lại cái đó với scope trước đó.
+  - **Crossfade:** đặt thời gian crossfade theo giây và frame cho từng loại control (input trim, filters, EQ, dynamics, sends, fader, pan) và từng channel; 0 là tắt. Có wait time cho fader và panner trước khi crossfade bắt đầu. Nút Cancel Crossfade bỏ qua crossfade.
+  - **Surface Offline / RTN To Audio** (không có trên SD11): giữ Surface Offline thì surface ngừng nói chuyện với audio engine, nên bạn bắn, sửa và update snapshot khác mà không đổi audio. RTN To Audio bỏ các thay đổi và trở về trạng thái trước. Bấm Surface Offline lần hai sẽ áp trạng thái surface vào audio live; manual cảnh báo phải cẩn thận.
+  - Snapshot có thể gửi MIDI, MMC và trạng thái GPO, bắn bằng MIDI controller, và có notes. Snapshot Locked thì không update được.
+
+  ## Cách dùng trên show
+
+  1. Mở Global Scope trước. Quyết định thứ gì không snapshot nào được đụng: gain input và phantom trên desk dùng chung, graphic EQ, setting FX. Đặt các thứ đó thành X đỏ.
+  2. Dùng Recall Scope riêng để làm cue hẹp, ví dụ cue chỉ recall mute và vị trí fader.
+  3. Dùng Safes của channel cho bảo vệ tạm, như channel mà operator đang tự tay riding trong một bài.
+  4. Muốn sửa cue sau: Surface Offline, bắn cue, sửa, Update Selected, rồi RTN To Audio.
+  5. Test scope trên một snapshot dự phòng: bắn khi đã đổi một channel quen thuộc và xác nhận chỉ những control dự định mới đổi.
+
+  ## Bẫy thường gặp
+
+  - X đỏ trong Global Scope là im lặng. Snapshot trông như đã recall nhưng cả nhóm control không nhúc nhích.
+  - Safes không chặn Copy To hay preset, nên channel vẫn có thể bị ghi đè bằng tay.
+  - Auto Update nếu để bật sẽ ghi đè snapshot hiện tại mỗi khi control di chuyển. Manual khuyên để tắt trừ khi chắc chắn.
+
+  ## So với WING (console nhà)
+
+  WING có hệ thống scene và safe riêng, nhưng mục này chưa kiểm tra manual WING nên không so sánh trực tiếp.
+
+  ## Điều CHƯA được xác minh
+
+  - Số snapshot thực tế tối đa (manual chỉ nói giới hạn bởi bộ nhớ).
+  - Firmware nào đầu tiên có từng cột scope.
+sources:
+- title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
+  publisher: DiGiCo
+  kind: manual
+  url: https://support.digico.biz/hc/en-gb/article_attachments/37137993915665
+  accessed: '2026-11-10'
+  locator: PDF p.17 (1.2.5 Channel Safes), p.93-96 (2.4 Snapshots), p.99-103 (Global/Individual Recall Scope, crossfades), p.106-108 (Surface Offline, Auto Update)
+media:
+- kind: diagram
+  path: scope-and-safes.png
+  caption: Three layers that all have to allow a control before a snapshot recall changes it
+  caption_vi: Ba lớp đều phải cho phép thì một lần recall snapshot mới đổi được control
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=4KS8gfwP0BA
+  title: DiGiCo SD Range - An Overview of Snapshots
+  channel: DiGiCo Consoles
+  caption: Official DiGiCo overview of snapshots on the SD range (title and channel verified via oEmbed; not watched)
+  caption_vi: Video chính thức của DiGiCo về snapshot trên dòng SD (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

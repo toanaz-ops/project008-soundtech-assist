@@ -17,7 +17,7 @@ tags:
   event:
   - concert
 summary: IEMs remove the wedge feedback loop and protect hearing if the level is controlled, but they isolate the performer from the room. Plan ambience, a limiter and a sensible mix before the show.
-summary_vi: IEM loại bỏ vòng hú rít (Feedback) của wedge và bảo vệ thính giác nếu kiểm soát được mức, nhưng chúng cách ly người biểu diễn khỏi căn phòng. Phải lên kế hoạch cho ambience, limiter và một mix hợp lý trước show.
+summary_vi: IEM loại bỏ vòng Feedback (hú rít) của wedge và bảo vệ thính giác nếu kiểm soát được mức, nhưng chúng cách ly người biểu diễn khỏi căn phòng. Phải lên kế hoạch cho ambience, limiter và một mix hợp lý trước show.
 body: |
   ## Why use IEMs
 
@@ -82,7 +82,7 @@ body_vi: |
 
   ## Ambience
 
-  IEM kín cắt người biểu diễn khỏi khán giả và phòng, nghe "chết" và có thể khiến ca sĩ hát gồng quá mức. Đưa một chút **ambience** quay lại: đặt một hoặc hai condenser mic hướng về khán giả (hoặc dùng ambient pass-through) và trộn vào ở mức thấp. Giữ ambience tinh tế; quá nhiều sẽ mang lại nhiễu phòng và mở lại đường feedback nếu nó cũng có trong wedge.
+  IEM kín cắt người biểu diễn khỏi khán giả và phòng, nghe dead (chết) và có thể khiến ca sĩ hát gồng quá mức. Đưa một chút **ambience** quay lại: đặt một hoặc hai condenser mic hướng về khán giả (hoặc dùng ambient pass-through) và trộn vào ở mức thấp. Giữ ambience tinh tế; quá nhiều sẽ mang lại nhiễu phòng và mở lại đường feedback nếu nó cũng có trong wedge.
 
   ## An toàn
 
@@ -135,6 +135,6 @@ media:
   caption_vi: Mix in-ear monitor cho worship leader (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:07:52+07:00'
 updated_by: agent:translator-vi

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Shared Stage rack: Input Master and Follower</text>
+<rect x="40.0" y="200" width="270.7" height="110" rx="8" fill="#1b1e24" stroke="#ff9f1c" stroke-width="2"/>
+<text x="175.3" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Shared Stage rack</text>
+<text x="175.3" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">one rack, up to 3 S6L systems</text>
+<line x1="314.7" y1="255.0" x2="336.7" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="344.7,255.0 334.7,249.0 334.7,261.0" fill="#868d98"/>
+<rect x="344.7" y="200" width="270.7" height="110" rx="8" fill="#1b1e24" stroke="#5fc9ff" stroke-width="2"/>
+<text x="480.0" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Input Master E6L</text>
+<text x="480.0" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">analog gain, analog pad</text>
+<line x1="619.3" y1="255.0" x2="641.3" y2="255.0" stroke="#868d98" stroke-width="2"/>
+<polygon points="649.3,255.0 639.3,249.0 639.3,261.0" fill="#868d98"/>
+<rect x="649.3" y="200" width="270.7" height="110" rx="8" fill="#1b1e24" stroke="#6ee7a0" stroke-width="2"/>
+<text x="784.7" y="260.0" font-size="16" fill="#e8eaed" text-anchor="middle" font-weight="bold">Input Follower E6L</text>
+<text x="784.7" y="338.0" font-size="13" fill="#868d98" text-anchor="middle" font-weight="normal">digital trim, digital pad</text>
+</svg>

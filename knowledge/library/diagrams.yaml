@@ -638,3 +638,342 @@ diagrams:
       - {label: "On switch and weight", note: "weight -12 to +12"}
       - {label: "Group X or Y", note: "up to 16 inputs"}
       - {label: "Gain-shared output"}
+  # --- digico-sd (console section, 2026-11-10)
+  - entry: digico-sd-sd10-architecture
+    file: sd10-capacity
+    kind: range_chart
+    title: SD10 capacity (manufacturer product page)
+    x_label: count
+    x_range:
+    - 0
+    - 240
+    rows:
+    - label: Input channels
+      lo: 0
+      hi: 144
+    - label: Assignable busses (aux/group)
+      lo: 0
+      hi: 64
+    - label: Matrix 24 x 24 (outputs)
+      lo: 0
+      hi: 24
+    - label: Control groups
+      lo: 0
+      hi: 24
+    - label: Smart-key macros
+      lo: 0
+      hi: 40
+    - label: Dynamic EQ / multiband / DiGiTube each
+      lo: 0
+      hi: 218
+  - entry: digico-sd-snapshots-recall-scope
+    file: scope-and-safes
+    kind: signal_flow
+    title: What a fired snapshot may change (all gates must allow it)
+    nodes:
+    - label: Snapshot stores everything
+    - label: Global Recall Scope
+      note: per control type
+    - label: Individual snapshot Recall Scope
+    - label: Channel / EQ / dynamics Safes
+      note: red = untouched
+    - label: Controls that actually change
+  - entry: digico-sd-snapshot-groups-auto-update
+    file: group-update
+    kind: signal_flow
+    title: 'Update Group: which snapshots get your change'
+    nodes:
+    - label: Edit current snapshot
+    - label: Press Update Group
+    - label: Auto scope
+      note: global + per snapshot
+    - label: Relative (red) or non-relative (blue)
+    - label: Other group members updated
+  - entry: digico-sd-control-groups
+    file: cg-modes
+    kind: signal_flow
+    title: 'Control Group fader: one move, dB change to every member'
+    nodes:
+    - label: CG fader moves
+    - label: Mode
+      note: moving fader / VCA style / mute only
+    - label: Member channels (input and output)
+      note: same dB change
+  - entry: digico-sd-set-spill
+    file: set-spill
+    kind: signal_flow
+    title: 'Set Spill: channels from any layer onto the surface'
+    nodes:
+    - label: Set
+      note: any mix of channel types
+    - label: Spill box or Macro
+    - label: Worksurface fader bank
+      note: direction set in Options > Faders
+  - entry: digico-sd-macros
+    file: macro-flow
+    kind: signal_flow
+    title: 'Macro: trigger, command list, action'
+    nodes:
+    - label: Trigger
+      note: smart key, F key, GPI, OSC, MIDI PC, snapshot
+    - label: Included commands list
+      note: run in listed order
+    - label: Console actions
+      note: panels, channel processing, spill, ...
+  - entry: digico-sd-channel-processing
+    file: sd-channel-chain
+    kind: signal_flow
+    title: SD input channel processing (default order)
+    nodes:
+    - label: HPF / LPF
+      note: 24 dB/oct
+    - label: Insert A
+    - label: 4-band EQ
+      note: bands can be dynamic
+    - label: DYN 1
+      note: comp / multiband / de-esser
+    - label: DYN 2
+      note: gate / ducker / comp
+    - label: Insert B
+  - entry: digico-sd-digitube-delay-graphic-eq
+    file: geq-insert
+    kind: signal_flow
+    title: Graphic EQ is used as an insert
+    nodes:
+    - label: Channel or bus
+    - label: Insert send
+    - label: 32-band graphic EQ
+    - label: Insert return
+      note: return routing gangs stereo EQs
+  - entry: digico-sd-gain-tracking-shared-racks
+    file: gain-tracking
+    kind: signal_flow
+    title: Shared stage rack with gain tracking
+    nodes:
+    - label: Master console
+      note: 'Full Control: changes mic gain'
+    - label: Rack analogue gain
+    - label: Second console
+      note: Receive Only
+    - label: Digital trim moves opposite
+      note: Track on
+  - entry: digico-sd-vs-quantum
+    file: sd-vs-quantum-insert
+    kind: signal_flow
+    title: Where SD and Quantum differ on the channel strip
+    nodes:
+    - label: 'SD10: two insert points'
+      note: Insert A, Insert B
+    - label: 'SD10: no Mustard strip, no Spice Rack'
+    - label: 'Quantum: 5 insert positions'
+      note: shared with Mustard
+  # --- digico-quantum (console section, 2026-11-10)
+  - entry: digico-quantum-338-overview
+    file: q338-base-vs-pulse
+    kind: range_chart
+    title: 'Quantum 338 capacity: base to Pulse (datasheet)'
+    x_label: count
+    x_range:
+    - 0
+    - 170
+    rows:
+    - label: Input channels 128 -> 156
+      lo: 128
+      hi: 156
+    - label: Aux/sub-group busses 64 -> 72
+      lo: 64
+      hi: 72
+    - label: Nodal processors 64 -> 72
+      lo: 64
+      hi: 72
+    - label: Mustard strips 36 -> 48
+      lo: 36
+      hi: 48
+  - entry: digico-quantum-mustard-channel
+    file: mustard-modules
+    kind: signal_flow
+    title: Mustard strip modules (datasheet order; processing order not stated)
+    nodes:
+    - label: Tube / amp model
+    - label: HPF / LPF
+      note: 24 dB/oct
+    - label: 4-band EQ
+    - label: Compressor
+      note: 4 models
+    - label: Gate / ducker
+  - entry: digico-quantum-spice-rack
+    file: spice-rack-path
+    kind: signal_flow
+    title: 'Spice Rack: a processor reached through a channel insert'
+    nodes:
+    - label: Channel
+      note: mono, or stereo pair
+    - label: Insert send
+    - label: Spice Rack slot
+      note: Chilli 6 or Naga 6
+    - label: Insert return
+  - entry: digico-quantum-nodal-processing
+    file: nodal-path
+    kind: signal_flow
+    title: 'Nodal Processing: EQ and dynamics inside one aux send'
+    nodes:
+    - label: Input channel
+    - label: Aux send (node)
+      note: level, on/off
+    - label: Nodal EQ + dynamics
+      note: this send only
+    - label: Aux bus
+      note: e.g. one IEM mix
+  - entry: digico-quantum-true-solo
+    file: true-solo-path
+    kind: signal_flow
+    title: 'True Solo: copying output-bus processing to the solo bus'
+    nodes:
+    - label: Soloed input
+    - label: Output bus processing
+      note: copied live
+    - label: Solo bus
+    - label: Engineer headphones
+  - entry: digico-quantum-insert-positions
+    file: five-insert-points
+    kind: signal_flow
+    title: 'Quantum: five insert positions on a channel (signal order)'
+    nodes:
+    - label: Pre-processing
+      note: after trim
+    - label: Pre EQ/dyn
+      note: after filters
+    - label: Mid EQ/dyn
+      note: between EQ and dynamics
+    - label: Pre-fade
+      note: before mute & fader
+    - label: Post-fade
+  # --- avid-s6l (console section, 2026-11-10)
+  - entry: avid-s6l-system-architecture
+    file: s6l-system-chain
+    kind: signal_flow
+    title: S6L system chain over AVB (simplified)
+    nodes:
+    - label: Stage I/O racks
+      note: 'Stage 64 / 48 / 32 / 16: mic preamps, A/D'
+    - label: AVB network
+      note: copper or fibre, 96 kHz
+    - label: E6L / E6LX engine
+      note: all channel processing + HDX DSP plug-ins
+    - label: S6L control surface
+      note: faders, CKM encoders, touch screens
+  - entry: avid-s6l-snapshots
+    file: snapshot-recall-flow
+    kind: signal_flow
+    title: What a snapshot recall actually changes
+    nodes:
+    - label: Snapshot stores everything
+      note: all data types, all channels
+    - label: Scope
+      note: data types x channels chosen per snapshot
+    - label: Recall Safe
+      note: global veto, applies to all snapshots
+    - label: Live mix updates
+      note: only what passed both filters
+  - entry: avid-s6l-scope-recall-safe
+    file: scope-filter-layers
+    kind: signal_flow
+    title: Filters between a snapshot and the live mix
+    nodes:
+    - label: Data Type scope
+      note: Fader, Mute, EQ, Dyn, Pre, ...
+    - label: Channel scope
+      note: red faders on Snapshots page
+    - label: User Aux Scope
+      note: individual Aux per input
+    - label: Recall Safe matrix
+      note: parameter x channel, global
+    - label: Automation Safe
+      note: whole channel ignores snapshots
+  - entry: avid-s6l-events
+    file: event-anatomy
+    kind: signal_flow
+    title: Anatomy of an S6L Event
+    nodes:
+    - label: Triggers
+      note: switch, fader, meter, snapshot, MIDI, GPI
+    - label: Logic operator
+      note: AND / OR / XOR, one per event
+    - label: Actions
+      note: mute, snapshot, GPI out, Pro Tools, talkback
+    - label: Behavior + Wait
+      note: Latch or While Active; Wait up to 100 s
+  - entry: avid-s6l-spill-layouts
+    file: spill-workflow
+    kind: signal_flow
+    title: Spill an Aux, Group, Matrix or VCA to the faders
+    nodes:
+    - label: Double-tap the Attention key
+      note: of the output master
+    - label: Members spill to faders
+      note: no bank navigation needed
+    - label: Mix the members
+      note: levels, sends, mutes
+    - label: Unspill
+      note: Attention again, Cancel, or Exit Spill
+  - entry: avid-s6l-select-attention
+    file: select-vs-attention
+    kind: signal_flow
+    title: Select versus Attention
+    nodes:
+    - label: Select switch
+      note: targets the local CKM encoders
+    - label: Attention switch
+      note: targets MTS and external screen
+    - label: Attention Follows Select
+      note: on by default; can be decoupled
+  - entry: avid-s6l-plugin-racks
+    file: plugin-rack-path
+    kind: signal_flow
+    title: AAX plug-in path through the E6L rack
+    nodes:
+    - label: Channel insert or bus
+      note: 4 inserts per channel
+    - label: Rack slot
+      note: 400 slots, 5 racks of 80
+    - label: HDX DSP card
+      note: 18 DSPs per card
+    - label: Back to channel or bus
+      note: plug-in latency + routing delay
+  - entry: avid-s6l-delay-compensation
+    file: adc-modes
+    kind: signal_flow
+    title: Automatic Delay Compensation (ADC)
+    nodes:
+    - label: Plug-in latency
+      note: reported by each plug-in
+    - label: Routing delay
+      note: 101 samples to and from the racks
+    - label: ADC setting
+      note: Off / Mix Only / Mix & Inserts
+    - label: Paths aligned
+      note: at Mains and Matrix outputs
+  - entry: avid-s6l-virtual-soundcheck
+    file: virtual-soundcheck-path
+    kind: signal_flow
+    title: Virtual Soundcheck with Pro Tools
+    nodes:
+    - label: Stage inputs
+      note: split post analog gain, pre digital trim
+    - label: AVB or MADI to Pro Tools
+      note: record up to 128 tracks over AVB
+    - label: Input source = Pro Tools
+      note: playback replaces Stage inputs
+    - label: Mix on the console
+      note: changes carry back to Stage mode
+  - entry: avid-s6l-io-sharing
+    file: io-sharing-roles
+    kind: signal_flow
+    title: 'Shared Stage rack: Input Master and Follower'
+    nodes:
+    - label: Shared Stage rack
+      note: one rack, up to 3 S6L systems
+    - label: Input Master E6L
+      note: analog gain, analog pad
+    - label: Input Follower E6L
+      note: digital trim, digital pad

@@ -1,0 +1,135 @@
+id: avid-s6l-virtual-soundcheck
+title: S6L Pro Tools recording and Virtual Soundcheck (AVB or MADI)
+title_vi: Ghi âm Pro Tools và Virtual Soundcheck trên S6L (AVB hoặc MADI)
+topic: avid-s6l
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-avid-s6l
+  - virtual-soundcheck
+  - pro-tools
+  - recording
+  event:
+  - touring
+  - festival
+  - live-sound
+summary: One Ethernet AVB cable to a Pro Tools Mac records up to 128 channels of Stage input splits and plays them back in place of the Stage inputs, so you can run a soundcheck without the band. Changes you make in Virtual Soundcheck carry back to the live mix. VENUE 8.0 widened the options (MADI up to 256, MLN-192 AVB-HD).
+summary_vi: Một sợi Ethernet AVB nối tới Mac chạy Pro Tools ghi tới 128 kênh bản chia từ các input Stage và phát lại thay cho input Stage, để bạn soundcheck mà không cần ban nhạc. Thay đổi làm trong Virtual Soundcheck mang ngược về live mix. VENUE 8.0 mở rộng thêm (MADI tới 256, MLN-192 AVB-HD).
+body: |
+  ## What the manual says (verified)
+
+  **Pro Tools over AVB (System Guide 7.2, printed p.375).** The S6L connects directly to up to two computers running Pro Tools via AVB Ethernet, no extra audio hardware. The connection provides up to 128 channels of Pro Tools I/O. You can record digital splits of Stage inputs, channel Direct Outs and bus outputs, play multitrack audio back through the console, and with VENUE Link on, control the Pro Tools transport from the surface. Recording and playback together give a true Virtual Soundcheck.
+
+  **Two Pro Tools systems.** Use surface Network ports C and D. With VENUE Link on both, both respond to transport commands, and "Create Session from VENUE" records to both for fully redundant recording. In Virtual Soundcheck only the last-connected Pro Tools computer's audio is recognized for playback. If you need to record and play back at the same time (backing tracks, count-offs), use a single Pro Tools system on port C only.
+
+  **Split point.** Each Stage input split is taken after the analog gain but before the digital trim and channel processing, including the channel HPF, so the recorded level depends on the Stage preamp gain.
+
+  **Setup (Options > System, Config mode).** In System Inputs choose Stage or Pro Tools (Input mode or Virtual Soundcheck mode); in System Outputs choose the Virtual Soundcheck Destination: AVB, MADI or Both, then Apply. The Pro Tools tab of the Patchbay carries the splits and the playback inputs; channels used as splits are highlighted purple. VENUE Link needs a dedicated Ethernet connection from port C to the Pro Tools computer.
+
+  **What happens in Virtual Soundcheck mode.** Playback replaces the Stage inputs one for one, patching and processing carry over, and the digital portion of the gain is preserved. Changes made, including snapshots, remain when you switch back to Stage mode; input gain changes can be applied to the Stage inputs when switching back. A snapshot can drop a marker in the Pro Tools recording on recall.
+
+  **MADI path.** A MADI-192 card (64 channels each) in the engine can do the same over MADI and supports Virtual Soundcheck. Only cards in slots 1 and 2 are used for Virtual Soundcheck on systems with three or more cards, and MADI I/O used for Virtual Soundcheck is unavailable as hardware inserts. The MADI outputs on Stage 64, 48 and 32 give a direct digital split of inputs only (up to 64, 48 and 32 channels) and do not support Virtual Soundcheck because they have no MADI inputs (Handbook 8.0).
+
+  **Version changes (What's New 8.0 and Handbook 8.0).** From VENUE 8.0 the MLN-192 card in AVB-HD mode supports up to 216 in / 216 out for recording and playback (one MLN-192 for Virtual Soundcheck, with two cards one can be AVB-HD and one Milan); MADI Virtual Soundcheck scales to 4 MADI-192 cards for 256 channels on E6LX, E6L-192 and E6L-144 (2 cards, 128 channels on E6L-112); with Pro Tools 2024.10 or later and four MADI cards the handbook describes 256 x 256. Avid recommends the largest Pro Tools buffer (2048 at 96 kHz) for the AVB-HD playback engine.
+
+  ## How to use it on a show
+
+  1. At load-in, record the line check or the first soundcheck as splits (AVB, MADI or Both for redundancy).
+  2. Before the doors, switch System Inputs to Pro Tools, enter Virtual Soundcheck, play the recording and EQ the room.
+  3. Switch back to Stage; keep the changes, and decide whether to apply gain changes to the real preamps.
+  4. If you must also play backing tracks live, use a single Pro Tools system on port C.
+
+  ## Pitfalls
+
+  - Gain you change on the Stage preamps changes the recorded level, because the split is pre digital trim.
+  - Optimize the Mac (the guide says to disable Wi-Fi, Airport, Bluetooth, Internet Sharing and Notification Center).
+  - Two Pro Tools computers: only the last-connected one plays back in Virtual Soundcheck.
+  - Do not rely on Stage MADI splits for Virtual Soundcheck; they only record.
+
+  ## What is NOT verified
+
+  - **Track count wording.** The introduction describes "128 channels of recording and playback (64 in x 64 out)" while the Pro Tools chapter says up to 128 channels of I/O. Used here: the Pro Tools chapter, since the 8.0 documents quote larger counts too.
+  - Full Pro Tools system requirements and qualified Mac models (live in the Live Recording Guide and a Knowledge Base article, both not opened).
+body_vi: |
+  ## Manual nói gì (đã xác minh)
+
+  **Pro Tools qua AVB (System Guide 7.2, trang in 375).** S6L nối trực tiếp tới tối đa hai máy tính chạy Pro Tools bằng Ethernet AVB, không cần thêm phần cứng audio. Kết nối cho tới 128 kênh Pro Tools I/O. Bạn ghi được bản chia digital của input Stage, Direct Out của channel và ngõ ra bus, phát lại multitrack qua console, và khi bật VENUE Link thì điều khiển transport Pro Tools từ surface. Ghi và phát cùng lúc cho ra Virtual Soundcheck đúng nghĩa.
+
+  **Hai hệ Pro Tools.** Dùng cổng Network C và D của surface. Bật VENUE Link ở cả hai thì cả hai cùng nghe lệnh transport, và "Create Session from VENUE" ghi vào cả hai để ghi dự phòng hoàn toàn. Trong Virtual Soundcheck, chỉ audio của máy Pro Tools kết nối sau cùng được nhận khi phát lại. Nếu cần vừa ghi vừa phát (backing track, count-off), dùng một hệ Pro Tools duy nhất ở cổng C.
+
+  **Điểm chia.** Mỗi bản chia input Stage lấy sau analog gain nhưng trước digital trim và phần xử lý channel, kể cả HPF của channel, nên mức ghi phụ thuộc gain preamp trên Stage.
+
+  **Thiết lập (Options > System, ở Config mode).** Ở System Inputs chọn Stage hoặc Pro Tools (Input mode hoặc Virtual Soundcheck mode); ở System Outputs chọn Virtual Soundcheck Destination: AVB, MADI hoặc Both rồi Apply. Tab Pro Tools của Patchbay chứa các bản chia và input phát lại; channel đang dùng làm bản chia sáng màu tím. VENUE Link cần một đường Ethernet riêng từ cổng C tới máy Pro Tools.
+
+  **Chuyện xảy ra trong Virtual Soundcheck mode.** Bản phát thay input Stage một-đổi-một, patching và xử lý được giữ, phần digital của gain được bảo toàn. Thay đổi bạn làm, kể cả snapshot, vẫn còn khi quay về Stage mode; thay đổi gain input có thể áp ngược vào input Stage khi chuyển về. Snapshot có thể thả marker vào bản ghi Pro Tools khi recall.
+
+  **Đường MADI.** Card MADI-192 (mỗi card 64 kênh) trong engine làm được tương tự qua MADI và hỗ trợ Virtual Soundcheck. Hệ có ba card trở lên chỉ dùng card ở slot 1 và 2 cho Virtual Soundcheck, và MADI I/O đã dùng cho Virtual Soundcheck thì không dùng làm hardware insert được. Ngõ MADI trên Stage 64, 48, 32 chỉ cho bản chia digital trực tiếp của input (tối đa 64, 48, 32 kênh) và không hỗ trợ Virtual Soundcheck vì không có ngõ vào MADI (Handbook 8.0).
+
+  **Thay đổi theo phiên bản (What's New 8.0 và Handbook 8.0).** Từ VENUE 8.0, card MLN-192 ở chế độ AVB-HD hỗ trợ tới 216 in / 216 out cho ghi và phát (một MLN-192 cho Virtual Soundcheck; có hai card thì một card AVB-HD, một card Milan); Virtual Soundcheck bằng MADI mở rộng tới 4 card MADI-192 cho 256 kênh trên E6LX, E6L-192 và E6L-144 (2 card, 128 kênh trên E6L-112); với Pro Tools 2024.10 trở lên và bốn card MADI handbook mô tả 256 x 256. Avid khuyên dùng buffer Pro Tools lớn nhất (2048 ở 96 kHz) cho playback engine AVB-HD.
+
+  ## Dùng trên show thế nào
+
+  1. Lúc load-in, ghi line check hoặc lần soundcheck đầu thành các bản chia (AVB, MADI hoặc Both để dự phòng).
+  2. Trước giờ mở cửa, chuyển System Inputs sang Pro Tools, vào Virtual Soundcheck, phát bản ghi và EQ phòng.
+  3. Chuyển về Stage; giữ các thay đổi, và quyết định có áp thay đổi gain vào preamp thật hay không.
+  4. Nếu còn phải phát backing track live, dùng một hệ Pro Tools duy nhất ở cổng C.
+
+  ## Bẫy thường gặp
+
+  - Gain bạn đổi trên preamp Stage sẽ đổi mức ghi, vì điểm chia nằm trước digital trim.
+  - Tối ưu Mac (guide bảo tắt Wi-Fi, Airport, Bluetooth, Internet Sharing và Notification Center).
+  - Hai máy Pro Tools: chỉ máy kết nối sau cùng phát lại trong Virtual Soundcheck.
+  - Đừng trông chờ bản chia MADI của Stage để làm Virtual Soundcheck; chúng chỉ để ghi.
+
+  ## Điều CHƯA được xác minh
+
+  - **Cách ghi số kênh.** Phần giới thiệu viết "128 channels of recording and playback (64 in x 64 out)" còn chương Pro Tools nói tới 128 kênh I/O. Ở đây dùng chương Pro Tools, vì các tài liệu 8.0 cũng nêu số lớn hơn.
+  - Yêu cầu hệ thống Pro Tools đầy đủ và các đời Mac được chứng nhận (nằm trong Live Recording Guide và một bài Knowledge Base, cả hai chưa mở).
+sources:
+- title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/a2.e4.87.VENUES6LSystemGuidev72en.PDF
+  year: 2023
+  accessed: '2026-11-10'
+  locator: PDF p.387 (printed 375) Pro Tools; pp.404-407 (392-395) MADI-192 and Virtual Soundcheck; p.14 intro
+- title: What's New in VENUE Software 8.0 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/72.c1.bb.WhatsNewinVENUE80.PDF
+  year: 2025
+  accessed: '2026-11-10'
+  locator: PDF pp.31-32 MLN-192 AVB-HD 216x216; p.37 playback engine and MADI VSC channels; p.38 MADI cards count
+- title: VENUE | S6L Handbook, VENUE 8.0 edition (dated 01/25) (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
+  publisher: Avid
+  kind: manual
+  url: https://api.meleven.de/out/sea/f6.88.85.VENUES6LHandbookv80en.PDF
+  year: 2025
+  accessed: '2026-11-10'
+  locator: PDF p.10 MADI and AVB-HD record/playback
+media:
+- kind: diagram
+  path: virtual-soundcheck-path.png
+  caption: 'Virtual Soundcheck: Stage inputs, AVB or MADI to Pro Tools, playback replaces inputs, mix on the console'
+  caption_vi: 'Virtual Soundcheck: input Stage, AVB hoặc MADI tới Pro Tools, phát lại thay input, mix trên console'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=lZFrSipqQTA
+  title: Avid VENUE | S6L Live Recording and Virtual Soundcheck Part 1 of 2
+  channel: Avid
+  caption: Avid walkthrough of S6L live recording and Virtual Soundcheck (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Avid hướng dẫn ghi live và Virtual Soundcheck trên S6L (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+- kind: video
+  url: https://www.youtube.com/watch?v=QK8Pmaz3BBs
+  title: New in VENUE 8.0 — Expanded Virtual Soundcheck
+  channel: Avid Live Sound
+  caption: Avid on the VENUE 8.0 Virtual Soundcheck changes (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Avid nói về thay đổi Virtual Soundcheck trong VENUE 8.0 (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

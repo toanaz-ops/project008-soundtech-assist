@@ -16,7 +16,7 @@ tags:
   event:
   - concert
 summary: Pop shows centre on a clear, often compressed lead vocal over dense playback. The job is making space for the live voice and stopping bright backing tracks from masking it.
-summary_vi: Show pop xoay quanh một lead vocal rõ, thường được nén, trên nền playback dày. Việc chính là tạo chỗ cho giọng hát live và không để các backing track sáng che lấp (masking) nó.
+summary_vi: Show pop xoay quanh một lead vocal rõ, thường được nén, trên nền playback dày. Việc chính là tạo chỗ cho giọng hát live và không để các backing track bright (sáng) che lấp nó (masking).
 body: |
   ## Balance
 
@@ -52,11 +52,11 @@ body_vi: |
 
   ## Vocal chain
 
-  Thứ tự Casamatta gợi ý: high-pass và có thể thêm low shelf để bỏ rumble và mud; compression với Attack nhanh, Threshold đặt sao cho phụ âm lọt qua sạch, và Release canh theo tempo bài hát; một de-esser nhắm khoảng 3 đến 6 kHz; rồi một EQ cuối nâng high-mid cho rõ lời hoặc thêm chút air. Ông lưu ý rằng trong pop vocal khá khô, nên nén nặng tự nó đã là một hiệu ứng. Pitch correction, nếu dùng, nên là insert có thể bypass và phải thống nhất với nghệ sĩ trước.
+  Thứ tự Casamatta gợi ý: high-pass và có thể thêm low shelf để bỏ rumble và mud; compression với Attack nhanh, Threshold đặt sao cho phụ âm lọt qua sạch, và Release canh theo tempo bài hát; một de-esser nhắm khoảng 3 đến 6 kHz; rồi một EQ cuối nâng high-mid cho rõ lời hoặc thêm chút air. Ông lưu ý rằng trong pop vocal khá dry, nên nén nặng tự nó đã là một hiệu ứng. Pitch correction, nếu dùng, nên là insert có thể bypass và phải thống nhất với nghệ sĩ trước.
 
   ## Track và playback
 
-  Vocal thu sẵn và các phần khác rất phổ biến. Hai cách xử lý xuất hiện trong cả hai bài của Casamatta: nhờ nghệ sĩ thu lại vocal playback bằng đúng loại mic họ hát live, và đặt một high shelf lên playback để bớt gắt cho các track sáng, nén nặng, để giọng live vẫn nghe rõ. Kiểm tra level playback so với band live lúc line check và chừa Headroom trên các channel của nó.
+  Vocal thu sẵn và các phần khác rất phổ biến. Hai cách xử lý xuất hiện trong cả hai bài của Casamatta: nhờ nghệ sĩ thu lại vocal playback bằng đúng loại mic họ hát live, và đặt một high shelf lên playback để bớt gắt cho các track bright, nén nặng, để giọng live vẫn nghe rõ. Kiểm tra level playback so với band live lúc line check và chừa Headroom trên các channel của nó.
 
   ## Low end và dynamics
 
@@ -64,11 +64,11 @@ body_vi: |
 
   ## Effects
 
-  Casamatta nói vocal pop "tend to be on the dry end" (có xu hướng khô) về reverb và delay. Một delay đồng bộ tempo hoặc plate reverb ngắn thêm độ rộng mà không nhấn chìm lời; xem các entry về reverb và delay.
+  Casamatta nói vocal pop "tend to be on the dry end" (có xu hướng dry) về reverb và delay. Một delay đồng bộ tempo hoặc plate reverb ngắn thêm độ rộng mà không nhấn chìm lời; xem các entry về reverb và delay.
 
   ## Lỗi thường gặp
 
-  - Để backing track sáng đè lên giọng live.
+  - Để backing track bright đè lên giọng live.
   - Nén backing vocal quá tay làm lead mất tiêu điểm.
   - Chỉnh tune quá đà mà không trao đổi với nghệ sĩ.
 
@@ -124,6 +124,6 @@ media:
   caption_vi: Chuỗi xử lý vocal tại FOH trong một show Latin pop (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:59+07:00'
 updated_by: agent:translator-vi

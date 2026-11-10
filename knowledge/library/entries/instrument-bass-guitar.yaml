@@ -16,7 +16,7 @@ tags:
   event:
   - concert
 summary: A DI gives clean, spill-free low end; a mic on the amp adds grit and character. Blend the two with the mic high-passed, and fix polarity before EQ.
-summary_vi: DI cho low end sạch, không spill; mic ở amp thêm độ gằn và cá tính. Blend hai bên với mic được high-pass, và sửa polarity trước khi EQ.
+summary_vi: DI cho low end sạch, không spill; mic ở amp thêm grit và cá tính. Blend hai bên với mic được high-pass, và sửa polarity trước khi EQ.
 body: |
   ## DI or mic?
 
@@ -53,10 +53,10 @@ body: |
 body_vi: |
   ## DI hay mic?
 
-  DI box thu bass gần như không nhuộm màu, không spill và không có rủi ro feedback, nên đây là mặc định khi live. Mic ở cab thêm cá tính của amp và độ gằn ở mid, đáng dùng khi pedal và tông amp là một phần của âm thanh.
+  DI box thu bass gần như không nhuộm màu, không spill và không có rủi ro feedback, nên đây là mặc định khi live. Mic ở cab thêm cá tính của amp và mid grit (độ gằn, hơi rát), đáng dùng khi pedal và tông amp là một phần của âm thanh.
 
   - Lấy DI **sau pedal cuối cùng**, hoặc từ DI out post-preamp/post-EQ của amp nếu có, để FOH nghe đúng tông của người chơi.
-  - Với mic, Burton gợi ý large-diaphragm dynamic (AKG D12/D112, EV RE20) cho dải đầy đủ, hoặc SM57/M88 khi muốn mid gằn hơn.
+  - Với mic, Burton gợi ý large-diaphragm dynamic (AKG D12/D112, EV RE20) cho dải đầy đủ, hoặc SM57/M88 khi muốn mid growl hơn.
   - Test level pedal ở soundcheck: một pedal có thể nhảy vài dB giữa các setting.
 
   ## Blend
@@ -65,7 +65,7 @@ body_vi: |
 
   ## Polarity và timing
 
-  DI đến sớm hơn mic đặt cách loa một foot, nên các tần số thấp có thể triệt nhau và bass mỏng đi. Flip polarity một kênh và giữ phiên bản có low end đầy hơn, tốt nhất là nghe từ chỗ mà mức stage và PA xấp xỉ nhau. Các thiết bị phase aligner chuyên dụng (Radial Phazer, Little Labs IBP) giúp khi flip chưa đủ. Trên WING, công tắc polarity ở input và channel delay làm cùng việc đó.
+  DI đến sớm hơn mic đặt cách loa một foot, nên các tần số thấp có thể triệt nhau và bass bị thin out. Flip polarity một kênh và giữ phiên bản có low end đầy hơn, tốt nhất là nghe từ chỗ mà mức stage và PA xấp xỉ nhau. Các thiết bị phase aligner chuyên dụng (Radial Phazer, Little Labs IBP) giúp khi flip chưa đủ. Trên WING, công tắc polarity ở input và channel delay làm cùng việc đó.
 
   ## EQ xuất phát
 
@@ -80,9 +80,9 @@ body_vi: |
 
   ## Vấn đề thường gặp
 
-  - Low end mỏng hoặc rỗng: polarity hoặc lệch thời gian giữa DI và mic.
-  - Sân khấu ì ầm, DI nhỏ: amp to trên sân khấu; giữ level amp của người chơi ở mức hợp lý.
-  - Low-mid ù rè khi slap: rút ngắn Attack, cắt bớt 300-500 Hz.
+  - Low end thin hoặc hollow: polarity hoặc lệch thời gian giữa DI và mic.
+  - Sân khấu booming, DI nhỏ: amp to trên sân khấu; giữ level amp của người chơi ở mức hợp lý.
+  - Low-mid buzzy khi slap: rút ngắn Attack, cắt bớt 300-500 Hz.
 rule:
   applies_to:
     source_type:
@@ -150,6 +150,6 @@ media:
   caption_vi: Joe Barresi về mix bass guitar (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:22+07:00'
 updated_by: agent:translator-vi

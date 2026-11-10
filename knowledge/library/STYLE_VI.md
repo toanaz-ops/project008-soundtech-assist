@@ -10,11 +10,20 @@ chính ông, không dịch máy từng chữ. Rút ra từ ba bài ông viết: 
   compressor, Threshold, Ratio, Attack, Release, Makeup Gain, Gain Reduction, Headroom, Q,
   HPF, Dynamic EQ, de-esser, expander, gate, reverb, delay, send, bus, monitor, IEM, PA,
   Channel strip, routing, phase, polarity, harmonic, THD, dB, Hz, kHz, cùng tên hãng, model,
-  plug-in và node của WING.
-- Khi khái niệm cần nói rõ, viết **ý tiếng Việt trước, thuật ngữ trong ngoặc sau**, như ông
-  vẫn viết: "Kiểm soát âm xuýt (De-essing)", "hú rít (Feedback)", "sàn nhiễu (Noise floor)",
-  "kiểm soát biên độ (Dynamic Range)", "hiệu ứng tiệm cận (Proximity Effect)". Chỉ làm vậy ở
-  lần đầu thuật ngữ xuất hiện; các lần sau chỉ dùng thuật ngữ.
+  plug-in và node của WING, DiGiCo, Avid (Snapshot, Macro, Spill, Event, Stealth, Mustard…).
+- **Từ nghề giữ nguyên, không dịch thẳng** (chủ dự án chốt 2026-11-10: "Boxy thì giữ là
+  boxy đừng ghi tiếng hộp"). Gồm cả các từ tả âm sắc và hiện tượng: boxy, muddy, boomy,
+  honky, nasal, harsh, brittle, thin, warm, bright, dark, air, presence, body, punch, attack,
+  click, snap, sizzle, sibilance, rumble, ring/ringing, bleed, spill, transient, mud, comb
+  filtering… cùng mọi thuật ngữ ở trên.
+- **Lần đầu xuất hiện trong mục thì có thể mở ngoặc giải thích** bằng lời đời thường, ngắn:
+  "Boxy (nghe như bị bọng, bị nhốt trong một chiếc hộp)", "Muddy (đục, dày, các tiếng dính
+  vào nhau)", "Feedback (hú rít)", "Sibilance (âm xuýt chữ s, x, ch)", "Noise floor (sàn
+  nhiễu)", "Proximity Effect (mic càng gần, bass càng phình)". Thuật ngữ đứng trước, lời giải
+  thích trong ngoặc sau. Các lần sau chỉ dùng thuật ngữ, không giải thích lại.
+- Không bắt buộc giải thích từ nào dân âm thanh ai cũng biết (EQ, gain, fader, mic).
+- Từ tiếng Anh giữ nguyên hình thức như dân nghề viết; trong câu thì viết thường ("tiếng
+  kick bị boxy"), đầu câu hoặc làm nhãn thì viết hoa.
 - Tên tham số viết hoa như trên bàn: Threshold, Attack, Release, Ratio, Range.
 
 ## Giọng

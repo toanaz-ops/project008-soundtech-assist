@@ -47,16 +47,16 @@ body: |
   ## On the WING
   Each channel has a low-cut with adjustable frequency and slope on the channel strip; set it before the EQ bands and re-check after the soundcheck, with the band playing.
 body_vi: |
-  **Vấn đề:** hầu hết các nguồn không có gì hữu ích dưới một tần số nhất định, nhưng mic vẫn thu rumble sân khấu, tiếng cầm mic, gió, plosive và bleed ở vùng đó. Những tần số thấp này ăn Headroom của PA và làm mix đục như nồi cháo. Lọc thông cao (High-pass filter, HPF) trên đa số channel là cách dọn dẹp rẻ nhất trên bàn.
+  **Vấn đề:** hầu hết các nguồn không có gì hữu ích dưới một tần số nhất định, nhưng mic vẫn thu rumble sân khấu, tiếng cầm mic, gió, plosive và bleed ở vùng đó. Những tần số thấp này ăn Headroom của PA và làm mix muddy (đục như nồi cháo). High-pass filter (HPF, lọc thông cao) trên đa số channel là cách dọn dẹp rẻ nhất trên bàn.
 
   ## Thao tác thực chiến
   1. Bật HPF ở giá trị thấp.
-  2. Nâng tần số cắt từ từ trong khi nghe trong mix, đến khi tiếng bắt đầu mỏng đi thì lùi lại một chút.
+  2. Nâng tần số cắt từ từ trong khi nghe trong mix, đến khi tiếng bắt đầu thin (mỏng) đi thì lùi lại một chút.
   3. Bypass để xác nhận bạn chỉ cắt rác, không cắt mất body.
-  Tần số cắt là một sự đánh đổi: cao hơn thì sạch hơn nhưng mỏng hơn. Chọn bằng tai trong ngữ cảnh luôn thắng mọi bảng số.
+  Tần số cắt là một sự đánh đổi: cao hơn thì sạch hơn nhưng thin hơn. Chọn bằng tai trong ngữ cảnh luôn thắng mọi bảng số.
 
   ## Tần số cắt khởi điểm (không phải quy tắc)
-  - **Lead vocal, nam:** khoảng 80 Hz; **nữ:** khoảng 140 Hz. Handheld mic ghé sát có hiệu ứng tiệm cận (Proximity Effect) mạnh có thể cần cao hơn.
+  - **Lead vocal, nam:** khoảng 80 Hz; **nữ:** khoảng 140 Hz. Handheld mic ghé sát có Proximity Effect (mic càng gần, bass càng phình) mạnh có thể cần cao hơn.
   - **Acoustic guitar:** khoảng 80-120 Hz, cao hơn nếu nó đánh nhau với bass và kick.
   - **Electric guitar:** khoảng 80 Hz trở lên; cabinet guitar vốn có rất ít bên dưới mức đó.
   - **Overhead, hi-hat, cymbal:** cao hơn nhiều so với thân trống, thường 200-300 Hz.
@@ -66,7 +66,7 @@ body_vi: |
   - **Violin và tương tự:** khoảng 150 Hz; piccolo cao hơn nhiều (khoảng 400 Hz).
 
   ## Slope
-  Slope bậc nhất (6-12 dB/oct) nghe tự nhiên; slope dốc hơn (18-24 dB/oct) cắt sâu hơn nhưng có thể bị ringing gần tần số cắt. Khi cắt hẳn nghe mỏng, dùng shelf thay thế.
+  Slope bậc nhất (6-12 dB/oct) nghe tự nhiên; slope dốc hơn (18-24 dB/oct) cắt sâu hơn nhưng có thể bị ringing gần tần số cắt. Khi cắt hẳn nghe thin, dùng shelf thay thế.
 
   ## Lưu ý và ý kiến trái chiều
   Đa số engineer filter gần như mọi thứ; một số ít cảnh báo không nên HPF trên mọi guitar hoặc ở nơi nguồn cần độ nặng. Đừng cắt theo thói quen: cứ để channel flat, trừ khi bạn gọi được tên vấn đề.
@@ -159,6 +159,6 @@ media:
   caption_vi: Kiến thức cơ bản live sound về high-pass filter (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 3
-updated_at: '2026-11-10T08:46:41+07:00'
-updated_by: agent:translator-vi
+revision: 5
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

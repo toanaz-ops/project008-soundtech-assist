@@ -51,14 +51,14 @@ body_vi: |
   - **Frequency, Q, shape** như band thường (bell hoặc shelf).
   - **Threshold:** mức level bắt đầu xử lý. Một số thiết bị có chế độ Threshold tự động.
   - **Range:** band được phép di chuyển bao nhiêu dB. Ở một plug-in phổ biến, Range âm là nén còn Range dương là expand.
-  - **Attack và Release:** phản ứng nhanh cỡ nào; cài quá nhanh có thể nghe gắt.
+  - **Attack và Release:** phản ứng nhanh cỡ nào; cài quá nhanh có thể nghe edgy (chói tai).
   - **Trigger:** vùng tần số của chính band đó, hoặc một tín hiệu sidechain bên ngoài.
 
   ## Chỗ nó phát huy khi chạy live
-  - **Âm xuýt (Sibilance):** một cú cut dynamic hẹp quanh vùng "s" gắt chỉ tác động khi có âm tiết gắt lọt ra. Cut tĩnh thì khác, nó làm tối cả giọng hát từ đầu đến cuối.
+  - **Sibilance (âm xuýt):** một cú cut dynamic hẹp quanh vùng "s" harsh (gắt) chỉ tác động khi có âm tiết harsh lọt ra. Cut tĩnh thì khác, nó làm dull (xỉn, tối) cả giọng hát từ đầu đến cuối.
   - **Proximity boom hoặc resonance** chỉ xuất hiện ở một số nốt nhất định.
   - **Kick và bass:** duck một band của bass theo trigger từ kick để kick xuyên ra được mà không phải cut bass vĩnh viễn.
-  - **Hi-hat bleed hoặc cymbal gắt:** chỉ kìm các peak.
+  - **Hi-hat bleed hoặc cymbal harsh:** chỉ kìm các peak.
 
   ## Thao tác thực chiến
   1. Tìm vấn đề bằng một cú sweep ngắn, đặt một band thường tại đó.
@@ -115,6 +115,6 @@ media:
   caption_vi: Dynamic EQ trên Behringer WING kìm tiếng snare bị ringing (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:43+07:00'
 updated_by: agent:translator-vi

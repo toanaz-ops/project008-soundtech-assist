@@ -74,7 +74,7 @@ body_vi: |
 
   ## Lỗi thường gặp
 
-  - Đặt Ratio cao và Threshold rất thấp "cho chắc". Cả tín hiệu bị ép bẹp, rồi sàn nhiễu (Noise floor) và bleed trồi lên theo khi cộng Makeup Gain.
+  - Đặt Ratio cao và Threshold rất thấp "cho chắc". Cả tín hiệu bị ép bẹp, rồi Noise floor (sàn nhiễu) và bleed trồi lên theo khi cộng Makeup Gain.
   - Chỉ đánh giá bằng meter. Hãy bypass compressor với output level đã được khớp, nếu không bản to hơn luôn nghe hay hơn.
   - Dùng Hard Knee cho nguồn vốn mượt (vocal acoustic, strings) và nghe rõ lúc con Compressor đạp vào. Thử Soft Knee.
 
@@ -145,6 +145,6 @@ media:
   caption_vi: Minh họa Hard Knee so với Soft Knee (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:09+07:00'
 updated_by: agent:translator-vi

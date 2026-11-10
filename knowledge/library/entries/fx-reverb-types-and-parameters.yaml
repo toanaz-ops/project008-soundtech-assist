@@ -19,7 +19,7 @@ tags:
   - concert
   - corporate
 summary: 'Reverb types differ mainly in decay length, density and brightness. Four controls do most of the work: pre-delay, decay time, high-frequency damping and EQ on the return, fed from an aux send rather than inserted.'
-summary_vi: 'Các loại reverb khác nhau chủ yếu ở độ dài decay, mật độ và độ sáng. Bốn nút chỉnh làm phần lớn công việc: Pre-delay, Decay time, damping tần số cao và EQ trên return, cấp từ aux send thay vì insert.'
+summary_vi: 'Các loại reverb khác nhau chủ yếu ở độ dài decay, mật độ và độ bright (sáng). Bốn nút chỉnh làm phần lớn công việc: Pre-delay, Decay time, damping tần số cao và EQ trên return, cấp từ aux send thay vì insert.'
 body: |
   ## What the types are for
 
@@ -46,13 +46,13 @@ body: |
 body_vi: |
   ## Các loại dùng cho việc gì
 
-  **Plate** là reverb sáng, dày, khá ngắn, gắn với vocal pop và snare. Một plate thật decay khoảng ba đến bốn giây, và hầu hết reverb digital mô phỏng nó. **Room** và **chamber** là không gian ngắn hơn, gần gũi hơn, hợp khi bạn muốn ambience không tràn lên từ kế tiếp. **Hall** dài và rộng, hợp với ballad, pad và hợp xướng. Nhiều bộ multi-effects rẻ tiền dùng một thuật toán cho mọi preset, nên "hall" và "room" có thể nghe giống nhau. Phải đánh giá theo decay và màu âm, không theo nhãn.
+  **Plate** là reverb bright (sáng), dày, khá ngắn, gắn với vocal pop và snare. Một plate thật decay khoảng ba đến bốn giây, và hầu hết reverb digital mô phỏng nó. **Room** và **chamber** là không gian ngắn hơn, gần gũi hơn, hợp khi bạn muốn ambience không tràn lên từ kế tiếp. **Hall** dài và rộng, hợp với ballad, pad và hợp xướng. Nhiều bộ multi-effects rẻ tiền dùng một thuật toán cho mọi preset, nên "hall" và "room" có thể nghe giống nhau. Phải đánh giá theo decay và màu âm, không theo nhãn.
 
   ## Bốn nút chỉnh quan trọng
 
-  - **Pre-delay**: khoảng cách giữa tiếng khô và lúc reverb bắt đầu. Không có hoặc rất ngắn thì nguồn hòa vào không gian, hợp với trống rock. Khoảng cách dài hơn giữ vocal hoặc line chính đứng phía trước và khô. Một tác giả SOS gợi ý 100 ms trở lên cho vocal, hoặc một giá trị đồng bộ theo nốt; một hướng dẫn SOS cũ hơn dùng 0 đến khoảng 80 ms cho vocal pop. Pre-delay rất ngắn cộng early reflections nghe rõ có thể bị phasey.
+  - **Pre-delay**: khoảng cách giữa tiếng dry (âm gốc chưa qua effect) và lúc reverb bắt đầu. Không có hoặc rất ngắn thì nguồn hòa vào không gian, hợp với trống rock. Khoảng cách dài hơn giữ vocal hoặc line chính đứng phía trước và dry. Một tác giả SOS gợi ý 100 ms trở lên cho vocal, hoặc một giá trị đồng bộ theo nốt; một hướng dẫn SOS cũ hơn dùng 0 đến khoảng 80 ms cho vocal pop. Pre-delay rất ngắn cộng early reflections nghe rõ có thể bị phasey.
   - **Decay time (RT60)**: thời gian đuôi giảm 60 dB. Bài nhanh, dày cần decay ngắn để mỗi cú đánh tan trước cú kế tiếp; bài chậm mang được decay dài hơn. Các nguồn khác nhau về trần: một nguồn nói ngay cả hall lớn hiếm khi vượt khoảng bốn giây và hai giây thường là đủ, nguồn khác trích không gian cỡ nhà thờ lớn tới 10 giây trở lên. Coi 2 đến 4 giây là khoảng cho cỡ hall và dưới một giây là ambience.
-  - **Damping / low-pass**: phòng thật mất tiếng cao rất nhanh, nên đuôi tối nghe tự nhiên hơn đuôi sáng. Hạ damping hoặc low-pass xuống đến khi reverb hết xì xì.
+  - **Damping / low-pass**: phòng thật mất tiếng cao rất nhanh, nên đuôi dark nghe tự nhiên hơn đuôi bright. Hạ damping hoặc low-pass xuống đến khi reverb hết sizzle (xì xì).
   - **Return EQ**: cắt phần thấp của reverb return để đuôi không thêm mud bên dưới kick và bass. Ví dụ SOS năm 1996 dùng damping tần số thấp 100 Hz cho plate và khoảng 300 Hz cho drum room.
 
   ## Routing khi làm live
@@ -62,7 +62,7 @@ body_vi: |
   ## Lỗi cần tránh
 
   - Reverb lên mọi thứ: nó ăn độ trong, nhất là trong phòng vốn đã vang.
-  - Đuôi dài và sáng trên speech: phụ âm bị nhòe và độ rõ lời tụt.
+  - Đuôi dài và bright trên speech: phụ âm bị nhòe và độ rõ lời tụt.
   - Chỉnh khi solo. Phải đánh giá reverb trong full mix và từ vị trí khán giả.
 
   Tóm lại, mọi con số ở trên là điểm xuất phát lấy từ nguồn studio và tạp chí; set giá trị cuối bằng tai tại venue.
@@ -140,6 +140,6 @@ media:
   caption_vi: Reverb masterclass về cách các thông số reverb hoạt động (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
-updated_by: agent:translator-vi
+revision: 4
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

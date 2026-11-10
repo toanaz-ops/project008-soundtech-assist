@@ -1,6 +1,6 @@
 id: genre-rock-live
 title: 'Live rock: balance, low end, dynamics and effects'
-title_vi: 'Rock live: cân bằng, tiếng trầm, động và hiệu ứng'
+title_vi: 'Rock live: cân bằng, low end, dynamics và hiệu ứng'
 topic: genre
 tags:
   instrument:
@@ -49,13 +49,13 @@ body: |
 body_vi: |
   ## Balance
 
-  Rock dựa vào rhythm section và một vocal nằm ở midrange. Một tác giả iZotope, mix trong studio, khuyên giữ vocal tập trung ở mid thay vì thêm nhiều treble sáng, để phần top end cho cymbal. Distortion ở high-mid có thể hợp với guitar nhưng top end bị distort thường nghe tệ trên giọng. Trong phòng live, ý tưởng này vẫn áp dụng: khoét chỗ cho vocal trong guitar thay vì chỉ đẩy fader vocal.
+  Rock dựa vào rhythm section và một vocal nằm ở midrange. Một tác giả iZotope, mix trong studio, khuyên giữ vocal tập trung ở mid thay vì thêm nhiều treble bright (sáng), để phần top end cho cymbal. Distortion ở high-mid có thể hợp với guitar nhưng top end bị distort thường nghe tệ trên giọng. Trong phòng live, ý tưởng này vẫn áp dụng: khoét chỗ cho vocal trong guitar thay vì chỉ đẩy fader vocal.
 
   ## Low end
 
-  Kick và bass chia nhau những octave thấp nhất, nên phải quyết ai làm chủ phần nào. Tác giả iZotope để bass chiếm low end với kick nằm ngay trên nó, dùng một Shelf nhẹ trên bass và một Dynamic EQ dip quanh 100 Hz khi kick đánh. SOS đưa lựa chọn tạo hình ngược lại: set kick quanh bass, boost kick gần 70 đến 90 Hz cho punch, và cut cao hơn khoảng một octave để bớt boxy. Sidechain-ducking bass khoảng 3 dB khi kick đánh nghe tự nhiên, rock nặng hơn thì nhiều hơn. Hai bài của SOS và iZotope này thiên về studio; nguyên tắc vẫn dùng được, nhưng hãy check bằng tai trong phòng và trong sub.
+  Kick và bass chia nhau những octave thấp nhất, nên phải quyết ai làm chủ phần nào. Tác giả iZotope để bass chiếm low end với kick nằm ngay trên nó, dùng một Shelf nhẹ trên bass và một Dynamic EQ dip quanh 100 Hz khi kick đánh. SOS đưa lựa chọn tạo hình ngược lại: set kick quanh bass, boost kick gần 70 đến 90 Hz cho punch (độ đấm), và cut cao hơn khoảng một octave để bớt boxy (nghe như bị bọng, bị nhốt trong một chiếc hộp). Sidechain-ducking bass khoảng 3 dB khi kick đánh nghe tự nhiên, rock nặng hơn thì nhiều hơn. Hai bài của SOS và iZotope này thiên về studio; nguyên tắc vẫn dùng được, nhưng hãy check bằng tai trong phòng và trong sub.
 
-  Nếu bass lấy cả từ DI lẫn mic, hãy check polarity. SOS (Burton) lưu ý vấn đề phase giữa hai nguồn có thể làm low end mỏng; đảo polarity một bên và nghe từ vị trí nơi stage và PA cân bằng.
+  Nếu bass lấy cả từ DI lẫn mic, hãy check polarity. SOS (Burton) lưu ý vấn đề phase giữa hai nguồn có thể làm low end bị thin; đảo polarity một bên và nghe từ vị trí nơi stage và PA cân bằng.
 
   ## Dynamics
 
@@ -67,7 +67,7 @@ body_vi: |
 
   ## Lỗi thường gặp
 
-  - Boost low của rhythm guitar, làm mix đục và chọi với bass.
+  - Boost low của rhythm guitar, làm mix muddy (đục, dày, các tiếng dính vào nhau) và chọi với bass.
   - Đánh giá bass khi solo. Hãy mute nó và check xem low end còn lại gì.
   - Để cả kick và bass đi full-range vào subwoofer.
 
@@ -130,6 +130,6 @@ media:
   caption_vi: Mẹo FOH live từ một kỹ sư từng mix cho một nghệ sĩ rock lớn (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:07:52+07:00'
 updated_by: agent:translator-vi

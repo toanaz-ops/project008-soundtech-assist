@@ -50,7 +50,7 @@ body: |
 body_vi: |
   ## Vì sao dùng delay thay vì reverb
 
-  Delay đặt phần hỗ trợ phía sau âm khô mà không nhòe nó vào xa, nên lead vocal có thể nghe to hơn mà vẫn rõ. Trong phòng vốn đã nhiều vang, delay thường là effect an toàn hơn.
+  Delay đặt phần hỗ trợ phía sau tiếng dry (âm gốc chưa qua effect) mà không nhòe nó vào xa, nên lead vocal có thể nghe to hơn mà vẫn rõ. Trong phòng vốn đã nhiều vang, delay thường là effect an toàn hơn.
 
   ## Delay đồng bộ tempo
 
@@ -64,7 +64,7 @@ body_vi: |
 
   ## Feedback và lọc các repeat
 
-  Hồi tiếp (Feedback) đưa một phần output quay lại vào để có thêm repeat. Nó bắt buộc phải nằm dưới unity, nếu không tiếng vang sẽ lớn dần thay vì tắt. Ba hay bốn repeat thường là đủ. Đặt low-pass filter trong vòng Feedback hoặc trên return của delay để mỗi repeat tối dần; repeat tối thì lùi ra sau và nghe nhạc tính hơn. High-pass delay luôn để giữ low-mid mud khỏi mix.
+  Feedback (hồi tiếp) đưa một phần output quay lại vào để có thêm repeat. Nó bắt buộc phải nằm dưới unity, nếu không tiếng vang sẽ lớn dần thay vì tắt. Ba hay bốn repeat thường là đủ. Đặt low-pass filter trong vòng feedback hoặc trên return của delay để mỗi repeat dark dần (tối, bớt sáng); repeat dark thì lùi ra sau và nghe nhạc tính hơn. High-pass delay luôn để giữ low-mid mud khỏi mix.
 
   ## Throw
 
@@ -74,7 +74,7 @@ body_vi: |
 
   - Thời gian delay đánh nhau với groove: sync lại khi tempo đổi. SOS lưu ý delay đã sync có thể bị khựng khi tempo đổi.
   - Feedback dài không bao giờ tắt: tiếng vang chạy mất kiểm soát trong phòng yên tĩnh rất khó dừng. Luôn để tay gần return.
-  - Repeat không lọc chồng lên vocal khô và làm nhòe lời.
+  - Repeat không lọc chồng lên vocal dry và làm nhòe lời.
 
   Tóm lại, mọi con số chỉ là điểm xuất phát, chỉnh bằng tai theo bài.
 rule:
@@ -129,6 +129,6 @@ media:
   caption_vi: Setup reverb hoặc delay trên Behringer WING (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:03+07:00'
 updated_by: agent:translator-vi

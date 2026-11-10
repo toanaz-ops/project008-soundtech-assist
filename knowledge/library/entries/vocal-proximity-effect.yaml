@@ -1,6 +1,6 @@
 id: vocal-proximity-effect
 title: 'Proximity effect: how mic distance changes the bass'
-title_vi: 'Hiệu ứng tiệm cận (proximity effect): khoảng cách micro làm đổi âm trầm'
+title_vi: 'Proximity effect (hiệu ứng tiệm cận): khoảng cách micro làm đổi âm trầm'
 topic: vocals
 tags:
   instrument:
@@ -59,7 +59,7 @@ body_vi: |
 
   **Lớn cỡ nào?** Văn bản đi kèm *Mixing Secrets* của Mike Senior đưa số liệu cho một cardioid lý tưởng ở 100 Hz: khoảng 21 dB boost ở 1 inch (2.5 cm), khoảng 6 dB ở 6 inch, khoảng 3 dB ở 12 inch và dưới 1 dB ở 24 inch. Văn bản cũng ghi chú rằng bass boost bắt đầu ở tần số càng cao khi bạn càng gần (từ khoảng 45 Hz ở hai feet đến hơn 1 kHz ở một inch), và mic thật thường cho ít hơn mức lý tưởng vì chúng được thiết kế sẵn một phần bass rolloff. Coi các con số là hình dạng của đường cong; mỗi con mic và mỗi ca sĩ sẽ khác.
 
-  **Vì sao quan trọng khi live.** Ca sĩ phòng thu đứng yên; ca sĩ live thì di chuyển. Gần hơn thì ấm hơn, đôi khi boomy; xa hơn thì mỏng. Sound On Sound ghi chú rằng hiệu ứng dưới khoảng 300 Hz thay đổi khi ca sĩ tiến lại gần hoặc lùi ra xa mic directional, và gợi ý dùng multiband compression trên band thấp để cân lại.
+  **Vì sao quan trọng khi live.** Ca sĩ phòng thu đứng yên; ca sĩ live thì di chuyển. Gần hơn thì warm hơn, đôi khi boomy (ù, rền); xa hơn thì thin. Sound On Sound ghi chú rằng hiệu ứng dưới khoảng 300 Hz thay đổi khi ca sĩ tiến lại gần hoặc lùi ra xa mic directional, và gợi ý dùng multiband compression trên band thấp để cân lại.
 
   **Xử lý thế nào:**
 
@@ -67,7 +67,7 @@ body_vi: |
   - Set HPF cao hơn vùng boomy, quanh 80-125 Hz làm cửa sổ khởi đầu, cao hơn cho những ca sĩ ăn mic (ngậm sát mic).
   - Dùng low-shelf nhẹ hoặc một cut nhỏ ở vùng 150-300 Hz thay vì một boost lớn cố định; đừng "chữa" bằng một cú boost low lớn trên desk vì nó làm tình trạng ghé sát mic tệ hơn.
   - Cân nhắc một con mic có rolloff sẵn, hoặc một con mic có capsule được thiết kế để giữ tone ổn định theo khoảng cách (data sheet của hãng cho thấy đường cong on-axis ở cự ly gần).
-  - Dùng proximity có chủ đích: giọng mỏng có thể được thêm độ nặng bằng cách hát sát mic, giọng boomy được làm mỏng bớt bằng cách lùi ra. Khoảng cách là một nút chỉnh tone miễn phí.
+  - Dùng proximity có chủ đích: giọng thin có thể được thêm độ nặng bằng cách hát sát mic, giọng đang boomy thì lùi ra cho bớt dày. Khoảng cách là một nút chỉnh tone miễn phí.
 
   **Lỗi thường gặp:** cut low-end cho một ca sĩ thực ra chỉ đang đứng quá gần, thêm bass cho một ca sĩ vừa được dặn cầm mic xa hơn, và quên rằng vị trí cố định của headset loại bỏ phần lớn biến thiên (đó là lý do headset dễ EQ hơn).
 rule:
@@ -129,6 +129,6 @@ media:
   caption_vi: Shure về proximity effect và SM58 (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
-updated_by: agent:translator-vi
+revision: 4
+updated_at: '2026-11-10T14:31:39+07:00'
+updated_by: agent:review-fix

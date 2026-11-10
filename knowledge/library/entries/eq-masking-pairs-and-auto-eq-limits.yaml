@@ -21,7 +21,7 @@ tags:
   event:
   - concert
 summary: 'Which source pairs most often mask each other and the usual way to separate them, plus the limits a tool should respect when it moves EQ for you: small boosts, larger cuts, moderate Q. The limits are an engineering default, not a published rule.'
-summary_vi: 'Những cặp nguồn âm hay che lấp nhau (masking) nhất và cách tách chúng thường dùng, cùng các giới hạn một công cụ phải tuân theo khi tự chỉnh EQ giúp bạn: boost nhỏ, cut lớn hơn, Q vừa phải. Các giới hạn này là mặc định kỹ thuật, không phải quy tắc đã công bố.'
+summary_vi: 'Những cặp nguồn âm hay masking (che lấp) nhau nhất và cách tách chúng thường dùng, cùng các giới hạn một công cụ phải tuân theo khi tự chỉnh EQ giúp bạn: boost nhỏ, cut lớn hơn, Q vừa phải. Các giới hạn này là mặc định kỹ thuật, không phải quy tắc đã công bố.'
 body: |
   ## Pairs that fight
 
@@ -50,7 +50,7 @@ body: |
 body_vi: |
   ## Những cặp hay "đánh nhau"
 
-  Che lấp (Masking) là khi một nguồn âm nuốt mất nguồn khác vì cùng chiếm một vùng tần số. Các cặp dưới đây lấy từ bài của hãng và tạp chí dùng cho bảng EQ.
+  Masking (che lấp) là khi một nguồn âm nuốt mất nguồn khác vì cùng chiếm một vùng tần số. Các cặp dưới đây lấy từ bài của hãng và tạp chí dùng cho bảng EQ.
 
   - **Kick và bass, khoảng 50 đến 300 Hz**: để một trong hai làm chủ vùng 50 đến 100 Hz. Một bài tạp chí gợi ý dip kick quanh 160 đến 220 Hz và nâng bass quanh 220 đến 300 Hz để hai bên nghe tách bạch.
   - **Vocal và guitar điện, khoảng 1 đến 4 kHz**: cut guitar gần 4 kHz để nhường chỗ cho giọng hát.
@@ -63,7 +63,7 @@ body_vi: |
 
   - Mỗi lần chỉnh, boost không quá khoảng 3 dB, cut không quá khoảng 6 dB.
   - Q trong khoảng 0.7 đến 4: rộng cho boost, hẹp hơn cho cut.
-  - Trên hệ thống live ưu tiên cut hơn boost, vì boost làm tăng gain trước ngưỡng hú rít (feedback).
+  - Trên hệ thống live ưu tiên cut hơn boost, vì boost làm tăng gain trước ngưỡng feedback (hú rít).
 
   ## Thao tác thực chiến
 
@@ -168,6 +168,6 @@ media:
   caption_vi: Giải thích masking, vấn đề mà EQ tự động cố giải quyết (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:01+07:00'
 updated_by: agent:translator-vi

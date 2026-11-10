@@ -66,7 +66,7 @@ body_vi: |
 
   ## Bù gain (Makeup Gain)
 
-  Compression hạ phần to xuống nên level tổng giảm. **Makeup Gain** đưa output lên lại. Nhưng nó cũng nâng cả phần nhỏ và mọi thứ nằm dưới, vì vậy nén nặng trên mic live làm bleed và sàn nhiễu (Noise floor) cao lên đúng bằng lượng bạn bù. Khi so sánh tiếng đã nén và chưa nén, bắt buộc phải match level trước: to hơn gần như luôn nghe hay hơn và khiến bạn tưởng compression có ích. Một số máy có automatic Makeup Gain; hãy kiểm bằng level meter thay vì tin nó.
+  Compression hạ phần to xuống nên level tổng giảm. **Makeup Gain** đưa output lên lại. Nhưng nó cũng nâng cả phần nhỏ và mọi thứ nằm dưới, vì vậy nén nặng trên mic live làm bleed và Noise floor (sàn nhiễu) cao lên đúng bằng lượng bạn bù. Khi so sánh tiếng đã nén và chưa nén, bắt buộc phải match level trước: to hơn gần như luôn nghe hay hơn và khiến bạn tưởng compression có ích. Một số máy có automatic Makeup Gain; hãy kiểm bằng level meter thay vì tin nó.
 
   ## Gain Reduction bao nhiêu là điển hình
 
@@ -144,6 +144,6 @@ media:
   caption_vi: Bài học của Groove3 về nút Knee trong một series về compression (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:08+07:00'
 updated_by: agent:translator-vi

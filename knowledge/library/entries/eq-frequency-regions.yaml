@@ -44,12 +44,12 @@ body_vi: |
 
   ## Bản đồ
   - **Sub (khoảng 20-60 Hz):** cảm nhận nhiều hơn nghe. Chủ yếu là rumble, rung sân khấu và gió vào mic; chỉ kick, bass và nhạc nặng sub mới thật sự sống ở đây.
-  - **Bass (khoảng 60-250 Hz):** độ nặng và sức mạnh. Quanh 80-100 Hz cho kick và bass cú punch; dư ở 100-150 Hz thì tom và snare bị boomy.
-  - **Low-mids (khoảng 250-500 Hz):** ấm, nhưng cũng là chỗ sinh ra "mud" và tiếng thùng. Khoảng 200 Hz là chỗ kinh điển khiến guitar acoustic và vocal bị đục; đây là nơi nhiều channel đụng nhau.
-  - **Mids (khoảng 500 Hz-2 kHz):** thân tiếng và chất mũi hoặc honky. Quanh 600 Hz nghe bí; 1-3 kHz là chỗ vocal dễ nghe nghẹt mũi.
-  - **Upper-mids (khoảng 2-4 kHz):** độ rõ và attack, cũng là vùng tai nhạy nhất. Dư là chói và mỏi tai.
-  - **Presence (khoảng 4-8 kHz):** độ nét và cạnh của vocal, độ giòn của snare và độ cắn của guitar; vùng âm xuýt (sibilance) của chữ "s" bắt đầu ở đây và lên cao hơn.
-  - **Air (trên khoảng 8 kHz):** độ lấp lánh, cymbal shimmer, hơi thở. Shelf nhẹ ở đây làm âm thanh mở ra; boost một nguồn vốn không có top end thì chỉ thêm noise.
+  - **Bass (khoảng 60-250 Hz):** weight (độ nặng) và power. Quanh 80-100 Hz cho kick và bass cú punch; dư ở 100-150 Hz thì tom và snare bị boomy (ù, rền).
+  - **Low-mids (khoảng 250-500 Hz):** warmth (độ ấm), nhưng cũng là chỗ sinh ra "mud" (đục, dính vào nhau) và tubbiness (tiếng thùng). Khoảng 200 Hz là chỗ kinh điển khiến guitar acoustic và vocal bị muddy; đây là nơi nhiều channel đụng nhau.
+  - **Mids (khoảng 500 Hz-2 kHz):** body và chất nasal (giọng mũi) hoặc honky (như tiếng kèn). Quanh 600 Hz nghe bí; 1-3 kHz là chỗ vocal dễ nghe nasal.
+  - **Upper-mids (khoảng 2-4 kHz):** độ rõ và attack, cũng là vùng tai nhạy nhất. Dư là harsh và mỏi tai.
+  - **Presence (khoảng 4-8 kHz):** độ nét và cạnh của vocal, crack của snare và bite của guitar; vùng sibilance (âm xuýt) của chữ "s" bắt đầu ở đây và lên cao hơn.
+  - **Air (trên khoảng 8 kHz):** sparkle (độ lấp lánh), cymbal shimmer, hơi thở. Shelf nhẹ ở đây làm âm thanh mở ra; boost một nguồn vốn không có top end thì chỉ thêm noise.
 
   ## Cách dùng bản đồ
   1. Mô tả vấn đề bằng lời trước ("boomy", "boxy", "harsh"), rồi nhảy tới vùng tương ứng.
@@ -57,8 +57,8 @@ body_vi: |
   3. Xử lý bằng động tác nhỏ nhất: thường là cắt ở vùng gây vấn đề hoặc một shelf nhẹ.
 
   ## Lỗi thường gặp
-  - Boost 100 Hz trên mọi thứ "cho nặng", kết quả là mix bị đục.
-  - Đuổi theo độ sáng ở upper-mids rồi nhận lại mỏi tai thay vì độ rõ.
+  - Boost 100 Hz trên mọi thứ "cho nặng", kết quả là mix bị cloudy (đục).
+  - Đuổi theo brightness ở upper-mids rồi nhận lại mỏi tai thay vì độ rõ.
   - Dùng cùng một bảng cho PA ở hội trường nhỏ và ở arena lớn; phòng và hệ thống làm thay đổi cái bạn nghe.
 
   ## Trên WING
@@ -119,6 +119,6 @@ media:
   generated_by: scripts/library_diagrams.py
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:44+07:00'
 updated_by: agent:translator-vi

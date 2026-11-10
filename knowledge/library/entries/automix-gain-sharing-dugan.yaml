@@ -54,7 +54,7 @@ body_vi: |
   ## Gain-sharing và gating
 
   - Automixer dạng gate chạy như một noise gate trên mỗi mic: mở hoặc đóng, thường kèm giảm theo số mic đang mở (NOM) và cơ chế "last mic on". Xem entry về gated automixer.
-  - Automixer gain-sharing hoạt động như một dàn expander liên kết với nhau. Không có Threshold cố định để chỉnh, không bị chatter, và sàn nhiễu (Noise floor) của phòng giữ ổn định, nên thường được xem là tự nhiên hơn trong hai loại.
+  - Automixer gain-sharing hoạt động như một dàn expander liên kết với nhau. Không có Threshold cố định để chỉnh, không bị chatter, và Noise floor (sàn nhiễu) của phòng giữ ổn định, nên thường được xem là tự nhiên hơn trong hai loại.
   - Cái giá phải trả là quyền kiểm soát: mixer dạng gate thường cho giới hạn số mic mở và xử lý phòng khó; gain-sharing có ít nút chỉnh hơn. Hướng dẫn của một hãng ưu tiên gating khi có nhiều mic hoặc âm học khó; coi đó là kinh nghiệm ngón tay cái, không phải định luật.
   - Symetrix lưu ý giảm NOM không phải khái niệm hữu ích cho gain-sharing, vì việc chia một tổng cố định đã làm đúng việc đó.
 
@@ -63,7 +63,7 @@ body_vi: |
   - Phải biết automixer "nghe" ở điểm nào. Yamaha khuyên insert post-fader (POST ON) để nó thấy mức đã qua fader: channel đang tắt hoặc fader ở mức tối thiểu không làm rối việc chia gain, và bạn ưu tiên một người nói bằng cách nâng fader của họ.
   - Đừng coi nó là gate. Đẩy weight xuống rất thấp để ép im là đi ngược mục đích; mic nào thật sự không dùng thì mute.
   - Muốn ưu tiên người nói (chủ tọa, lectern) thì dùng fader của channel đó hoặc điều khiển weight/priority, đừng nâng tất cả mic còn lại.
-  - Nhớ giới hạn hú rít (Feedback): thuật toán chỉ chia gain chứ không tạo thêm headroom. Mỗi mic mở vẫn thêm nhiễu và nguy cơ feedback.
+  - Nhớ giới hạn Feedback (hú rít): thuật toán chỉ chia gain chứ không tạo thêm headroom. Mỗi mic mở vẫn thêm nhiễu và nguy cơ feedback.
   - Giá trị khởi điểm phụ thuộc vào console; ở đây không đưa ra vì các nguồn mô tả hành vi, không mô tả thông số.
 
   ## Chỗ các nguồn khác nhau
@@ -134,6 +134,6 @@ media:
   caption_vi: Giới thiệu plug-in (tiêu đề thấy trong kết quả tìm kiếm; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:07+07:00'
 updated_by: agent:translator-vi

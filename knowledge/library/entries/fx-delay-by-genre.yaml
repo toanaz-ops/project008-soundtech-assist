@@ -51,7 +51,7 @@ body: |
 body_vi: |
   ## Nguồn nói gì
 
-  Slapback là một lần lặp nhanh duy nhất, thường 80 đến 150 ms theo một bài tạp chí và 50 đến 100 ms với feedback bằng 0 theo bài khác; dù thế nào nó cũng không đồng bộ tempo. Delay theo nhịp thì đồng bộ với bài hát: quarter note là lựa chọn thử đầu tiên, và từ 1/16 đến 1/2 cùng các giá trị dotted hoặc triplet là phương án khi giá trị thẳng không khớp. Giữ feedback thấp. Ba hoặc bốn lần lặp có thể mở rộng một vocal nổi bật ở đoạn chorus lớn. Làm tối các lần lặp bằng low-pass và làm mỏng bằng high-pass để tiếng vọng nằm sau giọng khô, và automate send thay vì return khi bạn muốn một cú throw trên một từ.
+  Slapback là một lần lặp nhanh duy nhất, thường 80 đến 150 ms theo một bài tạp chí và 50 đến 100 ms với feedback bằng 0 theo bài khác; dù thế nào nó cũng không đồng bộ tempo. Delay theo nhịp thì đồng bộ với bài hát: quarter note là lựa chọn thử đầu tiên, và từ 1/16 đến 1/2 cùng các giá trị dotted hoặc triplet là phương án khi giá trị thẳng không khớp. Giữ feedback thấp. Ba hoặc bốn lần lặp có thể mở rộng một vocal nổi bật ở đoạn chorus lớn. Làm dark (tối đi) các lần lặp bằng low-pass và làm thin (mỏng đi) bằng high-pass để echo nằm sau giọng dry, và automate send thay vì return khi bạn muốn một cú throw trên một từ.
 
   Phép tính rất đơn giản: một quarter note tính bằng mili giây là 60000 chia cho tempo; dotted eighth bằng 0.75 của giá trị đó và eighth bằng 0.5.
 
@@ -69,7 +69,7 @@ body_vi: |
 
   ## Chỗ các nguồn bất đồng
 
-  Thời gian slapback: 50 đến 100 ms ở một bài, 80 đến 150 ms ở bài khác. Chọn theo tai; slap ngắn nghe chặt hơn, slap dài nghe giống echo hơn.
+  Thời gian slapback: 50 đến 100 ms ở một bài, 80 đến 150 ms ở bài khác. Chọn theo tai; slap ngắn nghe tight (chặt) hơn, slap dài nghe giống echo hơn.
 
   ## Dùng khi chạy live
 
@@ -168,6 +168,6 @@ media:
   caption_vi: Set-up delay trên Behringer WING (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:46+07:00'
 updated_by: agent:translator-vi

@@ -48,7 +48,7 @@ body: |
 body_vi: |
   ## Cách hoạt động
 
-  Chorus trộn tín hiệu dry với một bản copy bị delay nhẹ, có cao độ bị dịch bởi một bộ dao động tần số thấp chậm (LFO). Tai nghe như nhiều người cùng chơi một phần. Hiệu ứng ensemble chạy nhiều chorus ở các tốc độ khác nhau để khó nhận ra độ dao động tuần hoàn. Flanger dùng delay ngắn hơn chorus và thường thêm feedback, tạo tiếng "whoosh" comb-filter chuyển động. Một bài của SOS nêu delay của chorus là vài chục mili giây với LFO gần 3 Hz, vibrato dưới khoảng 15 ms, và flanging cổ điển dưới khoảng 5 ms. Đây là các khoảng điển hình; từng máy khác nhau rất nhiều.
+  Chorus trộn tín hiệu dry với một bản copy bị delay nhẹ, có cao độ bị dịch bởi một bộ dao động tần số thấp chậm (LFO). Tai nghe như nhiều người cùng chơi một phần. Hiệu ứng ensemble chạy nhiều chorus ở các tốc độ khác nhau để khó nhận ra độ dao động tuần hoàn. Flanger dùng delay ngắn hơn chorus và thường thêm feedback, tạo tiếng "whoosh" comb-filter (nhiều rãnh tần số xếp như răng lược) chuyển động. Một bài của SOS nêu delay của chorus là vài chục mili giây với LFO gần 3 Hz, vibrato dưới khoảng 15 ms, và flanging cổ điển dưới khoảng 5 ms. Đây là các khoảng điển hình; từng máy khác nhau rất nhiều.
 
   ## Doubling
 
@@ -57,7 +57,7 @@ body_vi: |
   ## Khi nào nó đáng dùng ở live
 
   - **Backing vocal và patch strings hoặc brass:** SOS gợi ý chorus và ensemble cho những thứ này, và cho electric piano. Chúng nghe rộng hơn mà không cần thêm level.
-  - **Stereo rộng:** hard-pan tín hiệu dry và tín hiệu đã chorus để mở rộng phần keys hoặc guitar, rồi check kết quả ở mono. Lý do: comb-filtering làm nó rộng có thể làm nó mỏng đi khi sum.
+  - **Stereo rộng:** hard-pan tín hiệu dry và tín hiệu đã chorus để mở rộng phần keys hoặc guitar, rồi check kết quả ở mono. Lý do: comb-filtering làm nó rộng có thể làm nó thin đi khi sum.
   - **Bass:** chỉ dùng khi phần wet được high-pass, như SOS khuyên. Modulate tần thấp làm mờ cao độ và weight, và trên PA thì thành sub lỏng.
   - **Lead vocal:** giữ nhẹ nếu có dùng. Một lead nghe bị xử lý trong venue sẽ mất presence và có thể hại độ rõ lời.
 
@@ -115,6 +115,6 @@ media:
   caption_vi: Chorus là gì và dùng thế nào (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:46+07:00'
 updated_by: agent:translator-vi

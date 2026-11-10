@@ -22,7 +22,7 @@ summary: |
   A practical starting chain for a lead vocal on a live desk: clean gain, a high-pass filter,
   gentle low-mid and harshness control, light compression, de-essing only as needed, and the
   fader as the final dynamics tool. Every number is a starting point to be corrected by ear.
-summary_vi: 'Chuỗi khởi đầu thực tế cho lead vocal trên desk live: gain sạch, high-pass filter, kiểm soát low-mid và độ gắt nhẹ nhàng, compression nhẹ, de-essing chỉ khi cần, và fader là công cụ dynamics cuối cùng. Mọi con số là điểm khởi đầu để sửa bằng tai.'
+summary_vi: 'Chuỗi khởi đầu thực tế cho lead vocal trên desk live: gain sạch, high-pass filter, kiểm soát low-mid và harshness nhẹ nhàng, compression nhẹ, de-essing chỉ khi cần, và fader là công cụ dynamics cuối cùng. Mọi con số là điểm khởi đầu để sửa bằng tai.'
 body: |
   **Start with the source, not the processing.** A dynamic or condenser handheld that the singer
   actually holds close and steady beats any plug-in repair. Set gain with the singer performing
@@ -67,17 +67,17 @@ body: |
 body_vi: |
   **Bắt đầu từ nguồn, không phải từ xử lý.** Một handheld dynamic hoặc condenser mà ca sĩ thực sự cầm sát và ổn định thắng mọi plug-in sửa chữa. Set gain khi ca sĩ hát hết sức (không phải câu "check, one two" lịch sự), chừa Headroom cho đoạn chorus to nhất, rồi dựng vocal lên trên rhythm section trước khi đụng đến effect.
 
-  **High-pass filter.** Low cut loại bỏ rumble sân khấu, handling noise và năng lượng plosive, và nó kiềm bass tip-up của cardioid gần (xem `vocal-proximity-effect`). Khoảng thường dùng ở live là xấp xỉ 80-125 Hz. Một cách của Sound On Sound là nâng cutoff đến khi tiếng giọng vừa bắt đầu đổi, rồi lùi lại một chút. Kỹ sư live thường đặt cao hơn kỹ sư studio, vì ca sĩ di chuyển ra vào mic làm low end không ổn định. Lead nam giọng trầm cần ở đầu thấp của khoảng này; giọng mỏng có thể gần như không cần.
+  **High-pass filter.** Low cut loại bỏ rumble sân khấu, handling noise và năng lượng plosive, và nó kiềm bass tip-up của cardioid gần (xem `vocal-proximity-effect`). Khoảng thường dùng ở live là xấp xỉ 80-125 Hz. Một cách của Sound On Sound là nâng cutoff đến khi tiếng giọng vừa bắt đầu đổi, rồi lùi lại một chút. Kỹ sư live thường đặt cao hơn kỹ sư studio, vì ca sĩ di chuyển ra vào mic làm low end không ổn định. Lead nam giọng trầm cần ở đầu thấp của khoảng này; giọng thin (mỏng) có thể gần như không cần.
 
-  **Vùng EQ có vấn đề.** Hãy nghĩ theo vùng thay vì con số thần kỳ. Dưới khoảng 300 Hz giọng bị boomy khi ca sĩ ghé sát. Quanh 200 Hz đến 1 kHz, một cut nhỏ, rộng làm sạch "mud" mà không làm giọng vô trùng, và Waves gợi ý một cut nhỏ gần 200 Hz. Cut trước, boost sau cùng: boost rộng ở vùng presence tốt hơn boost hẹp, và boost nhiều trên 3 kHz làm vocal gắt trước khi làm nó có air. Nhớ đến monitor: mỗi dB boost ở vùng dễ hú rít (Feedback) của mic đều tốn gain before feedback.
+  **Vùng EQ có vấn đề.** Hãy nghĩ theo vùng thay vì con số thần kỳ. Dưới khoảng 300 Hz giọng bị boomy (ù, rền) khi ca sĩ ghé sát. Quanh 200 Hz đến 1 kHz, một cut nhỏ, rộng làm sạch "mud" (đục, bí) mà không làm giọng vô trùng, và Waves gợi ý một cut nhỏ gần 200 Hz. Cut trước, boost sau cùng: boost rộng ở vùng presence tốt hơn boost hẹp, và boost nhiều trên 3 kHz làm vocal harsh trước khi làm nó có air. Nhớ đến monitor: mỗi dB boost ở vùng dễ feedback (hú rít) của mic đều tốn gain before feedback.
 
-  **Compression.** Mục tiêu là chộp những câu to nhất, không phải ép dẹt ca sĩ. Bắt đầu với Ratio vừa phải (khoảng 2:1 đến 4:1), Attack trung bình để phần đầu mỗi âm tiết vẫn xuyên qua, và Release theo cách ngắt câu. Gain Reduction nặng nâng sàn nhiễu (Noise floor) và stage spill, gây hại cho bạn trong phòng nhỏ. Multiband compression trên các band rất thấp và rất cao có thể làm dịu thay đổi âm sắc do ca sĩ di chuyển đầu.
+  **Compression.** Mục tiêu là chộp những câu to nhất, không phải ép dẹt ca sĩ. Bắt đầu với Ratio vừa phải (khoảng 2:1 đến 4:1), Attack trung bình để phần đầu mỗi âm tiết vẫn xuyên qua, và Release theo cách ngắt câu. Gain Reduction nặng nâng noise floor (sàn nhiễu) và stage spill, gây hại cho bạn trong phòng nhỏ. Multiband compression trên các band rất thấp và rất cao có thể làm dịu thay đổi âm sắc do ca sĩ di chuyển đầu.
 
-  **Kiểm soát âm xuýt (De-essing).** Compression đẩy sibilance lên, nên de-ess sau nó, và chỉ khi "s" và "sh" thật sự gắt. Nếu nén trước thì de-esser sẽ hiểu sai. Sibilance thường nằm ở upper mid và high (rất xấp xỉ 4-8 kHz; tìm bằng cách sweep một boost hẹp). Sound On Sound cũng lưu ý độ gắt của "k", "f" và "t" thường hợp với một band Dynamic EQ hoặc transient control hơn là de-esser. Làm quá sẽ thành tật nói ngọng; hãy nới Threshold.
+  **De-essing (xử lý âm xuýt).** Compression đẩy sibilance lên, nên de-ess sau nó, và chỉ khi "s" và "sh" thật sự harsh. Nếu nén trước thì de-esser sẽ hiểu sai. Sibilance thường nằm ở upper mid và high (rất xấp xỉ 4-8 kHz; tìm bằng cách sweep một boost hẹp). Sound On Sound cũng lưu ý harshness của "k", "f" và "t" thường hợp với một band Dynamic EQ hoặc transient control hơn là de-esser. Làm quá sẽ thành tật nói ngọng; hãy nới Threshold.
 
   **Fader mới là compressor thật.** Không xử lý nào thay được việc riding vocal: kéo xuống ở câu hét, đẩy lên ở đoạn thì thầm, và ride cả effect return để reverb không tràn lên các đoạn nhỏ. Trên WING, đặt vocal lên một fader layer riêng với channel compressor cấp vào một vocal bus giúp rảnh một tay để ride.
 
-  **Lỗi thường gặp:** HPF quá mạnh làm giọng mỏng, boost cao để "xuyên qua" thay vì sửa mix xung quanh, de-ess trước compression, và set mọi thứ lúc soundcheck rồi không xem lại giữa các bài.
+  **Lỗi thường gặp:** HPF quá mạnh làm giọng thin, boost cao để "xuyên qua" thay vì sửa mix xung quanh, de-ess trước compression, và set mọi thứ lúc soundcheck rồi không xem lại giữa các bài.
 rule:
   applies_to:
     source_type:
@@ -154,6 +154,6 @@ media:
   caption_vi: EQ một vocal trên digital desk từ low cut đến air (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:09:04+07:00'
 updated_by: agent:translator-vi

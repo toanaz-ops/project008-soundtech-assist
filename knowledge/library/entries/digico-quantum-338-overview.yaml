@@ -1,0 +1,139 @@
+id: digico-quantum-338-overview
+title: 'DiGiCo Quantum 338: architecture and capacity'
+title_vi: 'DiGiCo Quantum 338: kiến trúc và công suất xử lý'
+topic: digico-quantum
+tags:
+  instrument: []
+  genre: []
+  technique:
+  - console-digico-quantum
+  - capacity
+  - fpga
+  event:
+  - touring
+  - theatre
+  - corporate
+summary: The Quantum 338 is a 38-fader, three-screen DiGiCo console on the FPGA-based Quantum engine, listed at 128 input channels, 64 busses, 36 Mustard strips and 64 Nodal processors, raised to 156/72/48/72 by the paid Pulse update.
+summary_vi: 'Quantum 338 là console DiGiCo 38 fader, ba màn hình, chạy trên Quantum engine dùng FPGA: theo datasheet có 128 input channel, 64 bus, 36 Mustard strip và 64 Nodal processor, nâng lên 156/72/48/72 nhờ bản nâng cấp Pulse (trả phí).'
+body: |
+  ## What it is (verified)
+
+  The datasheet describes the Quantum 338 as a mid-size console built on the Quantum 7, offering "all of the Quantum features" in a smaller format. The brochure says it uses a combination of 3 FPGAs; the datasheet calls Quantum a seventh-generation FPGA platform. All processing is internal and FPGA-based.
+
+  | Item | Base | Pulse (Mk 2 software) |
+  |---|---|---|
+  | Input channels | 128 | 156 |
+  | Aux / sub-group busses | 64 | 72 |
+  | Mustard strips | 36 | 48 |
+  | Nodal processors | 64 | 72 |
+  | Matrix | 24x24 | 24x24 (36x36 with the Theatre option) |
+
+  Also listed: 24 control groups, 2 solo busses, 24 stereo FX (up to 16 floating-point reverbs), 24 x 32-band graphic EQs, Spice Rack with 8 slots, 1 ms typical processing delay at 96 kHz, 48/96 kHz.
+
+  Surface: 38 touch-sensitive motorised 100 mm faders, three 17 inch touchscreens, 70 TFT displays, two DMI slots, built-in UB MADI (USB recording/playback, up to 48 channels), local I/O of 8 mic/line in, 8 line out, 4 AES in and 4 AES out connectors (8 channels each way), 6 MADI BNC (3 redundant pairs at 48 kHz), redundant PSUs as standard, and mirroring with a second Q338.
+
+  ## Quantum-only vs shared with SD
+
+  Mustard, Nodal Processing, True Solo, the Spice Rack and the five insert positions are marked as Quantum-only in the DiGiCo reference manual. The standard channel strip (4-band EQ or Dynamic EQ, two dynamics, multiband, de-esser, DiGiTube), snapshots, macros and the Aux Nodes panel are shared with SD. See `digico-quantum-sd-vs-quantum`.
+
+  ## Options and licences
+
+  The datasheet OPTIONS list: single or dual-loop Optocore (HMA, OpticalCON or ST; upgrade to SingleMode), Waves SoundGrid interface (64 I/O), Theatre software, flightcase. Mustard, Nodal, Spice Rack and True Solo are not in that list; they appear as standard features. Pulse is a paid software update: the DiGiCo announcement describes it as a nominal fee, 50 percent off for 338/225 consoles delivered in 2023 or earlier if bought by end of 2024. The datasheet lists Mix Minus among the 338 key features without saying whether it is part of the base software or of Pulse; the Issue H manual (V20+) documents it as a Quantum function.
+
+  ## Practical angle
+
+  Capacity decides how you patch a show: with 64 Nodal processors you can give every IEM send its own EQ and dynamics, but each strip, node and Spice Rack slot is a finite pool. Check the numbers for your software version before building a session; a session built for Pulse counts will not fit a console without Pulse.
+
+  ## What is NOT verified
+
+  - The manual used here (Issue E, V1528+) never names the Q338; it speaks only of Quantum consoles and Q7/Q5/Q3. Q338 counts come from the datasheet and brochure only.
+  - The datasheet is titled Quantum 338 / Pulse and gives slash figures (128/156); reading them as base/Pulse is an inference, consistent with the Pulse announcement but not labelled in the datasheet.
+  - Whether Mix Minus needs the Pulse update is not verified: the datasheet lists it as a key feature, the Issue H manual (V20+) has a Mix Minus section for Quantum consoles, and the Issue E manual (V1528+) has none.
+  - Pulse price and exact software version number were not confirmed (a search snippet mentions V1742 in April 2024; not opened).
+  - Console weight differs inside the datasheet (70 kg in the specification text, 66 kg on one drawing); not used here.
+body_vi: |
+  ## Nó là gì (đã xác minh)
+
+  Datasheet mô tả Quantum 338 là console cỡ trung xây trên nền Quantum 7, có "toàn bộ tính năng Quantum" trong thân hình nhỏ hơn. Brochure nói nó dùng tổ hợp 3 FPGA; datasheet gọi Quantum là nền FPGA thế hệ thứ bảy. Toàn bộ xử lý nằm bên trong và chạy trên FPGA.
+
+  | Hạng mục | Bản gốc | Pulse (software Mk 2) |
+  |---|---|---|
+  | Input channel | 128 | 156 |
+  | Aux / sub-group bus | 64 | 72 |
+  | Mustard strip | 36 | 48 |
+  | Nodal processor | 64 | 72 |
+  | Matrix | 24x24 | 24x24 (36x36 với Theatre option) |
+
+  Còn có: 24 control group, 2 solo bus, 24 FX stereo (tối đa 16 reverb floating-point), 24 GEQ 32 band, Spice Rack 8 slot, độ trễ xử lý điển hình 1 ms ở 96 kHz, 48/96 kHz.
+
+  Surface: 38 fader motor 100 mm cảm ứng, ba màn hình cảm ứng 17 inch, 70 màn TFT, hai khe DMI, UB MADI tích hợp (ghi/phát qua USB, tới 48 channel), I/O local gồm 8 mic/line vào, 8 line ra, 4 jack AES vào và 4 jack AES ra (mỗi chiều 8 channel), 6 MADI BNC (3 cặp redundant ở 48 kHz), nguồn redundant theo máy, và có thể mirror với một Q338 khác.
+
+  ## Quantum-only so với dùng chung với SD
+
+  Mustard, Nodal Processing, True Solo, Spice Rack và năm vị trí insert được manual DiGiCo ghi là chỉ có trên Quantum. Channel strip chuẩn (EQ 4 band hoặc Dynamic EQ, hai dynamics, multiband, de-esser, DiGiTube), Snapshot, Macro và panel Aux Nodes dùng chung với SD. Xem `digico-quantum-sd-vs-quantum`.
+
+  ## Option và licence
+
+  Danh sách OPTIONS của datasheet: Optocore một hoặc hai vòng (HMA, OpticalCON hoặc ST; nâng lên SingleMode), card Waves SoundGrid (64 I/O), Theatre software, flightcase. Mustard, Nodal, Spice Rack và True Solo không nằm trong danh sách đó mà được ghi như tính năng chuẩn. Pulse là bản cập nhật software trả phí: thông báo của DiGiCo mô tả đây là phí danh nghĩa (nominal fee), giảm 50 phần trăm cho 338/225 giao từ 2023 trở về trước nếu mua trước cuối 2024. Datasheet liệt kê Mix Minus trong các tính năng chính của 338 nhưng không nói nó thuộc software gốc hay chỉ thuộc Pulse; manual Issue H (V20+) ghi nó là chức năng của Quantum.
+
+  ## Góc thực dụng
+
+  Công suất quyết định cách bạn patch show: có 64 Nodal processor thì mỗi send IEM đều có thể có EQ và dynamics riêng, nhưng mỗi strip, node và slot Spice Rack đều là một bể hữu hạn. Kiểm tra số lượng theo đúng phiên bản software trước khi dựng session; session dựng theo số lượng Pulse sẽ không vừa với console chưa có Pulse.
+
+  ## Điều CHƯA được xác minh
+
+  - Manual dùng ở đây (Issue E, V1528+) không hề nhắc tên Q338; nó chỉ nói tới console Quantum và Q7/Q5/Q3. Số liệu Q338 chỉ lấy từ datasheet và brochure.
+  - Datasheet có tiêu đề Quantum 338 / Pulse với số dạng 128/156; hiểu là bản gốc/Pulse là suy luận, khớp với thông báo Pulse nhưng datasheet không ghi nhãn.
+  - Mix Minus có cần bản Pulse hay không chưa xác minh: datasheet liệt kê nó là tính năng chính, manual Issue H (V20+) có mục Mix Minus cho console Quantum, còn manual Issue E (V1528+) không có.
+  - Giá Pulse và số phiên bản software chính xác chưa xác nhận (một đoạn trích tìm kiếm nhắc V1742 tháng 4/2024; chưa mở).
+  - Trọng lượng console trong datasheet lệch nhau (70 kg ở phần mô tả, 66 kg trên một bản vẽ); không dùng ở đây.
+sources:
+- title: Quantum 338 / Pulse datasheet
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2026/08/DiGiCo-Quantum-338-Pulse-Data-Sheet.pdf
+  accessed: '2026-11-10'
+  locator: 'pages 1-5: key features, signal processing, options, A&E specification'
+- title: Quantum 338 brochure (2020)
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2020/03/Quantum-338-Brochure.pdf
+  accessed: '2026-11-10'
+  locator: pages 4-5 (Nodal, FPGA), I/O pages
+- title: Quantum 338 product page
+  publisher: DiGiCo
+  kind: article
+  url: https://digico.biz/consoles/quantum338
+  accessed: '2026-11-10'
+  locator: specifications
+- title: DiGiCo announces Pulse software updates for Quantum338, Quantum338T and Quantum225
+  publisher: DiGiCo
+  kind: article
+  url: https://digico.biz/digico-announces-pulse-software-updates-for-quantum338-quantum338t-and-quantum225-consoles
+  accessed: '2026-11-10'
+  locator: whole page (read through a page summary tool)
+- title: SD & Quantum Software Reference Manual, Issue E, February 2022, V1528+
+  publisher: DiGiCo
+  kind: manual
+  url: https://digico.biz/wp-content/uploads/2022/03/SD-Quantum-Software-Reference-Issue-E-V1528.pdf
+  accessed: '2026-11-10'
+  locator: 'PDF p. 5 (contents: Quantum-only chapters)'
+media:
+- kind: diagram
+  path: q338-base-vs-pulse.png
+  caption: Base and Pulse counts for the Quantum 338, from the datasheet and Pulse announcement
+  caption_vi: Số lượng bản gốc và Pulse của Quantum 338, theo datasheet và thông báo Pulse
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:range_chart
+- kind: video
+  url: https://www.youtube.com/watch?v=BN3wlha2e_g
+  title: DiGiCo Quantum 338 Sales Overview
+  channel: DiGiCo Consoles
+  caption: Official DiGiCo overview of the Quantum 338 (title and channel verified via YouTube oEmbed; not watched)
+  caption_vi: Video tổng quan chính thức của DiGiCo về Quantum 338 (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
+confidence: established
+status: draft
+revision: 2
+updated_at: '2026-11-10T14:31:38+07:00'
+updated_by: agent:review-fix

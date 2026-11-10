@@ -55,26 +55,26 @@ body_vi: |
 
   ## Điểm khởi đầu từ các nguồn
 
-  High-pass khởi đầu của Sokol: khoảng 80 Hz cho vocal và giọng nam, khoảng 140 Hz cho giọng nữ, khoảng 150 Hz cho violin. Nâng độ dễ nghe của vocal (intelligibility) khoảng 3 dB giữa 1 và 1.5 kHz, presence khoảng +3 dB ở 4 kHz, cut vài dB gần 600 Hz cho bớt chất mũi honky, và kiểm soát âm xuýt (sibilance) bằng cách tìm vùng "s" chói rồi cut 6 đến 12 dB. Với acoustic guitar, cut vài dB quanh 200 Hz để hết tiếng thùng. Tất cả chỉ là điểm khởi đầu, phải chốt bằng cách nghe, và ông nói chỉ đổi EQ khi có mục đích rõ ràng.
+  High-pass khởi đầu của Sokol: khoảng 80 Hz cho vocal và giọng nam, khoảng 140 Hz cho giọng nữ, khoảng 150 Hz cho violin. Nâng độ dễ nghe của vocal (intelligibility) khoảng 3 dB giữa 1 và 1.5 kHz, presence khoảng +3 dB ở 4 kHz, cut vài dB gần 600 Hz cho bớt honky (tiếng mũi), và kiểm soát sibilance (âm xuýt chữ s, x, ch) bằng cách tìm vùng "s" harsh rồi cut 6 đến 12 dB. Với acoustic guitar, cut vài dB quanh 200 Hz để hết tubby (tiếng thùng). Tất cả chỉ là điểm khởi đầu, phải chốt bằng cách nghe, và ông nói chỉ đổi EQ khi có mục đích rõ ràng.
 
   Bài của DPA về speech intelligibility đồng ý về dải quan trọng: phụ âm sống chủ yếu trên 500 Hz và tập trung quanh 2 đến 4 kHz, với 1 đến 4 kHz có độ quan trọng cao.
 
   ## Low end
 
-  Sokol khuyên chỉ boost deep bass một cách dè dặt trên kick và bass để woofer của PA không bị quá tải. Korff (SOS) bổ sung rằng trong một band đã có bass và kick, bạn nên làm mỏng low end của acoustic guitar để vocal vẫn nghe rõ. Phòng như nhà thờ hay dồn bass lại, nên high-pass mọi thứ không cần low end.
+  Sokol khuyên chỉ boost deep bass một cách dè dặt trên kick và bass để woofer của PA không bị quá tải. Korff (SOS) bổ sung rằng trong một band đã có bass và kick, bạn nên thin out low end của acoustic guitar để vocal vẫn nghe rõ. Phòng như nhà thờ hay dồn bass lại, nên high-pass mọi thứ không cần low end.
 
   ## Dynamics và effects
 
-  Không tìm được nguồn có số cho compression hay reverb trong worship, nên không đưa số nào. Nói chung, phòng nhà thờ vốn đã nhiều vang, nên dùng reverb nhẹ tay trên vocal và ưu tiên return ngắn, tối; xem entry về reverb để biết Decay, damping và EQ của return hoạt động ra sao. Chỉ kiểm soát dynamics của vocal vừa đủ để câu nhỏ vẫn nghe được; nhớ rằng compression thêm gain và có thể kích feedback.
+  Không tìm được nguồn có số cho compression hay reverb trong worship, nên không đưa số nào. Nói chung, phòng nhà thờ vốn đã nhiều vang, nên dùng reverb nhẹ tay trên vocal và ưu tiên return ngắn, dark; xem entry về reverb để biết Decay, damping và EQ của return hoạt động ra sao. Chỉ kiểm soát dynamics của vocal vừa đủ để câu nhỏ vẫn nghe được; nhớ rằng compression thêm gain và có thể kích feedback (hú rít).
 
   ## Người nói và người dẫn
 
-  Mục sư và người đọc thường đeo mic headset hoặc lapel. Trong phòng lớn, headset ít hú rít (feedback) hơn lav (Shure, Lyons), nên ưu tiên headset khi phòng ồn hoặc nhiều vang.
+  Mục sư và người đọc thường đeo mic headset hoặc lapel. Trong phòng lớn, headset ít feedback hơn lav (Shure, Lyons), nên ưu tiên headset khi phòng ồn hoặc nhiều vang.
 
   ## Lỗi thường gặp
 
   - Vặn mọi thứ lên vì "càng nhiều càng tốt"; độ rõ đến từ việc giảm bớt các phần tranh nhau.
-  - Để trống phần giữa kick và vocal. Khi đó mix nghe rỗng.
+  - Để trống phần giữa kick và vocal. Khi đó mix nghe hollow (rỗng).
   - Chỉ đánh giá mix từ chỗ console, nơi có thể là chỗ dồn bass.
 rule:
   applies_to:
@@ -141,6 +141,6 @@ media:
   caption_vi: Năm mẹo live sound cho nhà thờ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:16+07:00'
+revision: 3
+updated_at: '2026-11-10T14:07:52+07:00'
 updated_by: agent:translator-vi

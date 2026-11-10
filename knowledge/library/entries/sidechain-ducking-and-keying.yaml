@@ -65,7 +65,7 @@ body_vi: |
   Gate mở khi key vượt Threshold. Lọc key kiểm soát cái gì được tính.
 
   - **Kick:** high-pass hiếm khi hữu ích, nhưng low-pass trên key ngăn bleed của cymbal làm gate mở. Giữ nhiều năng lượng low-frequency hơn trong key của gate kích bằng snare giúp nó mở lâu hơn.
-  - **Snare:** high-pass key phía trên vùng kick để bleed kick từ mic bên cạnh không kích nó; low-pass để bỏ qua hi-hat. Một bell hẹp trên key ở tần số thân của snare cũng giúp.
+  - **Snare:** high-pass key phía trên vùng kick để bleed kick từ mic bên cạnh không kích nó; low-pass để bỏ qua hi-hat. Một bell hẹp trên key ở tần số body của snare cũng giúp.
   - **Tom:** band-pass quanh fundamental của từng tom để các tom khác và cymbal không làm nó mở.
 
   Nghe tín hiệu key nếu console có nút listen. Sound On Sound lưu ý filter, EQ và Threshold hoạt động cùng nhau; sửa key trước khi đụng tới Hold và Release.
@@ -83,7 +83,7 @@ body_vi: |
   - Attack: nhanh đến trung bình để từ đầu tiên không bị mất dưới nhạc.
   - Release: khoảng 0.5 đến 1.5 s để nhạc không bật lên giữa các từ.
   - Hold hoặc Ratio vừa phải để nhạc ổn định qua các quãng nghỉ ngắn.
-  - Key filter: high-pass key tiếng nói (khoảng 100 đến 150 Hz) để tiếng cầm mic và hơi thở không kích nó.
+  - Key filter: high-pass key tiếng nói (khoảng 100 đến 150 Hz) để handling noise và hơi thở không kích nó.
 
   ## Trên WING
 
@@ -91,7 +91,7 @@ body_vi: |
 
   ## Lỗi thường gặp
 
-  - Ducking bị kích bởi mic luôn mở (hum, tiếng phòng). Gate mic key trước, hoặc nâng Threshold lên trên mức noise.
+  - Ducking bị kích bởi mic luôn mở (hum, room noise). Gate mic key trước, hoặc nâng Threshold lên trên mức noise.
   - Release quá ngắn, khiến nhạc pump giữa các từ.
   - Duck quá sâu làm nhạc biến mất, rồi phòng nghe trống trải.
   - Quên tắt ducker khi người dẫn rời sân khấu.
@@ -133,6 +133,6 @@ media:
   caption_vi: Waves giới thiệu side chain compression và ducking (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:01+07:00'
 updated_by: agent:translator-vi

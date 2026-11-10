@@ -46,7 +46,7 @@ body: |
 body_vi: |
   ## Gated automixer làm gì
 
-  Mỗi channel hoạt động như một noise gate chỉ có hai trạng thái: mở hoặc đóng, giống "đóng cửa khi vắng khách". Mic chỉ mở khi level của nó vượt đủ xa so với sàn nhiễu (Noise floor) được theo dõi trên channel đó, và giữ mở trong một khoảng Hold để những quãng ngắt ngắn không làm đứt chữ. Vì Threshold bám theo Noise floor, máy lạnh bật lên cũng không kéo tất cả mic mở theo.
+  Mỗi channel hoạt động như một noise gate chỉ có hai trạng thái: mở hoặc đóng, giống "đóng cửa khi vắng khách". Mic chỉ mở khi level của nó vượt đủ xa so với Noise floor (sàn nhiễu) được theo dõi trên channel đó, và giữ mở trong một khoảng Hold để những quãng ngắt ngắn không làm đứt chữ. Vì Threshold bám theo Noise floor, máy lạnh bật lên cũng không kéo tất cả mic mở theo.
 
   ## Giảm gain theo số mic mở (NOM attenuation)
 
@@ -130,6 +130,6 @@ media:
   caption_vi: Demo của Behringer về automix nhiều mic đang mở (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:15+07:00'
+revision: 3
+updated_at: '2026-11-10T14:08:07+07:00'
 updated_by: agent:translator-vi
