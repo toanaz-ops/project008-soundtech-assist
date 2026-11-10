@@ -31,7 +31,7 @@ wing-library-web = "wing_parser.library.web.server:main"
 include = ["wing_parser*"]
 
 [tool.setuptools.package-data]
-wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "net/data/*.yaml", "net/watch/data/*.yaml", "edit/data/*.yaml", "library/web/static/*", "automix/data/*.yaml"]
+wing_parser = ["descriptors/data/*.yaml", "classifier/data/*.yaml", "advisory/base_rules/*.yaml", "net/data/*.yaml", "net/watch/data/*.yaml", "edit/data/*.yaml", "library/web/static/*", "library/web/static/fonts/*", "automix/data/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

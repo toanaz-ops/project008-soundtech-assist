@@ -179,7 +179,8 @@
     const gb = $("group-by");
     gb.replaceChildren(...["topic", "instrument", "genre", "technique", "source"].map((g) =>
       h("option", { value: g, selected: g === S.group }, t("g_" + g))));
-    $("display-btn").textContent = t("display");
+    $("display-btn").setAttribute("aria-label", t("display")); $("display-btn").title = t("display");
+    $("lang-btn").textContent = S.lang === "vi" ? "EN" : "VI";
     renderDisplayMenu();
     const nb = $("new-btn");
     nb.hidden = !S.canEdit;
@@ -516,6 +517,7 @@
     $("q").addEventListener("input", (ev) => { S.query = ev.target.value; renderTree(); });
     $("group-by").addEventListener("change", (ev) => { S.group = ev.target.value; renderTree(); });
     $("show-retired").addEventListener("change", (ev) => { S.retired = ev.target.checked; renderTree(); });
+    $("lang-btn").addEventListener("click", () => setPref("lang", S.lang === "vi" ? "en" : "vi"));
     wireDisplayMenu();
     $("new-btn").addEventListener("click", () => go("new"));
     $("menu-btn").addEventListener("click", () => $("app").classList.toggle("menu-open"));

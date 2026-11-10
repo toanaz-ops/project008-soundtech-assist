@@ -135,6 +135,26 @@ def test_shell_keeps_full_document_for_server_mode():
     assert 'id="prefs-bootstrap"' in head and "az.prefs.v1" in head and "az.language" in head and "data-skin" in head
     assert "prefers-color-scheme" not in shell and "data-theme" not in shell and 'name="color-scheme"' not in shell
     assert 's="light",n="compact",l="vi"' in head
+    # original look: system condensed face first, self-hosted OFL fallback last, no per-skin type indirection
+    assert '"Bahnschrift", "DIN Condensed", "Arial Narrow", "Saira Condensed"' in css
+    assert "--head-track" not in css and "--head-case" not in css
+
+
+def test_shell_has_the_original_header_controls():
+    from wing_parser.library.web.export import static_text
+    shell = static_text("index.html")
+    for ident in ("menu-btn", "new-btn", "lang-btn", "display-btn"):
+        assert f'id="{ident}"' in shell
+    assert 'class="brand"' in shell
+
+
+def test_artifact_inlines_fonts_and_full_export_ships_them(store, tmp_path):
+    frag = export_web(store, tmp_path / "frag", artifact=True)["path"].read_text(encoding="utf-8")
+    assert "data:font/woff2;base64," in frag and "url(fonts/" not in frag
+    res = export_web(store, tmp_path / "full")
+    page = res["path"].read_text(encoding="utf-8")
+    fonts = list((tmp_path / "full" / "static" / "fonts").glob("*.woff2"))
+    assert len(fonts) == 6 and "url(static/fonts/" in page and "data:font" not in page
 
 
 def test_exports_keep_the_prefs_bootstrap(store, tmp_path):
