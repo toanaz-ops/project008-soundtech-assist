@@ -42,7 +42,7 @@ body: |
 body_vi: |
   ## Manual nói gì (đã xác minh)
 
-  Một đoạn trích manual WING (các mục SETUP > Audio và màn hình HOME) nêu rằng automix điều chỉnh mức của nhiều nguồn để mức đầu ra giữ đồng đều, với ví dụ nhiều người cùng nói trên sân khấu. Nó nói tối đa 16 channel có thể dùng automix, trong hai nhóm (A/B), và automix nằm ở slot post-insert. Slot đó là insert thứ hai, mà manual mô tả là cố định sau fader và sau phần xử lý; nó có thể chứa một effect hoặc một trong hai nhóm automix, chia sẻ gain giữa các channel được gán vào.
+  Một đoạn trích manual WING (các mục SETUP > Audio và màn hình HOME) nêu rằng automix điều chỉnh mức của nhiều nguồn để mức đầu ra giữ đồng đều, với ví dụ nhiều người cùng nói trên sân khấu. Nó nói tối đa 16 channel có thể dùng automix, trong hai nhóm (A/B), và automix nằm ở slot post-insert. Slot đó là insert thứ hai, mà manual mô tả là cố định sau fader và sau phần xử lý; nó có thể chứa một effect hoặc một trong hai nhóm automix, share gain giữa các channel được gán vào.
 
   ## Điều CHƯA được xác minh
 
@@ -55,7 +55,7 @@ body_vi: |
 
   Phần sau đây đến từ các mô tả automixer nói chung, không phải từ trang WING nào:
 
-  - Chỉ gán vào một nhóm những mic thật sự chia sẻ vai trò nói, như mic panel hoặc mic bàn. Giữ input nhạc, playback và effects return ngoài nhóm.
+  - Chỉ gán vào một nhóm những mic thật sự cùng đảm nhận vai trò nói, như mic panel hoặc mic bàn. Giữ input nhạc, playback và effects return ngoài nhóm.
   - Vì slot nằm sau fader, một channel rảnh với fader kéo xuống được automixer thấy ở mức thấp hơn. Yamaha khuyên vị trí post-insert (POST ON) vì cùng lý do: nó giữ cho channel rảnh không kéo gain và cho phép bạn ưu tiên người nói bằng fader.
   - Coi automix là bộ quản lý gain, không phải gate. Mic nào không dùng thì mute.
   - Thử với hai người nói cùng lúc và với phòng im lặng trước show.
@@ -119,6 +119,6 @@ media:
   caption_vi: Dùng automixer trên Behringer WING (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T16:31:32+07:00'
 updated_by: agent:translator-vi

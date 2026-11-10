@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Aux Nodes panel: nodal processing steps</text>
+<rect x="30.0" y="64.0" width="900.0" height="308.0" rx="10" fill="#131519" stroke="#2b2f37"/>
+<text x="42.0" y="82.0" font-size="12" fill="#5c636e" text-anchor="start" font-weight="bold">Layout &gt; Aux Nodes</text>
+<rect x="57.0" y="82.5" width="306.0" height="37.0" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="210.0" y="106.0" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">input/groups | aux buss</text>
+<rect x="57.0" y="137.9" width="495.0" height="154.0" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="65.0" y="154.9" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Aux sends</text>
+<text x="174.5" y="184.1" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Aux 1</text>
+<text x="325.5" y="184.1" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Aux 2</text>
+<text x="476.5" y="184.1" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Aux 3</text>
+<line x1="61.0" y1="194.9" x2="548.0" y2="194.9" stroke="#1d2128" stroke-width="1"/>
+<text x="65.0" y="215.1" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 1</text>
+<polyline points="167.5,210.4 172.5,216.4 182.5,204.4" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="61.0" y1="225.9" x2="548.0" y2="225.9" stroke="#1d2128" stroke-width="1"/>
+<text x="65.0" y="246.1" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 2</text>
+<polyline points="318.5,241.4 323.5,247.4 333.5,235.4" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="61.0" y1="256.9" x2="548.0" y2="256.9" stroke="#1d2128" stroke-width="1"/>
+<text x="65.0" y="277.1" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Ch 3</text>
+<rect x="606.0" y="137.9" width="126.0" height="37.0" rx="6" fill="#ff9f1c" stroke="#ff9f1c"/>
+<text x="669.0" y="161.4" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">Add</text>
+<rect x="750.0" y="137.9" width="144.0" height="37.0" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="822.0" y="161.4" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Bypass</text>
+<rect x="606.0" y="187.2" width="126.0" height="37.0" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="669.0" y="210.7" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Remove</text>
+<rect x="750.0" y="187.2" width="144.0" height="37.0" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="822.0" y="210.7" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Solo node</text>
+<rect x="606.0" y="242.6" width="288.0" height="37.0" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="750.0" y="266.1" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Copy To / From</text>
+<rect x="57.0" y="310.4" width="630.0" height="43.1" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="65.0" y="327.4" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">EQ + dynamics on channel screen</text>
+<circle cx="359.0" cy="84.5" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="359.0" y="89.5" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<circle cx="728.0" cy="139.9" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="728.0" y="144.9" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<circle cx="683.0" cy="312.4" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="683.0" y="317.4" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<circle cx="890.0" cy="139.9" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="890.0" y="144.9" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<circle cx="890.0" cy="244.6" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="890.0" y="249.6" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">5</text>
+<circle cx="41" cy="404" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<text x="62.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Open Layout &gt; Aux Nodes</text>
+<circle cx="41" cy="433" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<text x="62.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Touch Add, then the aux node</text>
+<circle cx="41" cy="462" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="467.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<text x="62.0" y="467.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Touch the node: EQ + dynamics appear</text>
+<circle cx="491" cy="404" r="11" fill="#ff9f1c"/>
+<text x="491.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">4</text>
+<text x="512.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Bypass / Remove / Solo node</text>
+<circle cx="491" cy="433" r="11" fill="#ff9f1c"/>
+<text x="491.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">5</text>
+<text x="512.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Copy To / Copy From</text>
+<text x="930.0" y="530.0" font-size="11" fill="#5c636e" text-anchor="end" font-weight="normal">Schematic - not a screenshot</text>
+</svg>

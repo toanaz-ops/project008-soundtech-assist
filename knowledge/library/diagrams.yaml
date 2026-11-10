@@ -14,6 +14,11 @@
 #   signal_flow:    nodes: [{label, note?}]  (left-to-right chain with arrows)
 #   range_chart:    x_label, unit?, x_range?: [lo, hi], rows: [{label, lo, hi}]  (horizontal bars on a linear axis)
 #   xy_plot:        x_label, y_label, x_log?, series: [{label, points: [[x, y], ...]}]
+#   ui_steps:       panel?, regions: [{id, label, x, y, w, h (percent of the panel box, 0-100),
+#                    style: button|display|fader|knob|grid, lit? (button), lines? (display),
+#                    count? (fader), rows/cols/cells (grid; cell: tick|x|blank)}],
+#                    steps: [{n, region, text}]  (1-6 steps; schematic console panel with numbered
+#                    callouts; n must match the entry body's step numbers)
 diagrams:
   - entry: eq-filter-types
     file: hpf-slopes
@@ -977,3 +982,328 @@ diagrams:
       note: analog gain, analog pad
     - label: Input Follower E6L
       note: digital trim, digital pad
+  - entry: digico-sd-snapshots-recall-scope
+    file: howto-recall-scope
+    kind: ui_steps
+    title: "Snapshots: protect controls with scope and safes"
+    panel: "SD10 - Snapshots panel + surface"
+    regions:
+      - {id: global, label: "Global Scope", x: 2, y: 8, w: 44, h: 28, style: grid,
+         rows: ["Input Devices"], cols: ["Recall", "Auto"], cells: [[x, x]]}
+      - {id: scope, label: "Scope", x: 50, y: 12, w: 22, h: 16, style: button}
+      - {id: safe, label: "SAFE", x: 50, y: 36, w: 22, h: 16, style: button}
+      - {id: offline, label: "Surface Offline", x: 76, y: 12, w: 22, h: 16, style: button, lit: true}
+      - {id: update, label: "Update Selected", x: 76, y: 36, w: 22, h: 16, style: button}
+      - {id: rtn, label: "RTN To Audio", x: 76, y: 60, w: 22, h: 16, style: button}
+      - {id: list, label: "Snapshot list", x: 2, y: 68, w: 44, h: 28, style: display,
+         lines: ["001 Intro", "002 Song 1 *"]}
+    steps:
+      - {n: 1, region: global, text: "Global Scope: red X on Input Devices so gains and phantom never change"}
+      - {n: 2, region: scope, text: "Scope: narrow one snapshot Recall Scope (e.g. mutes and faders only)"}
+      - {n: 3, region: safe, text: "SAFE on the channel strip: one-off protection for a channel"}
+      - {n: 4, region: offline, text: "Hold Surface Offline, fire the cue, edit, Update Selected, then RTN To Audio"}
+  - entry: digico-sd-snapshot-groups-auto-update
+    file: howto-groups-update
+    kind: ui_steps
+    title: "Snapshot Groups: update many cues at once"
+    panel: "SD10 - Snapshots panel"
+    regions:
+      - {id: list, label: "Snapshot list", x: 2, y: 8, w: 32, h: 60, style: display,
+         lines: ["010 Verse 1 (red)", "020 Verse 2 (red)", "030 Chorus (blue)"]}
+      - {id: groups, label: "groups", x: 38, y: 12, w: 18, h: 14, style: button}
+      - {id: members, label: "change members", x: 38, y: 32, w: 18, h: 14, style: button}
+      - {id: relative, label: "Relative Groups", x: 60, y: 12, w: 20, h: 14, style: button, lit: true}
+      - {id: updgroup, label: "Update Group", x: 60, y: 32, w: 20, h: 14, style: button}
+      - {id: editrange, label: "Edit Range", x: 38, y: 54, w: 18, h: 14, style: button}
+      - {id: autoupd, label: "Auto Update", x: 60, y: 54, w: 20, h: 14, style: button}
+      - {id: global, label: "Global Scope", x: 2, y: 72, w: 40, h: 24, style: grid,
+         rows: ["Input Devices"], cols: ["Recall", "Auto"], cells: [[x, x]]}
+    steps:
+      - {n: 1, region: groups, text: "groups > new group > change members: pick the cues of one song or artist"}
+      - {n: 2, region: relative, text: "Relative Groups on = relative dB update; off = non-relative"}
+      - {n: 3, region: global, text: "Global Scope, Auto columns: keep Input Devices as red X before Update Group"}
+      - {n: 4, region: editrange, text: "Edit Range: Select Range, edit one channel, Confirm"}
+  - entry: digico-sd-macros
+    file: howto-macro-editor
+    kind: ui_steps
+    title: "Macro Editor: capture, test, assign, trigger"
+    panel: "SD10 - Setup > Macros > Macro Editor"
+    regions:
+      - {id: editor, label: "Macro Editor: included commands", x: 2, y: 8, w: 46, h: 62, style: display,
+         lines: ["macro 1", "commands run in list order"]}
+      - {id: fire, label: "fire macro", x: 52, y: 10, w: 20, h: 14, style: button}
+      - {id: capture, label: "capture", x: 76, y: 10, w: 20, h: 14, style: button, lit: true}
+      - {id: bank, label: "bank", x: 52, y: 34, w: 20, h: 14, style: button}
+      - {id: smartkey, label: "smart key", x: 76, y: 34, w: 20, h: 14, style: button}
+      - {id: on, label: "On", x: 52, y: 54, w: 20, h: 14, style: button}
+      - {id: off, label: "Off", x: 76, y: 54, w: 20, h: 14, style: button}
+      - {id: snaptab, label: "Snapshots tab > edit", x: 52, y: 76, w: 44, h: 16, style: button}
+    steps:
+      - {n: 2, region: capture, text: "capture on, action the commands; capture off; test with fire macro"}
+      - {n: 3, region: smartkey, text: "Pick a bank, then a smart key; set On and Off actions so the key shows state"}
+      - {n: 4, region: snaptab, text: "V19xx+: Snapshots tab > edit: choose the snapshot that triggers the macro"}
+  - entry: digico-sd-gain-tracking-shared-racks
+    file: howto-gain-tracking
+    kind: ui_steps
+    title: "Shared racks: port control, Track and scope"
+    panel: "SD10 - Audio I/O > Splits and Sharing, channel strip, Global Scope"
+    regions:
+      - {id: port, label: "Audio I/O > Splits and Sharing > Selected Rack", x: 2, y: 8, w: 52, h: 40, style: display,
+         lines: ["Shared", "isolate / receive only / full control"]}
+      - {id: isolate, label: "isolate", x: 2, y: 54, w: 16, h: 14, style: button}
+      - {id: recv, label: "receive only", x: 20, y: 54, w: 17, h: 14, style: button, lit: true}
+      - {id: full, label: "full control", x: 39, y: 54, w: 15, h: 14, style: button}
+      - {id: track, label: "Track", x: 60, y: 10, w: 16, h: 14, style: button, lit: true}
+      - {id: trim, label: "trim", x: 82, y: 6, w: 14, h: 30, style: knob}
+      - {id: global, label: "Global Scope", x: 58, y: 44, w: 40, h: 30, style: grid,
+         rows: ["Input Devices"], cols: ["Recall", "Auto"], cells: [[x, x]]}
+    steps:
+      - {n: 1, region: port, text: "Set port control: FOH full control, monitor desk receive only"}
+      - {n: 3, region: track, text: "Track on for every channel the second console shares"}
+      - {n: 4, region: global, text: "Global Scope: red X on Input Devices so snapshots do not fight the master console"}
+  - entry: digico-sd-control-groups
+    file: howto-control-groups
+    kind: ui_steps
+    title: "Control Group strip: join, mode, mute, safe"
+    panel: "SD10 - Control Groups panel (CG channel strip)"
+    regions:
+      - {id: members, label: "CG 1 Drums - members", x: 2, y: 8, w: 40, h: 56, style: display,
+         lines: ["Kick", "Snare", "Tom 1", "Tom 2"]}
+      - {id: join, label: "JOIN/LEAVE", x: 46, y: 10, w: 24, h: 14, style: button, lit: true}
+      - {id: clear, label: "clear", x: 74, y: 10, w: 22, h: 14, style: button}
+      - {id: mode, label: "fader mode", x: 46, y: 30, w: 24, h: 14, style: button}
+      - {id: allmute, label: "all mute", x: 74, y: 30, w: 22, h: 14, style: button}
+      - {id: automute, label: "auto-mute", x: 46, y: 50, w: 24, h: 14, style: button}
+      - {id: safe, label: "SAFE", x: 74, y: 50, w: 22, h: 14, style: button}
+      - {id: faders, label: "CG faders", x: 2, y: 70, w: 94, h: 26, style: fader, count: 8}
+    steps:
+      - {n: 1, region: join, text: "Hold JOIN/LEAVE on the CG, press channel select on each member"}
+      - {n: 2, region: mode, text: "fader mode button: moving fader, VCA style or mute only"}
+      - {n: 3, region: allmute, text: "all mute (with auto-mute) mutes the whole group together"}
+      - {n: 4, region: safe, text: "SAFE: a snapshot will not change this CG's assignments"}
+  - entry: digico-sd-set-spill
+    file: howto-set-spill
+    kind: ui_steps
+    title: "Set Spill: build, assign to a macro, lock banks"
+    panel: "SD10 - Layout > Set Spill and Layout > Fader Banks"
+    regions:
+      - {id: setgrid, label: "Set Spill: channel list", x: 2, y: 8, w: 44, h: 58, style: grid,
+         rows: ["Ch 1 Lead", "Ch 2 BV1", "Ch 3 BV2"], cols: ["Set 1", "Set 2"],
+         cells: [[tick, blank], [tick, blank], [blank, tick]]}
+      - {id: name, label: "Set Name:", x: 50, y: 10, w: 22, h: 14, style: button}
+      - {id: spill, label: "Spill:", x: 76, y: 10, w: 20, h: 14, style: button, lit: true}
+      - {id: macro, label: "Assign Macro:", x: 50, y: 32, w: 46, h: 14, style: button}
+      - {id: lock, label: "lock", x: 50, y: 52, w: 22, h: 14, style: button}
+      - {id: banks, label: "Fader Banks", x: 2, y: 72, w: 94, h: 24, style: fader, count: 8}
+    steps:
+      - {n: 1, region: setgrid, text: "Choose a Set column, touch the boxes of the channels to include (Vocals set)"}
+      - {n: 3, region: macro, text: "Touch Assign Macro:, then pick a Macro button (one key per set)"}
+      - {n: 4, region: lock, text: "Fader Banks: highlight a bank, touch lock"}
+  - entry: digico-sd-sd10-architecture
+    file: howto-session-structure
+    kind: ui_steps
+    title: "Session Structure: set counts, then Restructure"
+    panel: "SD10 - Files > Session Structure"
+    regions:
+      - {id: title, label: "Session title", x: 2, y: 8, w: 40, h: 14, style: button}
+      - {id: rate, label: "Session sample rate", x: 46, y: 8, w: 50, h: 14, style: button}
+      - {id: counts, label: "Channel allocation", x: 2, y: 28, w: 70, h: 50, style: grid,
+         rows: ["Inputs", "Aux", "Group", "Matrix"], cols: ["count", "clear all", "auto-route"],
+         cells: [[blank, blank, blank], [blank, blank, blank], [blank, blank, blank], [blank, blank, blank]]}
+      - {id: restructure, label: "Restructure", x: 76, y: 80, w: 22, h: 16, style: button, lit: true}
+    steps:
+      - {n: 1, region: rate, text: "Set the Session sample rate, then the Inputs, Aux, Group and Matrix counts"}
+      - {n: 2, region: restructure, text: "Restructure applies the changes; use clear all with care"}
+  - entry: digico-sd-digitube-delay-graphic-eq
+    file: howto-digitube-delay-geq
+    kind: ui_steps
+    title: "DiGiTube, channel delay and graphic EQ"
+    panel: "SD10 - Channel Setup + Graphic EQ"
+    regions:
+      - {id: warmth, label: "warmth", x: 2, y: 10, w: 14, h: 14, style: button}
+      - {id: drive, label: "drive", x: 20, y: 6, w: 12, h: 32, style: knob}
+      - {id: bias, label: "bias", x: 36, y: 6, w: 12, h: 32, style: knob}
+      - {id: coarse, label: "delay coarse", x: 54, y: 6, w: 14, h: 32, style: knob}
+      - {id: fine, label: "delay fine", x: 72, y: 6, w: 12, h: 32, style: knob}
+      - {id: geq, label: "Graphic EQ: 32 band faders", x: 2, y: 48, w: 62, h: 48, style: fader, count: 16}
+      - {id: gang, label: "build gang", x: 68, y: 50, w: 28, h: 14, style: button}
+      - {id: safegrid, label: "SAFE", x: 68, y: 72, w: 28, h: 16, style: button}
+    steps:
+      - {n: 1, region: drive, text: "DiGiTube: warmth button first, then raise drive (indicator shows how hard)"}
+      - {n: 2, region: coarse, text: "Delay: coarse rotary in ms, fine rotary for sample-level alignment"}
+      - {n: 3, region: gang, text: "Graphic EQ: build gang to lock a stereo pair together"}
+      - {n: 4, region: safegrid, text: "SAFE on the Graphic EQ panel so cues leave it alone"}
+  - entry: digico-sd-channel-processing
+    file: howto-channel-processing
+    kind: ui_steps
+    title: "Channel strip: dynamic EQ, de-esser, multiband, gate"
+    panel: "SD10 - EQ/filters display and dynamics modules"
+    regions:
+      - {id: eq, label: "EQ/filters: HF HMF LMF LF", x: 2, y: 8, w: 40, h: 42, style: display,
+         lines: ["band set to dynamic", "threshold / freq / Q / gain"]}
+      - {id: over, label: "over", x: 46, y: 10, w: 14, h: 14, style: button, lit: true}
+      - {id: deess, label: "DYN 1: de-esser", x: 2, y: 56, w: 40, h: 40, style: display,
+         lines: ["band-pass sidechain", "centre frequency / width"]}
+      - {id: listen, label: "listen", x: 46, y: 30, w: 14, h: 14, style: button}
+      - {id: xover, label: "crossover", x: 64, y: 6, w: 16, h: 36, style: knob}
+      - {id: xover2, label: "crossover", x: 82, y: 6, w: 14, h: 36, style: knob}
+      - {id: dyn2, label: "DYN 2: gate / ducker", x: 46, y: 56, w: 50, h: 40, style: display,
+         lines: ["threshold / range", "key button: external key"]}
+    steps:
+      - {n: 1, region: over, text: "Dynamic EQ band: over under the threshold control, cut at the harsh frequency"}
+      - {n: 2, region: listen, text: "DYN 1 de-esser: listen to find the sibilant band"}
+      - {n: 3, region: xover, text: "DYN 1 multiband compressor: set the crossovers"}
+      - {n: 4, region: dyn2, text: "DYN 2: gate on toms, or a ducker"}
+  - entry: digico-quantum-mustard-channel
+    file: howto-mustard-strip
+    kind: ui_steps
+    title: "Mustard channel strip: on-desk steps"
+    panel: "Quantum Mustard strip"
+    regions:
+      - {id: view, label: "SD / Mustard view", x: 3, y: 8, w: 22, h: 14, style: button, lit: true}
+      - {id: tube, label: "Mustard Tube", x: 3, y: 30, w: 22, h: 26, style: knob}
+      - {id: eq, label: "Mustard EQ", x: 30, y: 8, w: 30, h: 26, style: display}
+      - {id: comp, label: "Mustard Compressor", x: 30, y: 40, w: 30, h: 26, style: display}
+      - {id: mix, label: "Mix", x: 66, y: 40, w: 14, h: 26, style: knob}
+      - {id: gate, label: "Mustard Gate/Ducker", x: 66, y: 8, w: 30, h: 26, style: display}
+      - {id: pos, label: "Insert Position", x: 30, y: 74, w: 30, h: 16, style: button}
+    steps:
+      - {n: 1, region: view, text: "Switch view SD / Mustard"}
+      - {n: 2, region: tube, text: "Tube or amp, Drive low"}
+      - {n: 3, region: comp, text: "Choose compressor model"}
+      - {n: 4, region: mix, text: "Mix below 100 percent"}
+      - {n: 5, region: pos, text: "Check Insert Position"}
+  - entry: digico-quantum-nodal-processing
+    file: howto-aux-nodes
+    kind: ui_steps
+    title: "Aux Nodes panel: nodal processing steps"
+    panel: "Layout > Aux Nodes"
+    regions:
+      - {id: views, label: "input/groups | aux buss", x: 3, y: 6, w: 34, h: 12, style: button}
+      - {id: grid, label: "Aux sends", x: 3, y: 24, w: 55, h: 50, style: grid, rows: ["Ch 1", "Ch 2", "Ch 3"], cols: ["Aux 1", "Aux 2", "Aux 3"], cells: [["tick", "blank", "blank"], ["blank", "tick", "blank"], ["blank", "blank", "blank"]]}
+      - {id: add, label: "Add", x: 64, y: 24, w: 14, h: 12, style: button, lit: true}
+      - {id: byp, label: "Bypass", x: 80, y: 24, w: 16, h: 12, style: button}
+      - {id: rem, label: "Remove", x: 64, y: 40, w: 14, h: 12, style: button}
+      - {id: solo, label: "Solo node", x: 80, y: 40, w: 16, h: 12, style: button}
+      - {id: copy, label: "Copy To / From", x: 64, y: 58, w: 32, h: 12, style: button}
+      - {id: eq, label: "EQ + dynamics on channel screen", x: 3, y: 80, w: 70, h: 14, style: display}
+    steps:
+      - {n: 1, region: views, text: "Open Layout > Aux Nodes"}
+      - {n: 2, region: add, text: "Touch Add, then the aux node"}
+      - {n: 3, region: eq, text: "Touch the node: EQ + dynamics appear"}
+      - {n: 4, region: byp, text: "Bypass / Remove / Solo node"}
+      - {n: 5, region: copy, text: "Copy To / Copy From"}
+  - entry: digico-quantum-true-solo
+    file: howto-true-solo
+    kind: ui_steps
+    title: "True Solo: on-desk steps"
+    panel: "Solos panel"
+    regions:
+      - {id: panel, label: "Solos panel / macro", x: 3, y: 8, w: 40, h: 18, style: button}
+      - {id: bus, label: "True Solo panel", x: 3, y: 34, w: 60, h: 40, style: display,
+         lines: ["output buss processing", "copied to the solo buss"]}
+    steps:
+      - {n: 1, region: panel, text: "Open Solos panel (or macro)"}
+      - {n: 2, region: bus, text: "Pick artist buss in True Solo"}
+      - {n: 3, region: bus, text: "Solo inputs, check the mix"}
+      - {n: 4, region: bus, text: "Change buss processing, hear it"}
+  - entry: digico-quantum-spice-rack
+    file: howto-spice-rack
+    kind: ui_steps
+    title: "Spice Rack: on-desk steps"
+    panel: "Master screen > Processors > Spice Rack"
+    regions:
+      - {id: slots, label: "Slots list (channel + insert)", x: 3, y: 14, w: 24, h: 64, style: grid, rows: ["Slot 1", "Slot 2", "Slot 3"], cols: ["Unit"], cells: [["tick"], ["blank"], ["blank"]]}
+      - {id: type, label: "Type: Chilli 6 / Naga 6", x: 32, y: 8, w: 30, h: 14, style: button}
+      - {id: resp, label: "Frequency response", x: 32, y: 28, w: 40, h: 40, style: display}
+      - {id: bands, label: "Band Split / Wide", x: 76, y: 28, w: 20, h: 18, style: button}
+      - {id: listen, label: "Band listen", x: 76, y: 50, w: 20, h: 18, style: button}
+      - {id: presets, label: "Presets", x: 76, y: 8, w: 20, h: 14, style: button}
+    steps:
+      - {n: 1, region: slots, text: "Insert rack processor on channel"}
+      - {n: 2, region: type, text: "Pick type"}
+      - {n: 3, region: bands, text: "Bands to Split"}
+      - {n: 4, region: listen, text: "Band listen"}
+      - {n: 5, region: presets, text: "Save a preset"}
+  - entry: avid-s6l-delay-compensation
+    file: howto-adc
+    kind: ui_steps
+    title: "Setting up ADC on the external screen"
+    panel: "VENUE external screen: Options > ADC"
+    regions:
+      - {id: legacy, label: "Use Legacy Mode Delay Compensation", x: 4, y: 8, w: 44, h: 14, style: button, lit: false}
+      - {id: modes, label: "Primary setting", x: 4, y: 30, w: 44, h: 24, style: grid, rows: ["Mode"], cols: ["Off", "Mix Only", "Mix & Inserts"], cells: [["blank", "blank", "tick"]]}
+      - {id: align, label: "Additional settings", x: 4, y: 62, w: 44, h: 24, style: grid, rows: ["Align"], cols: ["Inputs > Mains & Mtx", "Matrixes"], cells: [["tick", "tick"]]}
+      - {id: attn, label: "Right-click menu", x: 54, y: 30, w: 42, h: 30, style: display, lines: ["Align Total Input Delay", "on Attentioned Channels"]}
+    steps:
+      - {n: 1, region: legacy, text: "Options > ADC: turn Legacy mode off (new Show)"}
+      - {n: 2, region: modes, text: "Choose Mix & Inserts"}
+      - {n: 3, region: align, text: "Tick Align All Input Channels to Mains & Matrixes; Align All Matrixes"}
+      - {n: 4, region: attn, text: "Special channels: Align Total Input Delay on Attentioned Channels"}
+  - entry: avid-s6l-snapshots
+    file: howto-snapshots
+    kind: ui_steps
+    title: "Snapshot lock, Preview and Confirm Snapshot Recall"
+    panel: "VENUE external screen: Snapshots page, Main tab"
+    regions:
+      - {id: list, label: "Snapshot list", x: 4, y: 8, w: 62, h: 46, style: display, lines: ["001 Baseline", "002 Song A", "003 Song B [padlock]"]}
+      - {id: lock, label: "Padlock icon (far right of row)", x: 70, y: 14, w: 24, h: 14, style: button, lit: true}
+      - {id: preview, label: "Preview", x: 70, y: 36, w: 24, h: 14, style: button, lit: false}
+      - {id: confirm, label: "Options > Snapshots", x: 4, y: 62, w: 62, h: 24, style: grid, rows: ["Confirm Snapshot Recall"], cols: ["Enabled"], cells: [["tick"]]}
+    steps:
+      - {n: 2, region: lock, text: "Select the padlock icon in the snapshot row to lock it"}
+      - {n: 4, region: preview, text: "Preview: tidy next song, Store, exit Preview"}
+      - {n: 5, region: confirm, text: "Enable Confirm Snapshot Recall"}
+  - entry: avid-s6l-io-sharing
+    file: howto-io-sharing
+    kind: ui_steps
+    title: "Assigning shared I/O slots on the Master"
+    panel: "VENUE external screen on the Input Master"
+    regions:
+      - {id: devices, label: "Options > Devices: Output Slot ownership", x: 4, y: 8, w: 58, h: 36, style: grid, rows: ["Output slot J", "Output slot K"], cols: ["Master", "Follower"], cells: [["tick", "blank"], ["blank", "tick"]]}
+      - {id: patch, label: "Patchbay tabs", x: 4, y: 54, w: 58, h: 30, style: display, lines: ["Green tab: you own it", "Yellow tab: you follow it"]}
+    steps:
+      - {n: 2, region: devices, text: "Options > Devices on the Master: assign stage Output slots to the monitor system"}
+      - {n: 4, region: patch, text: "Patchbay: green tabs = yours, yellow tabs = followed"}
+  - entry: avid-s6l-virtual-soundcheck
+    file: howto-virtual-soundcheck
+    kind: ui_steps
+    title: "Virtual Soundcheck settings on the console"
+    panel: "VENUE external screen: Options > System and Patchbay"
+    regions:
+      - {id: outputs, label: "Options > System: System Outputs", x: 4, y: 8, w: 44, h: 28, style: grid, rows: ["Destination"], cols: ["AVB", "MADI", "BOTH"], cells: [["blank", "blank", "tick"]]}
+      - {id: inputs, label: "Options > System: System Inputs", x: 4, y: 48, w: 44, h: 28, style: grid, rows: ["Source"], cols: ["Stage", "Pro Tools"], cells: [["blank", "tick"]]}
+      - {id: patchbay, label: "Patchbay: Pro Tools tab", x: 54, y: 8, w: 42, h: 28, style: display, lines: ["Pro Tools tab", "feeds the cards"]}
+    steps:
+      - {n: 1, region: outputs, text: "Record splits: set System Outputs to AVB, MADI or BOTH"}
+      - {n: 2, region: inputs, text: "Set System Inputs to Pro Tools, play back, EQ the room"}
+      - {n: 3, region: inputs, text: "Switch System Inputs back to Stage"}
+  - entry: avid-s6l-select-attention
+    file: howto-select-attention
+    kind: ui_steps
+    title: "Select, Attention and Multi-Select on the surface"
+    panel: "S6L surface and external screen"
+    regions:
+      - {id: strip, label: "Channel strip: Select / Attention", x: 4, y: 10, w: 28, h: 40, style: fader, count: 3}
+      - {id: multi, label: "Multi-Select (top-left of MLM)", x: 4, y: 60, w: 28, h: 16, style: button, lit: false}
+      - {id: ckm, label: "CKM encoders", x: 40, y: 10, w: 26, h: 40, style: knob}
+      - {id: pref, label: "Options > Interaction", x: 40, y: 60, w: 56, h: 24, style: grid, rows: ["Pref"], cols: ["Attention Follows Select"], cells: [["tick"]]}
+    steps:
+      - {n: 1, region: strip, text: "Attention the watched channel; Select another to ride"}
+      - {n: 2, region: multi, text: "Hold Multi-Select, press Attention on each drum channel, turn a CKM encoder"}
+      - {n: 3, region: pref, text: "On handover: check Attention Follows Select"}
+  - entry: avid-s6l-scope-recall-safe
+    file: howto-scope-recall-safe
+    kind: ui_steps
+    title: "Scope, User Aux Scope and Recall Safe screens"
+    panel: "VENUE external screen: Snapshots page"
+    regions:
+      - {id: scope, label: "Scope data type buttons and channel faders", x: 4, y: 8, w: 44, h: 28, style: grid, rows: ["Ch 1", "Ch 2"], cols: ["Fader", "Mute", "EQ"], cells: [["tick", "tick", "blank"], ["blank", "blank", "blank"]]}
+      - {id: safe, label: "Recall Safe: Inputs and Outputs tabs, On", x: 54, y: 8, w: 42, h: 28, style: grid, rows: ["Lead Vox", "Spare mic"], cols: ["Fader", "EQ"], cells: [["x", "x"], ["x", "x"]]}
+      - {id: aux, label: "User Aux Scope (AUX/USR)", x: 4, y: 48, w: 44, h: 28, style: grid, rows: ["Gtr 1", "Vox"], cols: ["IEM 3", "IEM 4"], cells: [["tick", "blank"], ["blank", "blank"]]}
+      - {id: sets, label: "Scope Sets (Filing page)", x: 54, y: 48, w: 42, h: 28, style: display, lines: ["Scope Set: Clean"]}
+    steps:
+      - {n: 1, region: scope, text: "Scope = per-snapshot choice; Recall Safe = global veto"}
+      - {n: 2, region: safe, text: "Recall Safe: lead vocal fader and EQ, spare mic, plug-ins"}
+      - {n: 3, region: aux, text: "User Aux Scope: scope only the requested Aux"}
+      - {n: 4, region: sets, text: "Festival changeover: load a clean Scope Set"}

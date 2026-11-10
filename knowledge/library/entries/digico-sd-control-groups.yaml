@@ -46,6 +46,7 @@ body: |
   ## What is NOT verified
 
   - Whether VCA-style CGs respect post-fader inserts or automix. Not covered in the pages read.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -77,6 +78,7 @@ body_vi: |
   ## Điều CHƯA được xác minh
 
   - VCA-style CG có tôn trọng insert post-fader hay automix không. Các trang đã đọc không nói.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -104,8 +106,15 @@ media:
   channel: MONO SoundLab
   caption: Third-party tutorial on assigning control groups on an SD console (title and channel verified via oEmbed; not watched)
   caption_vi: Hướng dẫn của bên thứ ba về gán control group trên console SD (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-control-groups.png
+  caption: On-desk steps 1-4. Schematic drawn from the manual's description (Issue H, p. 139-141), not a screenshot.
+  caption_vi: Các bước 1–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 139-141), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

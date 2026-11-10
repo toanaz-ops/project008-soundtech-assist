@@ -32,9 +32,9 @@ body: |
 
   ## How to use it on a show
 
-  - Keep Attention on the channel you are watching on the big screen while Select lets you ride something else: rolling a vocal while checking a bus.
-  - Use Attention-based Multi-Select to cut the HPF on a whole drum kit regardless of banking.
-  - If an operator hands over, remind them of the Attention Follows Select setting; it explains "why is the screen showing something else".
+  1. Keep Attention on the channel you are watching on the big screen while Select lets you ride something else: rolling a vocal while checking a bus.
+  2. Use Attention-based Multi-Select to cut the HPF on a whole drum kit regardless of banking.
+  3. If an operator hands over, remind them of the Attention Follows Select setting; it explains "why is the screen showing something else".
 
   ## Pitfalls
 
@@ -45,6 +45,7 @@ body: |
   ## What is NOT verified
 
   Comparison with WING's Select, Home and Edit button model was not researched. Behaviour in VENUE 8.x (the 8.0 CKM horizontal and overview workflows were not read).
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (đã xác minh, System Guide 7.2, trang in 112-117)
 
@@ -62,19 +63,20 @@ body_vi: |
 
   ## Dùng trên show thế nào
 
-  - Để Attention ở channel bạn đang theo dõi trên màn hình lớn, trong khi Select cho bạn rải thứ khác: vừa kéo vocal vừa nhìn một bus.
-  - Dùng Multi-Select bằng Attention để cắt HPF cả bộ trống bất kể đang bank chỗ nào.
-  - Khi bàn giao cho người khác, nhắc họ về cài đặt Attention Follows Select; nó giải thích "sao màn hình đang hiện cái khác".
+  1. Để Attention ở channel bạn đang theo dõi trên màn hình lớn, trong khi Select cho bạn rải thứ khác: vừa kéo vocal vừa nhìn một bus.
+  2. Dùng Multi-Select bằng Attention để cắt HPF cả bộ trống bất kể đang bank chỗ nào.
+  3. Khi bàn giao cho người khác, nhắc họ về cài đặt Attention Follows Select; nó giải thích "sao màn hình đang hiện cái khác".
 
   ## Bẫy thường gặp
 
   - Multi-select bằng Select chỉ với tới channel trong cùng fader bank.
   - Attention on Fader che channel đang Bank Safe cho tới khi thoát; hãy đọc tên trên strip.
-  - Đây là suy luận, manual không nói thẳng: với liên kết mặc định, hai người dùng chung một surface dễ giành channel đang Attention; Dual Operator mode (xem mục Spill và Layouts) sinh ra cho việc đó.
+  - Đây là suy luận, manual không nói thẳng: với liên kết mặc định, hai người cùng đứng một surface dễ giành channel đang Attention; Dual Operator mode (xem mục Spill và Layouts) sinh ra cho việc đó.
 
   ## Điều CHƯA được xác minh
 
   Chưa nghiên cứu so sánh với mô hình nút Select, Home, Edit của WING. Hành vi trong VENUE 8.x (các workflow CKM horizontal và overview của 8.0 chưa đọc).
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
   publisher: Avid
@@ -97,8 +99,15 @@ media:
   channel: Avid Live Sound
   caption: Short Avid clip on the Multi-Select workflow (title and channel verified via YouTube oEmbed; not watched)
   caption_vi: Clip ngắn của Avid về workflow Multi-Select (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+- kind: diagram
+  path: howto-select-attention.png
+  caption: On-desk steps 1-3, schematic drawn from the manual's description (System Guide 7.2, pp. 112-117), not a screenshot.
+  caption_vi: Các bước 1–3 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (System Guide 7.2, tr. 112-117), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 6
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

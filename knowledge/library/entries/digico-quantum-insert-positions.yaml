@@ -1,6 +1,6 @@
 id: digico-quantum-insert-positions
 title: 'Quantum insert positions: five points shared by Insert A, B and Mustard'
-title_vi: 'Vị trí insert trên Quantum: năm điểm dùng chung cho Insert A, B và Mustard'
+title_vi: 'Vị trí insert trên Quantum: năm điểm cho cả Insert A, B và Mustard'
 topic: digico-quantum
 tags:
   instrument: []
@@ -12,7 +12,7 @@ tags:
   event:
   - touring
 summary: On Quantum every channel has five selectable insert positions, shared by Insert A, Insert B and Mustard; each position holds only one of them. On SD, Insert A is pre-processing and Insert B post-processing.
-summary_vi: Trên Quantum mỗi channel có năm vị trí insert chọn được, dùng chung cho Insert A, Insert B và Mustard; mỗi vị trí chỉ chứa một thứ. Trên SD, Insert A nằm trước xử lý còn Insert B sau xử lý.
+summary_vi: Trên Quantum mỗi channel có năm vị trí insert chọn được; Insert A, Insert B và Mustard đều chọn trong năm vị trí đó, mỗi vị trí chỉ chứa một thứ. Trên SD, Insert A nằm trước xử lý còn Insert B sau xử lý.
 body: |
   ## What it is (verified, reference manual PDF pp. 24, 39, 52)
 
@@ -33,7 +33,7 @@ body: |
 body_vi: |
   ## Nó là gì (đã xác minh, reference manual PDF tr. 24, 39, 52)
 
-  Mỗi channel có Insert A và Insert B, theo định dạng mono hoặc stereo của channel. Trên SD, Insert A nằm trước xử lý tín hiệu (sau các filter) còn Insert B nằm sau xử lý; tối đa 32 input channel mono của SD chuyển được Insert B sang post-fader. Trên Quantum, mỗi channel có năm vị trí chọn được: pre-fade, mid EQ/dyn, pre-EQ/dyn, pre-processing và post-fade. Chúng dùng chung cho Insert A, Insert B và Mustard; mỗi vị trí một thứ, thứ nào cũng đặt được vào vị trí còn trống.
+  Mỗi channel có Insert A và Insert B, theo định dạng mono hoặc stereo của channel. Trên SD, Insert A nằm trước xử lý tín hiệu (sau các filter) còn Insert B nằm sau xử lý; tối đa 32 input channel mono của SD chuyển được Insert B sang post-fader. Trên Quantum, mỗi channel có năm vị trí chọn được: pre-fade, mid EQ/dyn, pre-EQ/dyn, pre-processing và post-fade. Insert A, Insert B và Mustard đều chọn trong năm vị trí này; mỗi vị trí một thứ, thứ nào cũng đặt được vào vị trí còn trống.
 
   Thứ tự tín hiệu, theo trang Mustard (năm mô tả trong manual được ghép với tên theo thứ tự tín hiệu; text của trang liệt kê chúng không gắn nhãn, nên đây là suy luận, manual không nói thẳng): pre-processing là sau trim và trước delay/DiGiTube; pre-EQ/dyn là sau filter và trước EQ/dynamics; mid là giữa EQ và dynamics; pre-fade là sau xử lý và trước mute và fader; post-fade là sau fader. Vị trí mặc định của Mustard là giữa EQ và dynamics. Scope Input/Trim bao gồm vị trí Mustard.
 
@@ -70,6 +70,6 @@ media:
   caption_vi: Video tổng quan chính thức về xử lý và phần cứng Quantum (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 3
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

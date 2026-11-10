@@ -1,6 +1,6 @@
 id: digico-sd-gain-tracking-shared-racks
 title: Gain tracking with FOH and monitors sharing stage racks (MADI and Optocore)
-title_vi: Gain tracking khi FOH và monitor dùng chung stage rack (MADI và Optocore)
+title_vi: Gain tracking khi FOH và monitor share stage rack (MADI và Optocore)
 topic: digico-sd
 tags:
   instrument: []
@@ -15,7 +15,7 @@ tags:
   - festival
   - touring
 summary: 'Two SD consoles can share one stage rack: one console owns the analogue gain, the other is Receive Only and uses gain tracking so its digital trim compensates. Snapshots can recall total gain relative to the rack.'
-summary_vi: 'Hai console SD có thể dùng chung một stage rack: một console giữ gain analogue, console kia ở Receive Only và dùng gain tracking để digital trim bù lại. Snapshot có thể recall tổng gain tương đối so với rack.'
+summary_vi: 'Hai console SD có thể share một stage rack: một console giữ gain analogue, console kia ở Receive Only và dùng gain tracking để digital trim bù lại. Snapshot có thể recall tổng gain tương đối so với rack.'
 body: |
   ## What the manual says (Issue H, V20+)
 
@@ -48,15 +48,16 @@ body: |
 
   - Behaviour of the V221 Optocore pages beyond the capacity figures above, and the dual-loop sections.
   - Whether the SD10 has two MADI ports on its engine (the product page says two redundant MADI interfaces; port roles are not checked).
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
   - **Gain tracking** (input channel): nếu mức input analogue được tăng thì trim sẽ giảm để giữ nguyên mức channel. Manual nói nó hữu ích nhất khi mức analogue do console khác điều khiển, ví dụ monitor ở một console và FOH ở console kia.
-  - **Dùng chung rack (MADI):** hai console có thể lấy input từ một remote rack qua hai bộ cổng MADI của nó. Chỉ một console điều khiển được chức năng rack như gain mic pre và phantom. Trong Setup > Audio I/O, bấm Shared trên cả hai console; sau đó mỗi rack đặt được **Isolate**, **Receive Only** hoặc **Full Control**:
+  - **Share rack (MADI):** hai console có thể lấy input từ một remote rack qua hai bộ cổng MADI của nó. Chỉ một console điều khiển được chức năng rack như gain mic pre và phantom. Trong Setup > Audio I/O, bấm Shared trên cả hai console; sau đó mỗi rack đặt được **Isolate**, **Receive Only** hoặc **Full Control**:
     - Full Control: console nhận setting của rack và gửi điều khiển ngược lại.
     - Receive Only: console nhận setting của rack nhưng không gửi gì ngược lại.
     - Isolate: không trao đổi dữ liệu điều khiển, nên gain tracking không chạy.
-  - **Các bước manual đưa ra:** một console ở Full Control; thống nhất mức analogue gain đủ headroom; console thứ hai ở Receive Only; bật Track cho các channel dùng chung trên console thứ hai. Khi console master đổi analogue gain, analogue gain của console thứ hai đi theo và digital trim của nó dịch cùng lượng theo chiều ngược lại.
+  - **Các bước manual đưa ra:** một console ở Full Control; thống nhất mức analogue gain đủ headroom; console thứ hai ở Receive Only; bật Track cho các channel shared trên console thứ hai. Khi console master đổi analogue gain, analogue gain của console thứ hai đi theo và digital trim của nó dịch cùng lượng theo chiều ngược lại.
   - **Audio sync:** console điều khiển gain nên là Audio Sync = Master, console tracking là Audio Sync = MADI 1 (trong ví dụ MADI split).
   - **Split của SD-Rack:** SD rack có hai ngõ split sẵn, mỗi ngõ là một luồng MADI 56 channel ở 48 kHz, và split có thể đặt để cho luồng gain tracking tự động, nên console nhận không phải làm gain tracking. Đặt được trên rack hoặc trong panel Audio I/O.
   - **Optocore:** hệ sợi quang V221 hỗ trợ tối đa 10 SD engine (5 console redundant) và 14 rack trên một loop. Với firmware V220, manual giới hạn ví dụ hai console với DiGiRack ở bốn rack và 48 kHz.
@@ -66,7 +67,7 @@ body_vi: |
 
   1. Thống nhất ai giữ gain trước khi line check. Console FOH thường là Full Control; monitor chạy Receive Only với Track bật.
   2. Đặt gain có headroom cho nguồn to nhất rồi giữ nguyên: đổi gain về sau là đổi cả hai desk.
-  3. Bật Track cho mọi channel console thứ hai dùng chung.
+  3. Bật Track cho mọi channel shared trên console thứ hai.
   4. Với festival đổi ban, để gain ngoài Global Scope để snapshot không đánh nhau với console master.
   5. Nếu dùng SD-Rack thì dùng split gain tracking có sẵn của nó.
 
@@ -80,6 +81,7 @@ body_vi: |
 
   - Hành vi của các trang Optocore V221 ngoài các con số dung lượng ở trên, và phần dual-loop.
   - SD10 có hai cổng MADI trên engine hay không (trang sản phẩm ghi hai giao diện MADI redundant; vai trò cổng chưa kiểm tra).
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -107,8 +109,15 @@ media:
   channel: DiGiCo Consoles
   caption: Official DiGiCo video on Optocore and racks (title and channel verified via oEmbed; not watched)
   caption_vi: Video chính thức của DiGiCo về Optocore và rack (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-gain-tracking.png
+  caption: On-desk steps 1, 3 and 4. Schematic drawn from the manual's description (Issue H, p. 28, 152), not a screenshot.
+  caption_vi: Các bước 1, 3 và 4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 28, 152), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 5
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

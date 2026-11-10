@@ -39,6 +39,7 @@ body: |
 
   - Whether the SD10 offers every option (the example screens are from an SD7).
   - How Set Spill interacts with snapshots (not in the pages read).
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -63,6 +64,7 @@ body_vi: |
 
   - SD10 có đủ mọi tuỳ chọn không (màn hình ví dụ là từ SD7).
   - Set Spill tương tác với snapshot thế nào (không có trong các trang đã đọc).
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -84,8 +86,15 @@ media:
   channel: Nick DeLaCruz
   caption: Third-party tips on snapshots and layout for DiGiCo users (title and channel verified via oEmbed; not watched; not confirmed to cover Set Spill)
   caption_vi: Mẹo snapshot và layout cho người dùng DiGiCo của bên thứ ba (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem; chưa xác nhận có nói về Set Spill)
+- kind: diagram
+  path: howto-set-spill.png
+  caption: On-desk steps 1, 3 and 4. Schematic drawn from the manual's description (Issue H, p. 83-84, 87), not a screenshot.
+  caption_vi: Các bước 1, 3 và 4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 83-84, 87), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 1
-updated_at: '2026-11-10T14:16:52+07:00'
-updated_by: agent:console-digico-sd
+revision: 3
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

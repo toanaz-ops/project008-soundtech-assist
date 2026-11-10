@@ -40,6 +40,7 @@ body: |
   ## What is NOT verified
 
   - Whether Group Update works across the output side the same way. The manual describes controls in general only.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -66,6 +67,7 @@ body_vi: |
   ## Điều CHƯA được xác minh
 
   - Update Group có chạy y hệt phía output hay không. Manual chỉ mô tả control nói chung.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -87,8 +89,15 @@ media:
   channel: DiGiCo Consoles
   caption: Official DiGiCo snapshot overview; whether it covers groups was not checked (title and channel verified via oEmbed; not watched)
   caption_vi: Video snapshot chính thức của DiGiCo; chưa kiểm tra có nói về group không (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-groups-update.png
+  caption: On-desk steps 1-4. Schematic drawn from the manual's description (Issue H, p. 94-97), not a screenshot.
+  caption_vi: Các bước 1–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 94-97), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

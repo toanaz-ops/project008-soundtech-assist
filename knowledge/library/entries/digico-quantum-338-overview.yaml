@@ -68,9 +68,9 @@ body_vi: |
 
   Surface: 38 fader motor 100 mm cảm ứng, ba màn hình cảm ứng 17 inch, 70 màn TFT, hai khe DMI, UB MADI tích hợp (ghi/phát qua USB, tới 48 channel), I/O local gồm 8 mic/line vào, 8 line ra, 4 jack AES vào và 4 jack AES ra (mỗi chiều 8 channel), 6 MADI BNC (3 cặp redundant ở 48 kHz), nguồn redundant theo máy, và có thể mirror với một Q338 khác.
 
-  ## Quantum-only so với dùng chung với SD
+  ## Quantum-only so với cái có cả trên SD
 
-  Mustard, Nodal Processing, True Solo, Spice Rack và năm vị trí insert được manual DiGiCo ghi là chỉ có trên Quantum. Channel strip chuẩn (EQ 4 band hoặc Dynamic EQ, hai dynamics, multiband, de-esser, DiGiTube), Snapshot, Macro và panel Aux Nodes dùng chung với SD. Xem `digico-quantum-sd-vs-quantum`.
+  Mustard, Nodal Processing, True Solo, Spice Rack và năm vị trí insert được manual DiGiCo ghi là chỉ có trên Quantum. Channel strip chuẩn (EQ 4 band hoặc Dynamic EQ, hai dynamics, multiband, de-esser, DiGiTube), Snapshot, Macro và panel Aux Nodes có cả trên SD. Xem `digico-quantum-sd-vs-quantum`.
 
   ## Option và licence
 
@@ -119,6 +119,12 @@ sources:
   accessed: '2026-11-10'
   locator: 'PDF p. 5 (contents: Quantum-only chapters)'
 media:
+- kind: image
+  url: https://commons.wikimedia.org/wiki/File:DiGiCo_QUANTUM_338.jpg
+  caption: 'Photo: DiGiCo Quantum 338 (model taken from the file name; the file''s description only says "Mixer Console").'
+  caption_vi: 'Ảnh: DiGiCo Quantum 338 (tên model lấy từ tên file; phần mô tả của file chỉ ghi "Mixer Console").'
+  license: CC-BY-SA-4.0
+  attribution: Artur Gaspar Domingos, via Wikimedia Commons
 - kind: diagram
   path: q338-base-vs-pulse.png
   caption: Base and Pulse counts for the Quantum 338, from the datasheet and Pulse announcement
@@ -134,6 +140,6 @@ media:
   caption_vi: Video tổng quan chính thức của DiGiCo về Quantum 338 (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:38+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

@@ -45,7 +45,7 @@ body_vi: |
 
   ## Mẹo cốt lõi: xử lý thích nghi chéo (cross-adaptive processing)
 
-  Một channel strip bình thường chỉ nhìn vào tín hiệu của chính nó. Hệ thống cross-adaptive thì rút các đặc trưng (loudness, phổ, crest factor) từ mọi channel, đưa vào một khối luật dùng chung, rồi gửi lại giá trị điều khiển cho bộ xử lý của từng channel. Nhờ vậy một bộ panner tự động có thể đưa hai guitar có phổ giống nhau về hai phía đối nghịch, hoặc một compressor có thể quyết định bass cần kiểm soát chặt hơn một pad. Bài về panner cũng nêu điểm quan trọng cho live: âm thanh phải ra output trong khi phần phân tích đang tích lũy, vì một quyết định tức thời trên một transient có thể sai.
+  Một channel strip bình thường chỉ nhìn vào tín hiệu của chính nó. Hệ thống cross-adaptive thì rút các đặc trưng (loudness, phổ, crest factor) từ mọi channel, đưa vào một khối luật chung, rồi gửi lại giá trị điều khiển cho bộ xử lý của từng channel. Nhờ vậy một bộ panner tự động có thể đưa hai guitar có phổ giống nhau về hai phía đối nghịch, hoặc một compressor có thể quyết định bass cần kiểm soát chặt hơn một pad. Bài về panner cũng nêu điểm quan trọng cho live: âm thanh phải ra output trong khi phần phân tích đang tích lũy, vì một quyết định tức thời trên một transient có thể sai.
 
   ## Đã thử những gì
 
@@ -118,6 +118,6 @@ media:
   caption_vi: Bài nói của Josh Reiss (tiêu đề và diễn giả thấy trong kết quả tìm kiếm; chưa xem)
 confidence: common-practice
 status: draft
-revision: 2
-updated_at: '2026-11-10T08:36:17+07:00'
+revision: 3
+updated_at: '2026-11-10T16:31:32+07:00'
 updated_by: agent:translator-vi

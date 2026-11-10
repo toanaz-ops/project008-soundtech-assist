@@ -2,6 +2,7 @@
 
 import importlib.util
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -126,3 +127,63 @@ def test_range_chart_draws_one_bar_per_row(tool):
                             "rows": [{"label": "a", "lo": 0.8, "hi": 1.8},
                                      {"label": "b", "lo": 0.0, "hi": 0.6}]})
     assert svg.count("<rect") >= 2 and "0.8 to 1.8 s" in svg
+
+
+def _ui(**over):
+    item = {"entry": "e", "file": "f", "kind": "ui_steps", "title": "How to", "panel": "SD10",
+            "regions": [
+                {"id": "scope", "label": "Scope", "x": 5, "y": 10, "w": 40, "h": 50, "style": "grid",
+                 "rows": ["In", "Aux"], "cols": ["Gain", "EQ"], "cells": [["x", "tick"], ["blank", "tick"]]},
+                {"id": "fire", "label": "FIRE", "x": 60, "y": 70, "w": 10, "h": 12,
+                 "style": "button", "lit": True}],
+            "steps": [{"n": 1, "region": "scope", "text": "Open <Scope>"},
+                      {"n": 2, "region": "fire", "text": "Press FIRE"}]}
+    item.update(over)
+    return item
+
+
+def test_ui_steps_renders_markers_note_and_grid_colours(tool):
+    svg = tool.render_item(_ui())
+    assert svg.startswith("<svg") and "Schematic - not a screenshot" in svg
+    assert "&lt;Scope&gt;" in svg
+    for n in (1, 2):
+        # one marker in the panel and one in the legend
+        assert svg.count(f">{n}<") == 2
+    assert tool._C["ok"] in svg and tool._C["danger"] in svg
+
+
+@pytest.mark.parametrize("over", [
+    {"steps": [{"n": 1, "region": "nope", "text": "t"}]},
+    {"steps": [{"n": i, "region": "fire", "text": "t"} for i in range(1, 8)]},
+    {"steps": [{"n": 1, "region": "fire", "text": "a"}, {"n": 1, "region": "fire", "text": "b"}]},
+    {"regions": [{"id": "r", "label": "r", "x": -1, "y": 0, "w": 10, "h": 10, "style": "button"}],
+     "steps": []},
+    {"regions": [{"id": "r", "label": "r", "x": 95, "y": 0, "w": 10, "h": 10, "style": "button"}],
+     "steps": []},
+    {"regions": [{"id": "r", "label": "r", "x": 0, "y": 0, "w": 10, "h": 10, "style": "slider"}],
+     "steps": []},
+    {"regions": [{"id": "r", "label": "r", "x": 0, "y": 0, "w": 50, "h": 50, "style": "grid",
+                  "rows": ["a"], "cols": ["b", "c"], "cells": [["tick"]]}], "steps": []},
+    {"regions": [{"id": "r", "label": "r", "x": 0, "y": 0, "w": 50, "h": 50, "style": "grid",
+                  "rows": ["a"], "cols": ["b"], "cells": [["maybe"]]}], "steps": []},
+    {"steps": [{"n": i, "region": "fire", "text": "word " * 80} for i in range(1, 7)]},
+    {"steps": []},
+    {"regions": [{"id": "r", "label": "r", "x": 0, "y": 0, "w": 10, "style": "button"}], "steps": []},
+    {"regions": [{"id": "r", "label": "r", "x": 0, "y": 0, "w": 50, "h": 50, "style": "grid",
+                  "rows": ["a"], "cols": ["b"]}], "steps": []},
+    {"steps": [{"n": 1, "region": "fire"}]},
+], ids=["unknown-region", "too-many-steps", "duplicate-n", "negative-coord", "overflow-coord",
+        "unknown-style", "grid-shape", "grid-cell-value", "legend-overflow", "empty-steps",
+        "region-missing-key", "grid-missing-key", "step-missing-key"])
+def test_ui_steps_validation_errors(tool, over):
+    with pytest.raises(ValueError):
+        tool.render_item(_ui(**over))
+
+
+def test_markers_sharing_a_region_read_left_to_right(tool):
+    item = _ui(steps=[{"n": 1, "region": "fire", "text": "a"}, {"n": 2, "region": "fire", "text": "b"},
+                      {"n": 3, "region": "fire", "text": "c"}])
+    svg = tool.render_item(item)
+    xs = [float(m) for m in re.findall(r'<text x="([\d.]+)"[^>]*>[123]</text>', svg)]
+    panel = xs[:3]  # panel markers come before the legend entries
+    assert panel == sorted(panel)

@@ -47,6 +47,7 @@ body: |
   - Whether the SD10 has DMI card slots (the manual's DMI chapters refer to consoles with DMI slots; the product page does not list DMI).
   - The product-page figures were read through a web fetch of the page, not from a datasheet PDF. Confirm against the SD10 data sheet before quoting.
   - Comparison with WING: no capacity comparison was checked.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Dung lượng (trang sản phẩm của hãng, SD10)
 
@@ -72,7 +73,7 @@ body_vi: |
   1. Trước khi dựng session, chốt sample rate, rồi điền Session Structure: input, rồi aux (mono hay stereo cho IEM), group, matrix.
   2. Bấm Restructure một lần, và chỉ trên session mà bạn chấp nhận dựng lại. Đừng bấm Clear All trên session có routing muốn giữ.
   3. Save session thành tên mới trước mọi lần restructure. Restructure ngay ngày show là rủi ro.
-  4. Nhớ con số trên trang sản phẩm khi lên kế hoạch: 144 input là trần, và số bus dùng chung cho aux và group.
+  4. Nhớ con số trên trang sản phẩm khi lên kế hoạch: 144 input là trần, và aux và group lấy chung một pool bus.
 
   ## Điều CHƯA được xác minh
 
@@ -80,6 +81,7 @@ body_vi: |
   - SD10 có khe DMI hay không (chương DMI của manual nói về console có khe DMI; trang sản phẩm không liệt kê DMI).
   - Số liệu trang sản phẩm được đọc qua một lần fetch trang web, không phải từ datasheet PDF. Đối chiếu với data sheet SD10 trước khi trích dẫn.
   - So sánh với WING: chưa kiểm tra so sánh dung lượng.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -94,6 +96,12 @@ sources:
   accessed: '2026-11-10'
   locator: 'Specifications: channels, busses, processing, surface (read via web fetch)'
 media:
+- kind: image
+  url: https://commons.wikimedia.org/wiki/File:DiGiCo_SD7_Miss_Saigon_UK.jpg
+  caption: 'Photo: a DiGiCo SD7T (a larger SD-series desk, not an SD10) in use on Miss Saigon, Prince Edward Theatre, London, 2016. Shows the SD-series surface style.'
+  caption_vi: 'Ảnh: DiGiCo SD7T (desk lớn hơn cùng dòng SD, không phải SD10) đang chạy show Miss Saigon, Prince Edward Theatre, London, 2016. Để thấy kiểu surface của dòng SD.'
+  license: CC-BY-SA-4.0
+  attribution: 97OllieB, via Wikimedia Commons
 - kind: diagram
   path: sd10-capacity.png
   caption: SD10 capacity from the manufacturer product page (not from the software manual)
@@ -107,8 +115,15 @@ media:
   channel: DiGiCo Consoles
   caption: DiGiCo launch video for the SD10 (title and channel verified via oEmbed; not watched)
   caption_vi: Video ra mắt SD10 của DiGiCo (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-session-structure.png
+  caption: On-desk steps 1-2. Schematic drawn from the manual's description (Issue H, p. 72-73), not a screenshot.
+  caption_vi: Các bước 1–2 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 72-73), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 1
-updated_at: '2026-11-10T14:16:52+07:00'
-updated_by: agent:console-digico-sd
+revision: 5
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

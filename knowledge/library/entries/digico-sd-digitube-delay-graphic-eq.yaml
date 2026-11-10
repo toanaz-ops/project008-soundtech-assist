@@ -29,7 +29,7 @@ body: |
   1. Use DiGiTube lightly for glue on bass, vocals or drums. Start with the warmth button, then raise drive; check the output level stays steady.
   2. Use channel delay to time-align spot mics or distributed speaker zones, with the fine control for sample-level alignment.
   3. Insert a graphic EQ on a bus or output for room or wedge ringing, and gang a stereo pair so both sides move together.
-  4. Safe the graphic EQs on the Global scope if you do not want cues to change them.
+  4. Use the graphic EQ's own SAFE (on the Graphic EQ panel) if you do not want cues to change it.
 
   ## Pitfalls
 
@@ -41,6 +41,7 @@ body: |
 
   - The graphic-EQ gain range (see above).
   - "Graphic EQ on faders" as a surface feature: not covered in the pages read.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -55,7 +56,7 @@ body_vi: |
   1. Dùng DiGiTube nhẹ để dính tiếng trên bass, vocal hoặc drums. Bắt đầu bằng nút warmth, rồi tăng drive; kiểm tra mức output giữ ổn.
   2. Dùng channel delay để căn thời gian cho spot mic hoặc các vùng loa phân tán, dùng núm tinh để căn ở mức sample.
   3. Insert graphic EQ lên bus hoặc output để xử lý ringing của phòng hoặc wedge, và gang cặp stereo để hai bên chạy cùng nhau.
-  4. Safe graphic EQ ở Global scope nếu không muốn cue đổi chúng.
+  4. Dùng SAFE riêng của graphic EQ (trên Graphic EQ panel) nếu không muốn cue đổi nó.
 
   ## Bẫy thường gặp
 
@@ -67,6 +68,7 @@ body_vi: |
 
   - Dải gain của graphic EQ (xem trên).
   - "Graphic EQ trên fader" như một tính năng của surface: không có trong các trang đã đọc.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -94,8 +96,15 @@ media:
   channel: DiGiCo Consoles
   caption: DiGiCo how-to on FX and graphic EQs; it is for the S-Series, not the SD10 (title and channel verified via oEmbed; not watched)
   caption_vi: Hướng dẫn FX và graphic EQ của DiGiCo; dành cho dòng S, không phải SD10 (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-digitube-delay-geq.png
+  caption: On-desk steps 1-4. Schematic drawn from the manual's description (Issue H, p. 15, 137-138), not a screenshot.
+  caption_vi: Các bước 1–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 15, 137-138), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

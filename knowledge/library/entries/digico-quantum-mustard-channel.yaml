@@ -48,6 +48,7 @@ body: |
   - Processing order of the modules inside the strip (the datasheet lists tube, filters, EQ, DYN 1, DYN 2; the manual does not state the order).
   - Sound character of each compressor beyond the manual's description; the "use for" suggestions are common practice, not DiGiCo statements.
   - The manual does not name the Q338; strip counts come from the datasheet.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Nó là gì (đã xác minh, reference manual PDF tr. 51-55)
 
@@ -56,10 +57,10 @@ body_vi: |
   Các module:
   - **Tube / pre-amp modelling.** Chọn mô hình tube đơn giản (drive, output gain, sáu preset từ Odd harm tới High distortion) hoặc mô hình amp hai tầng (harmonic lẻ/chẵn cho từng tầng, drive, bias với mốc 11 là trong suốt nhất, tuỳ chọn saturate, high-frequency boost dạng shelf trên 6 kHz, output gain).
   - **EQ.** Bốn band parametric đầy đủ, band trên cùng và dưới cùng đổi được sang shelf, hai band giữa đổi được sang all-pass, kèm HPF và LPF 24 dB/octave. Cộng với EQ của SD thì channel có gấp đôi số band parametric.
-  - **Compressor, bốn model:** Classic (feed-forward, threshold/attack/release/ratio, knee cứng hoặc mềm, đo RMS hoặc peak), Vintage VCA (attack cố định, release tự động), Optical (ba mức attack và recovery, mức gain reduction tối đa phụ thuộc ratio), FET Limiter (threshold cố định, input và output gain, ratio 4, 8, 12 hoặc 20 trên 1). Tất cả đều có nút Mix wet/dry; trừ FET, các con còn lại có filter high/low-pass ở sidechain kèm listen, và external sidechain dùng chung với gate/ducker.
+  - **Compressor, bốn model:** Classic (feed-forward, threshold/attack/release/ratio, knee cứng hoặc mềm, đo RMS hoặc peak), Vintage VCA (attack cố định, release tự động), Optical (ba mức attack và recovery, mức gain reduction tối đa phụ thuộc ratio), FET Limiter (threshold cố định, input và output gain, ratio 4, 8, 12 hoặc 20 trên 1). Tất cả đều có nút Mix wet/dry; trừ FET, các con còn lại có filter high/low-pass ở sidechain kèm listen, và external sidechain cũng có ở gate/ducker.
   - **Gate/ducker.** Giống con trên strip SD nhưng hình dạng attack và release khác.
 
-  Vị trí: năm vị trí insert, mặc định giữa EQ và dynamics, dùng chung với Insert A/B (xem `digico-quantum-insert-positions`). Mỗi module safe riêng được; preset chọn bao gồm hay loại từng module; vị trí insert đi theo scope input/trim.
+  Vị trí: năm vị trí insert, mặc định giữa EQ và dynamics, cũng là năm vị trí của Insert A/B (xem `digico-quantum-insert-positions`). Mỗi module safe riêng được; preset chọn bao gồm hay loại từng module; vị trí insert đi theo scope input/trim.
 
   ## Vì sao dân live dùng
 
@@ -81,6 +82,7 @@ body_vi: |
   - Thứ tự xử lý giữa các module trong strip (datasheet liệt kê tube, filter, EQ, DYN 1, DYN 2; manual không nêu thứ tự).
   - Tính cách âm thanh của từng compressor ngoài phần mô tả trong manual; các gợi ý "dùng cho" là kinh nghiệm thông thường, không phải phát biểu của DiGiCo.
   - Manual không nhắc tên Q338; số strip lấy từ datasheet.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual, Issue E, February 2022, V1528+
   publisher: DiGiCo
@@ -114,8 +116,15 @@ media:
   channel: EQUAPHON
   caption: Spanish-language tutorial from a DiGiCo reseller (title and channel verified via YouTube oEmbed; not watched)
   caption_vi: Hướng dẫn tiếng Tây Ban Nha của một nhà phân phối DiGiCo (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
+- kind: diagram
+  path: howto-mustard-strip.png
+  caption: On-desk steps 1-5, schematic drawn from the manual's description (Issue E, PDF pp. 51-53), not a screenshot.
+  caption_vi: Các bước 1-5 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue E, tr. 51-53), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 6
+updated_at: '2026-11-10T16:31:49+07:00'
+updated_by: agent:translator-vi

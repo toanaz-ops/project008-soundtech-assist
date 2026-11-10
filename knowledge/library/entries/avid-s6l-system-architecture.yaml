@@ -49,11 +49,11 @@ body_vi: |
 
   **Control surface.** Năm model: S6L-48D, 32D, 24D, 24C và 16C, với 48 / 32 / 24 / 24 / 16 channel strip (cộng hai fader gán được trên Master Live Module). Mỗi Channel Knob Module (CKM) có 32 encoder kèm màn hình. Dòng D có Master Touch Screen cộng các Channel Touch Module (5, 3 và 2 trên 48D, 32D, 24D); 24C chỉ có Master Touch Screen, còn 16C không có màn hình cảm ứng tích hợp nên dựa vào external screen. Mỗi surface có hai kết nối AVB cho mạng hệ thống là A và B (etherCON đồng hoặc SFP quang, mỗi cổng chỉ dùng một loại), cộng thêm hai cổng AVB etherCON C và D cho Pro Tools (System Guide 7.2, PDF tr. 58).
 
-  **Engine (E6L-192 / 144 / 112, 96 kHz).** Input channel 192 / 144 / 112; mix bus 96 / 64 / 48 cộng L-R và C/Mono; matrix 24x24 / 16x16 / 16x16; 48 VCA; 400 slot plug-in; một card HDX-192 DSP, mở rộng lên bốn (E6L-192) hoặc hai (E6L-144, E6L-112). Chia sẻ I/O giữa các hệ cần hai card AVB-192. Xử lý mỗi input: HPF, LPF, PEQ 4 band, expander/gate, compressor/limiter, delay, 4 insert plug-in và một hardware insert; output có PEQ 7 band, compressor/limiter, delay, 4 insert plug-in và hardware insert, cùng Graphic EQ 31 band trên bus.
+  **Engine (E6L-192 / 144 / 112, 96 kHz).** Input channel 192 / 144 / 112; mix bus 96 / 64 / 48 cộng L-R và C/Mono; matrix 24x24 / 16x16 / 16x16; 48 VCA; 400 slot plug-in; một card HDX-192 DSP, mở rộng lên bốn (E6L-192) hoặc hai (E6L-144, E6L-112). I/O Sharing giữa các hệ cần hai card AVB-192. Xử lý mỗi input: HPF, LPF, PEQ 4 band, expander/gate, compressor/limiter, delay, 4 insert plug-in và một hardware insert; output có PEQ 7 band, compressor/limiter, delay, 4 insert plug-in và hardware insert, cùng Graphic EQ 31 band trên bus.
 
   **Stage rack.** Stage 64: tối đa 64 in / 32 out, 12 slot card, 10U. Stage 48: 48 analog in / 24 out, 8U; cần VENUE 7.0 trở lên và hai card AVB-192. Stage 32: 32 kênh, 5U, 4 slot card, tối đa bốn máy. Stage 16: 16 in / 8 out cộng 4 AES out, 4U, tối đa bốn máy, chỉ cáp đồng. Giới hạn cáp theo manual: đồng 100 m, quang 500 m (Stage 32 còn ghi 10.000 m với sợi single-mode). Stage 64, 48 và 32 còn có ngõ MADI để chia digital các input.
 
-  **Một họ phần mềm.** Manual nói phần mềm VENUE dùng chung cho các hệ live của Avid, nên Show file mang đi được. Bản Standalone miễn phí cho bạn dựng routing, cài đặt channel, snapshot và event offline rồi chuyển bằng USB (Handbook 8.0, tr.7).
+  **Một họ phần mềm.** Manual nói mọi hệ live của Avid chạy cùng một phần mềm VENUE, nên Show file mang đi được. Bản Standalone miễn phí cho bạn dựng routing, cài đặt channel, snapshot và event offline rồi chuyển bằng USB (Handbook 8.0, tr.7).
 
   **Phần cứng mới hơn (Handbook 8.0, bản 01/25).** Handbook liệt kê engine thế hệ thứ ba E6LX-256: 256 input channel, mix bus 192 + 64 matrix + L-R và C/Mono, tối đa bốn card HDX-192. System Guide 7.2 ra trước nên chưa có; hãy kiểm tra đơn vị cho thuê của bạn đang có engine nào.
 
@@ -85,6 +85,12 @@ sources:
   accessed: '2026-11-10'
   locator: PDF p.7 (Standalone), p.11 (system components), p.23 (E6LX-256 table)
 media:
+- kind: image
+  url: https://commons.wikimedia.org/wiki/File:Greg_Price_S6L.jpg
+  caption: 'Photo: Greg Price mixing Black Sabbath on a VENUE S6L (per the file description).'
+  caption_vi: 'Ảnh: Greg Price mix Black Sabbath trên VENUE S6L (theo mô tả của file).'
+  license: CC-BY-SA-4.0
+  attribution: Basshag, via Wikimedia Commons
 - kind: diagram
   path: s6l-system-chain.png
   caption: 'Simplified S6L signal chain: Stage racks, AVB network, engine, control surface'
@@ -100,6 +106,6 @@ media:
   caption_vi: Video giới thiệu hệ S6L của Avid (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

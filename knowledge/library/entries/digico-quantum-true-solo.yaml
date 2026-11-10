@@ -39,6 +39,7 @@ body: |
   - Whether it covers external (outboard) processing: the manual says "internal processing" only.
   - Software version that introduced it, and licence; the datasheet lists True Solo as a feature, not an option.
   - Which solo bus (1 or 2) it uses, latency versus the normal solo, and the exact panel layout: not in the pages read.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Nó là gì (đã xác minh, reference manual PDF tr. 38 cộng brochure)
 
@@ -64,6 +65,7 @@ body_vi: |
   - Có bao gồm xử lý ngoài (outboard) không: manual chỉ nói "internal processing".
   - Phiên bản software đưa nó vào và licence; datasheet liệt kê True Solo là tính năng chứ không phải option.
   - Dùng solo bus nào (1 hay 2), độ trễ so với solo thường, và bố cục panel chính xác: không có trong các trang đã đọc.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual, Issue E, February 2022, V1528+
   publisher: DiGiCo
@@ -97,8 +99,15 @@ media:
   channel: DiGiCo Consoles
   caption: Official overview that lists True Solo among Quantum features (title and channel verified via YouTube oEmbed; not watched)
   caption_vi: Video tổng quan chính thức, có nhắc True Solo trong các tính năng Quantum (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
+- kind: diagram
+  path: howto-true-solo.png
+  caption: On-desk steps 1-4, schematic drawn from the manual's description (Issue E, PDF p. 38), not a screenshot.
+  caption_vi: Các bước 1-4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue E, tr. 38), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 1
-updated_at: '2026-11-10T14:13:02+07:00'
-updated_by: agent:console-digico-quantum
+revision: 3
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

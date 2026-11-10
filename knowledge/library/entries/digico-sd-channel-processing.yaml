@@ -46,6 +46,7 @@ body: |
 
   - Starting values for threshold, ratio or Q (the manual does not give recommendations; the steps above are working practice).
   - Whether the "prec" and "class" EQ shapes exist on the SD10.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (Issue H, V20+)
 
@@ -75,6 +76,7 @@ body_vi: |
 
   - Giá trị khởi đầu cho Threshold, Ratio hoặc Q (manual không đưa khuyến nghị; các bước trên là cách làm thực tế).
   - Hình dạng EQ "prec" và "class" có trên SD10 hay không.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: SD & Quantum Software Reference Manual (Issue H, June 2025, software V20+)
   publisher: DiGiCo
@@ -102,8 +104,15 @@ media:
   channel: DiGiCo Consoles
   caption: DiGiCo video on dynamics processing; which console it uses was not checked (title and channel verified via oEmbed; not watched)
   caption_vi: Video về dynamics processing của DiGiCo; chưa kiểm tra dùng console nào (tiêu đề và kênh đã xác nhận qua oEmbed; chưa xem)
+- kind: diagram
+  path: howto-channel-processing.png
+  caption: On-desk steps 1-4. Schematic drawn from the manual's description (Issue H, p. 47-53), not a screenshot.
+  caption_vi: Các bước 1–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (Issue H, tr. 47-53), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 4
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix

@@ -1,6 +1,6 @@
 id: digico-quantum-sd-vs-quantum
 title: 'Quantum vs SD: what is Quantum-only and what is shared'
-title_vi: 'Quantum so với SD: cái gì chỉ có trên Quantum, cái gì dùng chung'
+title_vi: 'Quantum so với SD: cái gì chỉ có trên Quantum, cái gì có cả trên SD'
 topic: digico-quantum
 tags:
   instrument: []
@@ -14,7 +14,7 @@ tags:
   - touring
   - theatre
 summary: 'Quantum-only per the DiGiCo reference manual: Mustard, Nodal Processing, True Solo, Spice Rack, five insert positions (plus Mix Minus in the later Issue H manual). Shared with SD: the core channel strip, DiGiTube, snapshots, macros, Aux Nodes panel. The 338 adds an optional Theatre software.'
-summary_vi: 'Chỉ có trên Quantum theo reference manual DiGiCo: Mustard, Nodal Processing, True Solo, Spice Rack, năm vị trí insert (cộng Mix Minus trong manual Issue H mới hơn). Dùng chung với SD: channel strip lõi, DiGiTube, Snapshot, Macro, panel Aux Nodes. Bản 338 còn có Theatre software tùy chọn.'
+summary_vi: 'Chỉ có trên Quantum theo reference manual DiGiCo: Mustard, Nodal Processing, True Solo, Spice Rack, năm vị trí insert (cộng Mix Minus trong manual Issue H mới hơn). Có cả trên SD: channel strip lõi, DiGiTube, Snapshot, Macro, panel Aux Nodes. Bản 338 còn có Theatre software tùy chọn.'
 body: |
   ## Quantum-only (marked in the manual, Issue E V1528+)
 
@@ -63,7 +63,7 @@ body_vi: |
   | Spice Rack | 122-125 | `digico-quantum-spice-rack` |
   | Mix Minus (chỉ có trong Issue H, mục 1.4.15; Issue E không có) | Issue H, trang in 41 | `digico-sd-vs-quantum` |
 
-  ## Dùng chung với SD
+  ## Có cả trên SD
 
   - Channel strip: EQ 4 band hoặc Dynamic EQ, hai khối dynamics (compressor, multiband, de-esser, gate, ducker), thứ tự EQ/dynamics, DiGiTube, delay, filter (manual tr. 12 phần channel strip; datasheet).
   - Panel Aux Nodes và KLANG nodes (không ghi Quantum only).
@@ -115,6 +115,6 @@ media:
   caption_vi: Video tổng quan chính thức về phần Quantum bổ sung (tiêu đề và kênh đã xác nhận qua YouTube oEmbed; chưa xem)
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 3
+updated_at: '2026-11-10T16:31:32+07:00'
+updated_by: agent:translator-vi

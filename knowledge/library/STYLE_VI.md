@@ -25,6 +25,11 @@ chính ông, không dịch máy từng chữ. Rút ra từ ba bài ông viết: 
 - Từ tiếng Anh giữ nguyên hình thức như dân nghề viết; trong câu thì viết thường ("tiếng
   kick bị boxy"), đầu câu hoặc làm nhãn thì viết hoa.
 - Tên tham số viết hoa như trên bàn: Threshold, Attack, Release, Ratio, Range.
+- **Shared / share / sharing giữ nguyên, không dịch "dùng chung" / "chia sẻ"** (chủ dự án
+  chốt 2026-11-10: "Phần dịch shared thành dùng chung là cứng nhắc"). Viết "share stage
+  rack", "rack đang shared", "I/O Sharing", "Gain Sharing". Khi "shared" chỉ là chữ thường
+  (tính năng có ở cả hai dòng, hai người cùng một surface) thì viết lại câu tự nhiên ("có cả
+  trên SD", "cùng đứng một surface"), đừng dịch từng chữ.
 
 ## Giọng
 - Nói thẳng với người đọc bằng "bạn", có lúc gọi "anh em làm âm thanh". Không dùng "anh/em".

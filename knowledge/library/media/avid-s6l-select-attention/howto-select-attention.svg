@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+<rect width="960" height="540" fill="#0a0b0d"/>
+<text x="480.0" y="40.0" font-size="22" fill="#e8eaed" text-anchor="middle" font-weight="bold">Select, Attention and Multi-Select on the surface</text>
+<rect x="30.0" y="64.0" width="900.0" height="308.0" rx="10" fill="#131519" stroke="#2b2f37"/>
+<text x="42.0" y="82.0" font-size="12" fill="#5c636e" text-anchor="start" font-weight="bold">S6L surface and external screen</text>
+<rect x="66.0" y="94.8" width="252.0" height="123.2" rx="4" fill="#131519" stroke="#2b2f37"/>
+<line x1="108.0" y1="116.8" x2="108.0" y2="210.0" stroke="#2b2f37" stroke-width="3"/>
+<rect x="99.0" y="135.1" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="192.0" y1="116.8" x2="192.0" y2="210.0" stroke="#2b2f37" stroke-width="3"/>
+<rect x="183.0" y="144.4" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<line x1="276.0" y1="116.8" x2="276.0" y2="210.0" stroke="#2b2f37" stroke-width="3"/>
+<rect x="267.0" y="153.7" width="18.0" height="10.0" rx="2" fill="#1b1e24" stroke="#868d98"/>
+<text x="72.0" y="109.8" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Channel strip: Select / Attention</text>
+<rect x="66.0" y="248.8" width="252.0" height="49.3" rx="6" fill="#1b1e24" stroke="#2b2f37"/>
+<text x="192.0" y="278.4" font-size="13" fill="#e8eaed" text-anchor="middle" font-weight="bold">Multi-Select (top-left of MLM)</text>
+<circle cx="507.0" cy="148.4" r="53.6" fill="#1b1e24" stroke="#2b2f37" stroke-width="2"/>
+<line x1="507.0" y1="148.4" x2="536.5" y2="118.9" stroke="#e8eaed" stroke-width="3"/>
+<text x="507.0" y="216.0" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">CKM encoders</text>
+<rect x="390.0" y="248.8" width="504.0" height="73.9" rx="4" fill="#0c0e11" stroke="#2b2f37"/>
+<text x="398.0" y="265.8" font-size="12" fill="#868d98" text-anchor="start" font-weight="bold">Options &gt; Interaction</text>
+<text x="663.0" y="289.1" font-size="12" fill="#868d98" text-anchor="middle" font-weight="normal">Attention Follows Select</text>
+<line x1="394.0" y1="296.8" x2="890.0" y2="296.8" stroke="#1d2128" stroke-width="1"/>
+<text x="398.0" y="311.0" font-size="12" fill="#e8eaed" text-anchor="start" font-weight="normal">Pref</text>
+<polyline points="656.0,307.7 661.0,313.7 671.0,301.7" fill="none" stroke="#6ee7a0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="314.0" cy="96.8" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="314.0" y="101.8" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<circle cx="314.0" cy="250.8" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="314.0" y="255.8" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<circle cx="890.0" cy="250.8" r="11" fill="#ff9f1c" stroke="#0a0b0d" stroke-width="2"/>
+<text x="890.0" y="255.8" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<circle cx="41" cy="404" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="409.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">1</text>
+<text x="62.0" y="409.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Attention the watched channel; Select another to ride</text>
+<circle cx="41" cy="433" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="438.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">2</text>
+<text x="62.0" y="438.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">Hold Multi-Select, press Attention on each drum channel, turn a CKM encoder</text>
+<circle cx="41" cy="462" r="11" fill="#ff9f1c"/>
+<text x="41.0" y="467.0" font-size="13" fill="#0a0b0d" text-anchor="middle" font-weight="bold">3</text>
+<text x="62.0" y="467.0" font-size="14" fill="#e8eaed" text-anchor="start" font-weight="normal">On handover: check Attention Follows Select</text>
+<text x="930.0" y="530.0" font-size="11" fill="#5c636e" text-anchor="end" font-weight="normal">Schematic - not a screenshot</text>
+</svg>

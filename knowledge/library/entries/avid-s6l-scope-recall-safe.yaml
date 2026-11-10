@@ -31,10 +31,10 @@ body: |
 
   ## How to use it on a show
 
-  - Scope versus Recall Safe: Scope is the per-snapshot decision ("this song changes these things"); Recall Safe is the global veto ("whatever any song says, never touch these").
-  - Typical Recall Safe targets: lead vocal fader and EQ when you ride it by hand, a spare mic channel, plug-in settings if you tweak delays live.
-  - Monitor world: scope only the single Aux a musician asked about, via User Aux Scope, so a +2 dB request cannot leak into other mixes.
-  - Before a festival changeover, load a clean Scope Set so the previous act's Recall Safe choices do not follow you.
+  1. Scope versus Recall Safe: Scope is the per-snapshot decision ("this song changes these things"); Recall Safe is the global veto ("whatever any song says, never touch these").
+  2. Typical Recall Safe targets: lead vocal fader and EQ when you ride it by hand, a spare mic channel, plug-in settings if you tweak delays live.
+  3. Monitor world: scope only the single Aux a musician asked about, via User Aux Scope, so a +2 dB request cannot leak into other mixes.
+  4. Before a festival changeover, load a clean Scope Set so the previous act's Recall Safe choices do not follow you.
 
   ## Pitfalls
 
@@ -45,6 +45,7 @@ body: |
   ## What is NOT verified
 
   How these screens look in VENUE 8.x, and whether the Automation Safe switch behaviour changed. This entry follows the 7.2 System Guide.
+  - The on-desk operation diagram is a schematic drawn from the manual's description; the exact position of controls on the real screen or surface may differ.
 body_vi: |
   ## Manual nói gì (đã xác minh, System Guide 7.2)
 
@@ -60,10 +61,10 @@ body_vi: |
 
   ## Dùng trên show thế nào
 
-  - Scope và Recall Safe khác nhau: Scope là quyết định theo từng snapshot ("bài này đổi những thứ này"); Recall Safe là quyền phủ quyết toàn cục ("bài nào nói gì cũng không được đụng mấy thứ này").
-  - Mục tiêu hay dùng cho Recall Safe: fader và EQ của lead vocal khi bạn tự rải tay, một channel mic dự phòng, các setting plug-in nếu bạn chỉnh delay live.
-  - Thế giới monitor: chỉ scope đúng một Aux mà nghệ sĩ yêu cầu, qua User Aux Scope, để yêu cầu +2 dB không rò sang mix của người khác.
-  - Trước giờ đổi nghệ sĩ ở festival, load một Scope Set sạch để lựa chọn Recall Safe của ban trước không theo sang ban sau.
+  1. Scope và Recall Safe khác nhau: Scope là quyết định theo từng snapshot ("bài này đổi những thứ này"); Recall Safe là quyền phủ quyết toàn cục ("bài nào nói gì cũng không được đụng mấy thứ này").
+  2. Mục tiêu hay dùng cho Recall Safe: fader và EQ của lead vocal khi bạn tự rải tay, một channel mic dự phòng, các setting plug-in nếu bạn chỉnh delay live.
+  3. Thế giới monitor: chỉ scope đúng một Aux mà nghệ sĩ yêu cầu, qua User Aux Scope, để yêu cầu +2 dB không rò sang mix của người khác.
+  4. Trước giờ đổi nghệ sĩ ở festival, load một Scope Set sạch để lựa chọn Recall Safe của ban trước không theo sang ban sau.
 
   ## Bẫy thường gặp
 
@@ -74,6 +75,7 @@ body_vi: |
   ## Điều CHƯA được xác minh
 
   Các màn hình này trông thế nào trong VENUE 8.x, và hành vi công tắc Automation Safe có đổi hay không. Mục này theo System Guide 7.2.
+  - Sơ đồ thao tác trên bàn là sơ đồ minh hoạ vẽ theo mô tả trong manual; vị trí thật của control trên màn hình hoặc surface có thể khác.
 sources:
 - title: VENUE | S6L System Guide, VENUE Software 7.2, part no. 9329-66509-00 REV A 09/23 (PDF copy hosted at api.meleven.de; Avid original is distributed via the Avid account / Knowledge Base)
   publisher: Avid
@@ -102,8 +104,15 @@ media:
   channel: Avid
   caption: Avid example of Momentary snapshots with Events (title and channel verified via YouTube oEmbed; not watched)
   caption_vi: Ví dụ của Avid về Momentary snapshot kết hợp Event (tiêu đề và kênh đã xác minh qua YouTube oEmbed; chưa xem)
+- kind: diagram
+  path: howto-scope-recall-safe.png
+  caption: On-desk steps 1-4, schematic drawn from the manual's description (System Guide 7.2, pp. 239-240, 267-282), not a screenshot.
+  caption_vi: Các bước 1–4 trên bàn. Sơ đồ minh hoạ theo mô tả trong manual (System Guide 7.2, tr. 239-240, 267-282), không phải ảnh chụp màn hình.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:ui_steps
 confidence: established
 status: draft
-revision: 2
-updated_at: '2026-11-10T14:31:39+07:00'
-updated_by: agent:review-fix
+revision: 5
+updated_at: '2026-11-10T16:26:35+07:00'
+updated_by: agent:howto-fix
