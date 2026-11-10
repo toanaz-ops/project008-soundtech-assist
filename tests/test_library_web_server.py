@@ -227,3 +227,9 @@ def test_create_over_a_hand_written_file_is_409_and_history_survives_a_bad_line(
 def test_csp_forbids_framing(client):
     assert "frame-ancestors 'self'" in server.CSP
     assert "frame-ancestors" in client.get("/library/").headers["content-security-policy"]
+
+
+def test_api_entries_is_gzipped(client):
+    r = client.get("/library/api/entries", headers={**auth(), "Accept-Encoding": "gzip"})
+    assert r.status_code == 200
+    assert r.headers.get("content-encoding") == "gzip"

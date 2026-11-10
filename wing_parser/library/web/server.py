@@ -23,6 +23,7 @@ import urllib.request
 from pathlib import Path
 
 from fastapi import APIRouter, Body, Depends, FastAPI, Header, HTTPException, Query
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 
 from wing_parser import config
@@ -156,6 +157,7 @@ def create_app(store: LibraryStore | None = None, *, auth_base: str | None = Non
     auth = AuthClient(auth_base or os.environ.get("WING_LIBRARY_AUTH_BASE") or AUTH_BASE_DEFAULT)
     write_lock = threading.Lock()
     app = FastAPI(title="wing-library-web", docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.state.auth, app.state.store = auth, store
     router = APIRouter(prefix=prefix)
 

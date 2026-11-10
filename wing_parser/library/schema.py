@@ -42,9 +42,13 @@ MEDIA_ORDER = (
 )
 
 
+# libyaml-backed loader when available (about 10x faster); same safe semantics.
+YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
 def _load_yaml(path: Path) -> dict:
     with open(path, encoding="utf-8") as handle:
-        data = yaml.safe_load(handle)
+        data = yaml.load(handle, Loader=YAML_LOADER)
     return data if isinstance(data, dict) else {}
 
 

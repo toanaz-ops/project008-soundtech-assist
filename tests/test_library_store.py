@@ -2,6 +2,7 @@
 
 import pytest
 
+from wing_parser.library import schema
 from tests.library_support import SOURCE, entry, make_root, write_raw
 from wing_parser.library import (
     LibraryStore,
@@ -324,3 +325,14 @@ def test_vietnamese_fields_validate_and_serialise_in_order(root):
     assert lines.index("summary") + 1 == lines.index("summary_vi")
     assert lines.index("body") + 1 == lines.index("body_vi")
     assert text_out.index("caption:") < text_out.index("caption_vi:")
+
+
+def test_entries_loads_taxonomy_once_per_listing(tmp_path, monkeypatch):
+    store = LibraryStore(make_root(tmp_path / "user"), None)
+    for name in ("alpha-one", "beta-two", "gamma-three"):
+        store.save(entry(name), author="t", note="seed")
+    calls = []
+    real = schema.load_topics
+    monkeypatch.setattr(schema, "load_topics", lambda root: calls.append(root) or real(root))
+    assert len(store.entries()) == 3
+    assert len(calls) <= 1

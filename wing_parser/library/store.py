@@ -143,16 +143,20 @@ class LibraryStore:
         return first
 
     # -- reading ---------------------------------------------------------
-    def _check(self, entry: dict) -> list[Issue]:
+    def _taxonomy(self) -> tuple[dict, list]:
         tax = self.taxonomy_root
-        return validate(entry, topics=schema.load_topics(tax),
-                        publishers=schema.load_publishers(tax),
+        return schema.load_topics(tax), schema.load_publishers(tax)
+
+    def _check(self, entry: dict, taxonomy: tuple[dict, list] | None = None) -> list[Issue]:
+        topics, publishers = taxonomy or self._taxonomy()
+        return validate(entry, topics=topics, publishers=publishers,
                         media_root=[r / "media" for _, r in self._layers()])
 
-    def _load_file(self, path: Path, layer: str = "user") -> LoadedEntry:
+    def _load_file(self, path: Path, layer: str = "user",
+                   taxonomy: tuple[dict, list] | None = None) -> LoadedEntry:
         try:
             with open(path, encoding="utf-8") as handle:
-                data = yaml.safe_load(handle)
+                data = yaml.load(handle, Loader=schema.YAML_LOADER)
         except (OSError, yaml.YAMLError, UnicodeDecodeError) as exc:
             return LoadedEntry({"id": path.stem},
                                [Issue("error", "bad-yaml", "", _read_error(path, exc))], path, layer)
@@ -160,7 +164,7 @@ class LibraryStore:
             return LoadedEntry({"id": path.stem},
                                [Issue("error", "bad-yaml", "", "file is not a mapping")], path, layer)
         entry = _plain(data)
-        issues = self._check(entry)
+        issues = self._check(entry, taxonomy)
         if entry.get("id") != path.stem:
             issues.append(Issue("error", "bad-id", "id",
                                 f"id {entry.get('id')!r} does not match file name {path.stem!r}"))
@@ -168,9 +172,11 @@ class LibraryStore:
 
     def entries(self, include_retired: bool = False) -> list[LoadedEntry]:
         found: dict[str, LoadedEntry] = {}
+        taxonomy = self._taxonomy()  # once per listing, not once per entry
         for layer, root in self._layers():
             for path in sorted((root / "entries").glob("*.yaml")):
-                found.setdefault(path.stem, self._load_file(path, layer))
+                if path.stem not in found:
+                    found[path.stem] = self._load_file(path, layer, taxonomy)
         loaded = [found[k] for k in sorted(found)]
         if include_retired:
             return loaded
