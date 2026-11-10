@@ -1,13 +1,20 @@
 id: eq-frequency-regions
-title: "Frequency regions: what each part of the spectrum does"
-title_vi: "Các vùng tần số và tác dụng của từng vùng"
+title: 'Frequency regions: what each part of the spectrum does'
+title_vi: Các vùng tần số và tác dụng của từng vùng
 topic: eq
 tags:
-  instrument: [vocal, drums, bass, guitar]
+  instrument:
+  - vocal
+  - drums
+  - bass
+  - guitar
   genre: []
-  technique: [eq, frequency-regions]
+  technique:
+  - eq
+  - frequency-regions
   event: []
-summary: "A working map of the spectrum from sub to air, with the character each region adds or takes away. Boundaries are approximate and differ between sources."
+summary: A working map of the spectrum from sub to air, with the character each region adds or takes away. Boundaries are approximate and differ between sources.
+summary_vi: Bản đồ làm việc của phổ tần từ sub đến air, với đặc tính mỗi vùng thêm vào hoặc lấy đi. Ranh giới chỉ xấp xỉ và khác nhau giữa các nguồn.
 body: |
   Think of the spectrum as regions with a typical sound, not as exact bands. Different books draw the borders a little differently, so treat every edge below as a starting point.
 
@@ -32,25 +39,86 @@ body: |
 
   ## On the WING
   The channel EQ curve and the Overview/Channels pages show where each band sits; use the diagram here to name the region you are touching.
+body_vi: |
+  Hãy nghĩ về phổ tần như các vùng có chất âm điển hình, không phải các band chính xác. Mỗi cuốn sách vẽ ranh giới hơi khác nhau, nên coi mọi mốc dưới đây là điểm khởi đầu.
+
+  ## Bản đồ
+  - **Sub (khoảng 20-60 Hz):** cảm nhận nhiều hơn nghe. Chủ yếu là rumble, rung sân khấu và gió vào mic; chỉ kick, bass và nhạc nặng sub mới thật sự sống ở đây.
+  - **Bass (khoảng 60-250 Hz):** độ nặng và sức mạnh. Quanh 80-100 Hz cho kick và bass cú punch; dư ở 100-150 Hz thì tom và snare bị boomy.
+  - **Low-mids (khoảng 250-500 Hz):** ấm, nhưng cũng là chỗ sinh ra "mud" và tiếng thùng. Khoảng 200 Hz là chỗ kinh điển khiến guitar acoustic và vocal bị đục; đây là nơi nhiều channel đụng nhau.
+  - **Mids (khoảng 500 Hz-2 kHz):** thân tiếng và chất mũi hoặc honky. Quanh 600 Hz nghe bí; 1-3 kHz là chỗ vocal dễ nghe nghẹt mũi.
+  - **Upper-mids (khoảng 2-4 kHz):** độ rõ và attack, cũng là vùng tai nhạy nhất. Dư là chói và mỏi tai.
+  - **Presence (khoảng 4-8 kHz):** độ nét và cạnh của vocal, độ giòn của snare và độ cắn của guitar; vùng âm xuýt (sibilance) của chữ "s" bắt đầu ở đây và lên cao hơn.
+  - **Air (trên khoảng 8 kHz):** độ lấp lánh, cymbal shimmer, hơi thở. Shelf nhẹ ở đây làm âm thanh mở ra; boost một nguồn vốn không có top end thì chỉ thêm noise.
+
+  ## Cách dùng bản đồ
+  1. Mô tả vấn đề bằng lời trước ("boomy", "boxy", "harsh"), rồi nhảy tới vùng tương ứng.
+  2. Xác nhận bằng một lần sweep ngắn (xem entry về nghe) thay vì tin vào bảng.
+  3. Xử lý bằng động tác nhỏ nhất: thường là cắt ở vùng gây vấn đề hoặc một shelf nhẹ.
+
+  ## Lỗi thường gặp
+  - Boost 100 Hz trên mọi thứ "cho nặng", kết quả là mix bị đục.
+  - Đuổi theo độ sáng ở upper-mids rồi nhận lại mỏi tai thay vì độ rõ.
+  - Dùng cùng một bảng cho PA ở hội trường nhỏ và ở arena lớn; phòng và hệ thống làm thay đổi cái bạn nghe.
+
+  ## Trên WING
+  Đường cong channel EQ và các trang Overview/Channels cho thấy mỗi band nằm ở đâu; dùng sơ đồ ở đây để gọi tên vùng bạn đang đụng tới.
 rule:
-  applies_to: {source_type: [any]}
+  applies_to:
+    source_type:
+    - any
   params:
-    sub_hz: [20, 60]
-    bass_hz: [60, 250]
-    low_mid_hz: [250, 500]
-    mid_hz: [500, 2000]
-    upper_mid_hz: [2000, 4000]
-    presence_hz: [4000, 8000]
-    air_hz: [8000, 20000]
-  notes: "Conventional band edges for naming regions; sources differ, treat as approximate."
+    sub_hz:
+    - 20
+    - 60
+    bass_hz:
+    - 60
+    - 250
+    low_mid_hz:
+    - 250
+    - 500
+    mid_hz:
+    - 500
+    - 2000
+    upper_mid_hz:
+    - 2000
+    - 4000
+    presence_hz:
+    - 4000
+    - 8000
+    air_hz:
+    - 8000
+    - 20000
+  notes: Conventional band edges for naming regions; sources differ, treat as approximate.
 sources:
-  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Mixing With EQ; Vocals"}
-  - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Understanding What EQ Frequencies Sound Like"}
-  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Where To Cut & Boost For Common Instruments"}
+- title: Using EQ
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-eq
+  accessed: '2026-11-09'
+  locator: Mixing With EQ; Vocals
+- title: Professional mixing tips for church sound
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound
+  accessed: '2026-11-09'
+  locator: Understanding What EQ Frequencies Sound Like
+- title: What's The Frequency?
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/whats-frequency
+  accessed: '2026-11-09'
+  locator: Where To Cut & Boost For Common Instruments
 media:
-  - {kind: diagram, path: frequency-regions.png, caption: "Conventional frequency regions on a 20 Hz-20 kHz log axis.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
+- kind: diagram
+  path: frequency-regions.png
+  caption: Conventional frequency regions on a 20 Hz-20 kHz log axis.
+  caption_vi: Các vùng tần số quy ước trên trục log 20 Hz-20 kHz.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

@@ -64,3 +64,12 @@ def test_facets(tmp_path):
     assert counts["instrument"]["vocal"] == 2
     assert counts["genre"] == {"pop": 1}
     assert counts["publisher"]["Some Blog"] == 1
+
+
+def test_vietnamese_summary_and_body_are_searchable(tmp_path):
+    store = LibraryStore(make_root(tmp_path / "lib"))
+    store.save(entry("hpf-basics", summary_vi="Tại sao dùng lọc thông cao",
+                     body_vi="Đặt bộ lọc dưới nốt thấp nhất.\n"), author="t")
+    entries = store.entries()
+    assert ids(search(entries, "bo loc duoi not thap")) == ["hpf-basics"]
+    assert ids(search(entries, "tai sao dung")) == ["hpf-basics"]

@@ -1,13 +1,25 @@
 id: genre-jazz-acoustic
-title: "Jazz and acoustic bands: light touch, natural sound"
-title_vi: "Jazz và ban nhạc acoustic: xử lý nhẹ, giữ âm thanh tự nhiên"
+title: 'Jazz and acoustic bands: light touch, natural sound'
+title_vi: 'Jazz và ban nhạc acoustic: xử lý nhẹ, giữ âm thanh tự nhiên'
 topic: genre
 tags:
-  instrument: [upright-bass, piano, acoustic-guitar, drums]
-  genre: [jazz]
-  technique: [light-compression, di-plus-mic, feedback-control, minimal-eq]
-  event: [concert, club]
-summary: "Acoustic jazz is reinforced, not remade: keep the natural dynamics, favour balance over EQ boosts, and manage feedback on open mics and the upright bass."
+  instrument:
+  - upright-bass
+  - piano
+  - acoustic-guitar
+  - drums
+  genre:
+  - jazz
+  technique:
+  - light-compression
+  - di-plus-mic
+  - feedback-control
+  - minimal-eq
+  event:
+  - concert
+  - club
+summary: 'Acoustic jazz is reinforced, not remade: keep the natural dynamics, favour balance over EQ boosts, and manage feedback on open mics and the upright bass.'
+summary_vi: 'Jazz acoustic là khuếch đại chứ không làm lại: giữ dynamics tự nhiên, ưu tiên balance hơn EQ boost, và kiểm soát hú rít (Feedback) trên các mic mở và upright bass.'
 body: |
   ## Balance and approach
 
@@ -36,54 +48,91 @@ body: |
   - Boosting instead of balancing.
   - Piezo pickup quack left in the 800 Hz to 3 kHz area; Korff cuts 12 dB or more there as a starting point.
   - Compressing so hard that the dynamics of brushes and soft playing disappear.
+body_vi: |
+  ## Balance và cách tiếp cận
+
+  Mục tiêu là làm nhạc cụ to hơn mà vẫn giữ nguyên chất của chúng. Nhạc cụ jazz thường chơi acoustic, nên xử lý nặng tay sẽ nghe giả rất nhanh. Hãy dựa vào balance trước, và dùng EQ cắt thay vì boost. Hướng dẫn church-sound của Shure do Mike Sokol viết bắt đầu từ việc lắng nghe: nghe từng nhạc cụ riêng trước, nhờ người chơi chơi để bạn biết tông tự nhiên của nó trước khi định hình. Sau đó rời khỏi console và nghe phòng.
+
+  Entry này ngoại suy từ hướng dẫn chung về acoustic và live bass; tôi không tìm được nguồn riêng cho việc mix jazz acoustic qua PA, nên hãy coi nó là khung xuất phát chứ không phải sách luật của jazz.
+
+  ## Low end
+
+  Bass thường là vấn đề trong một band chơi nhỏ. Lấy DI từ upright hoặc bass điện tránh được spill và low end sân khấu ì ầm; nếu thêm cả mic, kiểm tra polarity giữa hai bên vì phase cancellation làm bass mỏng đi (Burton, SOS). Boost deep bass dè dặt vì dễ làm quá tải woofer PA (Sokol, Shure). Trong band có bass, giảm low end của guitar acoustic để mix trong và vocal rõ lời; với solo hoặc duo thì có thể để lại nhiều low end hơn (Korff, SOS).
+
+  ## Dynamics
+
+  Dùng compression có mục đích rõ ràng. Với guitar acoustic, Korff mô tả Threshold thấp với Ratio nhẹ khoảng 1.5:1 cùng Attack và Release trung bình đến dài để làm đều các biến đổi level, canh chỉ khoảng 0 đến 3 dB Gain Reduction ở các cú quạt. Attack nhanh hơn và Ratio cao hơn chỉ để dằn pickup piezo hay gai. Compression bass với Attack chậm để transient đi qua trong khi kiểm soát phần đuôi (Burton). Compression làm tăng gain, nên phải chắc là bạn còn Headroom trước feedback, vì compression có thể kích hoạt nó.
+
+  ## Mic và feedback
+
+  Nếu không có pickup, Korff gợi ý một condenser cardioid hoặc hypercardioid small-diaphragm hướng vào chỗ nối giữa cần và thân, và tránh omni vì lý do feedback. Mic dynamic cần nhiều gain hơn và có rủi ro feedback riêng. Giữ monitor nhỏ nhưng vẫn cho người biểu diễn nghe được mình, và dùng graphic EQ trên monitor send cho các tần số có vấn đề.
+
+  ## Effects
+
+  Giữ reverb nhẹ và tự nhiên, kiểu short room hoặc plate hợp với venue chứ không phải một mảng vang lộ liễu. Tôi không tìm được nguồn nào cho con số thời gian reverb trong jazz.
+
+  ## Lỗi thường gặp
+
+  - Boost thay vì balance.
+  - Để lại tiếng "quack" của pickup piezo ở vùng 800 Hz đến 3 kHz; Korff cắt 12 dB hoặc hơn ở đó làm điểm xuất phát.
+  - Nén mạnh tới mức dynamics của brushes và đoạn chơi nhỏ biến mất.
 rule:
   applies_to:
-    source_type: [guitar.acoustic]
-    genre: [jazz]
+    source_type:
+    - guitar.acoustic
+    genre:
+    - jazz
   params:
-    comp_ratio: [1.5, 1.5]
-    gain_reduction_db: [0, 3]
-    piezo_quack_cut_hz: [800, 3000]
-  notes: "From Korff (SOS 2013) on acoustic guitar, applied here as a conservative starting framework for acoustic bands. Adjust by ear."
+    comp_ratio:
+    - 1.5
+    - 1.5
+    gain_reduction_db:
+    - 0
+    - 3
+    piezo_quack_cut_hz:
+    - 800
+    - 3000
+  notes: From Korff (SOS 2013) on acoustic guitar, applied here as a conservative starting framework for acoustic bands. Adjust by ear.
 sources:
-  - title: "Mixing Acoustic Guitars Live"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/mixing-acoustic-guitars-live"
-    author: "Chris Korff"
-    year: 2013
-    accessed: "2026-11-09"
-    locator: "Band context; Miking; Compression"
-  - title: "Engineering Bass Guitars Live"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live"
-    author: "Jon Burton"
-    year: 2014
-    accessed: "2026-11-09"
-    locator: "Combining DI and Mic; Compression"
-  - title: "Professional Mixing Tips for Church Sound"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound"
-    author: "Mike Sokol"
-    year: 2017
-    accessed: "2026-11-09"
-    locator: "Listening First; EQ by Sound Character"
-media: []
+- title: Mixing Acoustic Guitars Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/mixing-acoustic-guitars-live
+  author: Chris Korff
+  year: 2013
+  accessed: '2026-11-09'
+  locator: Band context; Miking; Compression
+- title: Engineering Bass Guitars Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-bass-guitars-live
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Combining DI and Mic; Compression
+- title: Professional Mixing Tips for Church Sound
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound
+  author: Mike Sokol
+  year: 2017
+  accessed: '2026-11-09'
+  locator: Listening First; EQ by Sound Character
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Tmpd-9ukSr8"
-    title: "Mixing Jazz with Waves: A Webinar with Dave Darlington"
-    channel: "Waves Audio"
-    caption: "Waves webinar on mixing jazz with Dave Darlington (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=ps6htFFrKQ4"
-    title: "Mixing Jazz - Making acoustic bass sound great."
-    channel: "Heron Island Studio"
-    caption: "Making an acoustic bass sound good in a jazz mix (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=Tmpd-9ukSr8
+  title: 'Mixing Jazz with Waves: A Webinar with Dave Darlington'
+  channel: Waves Audio
+  caption: Waves webinar on mixing jazz with Dave Darlington (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Webinar của Waves về mix jazz với Dave Darlington (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=ps6htFFrKQ4
+  title: Mixing Jazz - Making acoustic bass sound great.
+  channel: Heron Island Studio
+  caption: Making an acoustic bass sound good in a jazz mix (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Làm cho acoustic bass nghe hay trong mix jazz (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

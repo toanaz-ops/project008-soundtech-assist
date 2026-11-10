@@ -1,13 +1,19 @@
 id: eq-listening-and-sweeping
-title: "Listening and sweeping: finding problems by ear"
-title_vi: "Nghe và quét tần số: tìm lỗi bằng tai"
+title: 'Listening and sweeping: finding problems by ear'
+title_vi: 'Nghe và quét tần số: tìm lỗi bằng tai'
 topic: eq
 tags:
   instrument: []
   genre: []
-  technique: [eq, ear-training, sweeping]
-  event: [concert, corporate]
-summary: "Boost-and-sweep finds problem frequencies quickly but biases you toward harshness; combine it with ear training and judge decisions in context, not solo."
+  technique:
+  - eq
+  - ear-training
+  - sweeping
+  event:
+  - concert
+  - corporate
+summary: Boost-and-sweep finds problem frequencies quickly but biases you toward harshness; combine it with ear training and judge decisions in context, not solo.
+summary_vi: Boost-and-sweep tìm ra tần số có vấn đề rất nhanh nhưng dễ làm tai bạn nghiêng về phía chói; hãy kết hợp với luyện tai và quyết định trong ngữ cảnh mix, không phải khi solo.
 body: |
   ## Boost-and-sweep
   Set a narrow-to-medium bell (a Q around 1 to 4, depending on the source) and boost strongly. Sweep slowly across the spectrum and listen for regions that sound ugly or ringy. When one stands out, stop, flip the boost into a cut and tune how deep and wide it needs to be.
@@ -37,18 +43,70 @@ body: |
   - Sweeping on a channel with gain staged hot.
   - Cutting a tiny, narrow peak that nobody notices.
   - Spending soundcheck on solo when the problem shows up only in the mix.
+body_vi: |
+  ## Boost rồi quét (Boost-and-sweep)
+  Đặt một bell từ hẹp đến vừa (Q khoảng 1 đến 4, tùy nguồn) và boost mạnh. Quét chậm qua phổ và nghe những vùng nghe xấu hoặc ringy. Khi một vùng nổi bật, dừng lại, đảo boost thành cut rồi chỉnh độ sâu và độ rộng cho vừa đủ.
+
+  **Ưu:** nhanh, làm vấn đề lộ rõ, giúp học được mỗi vùng tần số nghe như thế nào.
+  **Nhược:** boost lớn thì chỗ nào cũng chói, nên bạn có thể cắt nhầm thứ vốn ổn. Q hẹp có thể tìm ra các tần số ringing mà thật ra không phải vấn đề với người nghe. Sau khi cut, luôn so sánh với bypass.
+
+  ## Luyện tai
+  - Gọi tên thứ bạn nghe ("boomy", "nasal", "harsh") trước khi động vào núm.
+  - Tập đoán tần số trước, rồi kiểm tra bằng cách sweep. Làm vậy mới tránh được thiên lệch do boost chói.
+  - Học đặc tính của từng vùng (xem mục frequency regions) với vài bài tham chiếu và vài giọng quen thuộc.
+  - Giữ mức monitoring thực tế: âm sắc cảm nhận thay đổi theo độ to.
+
+  ## Solo và trong ngữ cảnh
+  Solo giúp tìm một lỗi cụ thể như hum hoặc buzz. Nhưng các quyết định về âm sắc phải làm khi cả band đang chơi, vì tiếng solo to và bóng bẩy thường chiếm chỗ của nguồn khác. Riêng bass có thể như biến mất khi các nguồn còn lại vào.
+
+  ## Quy trình live
+  1. Ở line check, sweep nhanh một channel trên một nguồn đơn và ghi lại lỗi.
+  2. Xử lý bằng cut; giữ boost ở mức tối thiểu.
+  3. Trong bài hát, đánh giá lại khi mọi thứ đều mở.
+  4. So sánh với bypass; reset về flat nếu không có ích.
+
+  ## Hú rít (Feedback) thì khác
+  Ringing out một monitor hay hệ thống main bằng cách boost đến khi rít rồi cut cũng là một kiểu sweep, nhưng với mục đích riêng: dùng notch hẹp và cẩn thận với level.
+
+  ## Lỗi thường gặp
+  - Sweep trên channel có gain staging quá nóng.
+  - Cắt một đỉnh nhỏ, rất hẹp mà không ai nhận ra.
+  - Dành cả soundcheck để solo trong khi vấn đề chỉ xuất hiện trong mix.
+
+  Tóm lại, sweep để tìm, nhưng quyết định bằng tai, trong mix.
 rule:
-  applies_to: {source_type: [any]}
+  applies_to:
+    source_type:
+    - any
   params:
-    sweep_q: [1, 4]
-    sweep_boost_db: [6, 12]
-  notes: "Starting points for the temporary boost used to locate a fault; the final move should be a small cut."
+    sweep_q:
+    - 1
+    - 4
+    sweep_boost_db:
+    - 6
+    - 12
+  notes: Starting points for the temporary boost used to locate a fault; the final move should be a small cut.
 sources:
-  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Sweeping Technique; Five EQ Tips"}
-  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Practice Makes Perfect; Mixing With EQ"}
-  - {title: "Professional mixing tips for church sound", publisher: "Shure", kind: article, url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound", accessed: "2026-11-09", locator: "Understanding What EQ Frequencies Sound Like"}
+- title: What's The Frequency?
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/whats-frequency
+  accessed: '2026-11-09'
+  locator: Sweeping Technique; Five EQ Tips
+- title: Using EQ
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-eq
+  accessed: '2026-11-09'
+  locator: Practice Makes Perfect; Mixing With EQ
+- title: Professional mixing tips for church sound
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound
+  accessed: '2026-11-09'
+  locator: Understanding What EQ Frequencies Sound Like
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

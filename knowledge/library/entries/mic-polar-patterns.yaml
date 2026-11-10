@@ -1,13 +1,22 @@
 id: mic-polar-patterns
-title: "Microphone polar patterns and what they mean on stage"
-title_vi: "Đặc tuyến cực (polar pattern) của micro và ý nghĩa trên sân khấu"
+title: Microphone polar patterns and what they mean on stage
+title_vi: Đặc tuyến cực (polar pattern) của micro và ý nghĩa trên sân khấu
 topic: mic-technique
 tags:
-  instrument: [vocal, drums, guitar]
+  instrument:
+  - vocal
+  - drums
+  - guitar
   genre: []
-  technique: [polar-pattern, off-axis-rejection, proximity-effect]
-  event: [concert, corporate]
-summary: "A polar pattern shows how sensitivity changes with the angle of arrival. Choosing and aiming the pattern decides how much stage spill and feedback a mic picks up."
+  technique:
+  - polar-pattern
+  - off-axis-rejection
+  - proximity-effect
+  event:
+  - concert
+  - corporate
+summary: A polar pattern shows how sensitivity changes with the angle of arrival. Choosing and aiming the pattern decides how much stage spill and feedback a mic picks up.
+summary_vi: Polar pattern cho thấy độ nhạy của mic thay đổi thế nào theo góc âm thanh đi tới. Chọn và hướng pattern đúng quyết định mic hứng bao nhiêu spill sân khấu và feedback.
 body: |
   ## Reading a polar pattern
 
@@ -50,39 +59,74 @@ body: |
 
   The angles above are from one manufacturer's published figures, so treat
   them as typical values rather than guarantees for every microphone.
+body_vi: |
+  ## Đọc một polar pattern
+
+  Biểu đồ vẽ độ nhạy quanh capsule: 0 độ là thẳng phía trước, 180 độ là phía sau. Đường càng dài ở một góc nghĩa là mic càng nhạy với hướng đó. Khi chạy live, điều quan trọng là **góc kém nhạy nhất** (null) đang chỉ vào đâu.
+
+  ## Các pattern phổ biến
+
+  - **Omnidirectional (omni)**: thu đều mọi hướng. Nó hứng nhiều tiếng phòng hơn và dễ hú rít (feedback) hơn với monitor trên sân khấu. Nó không có hiệu ứng tiệm cận (proximity effect).
+  - **Cardioid**: nhạy tối đa ở phía trước, kém nhạy nhất thẳng phía sau (180 độ). Nó hứng ít tiếng môi trường hơn nhiều so với omni, và là mặc định cho vocal và nhạc cụ trên sân khấu.
+  - **Supercardioid**: vùng thu phía trước hẹp hơn (khoảng 115 độ), góc kém nhạy nhất ở khoảng 125 độ lệch trục (off-axis). Nó loại bỏ tốt hơn ở hai bên nhưng không "điếc" bằng ở thẳng phía sau.
+  - **Hypercardioid**: hẹp hơn nữa (khoảng 105 độ), null ở khoảng 110 độ lệch trục; loại bỏ thẳng phía sau cũng yếu hơn cardioid.
+  - **Figure-8**: nhạy tối đa ở phía trước và phía sau, kém nhất ở hai bên. Hữu ích cho hai nguồn đối mặt nhau, dù thường chỉ dùng một phía.
+
+  ## Hệ quả thực tế
+
+  - **Đặt wedge theo null.** Cardioid cần wedge nằm phía sau nó; supercardioid hoặc hypercardioid cần wedge ở hai bên, đúng góc null. Xem entry monitor-wedge-mixes.
+  - **Proximity effect**: các pattern có hướng sẽ đẩy bass lên khi mic tiến gần nguồn âm. Dưới khoảng một foot, hãy roll off low end bằng HPF, hoặc chọn omni cho các vị trí đặt sát nếu bass bị dồn.
+  - **Hướng mic quan trọng.** Một cardioid chĩa vào cymbal hoặc ampli guitar to sẽ đưa chính spill đó vào mặt trước nhạy nhất của nó.
+  - **Tính cả spill, không chỉ nguồn âm.** Trên sân khấu to, pattern hẹp hơn giảm bleed giữa các nhạc cụ ngồi gần nhau.
+  - Luôn kiểm tra biểu đồ của hãng cho đúng model bạn dùng; góc và hành vi theo tần số khác nhau giữa các mic.
+
+  Các góc ở trên lấy từ số liệu công bố của một hãng, nên hãy coi là giá trị điển hình, không phải bảo đảm cho mọi mic.
 rule:
-  applies_to: {source_type: [vocal.lead], event: [concert]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    event:
+    - concert
   params:
-    cardioid_null_deg: [180, 180]
-    supercardioid_null_deg: [125, 125]
-    hypercardioid_null_deg: [110, 110]
-  notes: "typical published values; check each mic's own plot"
+    cardioid_null_deg:
+    - 180
+    - 180
+    supercardioid_null_deg:
+    - 125
+    - 125
+    hypercardioid_null_deg:
+    - 110
+    - 110
+  notes: typical published values; check each mic's own plot
 sources:
-  - title: "Microphone Basics: Transducers, Polar Patterns & Frequency Response"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/microphone-basics-transducers-polar-patterns-frequency-response"
-    accessed: "2026-11-09"
-    locator: "Polar patterns; Proximity effect"
+- title: 'Microphone Basics: Transducers, Polar Patterns & Frequency Response'
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/microphone-basics-transducers-polar-patterns-frequency-response
+  accessed: '2026-11-09'
+  locator: Polar patterns; Proximity effect
 media:
-  - kind: diagram
-    path: polar-patterns.png
-    caption: "First-order polar patterns"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: scripts/library_diagrams.py
-  - kind: video
-    url: "https://www.youtube.com/watch?v=rYWnSuAxato"
-    title: "Understanding Mic Specifications - Part 3 - Polar Pattern"
-    channel: "Shure"
-    caption: "Shure on reading a polar pattern (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=qCV8T7mJGYA"
-    title: "The Big 5 Polar Patterns explained: Part I - Cardioid"
-    channel: "Austrian Audio"
-    caption: "Austrian Audio on the cardioid pattern (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: polar-patterns.png
+  caption: First-order polar patterns
+  caption_vi: Polar pattern bậc nhất
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=rYWnSuAxato
+  title: Understanding Mic Specifications - Part 3 - Polar Pattern
+  channel: Shure
+  caption: Shure on reading a polar pattern (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Shure hướng dẫn đọc polar pattern (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=qCV8T7mJGYA
+  title: 'The Big 5 Polar Patterns explained: Part I - Cardioid'
+  channel: Austrian Audio
+  caption: Austrian Audio on the cardioid pattern (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Austrian Audio nói về pattern cardioid (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

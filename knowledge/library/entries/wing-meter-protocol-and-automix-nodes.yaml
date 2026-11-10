@@ -1,13 +1,18 @@
 id: wing-meter-protocol-and-automix-nodes
-title: "WING meters, OSC limits and automix nodes (third-party protocol document)"
-title_vi: "Meter của WING, giới hạn OSC và các node automix (tài liệu giao thức bên thứ ba)"
+title: WING meters, OSC limits and automix nodes (third-party protocol document)
+title_vi: Meter của WING, giới hạn OSC và các node automix (tài liệu giao thức bên thứ ba)
 topic: wing-console
 tags:
   instrument: []
   genre: []
-  technique: [metering, osc, automix, remote-protocol]
+  technique:
+  - metering
+  - osc
+  - automix
+  - remote-protocol
   event: []
-summary: "Meter levels on a WING are not available over OSC; they come from the native protocol on a separate metering channel, and only one OSC subscription can be live at a time. The automix groups appear as parameter nodes. This rests on one third-party protocol document and several points are unverified."
+summary: Meter levels on a WING are not available over OSC; they come from the native protocol on a separate metering channel, and only one OSC subscription can be live at a time. The automix groups appear as parameter nodes. This rests on one third-party protocol document and several points are unverified.
+summary_vi: Meter level trên WING không có qua OSC; chúng đến từ native protocol trên một kênh metering riêng, và chỉ một OSC subscription được sống tại một thời điểm. Các nhóm automix xuất hiện dưới dạng parameter node. Nội dung này dựa trên một tài liệu protocol của bên thứ ba và còn nhiều điểm chưa kiểm chứng.
 body: |
   ## What the document states
 
@@ -30,30 +35,54 @@ body: |
   ## Practical meaning
 
   If an app wants live meters it needs the native protocol, not OSC, and it must not hold the single OSC subscription if a mixing engineer is using other tools. Read actual ranges from the console rather than trusting the document.
+body_vi: |
+  ## Tài liệu nói gì
+
+  Tài liệu WING remote protocols, do một developer bên thứ ba viết, nói meter không được phơi ra qua OSC. Chúng được đọc qua kênh metering của native protocol. Client khai báo một cổng UDP, yêu cầu một tập meter theo family (channel, aux, bus, main, matrix và v.v.) và index, rồi phải gia hạn yêu cầu mỗi vài giây, nếu không stream sẽ dừng. Phản hồi là một dòng giá trị 16-bit big-endian; chia cho 256 để ra decibel, và giá trị -128 dB nghĩa là không có tín hiệu. Giá trị theo channel gồm input và output trái phải, cộng với các số đọc key và Gain Reduction của gate và dynamics. Với gate và dynamics, giá trị 256 được mô tả là 20 dB Gain Reduction, nhưng tài liệu lưu ý điều này phụ thuộc model.
+
+  Một chuyện riêng: giao diện OSC chỉ cho phép một event subscription tại một thời điểm; client subscribe sau cùng sẽ thắng và subscription phải được gia hạn trong vòng khoảng mười giây. Nghĩa là bất kỳ công cụ nào subscribe cũng có thể đá WING-Edit hoặc Companion ra khỏi console. Mọi thứ đụng tới desk live đều phải sống chung được với các công cụ đó.
+
+  ## Automix node
+
+  Automix tích hợp có hai nhóm gain-sharing, X và Y, mỗi nhóm tối đa 16 input. Tài liệu liệt kê một group node dưới config tree và, theo từng channel, một post-insert slot có thể chứa AUTO_X hoặc AUTO_Y, một công tắc on và một weight từ -12 đến +12. Đơn vị và thuật toán đằng sau weight không được ghi lại.
+
+  ## Những gì chưa kiểm chứng
+
+  - Yêu cầu metering đi qua TCP hay UDP 2222.
+  - Điểm lấy meter là pre-fader hay post-fader.
+  - Cấu trúc của họ channel meter mới hơn (bảng trong tài liệu bị lỗi, đọc không ra).
+  - Tốc độ ghi OSC an toàn: không có số nào được ghi lại, nên hãy tự giới hạn tốc độ.
+  - Một phiên bản mới hơn của tài liệu chưa được đọc.
+
+  ## Ý nghĩa thực tế
+
+  Nếu một app muốn meter live thì nó cần native protocol chứ không phải OSC, và nó không được chiếm OSC subscription duy nhất khi một mixing engineer đang dùng các công cụ khác. Hãy đọc dải thực tế từ console thay vì tin hoàn toàn vào tài liệu.
 rule:
-  notes: "Single third-party source, partly unverified. Meters need the native protocol; one OSC subscription at a time."
+  notes: Single third-party source, partly unverified. Meters need the native protocol; one OSC subscription at a time.
 sources:
-  - title: "WING Remote Protocols, version 3.0.5-1"
-    publisher: "Patrick-Gilles Maillot"
-    kind: manual
-    url: "https://docs.rs/crate/libwing/latest/source/Wing-Remote-Protocols.pdf"
-    author: "Patrick-Gilles Maillot"
-    accessed: "2026-11-09"
-    locator: "pp. 16-80 (OSC), pp. 86-87 (metering channel)"
+- title: WING Remote Protocols, version 3.0.5-1
+  publisher: Patrick-Gilles Maillot
+  kind: manual
+  url: https://docs.rs/crate/libwing/latest/source/Wing-Remote-Protocols.pdf
+  author: Patrick-Gilles Maillot
+  accessed: '2026-11-09'
+  locator: pp. 16-80 (OSC), pp. 86-87 (metering channel)
 media:
-  - kind: diagram
-    path: automix-node-chain.png
-    caption: "WING automix slot and group chain"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=3SNuOdb62xY"
-    title: "Wing How To: Episode 14 - Automix"
-    channel: "Behringer Knowledge Base"
-    caption: "Automix function on the WING, the feature whose nodes are listed here (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: automix-node-chain.png
+  caption: WING automix slot and group chain
+  caption_vi: Chuỗi automix slot và group trên WING
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=3SNuOdb62xY
+  title: 'Wing How To: Episode 14 - Automix'
+  channel: Behringer Knowledge Base
+  caption: Automix function on the WING, the feature whose nodes are listed here (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Chức năng automix trên WING, tính năng mà các node ở đây thuộc về (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-import"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

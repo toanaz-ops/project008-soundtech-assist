@@ -1,13 +1,25 @@
 id: genre-worship-church
-title: "Worship and church mixing: words first, room second"
-title_vi: "Mix nhà thờ và thờ phượng: lời hát trước, phòng sau"
+title: 'Worship and church mixing: words first, room second'
+title_vi: 'Mix nhà thờ và thờ phượng: lời hát trước, phòng sau'
 topic: genre
 tags:
-  instrument: [vocal, acoustic-guitar, keys, drums]
+  instrument:
+  - vocal
+  - acoustic-guitar
+  - keys
+  - drums
   genre: []
-  technique: [high-pass, frequency-bracketing, intelligibility, reverb-restraint]
-  event: [church, congregation, worship]
-summary: "Worship mixing serves a congregation that sings along and follows words. Clear vocals, restrained low end and an honest read of a reverberant room matter more than a record-style mix."
+  technique:
+  - high-pass
+  - frequency-bracketing
+  - intelligibility
+  - reverb-restraint
+  event:
+  - church
+  - congregation
+  - worship
+summary: Worship mixing serves a congregation that sings along and follows words. Clear vocals, restrained low end and an honest read of a reverberant room matter more than a record-style mix.
+summary_vi: Mix worship là phục vụ một hội chúng vừa hát theo vừa nghe lời. Vocal rõ, low end tiết chế và đọc đúng căn phòng nhiều vang quan trọng hơn một bản mix kiểu thu âm studio.
 body: |
   ## Balance
 
@@ -36,61 +48,99 @@ body: |
   - Turning everything up because "more is better"; clarity comes from reducing competing parts.
   - Leaving a thin middle between kick and vocal. The mix then sounds hollow.
   - Judging the mix only from the console, which may sit in a bass-heavy spot.
+body_vi: |
+  ## Balance
+
+  Hội chúng vừa hát vừa nghe, nên lời phải nghe rõ ở mọi ghế. Vì vậy vocal là ưu tiên, còn band được cỡ lại quanh vocal thay vì tranh với nó. Hướng dẫn của Mike Sokol trên Shure nhấn mạnh việc kẹp băng tần (bracketing): filter mỗi nguồn về đúng dải nó thật sự dùng, để các tần số không có nội dung nhạc thôi gây rối, thay vì chỉ đẩy level lên để lấy độ rõ. Nghe từng nhạc cụ riêng trước, rồi mới đặt nó vào mix.
+
+  ## Điểm khởi đầu từ các nguồn
+
+  High-pass khởi đầu của Sokol: khoảng 80 Hz cho vocal và giọng nam, khoảng 140 Hz cho giọng nữ, khoảng 150 Hz cho violin. Nâng độ dễ nghe của vocal (intelligibility) khoảng 3 dB giữa 1 và 1.5 kHz, presence khoảng +3 dB ở 4 kHz, cut vài dB gần 600 Hz cho bớt chất mũi honky, và kiểm soát âm xuýt (sibilance) bằng cách tìm vùng "s" chói rồi cut 6 đến 12 dB. Với acoustic guitar, cut vài dB quanh 200 Hz để hết tiếng thùng. Tất cả chỉ là điểm khởi đầu, phải chốt bằng cách nghe, và ông nói chỉ đổi EQ khi có mục đích rõ ràng.
+
+  Bài của DPA về speech intelligibility đồng ý về dải quan trọng: phụ âm sống chủ yếu trên 500 Hz và tập trung quanh 2 đến 4 kHz, với 1 đến 4 kHz có độ quan trọng cao.
+
+  ## Low end
+
+  Sokol khuyên chỉ boost deep bass một cách dè dặt trên kick và bass để woofer của PA không bị quá tải. Korff (SOS) bổ sung rằng trong một band đã có bass và kick, bạn nên làm mỏng low end của acoustic guitar để vocal vẫn nghe rõ. Phòng như nhà thờ hay dồn bass lại, nên high-pass mọi thứ không cần low end.
+
+  ## Dynamics và effects
+
+  Không tìm được nguồn có số cho compression hay reverb trong worship, nên không đưa số nào. Nói chung, phòng nhà thờ vốn đã nhiều vang, nên dùng reverb nhẹ tay trên vocal và ưu tiên return ngắn, tối; xem entry về reverb để biết Decay, damping và EQ của return hoạt động ra sao. Chỉ kiểm soát dynamics của vocal vừa đủ để câu nhỏ vẫn nghe được; nhớ rằng compression thêm gain và có thể kích feedback.
+
+  ## Người nói và người dẫn
+
+  Mục sư và người đọc thường đeo mic headset hoặc lapel. Trong phòng lớn, headset ít hú rít (feedback) hơn lav (Shure, Lyons), nên ưu tiên headset khi phòng ồn hoặc nhiều vang.
+
+  ## Lỗi thường gặp
+
+  - Vặn mọi thứ lên vì "càng nhiều càng tốt"; độ rõ đến từ việc giảm bớt các phần tranh nhau.
+  - Để trống phần giữa kick và vocal. Khi đó mix nghe rỗng.
+  - Chỉ đánh giá mix từ chỗ console, nơi có thể là chỗ dồn bass.
 rule:
   applies_to:
-    source_type: [vocal.lead]
+    source_type:
+    - vocal.lead
     genre: []
   params:
-    hpf_male_hz: [80, 80]
-    hpf_female_hz: [140, 140]
-    intelligibility_boost_hz: [1000, 1500]
-    intelligibility_boost_db: [3, 3]
-  notes: "Starting points from Sokol (Shure 2017). Not rules; verify by ear in the room."
+    hpf_male_hz:
+    - 80
+    - 80
+    hpf_female_hz:
+    - 140
+    - 140
+    intelligibility_boost_hz:
+    - 1000
+    - 1500
+    intelligibility_boost_db:
+    - 3
+    - 3
+  notes: Starting points from Sokol (Shure 2017). Not rules; verify by ear in the room.
 sources:
-  - title: "Professional Mixing Tips for Church Sound"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound"
-    author: "Mike Sokol"
-    year: 2017
-    accessed: "2026-11-09"
-    locator: "HPF Starting Points; EQ by Sound Character"
-  - title: "Facts about speech intelligibility"
-    publisher: "DPA Microphones"
-    kind: article
-    url: "https://www.dpamicrophones.com/mic-university/background-knowledge/facts-about-speech-intelligibility/"
-    accessed: "2026-11-09"
-    locator: "What affects intelligibility? Important frequencies"
-  - title: "Mixing Acoustic Guitars Live"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/mixing-acoustic-guitars-live"
-    author: "Chris Korff"
-    year: 2013
-    accessed: "2026-11-09"
-    locator: "Band context"
-  - title: "A Basic Guide to Mics and Mic Techniques for Presenters"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/a-basic-guide-to-mics-and-mic-techniques-for-presenters"
-    author: "Chris Lyons"
-    year: 2021
-    accessed: "2026-11-09"
-    locator: "Headset; Feedback"
-media: []
+- title: Professional Mixing Tips for Church Sound
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-us/insights/professional-mixing-tips-for-church-sound
+  author: Mike Sokol
+  year: 2017
+  accessed: '2026-11-09'
+  locator: HPF Starting Points; EQ by Sound Character
+- title: Facts about speech intelligibility
+  publisher: DPA Microphones
+  kind: article
+  url: https://www.dpamicrophones.com/mic-university/background-knowledge/facts-about-speech-intelligibility/
+  accessed: '2026-11-09'
+  locator: What affects intelligibility? Important frequencies
+- title: Mixing Acoustic Guitars Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/mixing-acoustic-guitars-live
+  author: Chris Korff
+  year: 2013
+  accessed: '2026-11-09'
+  locator: Band context
+- title: A Basic Guide to Mics and Mic Techniques for Presenters
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/a-basic-guide-to-mics-and-mic-techniques-for-presenters
+  author: Chris Lyons
+  year: 2021
+  accessed: '2026-11-09'
+  locator: Headset; Feedback
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=k9MIiUoBc08"
-    title: "FOH Mixing for Worship - AES Worship Sound Academy Nashville 2020"
-    channel: "Audio Engineering Society, Inc."
-    caption: "AES Worship Sound Academy talk on FOH mixing for worship (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=aSjyS7cLxH0"
-    title: "5 Tips for Live Sound at Your Church // Capsule to Cone Collab"
-    channel: "Worship Tutorials"
-    caption: "Five tips for live sound at a church (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=k9MIiUoBc08
+  title: FOH Mixing for Worship - AES Worship Sound Academy Nashville 2020
+  channel: Audio Engineering Society, Inc.
+  caption: AES Worship Sound Academy talk on FOH mixing for worship (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Buổi nói chuyện của AES Worship Sound Academy về FOH mixing cho worship (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
+- kind: video
+  url: https://www.youtube.com/watch?v=aSjyS7cLxH0
+  title: 5 Tips for Live Sound at Your Church // Capsule to Cone Collab
+  channel: Worship Tutorials
+  caption: Five tips for live sound at a church (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Năm mẹo live sound cho nhà thờ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

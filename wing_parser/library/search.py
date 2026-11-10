@@ -31,7 +31,7 @@ def _title_text(entry: dict) -> str:
 
 def _full_text(entry: dict) -> str:
     parts = [entry.get("title", ""), entry.get("title_vi", ""), entry.get("summary", ""),
-             entry.get("body", "")]
+             entry.get("summary_vi", ""), entry.get("body", ""), entry.get("body_vi", "")]
     for group in ("instrument", "genre", "technique", "event"):
         parts.extend(_tag_values(entry, group))
     for src in entry.get("sources") or []:

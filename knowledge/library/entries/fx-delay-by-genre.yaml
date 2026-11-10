@@ -1,13 +1,27 @@
 id: fx-delay-by-genre
-title: "Delay starting points by genre"
-title_vi: "Điểm xuất phát cho delay theo thể loại"
+title: Delay starting points by genre
+title_vi: Điểm xuất phát cho delay theo thể loại
 topic: effects
 tags:
-  instrument: [vocal]
-  genre: [pop, rock, ballad, jazz, edm, bolero, speech]
-  technique: [delay, slapback, tempo-synced-delay, feedback]
-  event: [concert]
-summary: "Slapback and tempo-synced delay settings from published guidance, then a per-genre table of note value and feedback. The note values follow the sources loosely; the feedback percentages are low confidence starting points."
+  instrument:
+  - vocal
+  genre:
+  - pop
+  - rock
+  - ballad
+  - jazz
+  - edm
+  - bolero
+  - speech
+  technique:
+  - delay
+  - slapback
+  - tempo-synced-delay
+  - feedback
+  event:
+  - concert
+summary: Slapback and tempo-synced delay settings from published guidance, then a per-genre table of note value and feedback. The note values follow the sources loosely; the feedback percentages are low confidence starting points.
+summary_vi: Các thiết lập slapback và delay đồng bộ tempo từ hướng dẫn đã công bố, kèm bảng note value và feedback theo từng thể loại. Note value bám theo nguồn một cách tương đối; các phần trăm feedback chỉ là điểm xuất phát với độ tin cậy thấp.
 body: |
   ## What the sources say
 
@@ -34,57 +48,126 @@ body: |
   ## Using it live
 
   Prefer delay over reverb in a reverberant venue, because a delay adds size without washing the vocal into the room. Set the delay time from the song tempo once, and check it against the groove during the first chorus.
+body_vi: |
+  ## Nguồn nói gì
+
+  Slapback là một lần lặp nhanh duy nhất, thường 80 đến 150 ms theo một bài tạp chí và 50 đến 100 ms với feedback bằng 0 theo bài khác; dù thế nào nó cũng không đồng bộ tempo. Delay theo nhịp thì đồng bộ với bài hát: quarter note là lựa chọn thử đầu tiên, và từ 1/16 đến 1/2 cùng các giá trị dotted hoặc triplet là phương án khi giá trị thẳng không khớp. Giữ feedback thấp. Ba hoặc bốn lần lặp có thể mở rộng một vocal nổi bật ở đoạn chorus lớn. Làm tối các lần lặp bằng low-pass và làm mỏng bằng high-pass để tiếng vọng nằm sau giọng khô, và automate send thay vì return khi bạn muốn một cú throw trên một từ.
+
+  Phép tính rất đơn giản: một quarter note tính bằng mili giây là 60000 chia cho tempo; dotted eighth bằng 0.75 của giá trị đó và eighth bằng 0.5.
+
+  ## Bảng theo thể loại (điểm xuất phát)
+
+  - **Pop**: quarter note hoặc dotted eighth, feedback khoảng 15 đến 30 phần trăm.
+  - **Rock**: slapback 80 đến 120 ms, hoặc quarter note; feedback 0 đến 20 phần trăm.
+  - **Ballad**: quarter note, feedback khoảng 15 đến 25 phần trăm.
+  - **Jazz**: slapback 100 đến 150 ms hoặc không dùng delay; feedback 0 đến 15 phần trăm.
+  - **EDM**: dotted eighth hoặc quarter note, feedback 30 đến 50 phần trăm.
+  - **Bolero**: quarter note, như ballad. Suy ra, không có nguồn.
+  - **Speech**: tắt. Đây là lựa chọn của sản phẩm.
+
+  Phần trăm feedback là phần yếu nhất: chúng đến từ lời khuyên định tính ("keep it low") và được đánh dấu độ tin cậy thấp trong ghi chú nghiên cứu. Lựa chọn slapback và quarter note thì có nguồn.
+
+  ## Chỗ các nguồn bất đồng
+
+  Thời gian slapback: 50 đến 100 ms ở một bài, 80 đến 150 ms ở bài khác. Chọn theo tai; slap ngắn nghe chặt hơn, slap dài nghe giống echo hơn.
+
+  ## Dùng khi chạy live
+
+  Ở venue nhiều vang, ưu tiên delay hơn reverb: delay thêm độ rộng mà không nhấn chìm vocal vào không gian phòng. Đặt delay time theo tempo bài hát một lần, rồi kiểm tra với groove trong đoạn chorus đầu tiên.
 rule:
   kind: delay_genre
-  applies_to: {source_type: [vocal.lead], genre: [pop, rock, ballad, jazz, edm, bolero, speech]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    genre:
+    - pop
+    - rock
+    - ballad
+    - jazz
+    - edm
+    - bolero
+    - speech
   params:
     by_genre:
-      pop: {note_value: "1/4 or dotted 1/8", feedback_pct: [15, 30]}
-      rock: {note_value: "slap 80-120 ms or 1/4", feedback_pct: [0, 20]}
-      ballad: {note_value: "1/4", feedback_pct: [15, 25]}
-      jazz: {note_value: "slap 100-150 ms or none", feedback_pct: [0, 15]}
-      edm: {note_value: "dotted 1/8 or 1/4", feedback_pct: [30, 50]}
-      bolero: {note_value: "1/4", feedback_pct: [15, 25]}
-      speech: {note_value: "off", feedback_pct: [0, 0]}
-    slapback_ms: [50, 150]
-  notes: "Feedback percentages are low confidence; bolero is extrapolated from ballad; speech off is a product decision."
+      pop:
+        note_value: 1/4 or dotted 1/8
+        feedback_pct:
+        - 15
+        - 30
+      rock:
+        note_value: slap 80-120 ms or 1/4
+        feedback_pct:
+        - 0
+        - 20
+      ballad:
+        note_value: 1/4
+        feedback_pct:
+        - 15
+        - 25
+      jazz:
+        note_value: slap 100-150 ms or none
+        feedback_pct:
+        - 0
+        - 15
+      edm:
+        note_value: dotted 1/8 or 1/4
+        feedback_pct:
+        - 30
+        - 50
+      bolero:
+        note_value: 1/4
+        feedback_pct:
+        - 15
+        - 25
+      speech:
+        note_value: 'off'
+        feedback_pct:
+        - 0
+        - 0
+    slapback_ms:
+    - 50
+    - 150
+  notes: Feedback percentages are low confidence; bolero is extrapolated from ballad; speech off is a product decision.
 sources:
-  - title: "Six Practical Uses For Delay"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/six-practical-uses-delay"
-    accessed: "2026-11-09"
-    locator: "first two sections (slapback, rhythmic delay)"
-  - title: "How To Use Reverb Like A Pro (page 2)"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2"
-    accessed: "2026-11-09"
-    locator: "delay and slapback"
-  - title: "Delay tips for mixing vocals"
-    publisher: "Waves Audio"
-    kind: article
-    url: "https://www.waves.com/delay-tips-for-mixing-vocals"
-    accessed: "2026-11-09"
+- title: Six Practical Uses For Delay
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/six-practical-uses-delay
+  accessed: '2026-11-09'
+  locator: first two sections (slapback, rhythmic delay)
+- title: How To Use Reverb Like A Pro (page 2)
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2
+  accessed: '2026-11-09'
+  locator: delay and slapback
+- title: Delay tips for mixing vocals
+  publisher: Waves Audio
+  kind: article
+  url: https://www.waves.com/delay-tips-for-mixing-vocals
+  accessed: '2026-11-09'
 media:
-  - kind: diagram
-    path: feedback-by-genre.png
-    caption: "Delay feedback windows by genre"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:range_chart"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=psBPytSmLgc"
-    title: "The BEST Delay Settings for Mixing Vocals"
-    channel: "Mix With Jerry"
-    caption: "Delay settings for vocals (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=RIEACMWk_7s"
-    title: "Behringer Wing 301 - Effects Tutorials - Setting Up A Reverb or Delay"
-    channel: "Drew Brashler"
-    caption: "Delay set-up on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: feedback-by-genre.png
+  caption: Delay feedback windows by genre
+  caption_vi: Vùng feedback của delay theo thể loại
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:range_chart
+- kind: video
+  url: https://www.youtube.com/watch?v=psBPytSmLgc
+  title: The BEST Delay Settings for Mixing Vocals
+  channel: Mix With Jerry
+  caption: Delay settings for vocals (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Cài đặt delay cho vocal (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=RIEACMWk_7s
+  title: Behringer Wing 301 - Effects Tutorials - Setting Up A Reverb or Delay
+  channel: Drew Brashler
+  caption: Delay set-up on the Behringer WING (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Set-up delay trên Behringer WING (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-import"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

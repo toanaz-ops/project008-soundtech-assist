@@ -1,13 +1,22 @@
 id: comp-makeup-and-metering
-title: "Make-up gain, gain-reduction meter and how much to compress"
-title_vi: "Make-up gain, đồng hồ gain reduction và nén bao nhiêu là đủ"
+title: Make-up gain, gain-reduction meter and how much to compress
+title_vi: Make-up gain, đồng hồ gain reduction và nén bao nhiêu là đủ
 topic: dynamics
 tags:
-  instrument: [vocal, kick, snare, bass]
+  instrument:
+  - vocal
+  - kick
+  - snare
+  - bass
   genre: []
-  technique: [compression, makeup-gain, gain-reduction, metering]
+  technique:
+  - compression
+  - makeup-gain
+  - gain-reduction
+  - metering
   event: []
-summary: "The gain-reduction meter shows how much the compressor is turning the signal down. Make-up gain restores level afterwards, and matching levels with the compressor bypassed is the only fair way to judge it."
+summary: The gain-reduction meter shows how much the compressor is turning the signal down. Make-up gain restores level afterwards, and matching levels with the compressor bypassed is the only fair way to judge it.
+summary_vi: Đồng hồ Gain Reduction cho biết compressor đang kéo tín hiệu xuống bao nhiêu. Makeup Gain đưa level trở lại sau đó, và so sánh với compressor bypass ở cùng level là cách công bằng duy nhất để đánh giá nó.
 body: |
   ## What the meter shows
 
@@ -45,46 +54,96 @@ body: |
   ## On a WING
 
   The dynamics section of each channel shows the gain-reduction display, so you can read it while the show is running. Use it for a quick check across channels rather than relying on your ears alone, and set make-up gain consciously when you change models, since different models have different default output levels.
+body_vi: |
+  ## Đồng hồ cho thấy gì
+
+  **Đồng hồ Gain Reduction (GR)** hiển thị compressor đang trừ bao nhiêu dB. Nó không phải level meter. Nó nằm ở 0 khi tín hiệu dưới Threshold và tụt xuống ở những chỗ to. Nhìn nó là cách nhanh nhất để biết con compressor thực sự đang làm gì, nhất là trên stage khi bạn không thể nghe riêng từng channel.
+
+  Những điều đọc được từ nó:
+  - **Nó nhúc nhích thường xuyên đến đâu.** Nhúc nhích ở mọi nốt nghĩa là Threshold thấp. Chỉ nhúc nhích ở những câu to nhất là setting nhẹ nhàng hơn, thường an toàn hơn.
+  - **Nó đi xa đến đâu.** Giá trị đỉnh cho biết mức bị nén.
+  - **Nó có hồi lại không.** Nếu kim không về 0 giữa các câu, nhiều khả năng Release quá chậm hoặc Threshold quá thấp.
+
+  ## Bù gain (Makeup Gain)
+
+  Compression hạ phần to xuống nên level tổng giảm. **Makeup Gain** đưa output lên lại. Nhưng nó cũng nâng cả phần nhỏ và mọi thứ nằm dưới, vì vậy nén nặng trên mic live làm bleed và sàn nhiễu (Noise floor) cao lên đúng bằng lượng bạn bù. Khi so sánh tiếng đã nén và chưa nén, bắt buộc phải match level trước: to hơn gần như luôn nghe hay hơn và khiến bạn tưởng compression có ích. Một số máy có automatic Makeup Gain; hãy kiểm bằng level meter thay vì tin nó.
+
+  ## Gain Reduction bao nhiêu là điển hình
+
+  Đây là các khoảng khởi điểm lấy từ một hướng dẫn đã xuất bản và thực hành phổ biến, không phải luật:
+
+  | Mục đích | Gain Reduction (ở peak) |
+  |---|---|
+  | Làm mượt nhẹ, trong suốt | khoảng 3 đến 6 dB |
+  | Punch cho kick và snare | khoảng 6 đến 12 dB |
+  | Drums kiểm soát mạnh | khoảng 10 dB (ví dụ của FabFilter) |
+  | Hiệu ứng nặng, cố ý (vd room mic, pumping) | hơn 10 dB, tuỳ gu |
+
+  Với live, nhiều kỹ sư nhắm ít hơn một chút trên lead vocal và speech (vài dB, chủ yếu ở những câu to nhất) để gain before feedback không bị Makeup Gain ăn mất. Đó là rule of thumb, các nguồn trên không nêu con số này.
+
+  ## Lỗi thường gặp
+
+  - Coi đồng hồ GR là mục tiêu. Số đọc lớn không có nghĩa là "tốt hơn".
+  - Thêm Makeup Gain đến khi nguồn nhảy lên trong mix, rồi quên rằng Noise floor và bleed cũng tăng đúng bằng đó.
+  - Bỏ qua bước check bypass ở cùng level.
+  - Nối nhiều compressor, mỗi con 6 dB, rồi tổng cộng 15 dB trở lên mà không để ý. Đừng bắt một con compressor gánh tạ, nhưng cũng đừng chia tạ cho cả hàng mà không đếm.
+
+  ## Trên WING
+
+  Phần dynamics của mỗi channel có hiển thị Gain Reduction, nên bạn đọc được ngay khi show đang chạy. Dùng nó để check nhanh các channel thay vì chỉ dựa vào tai, và set Makeup Gain có ý thức khi đổi model, vì mỗi model có output level mặc định khác nhau.
 rule:
-  applies_to: {source_type: [vocal.lead, vocal.speech, kick, snare, bass]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    - vocal.speech
+    - kick
+    - snare
+    - bass
   params:
-    gr_db_smoothing: [3, 6]
-    gr_db_punch: [6, 12]
-    gr_db_drums_heavy: [10, 14]
-  notes: "starting windows from iZotope and FabFilter examples; for live lead vocal keep GR modest to protect gain before feedback"
+    gr_db_smoothing:
+    - 3
+    - 6
+    gr_db_punch:
+    - 6
+    - 12
+    gr_db_drums_heavy:
+    - 10
+    - 14
+  notes: starting windows from iZotope and FabFilter examples; for live lead vocal keep GR modest to protect gain before feedback
 sources:
-  - title: "What Is Audio Compression? Everything You Need to Know"
-    publisher: "iZotope"
-    kind: article
-    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
-    accessed: "2026-11-09"
-    locator: "Makeup Gain / Gain Reduction Meter / How Much Compression"
-  - title: "Basic compressor controls"
-    publisher: "FabFilter"
-    kind: article
-    url: "https://fabfilter.com/learn/compression/basic-compressor-controls"
-    accessed: "2026-11-09"
-    locator: "Attack and release (about 10 dB for drums)"
-  - title: "Parallel compression (Uplift Compression section)"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/parallel-compression"
-    accessed: "2026-11-09"
-    locator: "Uplift Compression"
-media: []
+- title: What Is Audio Compression? Everything You Need to Know
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/en/learn/what-is-audio-compression
+  accessed: '2026-11-09'
+  locator: Makeup Gain / Gain Reduction Meter / How Much Compression
+- title: Basic compressor controls
+  publisher: FabFilter
+  kind: article
+  url: https://fabfilter.com/learn/compression/basic-compressor-controls
+  accessed: '2026-11-09'
+  locator: Attack and release (about 10 dB for drums)
+- title: Parallel compression (Uplift Compression section)
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/parallel-compression
+  accessed: '2026-11-09'
+  locator: Uplift Compression
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
-    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
-    channel: "Audio University"
-    caption: "Compressor controls including makeup gain, with timestamps per control (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=GZ9GQKlws74"
-    title: "The Knee - Compression Explained (08 of 14)"
-    channel: "Groove3"
-    caption: "Groove3 lesson on the knee control within a compression series (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=lgCYjek5_JY
+  title: How To Use A Compressor | Threshold, Ratio, Attack, Release & More
+  channel: Audio University
+  caption: Compressor controls including makeup gain, with timestamps per control (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Các nút điều khiển compressor gồm Makeup Gain, có timestamp cho từng nút (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=GZ9GQKlws74
+  title: The Knee - Compression Explained (08 of 14)
+  channel: Groove3
+  caption: Groove3 lesson on the knee control within a compression series (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Bài học của Groove3 về nút Knee trong một series về compression (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

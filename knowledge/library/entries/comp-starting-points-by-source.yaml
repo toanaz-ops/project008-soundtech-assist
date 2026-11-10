@@ -1,13 +1,33 @@
 id: comp-starting-points-by-source
-title: "Compressor starting points per source (low confidence)"
-title_vi: "Điểm xuất phát compressor cho từng nguồn (độ tin cậy thấp)"
+title: Compressor starting points per source (low confidence)
+title_vi: Điểm xuất phát compressor cho từng nguồn (độ tin cậy thấp)
 topic: dynamics
 tags:
-  instrument: [vocal, kick, snare, bass, acoustic-guitar, electric-guitar, keys]
-  genre: [pop, rock, jazz, edm, speech]
-  technique: [compression, ratio, attack, release, gain-reduction]
-  event: [concert, corporate]
-summary: "Ratio, attack, release and gain-reduction windows for the common live sources, collected from one church-AV blog and an academic paper on automatic compression. Weak sources: use as a first guess, not a recipe."
+  instrument:
+  - vocal
+  - kick
+  - snare
+  - bass
+  - acoustic-guitar
+  - electric-guitar
+  - keys
+  genre:
+  - pop
+  - rock
+  - jazz
+  - edm
+  - speech
+  technique:
+  - compression
+  - ratio
+  - attack
+  - release
+  - gain-reduction
+  event:
+  - concert
+  - corporate
+summary: 'Ratio, attack, release and gain-reduction windows for the common live sources, collected from one church-AV blog and an academic paper on automatic compression. Weak sources: use as a first guess, not a recipe.'
+summary_vi: 'Khoảng Ratio, Attack, Release và Gain Reduction cho các nguồn live thông dụng, tổng hợp từ một blog AV nhà thờ và một bài báo học thuật về compression tự động. Nguồn yếu: dùng làm phỏng đoán đầu tiên, không phải công thức.'
 body: |
   ## Where these numbers come from
 
@@ -36,73 +56,230 @@ body: |
   ## Limits
 
   The kick and snare attacks run to nearly 80 ms, which is slow; use the faster end if you want a tighter hit. No study here tested these settings in live rooms.
+body_vi: |
+  ## Các con số này đến từ đâu
+
+  Phần lớn các khoảng giá trị lấy từ một blog âm thanh nhà thờ (Sharefaith) có lập bảng các thiết lập tiêu biểu; blog này không nằm trong danh sách nguồn uy tín nên trọng số thấp. Các giới hạn chung (Attack 5 đến 250 ms, Release 5 đến 3000 ms, ngắn hơn cho nguồn percussive, soft knee cho độ trong suốt) lấy từ một bài báo đã công bố về intelligent multitrack compression. Một bài của hãng về gain staging bổ sung quy tắc: compressor phải làm việc trên mức đã set đúng, không phải để cứu một mức sai. Mọi thứ chỉ là điểm xuất phát.
+
+  ## Các khoảng khởi điểm
+
+  - **Lead vocal và speech**: Ratio 2:1 đến 4:1, Attack 2 đến 10 ms, Release 40 đến 100 ms, Gain Reduction 3 đến 6 dB.
+  - **Backing vocal**: Ratio 3:1 đến 4:1, Attack 5 đến 15 ms, Release 50 đến 150 ms, 4 đến 8 dB. Do nhánh nghiên cứu suy ra, không phải từ nguồn.
+  - **Kick**: Ratio khoảng 3.5:1 đến 4:1, Attack 20 đến 80 ms để tiếng beater lọt qua, Release 100 đến 300 ms, 3 đến 6 dB.
+  - **Snare**: Ratio khoảng 3.5:1 đến 4:1, Attack 10 đến 78 ms, Release 50 đến 300 ms, 3 đến 6 dB.
+  - **Bass**: Ratio 2.6:1 đến 4:1, Attack 20 đến 45 ms, Release 100 đến 190 ms, 3 đến 6 dB.
+  - **Acoustic guitar**: Ratio 2.5:1 đến 3.4:1, Attack 10 đến 30 ms, Release 150 đến 400 ms, 2 đến 5 dB. Blog ghi Attack trên một giây cho nguồn này, nhiều khả năng là lỗi; khoảng ở đây đã được kẹp lại.
+  - **Electric guitar**: thường để không compress; nếu dùng thì 2:1 đến 4:1, Attack 10 đến 30 ms, Release 100 đến 250 ms, 2 đến 4 dB. Không có nguồn.
+  - **Keys**: Ratio 1.8:1 đến 2.5:1, Attack 5 đến 30 ms, Release 50 đến 112 ms, 1 đến 4 dB.
+  - **MC hoặc presenter**: Ratio 3:1 đến 4:1, Attack 5 đến 10 ms, Release 100 đến 200 ms, 4 đến 8 dB. Suy ra, không có nguồn.
+
+  ## Điều chỉnh theo thể loại
+
+  Jazz: nhẹ tay hơn, Ratio 1.5:1 đến 2.5:1 và giảm 1 đến 2 dB. Rock: nặng hơn, thêm 2 đến 4 dB Gain Reduction và dùng 4:1 trở lên. Pop: Gain Reduction cho vocal nhiều hơn 2 đến 3 dB. EDM: không compress playback; vocal live 4:1 trở lên với 6 đến 10 dB. Speech: đều 3:1 đến 4:1. Những dịch chuyển theo thể loại này là heuristic của sản phẩm.
+
+  ## Vì sao nguồn yếu lại quan trọng
+
+  Mục tiêu Gain Reduction 3 đến 6 dB đến từ các đoạn trích thứ cấp. Một con Compressor lúc nào cũng gánh nặng như vậy trên vocal live sẽ nâng sàn nhiễu (Noise floor) của phòng giữa các câu hát và tăng nguy cơ feedback. Vì thế phải kiểm tra bằng tai và nhìn kim Gain Reduction, đừng tin vào con số.
+
+  ## Giới hạn
+
+  Attack của kick và snare lên gần 80 ms, khá chậm; muốn cú đánh chặt hơn thì dùng đầu nhanh hơn. Không có nghiên cứu nào ở đây thử các thiết lập này trong phòng live.
 rule:
   kind: comp_start
-  applies_to: {source_type: [speech.vocal, vocal.backing, drums.kick, drums.snare, instrument.bass, instrument.guitar.acoustic, instrument.guitar.electric, instrument.keys, speech.mc]}
+  applies_to:
+    source_type:
+    - speech.vocal
+    - vocal.backing
+    - drums.kick
+    - drums.snare
+    - instrument.bass
+    - instrument.guitar.acoustic
+    - instrument.guitar.electric
+    - instrument.keys
+    - speech.mc
   params:
     by_source:
-      speech.vocal: {ratio: [2, 4], attack_ms: [2, 10], release_ms: [40, 100], gr_db: [3, 6]}
-      vocal.backing: {ratio: [3, 4], attack_ms: [5, 15], release_ms: [50, 150], gr_db: [4, 8]}
-      drums.kick: {ratio: [3.5, 4], attack_ms: [20, 80], release_ms: [100, 300], gr_db: [3, 6]}
-      drums.snare: {ratio: [3.5, 4], attack_ms: [10, 78], release_ms: [50, 300], gr_db: [3, 6]}
-      instrument.bass: {ratio: [2.6, 4], attack_ms: [20, 45], release_ms: [100, 190], gr_db: [3, 6]}
-      instrument.guitar.acoustic: {ratio: [2.5, 3.4], attack_ms: [10, 30], release_ms: [150, 400], gr_db: [2, 5]}
-      instrument.guitar.electric: {ratio: [2, 4], attack_ms: [10, 30], release_ms: [100, 250], gr_db: [2, 4]}
-      instrument.keys: {ratio: [1.8, 2.5], attack_ms: [5, 30], release_ms: [50, 112], gr_db: [1, 4]}
-      speech.mc: {ratio: [3, 4], attack_ms: [5, 10], release_ms: [100, 200], gr_db: [4, 8]}
-    general_limits: {attack_ms: [5, 250], release_ms: [5, 3000]}
-  notes: "Starting points from weak sources (church-AV blog, paper limits); backing vocal, electric guitar and MC rows are derived, not sourced."
+      speech.vocal:
+        ratio:
+        - 2
+        - 4
+        attack_ms:
+        - 2
+        - 10
+        release_ms:
+        - 40
+        - 100
+        gr_db:
+        - 3
+        - 6
+      vocal.backing:
+        ratio:
+        - 3
+        - 4
+        attack_ms:
+        - 5
+        - 15
+        release_ms:
+        - 50
+        - 150
+        gr_db:
+        - 4
+        - 8
+      drums.kick:
+        ratio:
+        - 3.5
+        - 4
+        attack_ms:
+        - 20
+        - 80
+        release_ms:
+        - 100
+        - 300
+        gr_db:
+        - 3
+        - 6
+      drums.snare:
+        ratio:
+        - 3.5
+        - 4
+        attack_ms:
+        - 10
+        - 78
+        release_ms:
+        - 50
+        - 300
+        gr_db:
+        - 3
+        - 6
+      instrument.bass:
+        ratio:
+        - 2.6
+        - 4
+        attack_ms:
+        - 20
+        - 45
+        release_ms:
+        - 100
+        - 190
+        gr_db:
+        - 3
+        - 6
+      instrument.guitar.acoustic:
+        ratio:
+        - 2.5
+        - 3.4
+        attack_ms:
+        - 10
+        - 30
+        release_ms:
+        - 150
+        - 400
+        gr_db:
+        - 2
+        - 5
+      instrument.guitar.electric:
+        ratio:
+        - 2
+        - 4
+        attack_ms:
+        - 10
+        - 30
+        release_ms:
+        - 100
+        - 250
+        gr_db:
+        - 2
+        - 4
+      instrument.keys:
+        ratio:
+        - 1.8
+        - 2.5
+        attack_ms:
+        - 5
+        - 30
+        release_ms:
+        - 50
+        - 112
+        gr_db:
+        - 1
+        - 4
+      speech.mc:
+        ratio:
+        - 3
+        - 4
+        attack_ms:
+        - 5
+        - 10
+        release_ms:
+        - 100
+        - 200
+        gr_db:
+        - 4
+        - 8
+    general_limits:
+      attack_ms:
+      - 5
+      - 250
+      release_ms:
+      - 5
+      - 3000
+  notes: Starting points from weak sources (church-AV blog, paper limits); backing vocal, electric guitar and MC rows are derived, not sourced.
 sources:
-  - title: "Intelligent Multitrack Dynamic Range Compression"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf"
-    author: "Ma, Reiss and Black"
-    year: 2015
-    accessed: "2026-11-09"
-    locator: "parameter limits"
-  - title: "Ultimate Audio Compression Guide"
-    publisher: "Sharefaith"
-    kind: article
-    url: "https://www.sharefaith.com/blog/2016/12/ultimate-audio-compression-guide/"
-    year: 2016
-    accessed: "2026-11-09"
-    locator: "per-source settings table (church-AV blog, low weight)"
-  - title: "Gain staging: what it is and how to do it"
-    publisher: "iZotope"
-    kind: article
-    url: "https://www.izotope.com/en/learn/gain-staging.html"
-    accessed: "2026-11-09"
+- title: Intelligent Multitrack Dynamic Range Compression
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf
+  author: Ma, Reiss and Black
+  year: 2015
+  accessed: '2026-11-09'
+  locator: parameter limits
+- title: Ultimate Audio Compression Guide
+  publisher: Sharefaith
+  kind: article
+  url: https://www.sharefaith.com/blog/2016/12/ultimate-audio-compression-guide/
+  year: 2016
+  accessed: '2026-11-09'
+  locator: per-source settings table (church-AV blog, low weight)
+- title: 'Gain staging: what it is and how to do it'
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/en/learn/gain-staging.html
+  accessed: '2026-11-09'
 media:
-  - kind: diagram
-    path: gain-reduction-by-source.png
-    caption: "Target gain reduction by source"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:range_chart"
-  - kind: diagram
-    path: ratio-by-source.png
-    caption: "Compressor ratio starting windows"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:range_chart"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=gBIEaBJbAfY"
-    title: "Compressors and Gates for Live Sound"
-    channel: "Proclaim AV"
-    caption: "Compressors and gates applied to live sound sources (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=8BLsze-hE10"
-    title: "Understanding Compression on Live Vocals"
-    channel: "Attaway Audio"
-    caption: "Compression settings on live vocals (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Lni_H8Ryklk"
-    title: "Compressing Acoustic Guitar | Live Sound Tutorial"
-    channel: "Fuze Audio"
-    caption: "Compressing a live acoustic guitar without over-compressing (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: gain-reduction-by-source.png
+  caption: Target gain reduction by source
+  caption_vi: Gain Reduction mục tiêu theo nguồn
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:range_chart
+- kind: diagram
+  path: ratio-by-source.png
+  caption: Compressor ratio starting windows
+  caption_vi: Khoảng Ratio compressor khởi điểm
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:range_chart
+- kind: video
+  url: https://www.youtube.com/watch?v=gBIEaBJbAfY
+  title: Compressors and Gates for Live Sound
+  channel: Proclaim AV
+  caption: Compressors and gates applied to live sound sources (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Compressor và gate áp dụng cho các nguồn live sound (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=8BLsze-hE10
+  title: Understanding Compression on Live Vocals
+  channel: Attaway Audio
+  caption: Compression settings on live vocals (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Thiết lập compression trên vocal live (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=Lni_H8Ryklk
+  title: Compressing Acoustic Guitar | Live Sound Tutorial
+  channel: Fuze Audio
+  caption: Compressing a live acoustic guitar without over-compressing (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Compress acoustic guitar live mà không bị over-compress (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-import"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

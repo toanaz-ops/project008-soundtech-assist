@@ -1,13 +1,24 @@
 id: instrument-piano-keys
-title: "Piano and keys: acoustic piano mics, stage piano DI and synth pads"
-title_vi: "Piano và keyboard: mic piano cơ, DI stage piano và synth pad"
+title: 'Piano and keys: acoustic piano mics, stage piano DI and synth pads'
+title_vi: 'Piano và keyboard: mic piano cơ, DI stage piano và synth pad'
 topic: instruments
 tags:
-  instrument: [piano, keyboards, synth]
-  genre: [pop, jazz]
-  technique: [mic-placement, di, eq]
-  event: [concert, corporate]
-summary: "Close mics inside an acoustic piano for gain before feedback; DI for stage pianos and synths; keep the low end of keys from stacking with bass and kick."
+  instrument:
+  - piano
+  - keyboards
+  - synth
+  genre:
+  - pop
+  - jazz
+  technique:
+  - mic-placement
+  - di
+  - eq
+  event:
+  - concert
+  - corporate
+summary: Close mics inside an acoustic piano for gain before feedback; DI for stage pianos and synths; keep the low end of keys from stacking with bass and kick.
+summary_vi: Đặt mic gần bên trong đàn piano acoustic để có gain before feedback; dùng DI cho stage piano và synth; đừng để low end của keys chồng lên bass và kick.
 body: |
   ## Acoustic piano
 
@@ -47,29 +58,118 @@ body: |
   ## Live and WING tips
 
   Use one static EQ band to tame harshness on bright patches rather than reaching for dynamics. Keep the keyboard DI out of the monitor wedge's direct path to avoid ringing.
+body_vi: |
+  ## Piano acoustic
+
+  Mic đặt xa không khả thi khi khuếch đại do giới hạn gain before feedback, nên chuẩn là đặt mic gần hoặc bên trong đàn. Condenser thường được ưu tiên vì giữ được toàn dải; Shure liệt kê Beta 181, KSM137 và PGA81 trong các model phù hợp.
+
+  - **Trên dây treble:** sáng hơn. **Trên dây bass:** nhiều low end hơn.
+  - **Gần búa (hammer):** Attack sắc hơn. **Xa hơn:** tiếng mềm, hòa vào nhau.
+  - **Hai mic, một trên treble và một trên bass,** là điểm xuất phát phổ biến; cho balance và khả năng kiểm soát mix, và có thể pan để mở rộng.
+  - **Boundary mic dưới nắp đàn:** tăng độ cách ly và giảm feedback; Beta 181 có thể gắn nằm ngang để nắp vẫn đóng được. Khép một phần hoặc đóng hẳn nắp cũng giảm spill.
+  - Mic kẹp nhỏ gọn (loại DPA 4099) tiết kiệm chỗ chân mic trên sân khấu đông.
+
+  ## Stage piano và synth
+
+  Stage piano hoặc synth xuất tín hiệu line-level, nên dùng DI box (hoặc line input trực tiếp) và bỏ amp với mic, trừ khi người chơi keys nhất quyết muốn tiếng amp. Đây là thực hành chung chứ không lấy từ các trang được trích dẫn. Hai kênh DI mono, pan trái và phải, giữ patch stereo vẫn stereo; một kênh đã cộng lại (summed) giữ mono cho phòng nhỏ.
+
+  ## EQ xuất phát
+
+  Các vùng xuất phát của iZotope cho piano:
+
+  - 20-60 Hz: năng lượng sub, live thường không cần; high-pass quanh 40-80 Hz khi có full band.
+  - 60-200 Hz: body; cắt bớt nếu nó chen với bass và kick.
+  - 200-500 Hz: có thể bị mud.
+  - 2-4 kHz: có thể gắt.
+
+  Patch pad và strings thường chen ở 200-500 Hz; một shelf cắt nhẹ ở đó chừa chỗ cho vocal và guitar.
+
+  ## Dynamics
+
+  Piano trải trên bảy octave (fundamental khoảng 27 Hz đến 4.2 kHz), nên một compressor duy nhất sẽ phản ứng với nốt bass trước. Chỉ dùng compression nhẹ nếu dynamics của người chơi quá cực đoan, và ưu tiên ride fader.
+
+  ## Vấn đề thường gặp
+
+  - **Piano ì hoặc feedback gần monitor:** đưa mic lại gần dây hơn, rời khỏi soundboard, hoặc dùng boundary mic.
+  - **Piano rộng bị sập trong PA mono:** kiểm tra polarity giữa hai mic.
+  - **Level patch synth nhảy:** nhờ người chơi chạy các patch to nhất ở soundcheck.
+
+  ## Mẹo live và WING
+
+  Dùng một band EQ tĩnh để dằn độ gắt ở các patch sáng thay vì dùng tới dynamics. Giữ DI của keyboard ra khỏi đường trực tiếp của monitor wedge để tránh ringing.
 rule:
-  applies_to: {source_type: [keys.piano, keys.stage_piano, keys.synth], genre: [pop, jazz]}
+  applies_to:
+    source_type:
+    - keys.piano
+    - keys.stage_piano
+    - keys.synth
+    genre:
+    - pop
+    - jazz
   params:
-    hpf_hz: [40, 80]
-    mud_cut_hz: [200, 500]
-    harsh_cut_hz: [2000, 4000]
-  notes: "Starting points; DI is the usual path for stage pianos and synths."
+    hpf_hz:
+    - 40
+    - 80
+    mud_cut_hz:
+    - 200
+    - 500
+    harsh_cut_hz:
+    - 2000
+    - 4000
+  notes: Starting points; DI is the usual path for stage pianos and synths.
 sources:
-  - {title: "How to Choose the Best Mic for the Pianist", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/how-to-choose-the-best-mic-for-the-pianist", accessed: "2026-11-09", locator: "Placement; Live Feedback"}
-  - {title: "How to Mic a Grand Piano for Recording and Live Sound", publisher: "Shure", kind: article, url: "https://shure.com/en-US/insights/how-to-mic-a-grand-piano-for-recording-and-live-sound", accessed: "2026-11-09", locator: "Placement (video-based)"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Piano"}
-  - {title: "3.5 Instrument Ranges", publisher: "LibreTexts", kind: article, url: "https://human.libretexts.org/Workbench/From_Ear_to_Engineer/03%3A_Psychoacoustics/3.05%3A_Instrument_Ranges", accessed: "2026-11-09", locator: "Instrument Ranges (piano 27-4186 Hz)"}
+- title: How to Choose the Best Mic for the Pianist
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/how-to-choose-the-best-mic-for-the-pianist
+  accessed: '2026-11-09'
+  locator: Placement; Live Feedback
+- title: How to Mic a Grand Piano for Recording and Live Sound
+  publisher: Shure
+  kind: article
+  url: https://shure.com/en-US/insights/how-to-mic-a-grand-piano-for-recording-and-live-sound
+  accessed: '2026-11-09'
+  locator: Placement (video-based)
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Piano
+- title: 3.5 Instrument Ranges
+  publisher: LibreTexts
+  kind: article
+  url: https://human.libretexts.org/Workbench/From_Ear_to_Engineer/03%3A_Psychoacoustics/3.05%3A_Instrument_Ranges
+  accessed: '2026-11-09'
+  locator: Instrument Ranges (piano 27-4186 Hz)
 media:
-  - {kind: diagram, path: piano-eq.png, caption: "Starting EQ for a close-miked acoustic piano", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=J8F4m8nJxBQ", title: "How to Mic a Grand Piano for Recording and Live Sound", channel: "Shure Creators", caption: "Blumlein, spaced pair, midway and hammer-position setups"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=k19mByCajDo", title: "How to mount the DPA 4099 Instrument Mic on a piano with a DPA Clip", channel: "DPA Microphones A/S", caption: "Clip mounting on piano"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=UXF70zgc-Q4"
-    title: "Mixing Keys | Mixing Pianos and Synth Pads for Worship"
-    channel: "Attaway Audio"
-    caption: "Mixing pianos and synth pads for worship (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: piano-eq.png
+  caption: Starting EQ for a close-miked acoustic piano
+  caption_vi: EQ xuất phát cho piano acoustic mic sát
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=J8F4m8nJxBQ
+  title: How to Mic a Grand Piano for Recording and Live Sound
+  channel: Shure Creators
+  caption: Blumlein, spaced pair, midway and hammer-position setups
+  caption_vi: Các setup Blumlein, spaced pair, midway và hammer-position
+- kind: video
+  url: https://www.youtube.com/watch?v=k19mByCajDo
+  title: How to mount the DPA 4099 Instrument Mic on a piano with a DPA Clip
+  channel: DPA Microphones A/S
+  caption: Clip mounting on piano
+  caption_vi: Gắn mic kẹp trên piano
+- kind: video
+  url: https://www.youtube.com/watch?v=UXF70zgc-Q4
+  title: Mixing Keys | Mixing Pianos and Synth Pads for Worship
+  channel: Attaway Audio
+  caption: Mixing pianos and synth pads for worship (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Mix piano và synth pad cho worship (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

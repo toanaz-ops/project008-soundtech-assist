@@ -1,13 +1,23 @@
 id: multiband-compression
-title: "Multiband compression"
-title_vi: "Nén đa băng tần (multiband compression)"
+title: Multiband compression
+title_vi: Nén đa băng tần (multiband compression)
 topic: dynamics
 tags:
-  instrument: [vocal, bass, guitar]
+  instrument:
+  - vocal
+  - bass
+  - guitar
   genre: []
-  technique: [multiband, compression, crossover, dynamic-eq]
-  event: [corporate, concert]
-summary: "A multiband compressor splits the signal into bands and compresses each separately, so a loud bass note does not pull down the highs. Use the fewest bands that solve one specific problem."
+  technique:
+  - multiband
+  - compression
+  - crossover
+  - dynamic-eq
+  event:
+  - corporate
+  - concert
+summary: A multiband compressor splits the signal into bands and compresses each separately, so a loud bass note does not pull down the highs. Use the fewest bands that solve one specific problem.
+summary_vi: Multiband compressor chia tín hiệu thành các band và compress từng band riêng, nên một nốt bass to không kéo các nốt high xuống. Dùng ít band nhất có thể để giải quyết một vấn đề cụ thể.
 body: |
   A normal compressor reacts to the whole signal. If a loud low note triggers it, the highs get turned down too, so the mix dulls. Sound On Sound calls this "dynamic damage" and presents multiband compression as the cure. A multiband compressor splits the sound into bands with crossovers and gives each band its own threshold, ratio and timing.
 
@@ -42,36 +52,83 @@ body: |
   - Reaching for it first. A dynamic EQ or ordinary EQ may be a better fit.
   - Set-and-forget settings for sibilance; the threshold may need riding.
   - Boosting mid-range to compensate for harshness; this makes other frequencies sound harsh too.
+body_vi: |
+  **Vấn đề:** compressor thông thường phản ứng với toàn bộ tín hiệu. Một nốt thấp to kích nó thì phần high cũng bị hạ xuống, mix tối đi. Sound On Sound gọi đây là "dynamic damage" và đưa multiband compression làm thuốc chữa. Multiband compressor chia âm thanh thành các band bằng crossover và cho mỗi band Threshold, Ratio và timing riêng.
+
+  ## Khi nào nó thật sự giúp
+
+  - **Chộp cổ các gai tần số cao** như tiếng pick trên acoustic guitar hoặc tiếng dùi chạm cymbal: dùng band trên cùng với Attack nhanh, Release nhanh, và Ratio thường trên 5:1.
+  - **Làm đều độ gắt trên vocal**, khi các nguyên âm sáng nhảy ra: Ratio nhẹ (khoảng 2:1) và khoảng 6 dB Gain Reduction ở band trên, kèm Makeup Gain.
+  - **Kiểm soát âm xuýt (De-essing)** khi bạn không có de-esser chuyên dụng: một band hẹp quanh vùng sibilance, ví dụ gần 8 kHz (xem entry de-esser).
+  - **Hiệu ứng tiệm cận (Proximity Effect) hoặc dồn tiếng của phòng**: một band thấp, dưới khoảng 300 Hz trên vocal mic gần, dưới khoảng 100 Hz trên upright bass hoặc cộng hưởng bass-amp, hoặc các cú thump sub trên DI bass.
+  - **Một vùng gắt** trên vocal hoặc electric guitar, nơi một EQ cut sẽ làm tối cả tiếng.
+
+  ## Thao tác thực chiến
+
+  1. Quyết định bạn đang giải quyết vấn đề gì trước khi đụng vào band nào.
+  2. Dùng ít band nhất có thể. Lỗi phổ biến nhất là bật hết mọi band mọi lúc, điều mà preset của nhà sản xuất hay khuyến khích. Đừng bắt 4 band cùng gánh tạ khi nhiều cách sửa chỉ cần một band hoạt động.
+  3. Chọn crossover ngoài dải quan trọng nhất của nguồn. Crossover nằm giữa dải giọng với thiết lập rất khác nhau ở hai bên sẽ làm hỏng giọng; một gợi ý là đặt crossover thấp dưới giọng và crossover cao ở hoặc trên khoảng 2.5 kHz. Chọn điểm bằng tai.
+  4. Việc chính xác, hẹp thì dùng slope dốc (trên 18 dB/oct); làm mượt rộng thì slope nhẹ hơn là ổn.
+  5. Solo hoặc mute band đã xử lý khi set để chắc nó bắt đúng vấn đề.
+
+  ## Thông số khởi điểm (chỉnh bằng tai)
+
+  - Kiểm soát spike: band trên cùng, Ratio 5:1 trở lên, Attack rất nhanh, Release nhanh.
+  - Làm đều vocal nhẹ: Ratio khoảng 2:1, khoảng 6 dB Gain Reduction.
+  - Đừng set Attack cực nhanh trên vocal, nếu không giọng nghe bị ép bẹp.
+
+  ## Trên mix bus và PA
+
+  Trên main bus, multiband compressor có thể kiểm soát low-end ù do một căn phòng cụ thể, nhưng nó đổi màu âm của cả PA, nên chỉ dùng khi EQ cố định không sửa được, và giữ lượng nhỏ. Tránh dùng nó làm công cụ tăng độ lớn trong hệ thống live: nó sẽ pump theo nhạc.
+
+  ## Lỗi thường gặp
+
+  - Với tay lấy nó đầu tiên. Dynamic EQ hoặc EQ thường có thể phù hợp hơn.
+  - Thiết lập set-and-forget cho sibilance; Threshold có thể cần được rê.
+  - Boost mid để bù độ gắt; làm vậy các tần số khác cũng nghe gắt theo.
 rule:
-  applies_to: {source_type: [vocal.lead, vocal.speech, bass, guitar.acoustic]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    - vocal.speech
+    - bass
+    - guitar.acoustic
   params:
-    spike_ratio_min: [5, 10]
-    vocal_ratio: [2, 3]
-    vocal_gr_db: [4, 6]
-    crossover_slope_db_oct_min: [18, 48]
-  notes: "starting points; use the minimum number of bands"
+    spike_ratio_min:
+    - 5
+    - 10
+    vocal_ratio:
+    - 2
+    - 3
+    vocal_gr_db:
+    - 4
+    - 6
+    crossover_slope_db_oct_min:
+    - 18
+    - 48
+  notes: starting points; use the minimum number of bands
 sources:
-  - title: "How And When To Use Multiband Compression"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/how-and-when-use-multiband-compression"
-    accessed: "2026-11-09"
-    locator: "Smoothing Spikes / Brighter Vocals / Harsh Harrier / At The Low End"
-  - title: "Advanced Compression Techniques Part 1"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/advanced-compression-techniques-part-1"
-    accessed: "2026-11-09"
-    locator: "Dynamic Damage"
-media: []
+- title: How And When To Use Multiband Compression
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/how-and-when-use-multiband-compression
+  accessed: '2026-11-09'
+  locator: Smoothing Spikes / Brighter Vocals / Harsh Harrier / At The Low End
+- title: Advanced Compression Techniques Part 1
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/advanced-compression-techniques-part-1
+  accessed: '2026-11-09'
+  locator: Dynamic Damage
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=LNkaGACWuhs"
-    title: "Introduction to FabFilter Pro-MB Multiband Compressor / Expander"
-    channel: "FabFilter"
-    caption: "FabFilter introduction to multiband compression (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=LNkaGACWuhs
+  title: Introduction to FabFilter Pro-MB Multiband Compressor / Expander
+  channel: FabFilter
+  caption: FabFilter introduction to multiband compression (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Giới thiệu multiband compression của FabFilter (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

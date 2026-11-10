@@ -1,16 +1,24 @@
 id: vocal-proximity-effect
-title: "Proximity effect: how mic distance changes the bass"
-title_vi: "Hiệu ứng tiệm cận (proximity effect): khoảng cách micro làm đổi âm trầm"
+title: 'Proximity effect: how mic distance changes the bass'
+title_vi: 'Hiệu ứng tiệm cận (proximity effect): khoảng cách micro làm đổi âm trầm'
 topic: vocals
 tags:
-  instrument: [vocal, microphone]
+  instrument:
+  - vocal
+  - microphone
   genre: []
-  technique: [proximity-effect, mic-technique, hpf]
-  event: [concert, corporate]
+  technique:
+  - proximity-effect
+  - mic-technique
+  - hpf
+  event:
+  - concert
+  - corporate
 summary: |
   Directional microphones boost low frequencies as the source gets closer. The effect is strongest
   within a few centimetres and nearly gone beyond about half a metre, so a singer who moves
   changes the tone of the vocal.
+summary_vi: Mic có hướng (directional) boost tần số thấp khi nguồn lại gần. Hiệu ứng mạnh nhất trong vài centimet và gần như hết khi xa hơn khoảng nửa mét, nên ca sĩ mà di chuyển thì tone của vocal đổi theo.
 body: |
   **What it is.** Pressure-gradient (cardioid, supercardioid and similar) microphones respond to
   the difference in pressure at the front and back of the capsule. When the source is very close,
@@ -46,52 +54,81 @@ body: |
   **Common mistakes:** cutting low-end for a singer who is actually just too close, adding bass
   to a singer who was told to hold the mic farther away, and ignoring that a headset's fixed
   position removes most variation (which is why headsets are easier to EQ).
+body_vi: |
+  **Nó là gì.** Mic pressure-gradient (cardioid, supercardioid và tương tự) phản ứng với chênh lệch áp suất giữa mặt trước và mặt sau của capsule. Khi nguồn rất gần, chênh lệch đó lớn hơn nhiều ở tần số thấp, nên bass bị boost. Mic omnidirectional (pressure) thuần túy thì không có hiện tượng này. Đây là vật lý, không phải lỗi của một hãng nào.
+
+  **Lớn cỡ nào?** Văn bản đi kèm *Mixing Secrets* của Mike Senior đưa số liệu cho một cardioid lý tưởng ở 100 Hz: khoảng 21 dB boost ở 1 inch (2.5 cm), khoảng 6 dB ở 6 inch, khoảng 3 dB ở 12 inch và dưới 1 dB ở 24 inch. Văn bản cũng ghi chú rằng bass boost bắt đầu ở tần số càng cao khi bạn càng gần (từ khoảng 45 Hz ở hai feet đến hơn 1 kHz ở một inch), và mic thật thường cho ít hơn mức lý tưởng vì chúng được thiết kế sẵn một phần bass rolloff. Coi các con số là hình dạng của đường cong; mỗi con mic và mỗi ca sĩ sẽ khác.
+
+  **Vì sao quan trọng khi live.** Ca sĩ phòng thu đứng yên; ca sĩ live thì di chuyển. Gần hơn thì ấm hơn, đôi khi boomy; xa hơn thì mỏng. Sound On Sound ghi chú rằng hiệu ứng dưới khoảng 300 Hz thay đổi khi ca sĩ tiến lại gần hoặc lùi ra xa mic directional, và gợi ý dùng multiband compression trên band thấp để cân lại.
+
+  **Xử lý thế nào:**
+
+  - Hướng dẫn ca sĩ giữ khoảng cách đều (một nắm tay tính từ lưới mic là điểm bắt đầu phổ biến) và nói rõ rằng ghé sát mic cũng như đang đẩy một bass boost.
+  - Set HPF cao hơn vùng boomy, quanh 80-125 Hz làm cửa sổ khởi đầu, cao hơn cho những ca sĩ ăn mic (ngậm sát mic).
+  - Dùng low-shelf nhẹ hoặc một cut nhỏ ở vùng 150-300 Hz thay vì một boost lớn cố định; đừng "chữa" bằng một cú boost low lớn trên desk vì nó làm tình trạng ghé sát mic tệ hơn.
+  - Cân nhắc một con mic có rolloff sẵn, hoặc một con mic có capsule được thiết kế để giữ tone ổn định theo khoảng cách (data sheet của hãng cho thấy đường cong on-axis ở cự ly gần).
+  - Dùng proximity có chủ đích: giọng mỏng có thể được thêm độ nặng bằng cách hát sát mic, giọng boomy được làm mỏng bớt bằng cách lùi ra. Khoảng cách là một nút chỉnh tone miễn phí.
+
+  **Lỗi thường gặp:** cut low-end cho một ca sĩ thực ra chỉ đang đứng quá gần, thêm bass cho một ca sĩ vừa được dặn cầm mic xa hơn, và quên rằng vị trí cố định của headset loại bỏ phần lớn biến thiên (đó là lý do headset dễ EQ hơn).
 rule:
-  applies_to: {source_type: [vocal.lead, speech.mic], mic_pattern: [cardioid, supercardioid]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    - speech.mic
+    mic_pattern:
+    - cardioid
+    - supercardioid
   params:
-    ideal_cardioid_boost_db_at_6in_100hz: [6, 6]
-    hpf_hz: [80, 125]
-  notes: "Idealised cardioid figures; real mics show less. Distance in the diagram is inches, boost in dB at 100 Hz."
+    ideal_cardioid_boost_db_at_6in_100hz:
+    - 6
+    - 6
+    hpf_hz:
+    - 80
+    - 125
+  notes: Idealised cardioid figures; real mics show less. Distance in the diagram is inches, boost in dB at 100 Hz.
 sources:
-  - title: "Mixing Secrets for the Small Studio, companion text - Chapter 2, Studio Gear (microphones)"
-    publisher: "Mike Senior"
-    kind: book
-    url: "https://cmtext.com/studio/chapter2_mics2.php"
-    accessed: "2026-11-09"
-    locator: "Proximity Effect"
-  - title: "Vocal Mix Prep"
-    publisher: "Sound On Sound"
-    kind: article
-    author: "Mike Senior"
-    year: 2022
-    url: "https://www.soundonsound.com/techniques/vocal-mix-prep"
-    accessed: "2026-11-09"
-    locator: "Inconsistent Vocal Timbre"
-  - title: "Mixing Pop Vocals"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/mixing-pop-vocals"
-    accessed: "2026-11-09"
-    locator: "Compression: multiband control at the extremes"
+- title: Mixing Secrets for the Small Studio, companion text - Chapter 2, Studio Gear (microphones)
+  publisher: Mike Senior
+  kind: book
+  url: https://cmtext.com/studio/chapter2_mics2.php
+  accessed: '2026-11-09'
+  locator: Proximity Effect
+- title: Vocal Mix Prep
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/vocal-mix-prep
+  author: Mike Senior
+  year: 2022
+  accessed: '2026-11-09'
+  locator: Inconsistent Vocal Timbre
+- title: Mixing Pop Vocals
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/mixing-pop-vocals
+  accessed: '2026-11-09'
+  locator: 'Compression: multiband control at the extremes'
 media:
-  - kind: diagram
-    path: proximity-boost-vs-distance.png
-    caption: "Approximate bass boost at 100 Hz versus distance for an ideal cardioid (figures from the cited Chapter 2 text)."
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=CGTlPEzaCsE"
-    title: "Shure in 60 Seconds - What is Proximity Effect?"
-    channel: "Shure Performance & Production"
-    caption: "Shure in 60 seconds on proximity effect (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=hzfx55aTWBI"
-    title: "Shure SM58 Myths 4 - Proximity Effect"
-    channel: "Shure"
-    caption: "Shure on proximity effect and the SM58 (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: proximity-boost-vs-distance.png
+  caption: Approximate bass boost at 100 Hz versus distance for an ideal cardioid (figures from the cited Chapter 2 text).
+  caption_vi: Mức bass boost xấp xỉ ở 100 Hz theo khoảng cách cho một cardioid lý tưởng (số liệu từ văn bản Chương 2 đã trích dẫn).
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=CGTlPEzaCsE
+  title: Shure in 60 Seconds - What is Proximity Effect?
+  channel: Shure Performance & Production
+  caption: Shure in 60 seconds on proximity effect (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Shure trong 60 giây về proximity effect (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
+- kind: video
+  url: https://www.youtube.com/watch?v=hzfx55aTWBI
+  title: Shure SM58 Myths 4 - Proximity Effect
+  channel: Shure
+  caption: Shure on proximity effect and the SM58 (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Shure về proximity effect và SM58 (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

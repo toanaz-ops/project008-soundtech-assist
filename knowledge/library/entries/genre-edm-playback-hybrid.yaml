@@ -1,13 +1,26 @@
 id: genre-edm-playback-hybrid
-title: "EDM and playback-hybrid shows: tracks plus live, sub management"
-title_vi: "EDM và show lai playback: track kết hợp live, quản lý sub"
+title: 'EDM and playback-hybrid shows: tracks plus live, sub management'
+title_vi: 'EDM và show lai playback: track kết hợp live, quản lý sub'
 topic: genre
 tags:
-  instrument: [playback, subwoofer, bass, vocal]
-  genre: [edm]
-  technique: [playback-management, sub-management, low-cut, phase-check]
-  event: [concert, festival, club]
-summary: "Hybrid shows run tracks or stems alongside live performers. The mixer's job is a reliable playback feed, a controlled low end through a proper sub system, and keeping live parts audible over dense backing."
+  instrument:
+  - playback
+  - subwoofer
+  - bass
+  - vocal
+  genre:
+  - edm
+  technique:
+  - playback-management
+  - sub-management
+  - low-cut
+  - phase-check
+  event:
+  - concert
+  - festival
+  - club
+summary: Hybrid shows run tracks or stems alongside live performers. The mixer's job is a reliable playback feed, a controlled low end through a proper sub system, and keeping live parts audible over dense backing.
+summary_vi: Show hybrid chạy track hoặc stem cùng với người biểu diễn live. Việc của mixer là có một playback feed đáng tin cậy, low end được kiểm soát qua hệ thống sub đúng chuẩn, và giữ cho phần live vẫn nghe rõ trên nền backing dày.
 body: |
   ## What is different
 
@@ -38,46 +51,79 @@ body: |
   - Boosting deep bass to impress and overloading the PA.
 
   I found no reputable source that gives a crossover frequency, sub level or loudness target for EDM live shows, so none is given. Measure with a real analyser in the room.
+body_vi: |
+  ## Khác biệt ở đâu
+
+  Các show electronic và hybrid dồn nhiều âm thanh vào playback, nên việc của FOH chuyển từ cân bằng nhạc cụ sang quản lý nguồn: track đến bằng đường nào, to cỡ nào so với phần live, và bao nhiêu low end được đưa vào phòng. Nguồn tham khảo ở đây khá mỏng. Những nguồn tốt nhất tôi mở được là hai bài tổng quát của Sound On Sound về playback và bass live, nên mục này chỉ bám vào những gì chúng hỗ trợ và không đưa con số riêng cho EDM.
+
+  ## Playback
+
+  Paul White mô tả một band đưa backing từ CD vào PA ở dạng stereo, với effect live trên các phần backing, và ghi lại rằng theo kinh nghiệm của ông laptop từng bị crash, vì thế ông dùng CD. Ông cũng báo cáo một laptop Mac đưa vào PA sạch khi chạy pin nhưng bị buzz khi cắm điện lưới. Cả hai điểm này vẫn đúng với các rig hiện đại: coi nguồn playback là một rủi ro, test khi PA đang bật và sạc đã cắm, và luôn có phương án dự phòng. Giữ playback trên các stereo channel riêng để bạn ride nó so với phần live và áp dụng high-pass hoặc EQ mà không chạm vào mic live.
+
+  ## Low end và subwoofer
+
+  Các phần trống điện tử mang nhiều năng lượng tần số thấp, nên công suất low end và Headroom rất quan trọng (White). Cấp tín hiệu cho sub từ một hệ thống đúng nghĩa có crossover, không phải từ một aux send: cách dùng aux khiến loa main phải gánh bass mà chúng không nên gánh. Dùng high-pass filter trên các channel không cần low end để sub không bị quá tải (White; Burton). Vị trí đặt sub ít quan trọng hơn so với monitor, và một bức tường hay góc phòng có thể tăng thêm output.
+
+  Jon Burton trích dẫn các kỹ sư lưu ý rằng nghệ sĩ thường không muốn sub làm rung cả sân khấu, nên hãy kiểm tra họ cần gì trên stage trước khi đẩy hệ thống.
+
+  ## Cân bằng live với track
+
+  Vocal live đè lên track dày cần cách xử lý giống như pop: playback sáng có thể che lấp (Masking) vocal, nên hãy high-shelf hoặc EQ track và cho giọng live chỗ riêng. Xem mục live pop. Hãy đi quanh phòng nghe: Burton lưu ý vị trí mix, thường sát tường sau ở các venue nhỏ, có thể đánh lừa bạn về bass.
+
+  ## Effect
+
+  Effect thường đã nằm sẵn trong track; chỉ thêm delay hoặc reverb cho phần live, và giữ các return được high-pass để chúng không thêm năng lượng ở mức sub.
+
+  ## Lỗi thường gặp
+
+  - Tin vào feed laptop mà không có đường dự phòng.
+  - Để track sub-bass và bass live chồng lên nhau.
+  - Boost bass sâu để gây ấn tượng rồi làm PA quá tải.
+
+  Tôi không tìm thấy nguồn đáng tin nào cho tần số crossover, mức sub hay mục tiêu loudness cho show EDM live, nên không đưa ra. Hãy đo bằng analyser thật ngay trong phòng.
 rule:
   applies_to:
-    source_type: [playback, subwoofer]
-    genre: [edm]
+    source_type:
+    - playback
+    - subwoofer
+    genre:
+    - edm
   params: {}
-  notes: "No numeric guidance sourced. Structural rules only: sub fed via crossover not aux; check playback and sub phase."
+  notes: 'No numeric guidance sourced. Structural rules only: sub fed via crossover not aux; check playback and sub phase.'
 sources:
-  - title: "Getting Your 'Studio Sound' Live"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/getting-your-studio-sound-live"
-    author: "Paul White"
-    year: 2003
-    accessed: "2026-11-09"
-    locator: "Playback and Backing Tracks; Sub and Low End"
-  - title: "Engineering Bass Guitars Live"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live"
-    author: "Jon Burton"
-    year: 2014
-    accessed: "2026-11-09"
-    locator: "Sub Feeds; Practical Tips"
-  - title: "Mixing Pop Vocals for Live Concerts"
-    publisher: "Harman Professional"
-    kind: article
-    url: "https://pro.harman.com/insights/?p=9222"
-    author: "Vincent Casamatta"
-    year: 2020
-    accessed: "2026-11-09"
-    locator: "Playback tracks"
-media: []
+- title: Getting Your 'Studio Sound' Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/getting-your-studio-sound-live
+  author: Paul White
+  year: 2003
+  accessed: '2026-11-09'
+  locator: Playback and Backing Tracks; Sub and Low End
+- title: Engineering Bass Guitars Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-bass-guitars-live
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Sub Feeds; Practical Tips
+- title: Mixing Pop Vocals for Live Concerts
+  publisher: Harman Professional
+  kind: article
+  url: https://pro.harman.com/insights/?p=9222
+  author: Vincent Casamatta
+  year: 2020
+  accessed: '2026-11-09'
+  locator: Playback tracks
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=yyfaHGCLxFA"
-    title: "Seperate Click+Guide to IEM Through Playback App"
-    channel: "Lenny Scolaro"
-    caption: "Sending click and guide to in-ear monitors from a playback app (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=yyfaHGCLxFA
+  title: Seperate Click+Guide to IEM Through Playback App
+  channel: Lenny Scolaro
+  caption: Sending click and guide to in-ear monitors from a playback app (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Gửi click và guide tới in-ear monitor từ một app playback (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

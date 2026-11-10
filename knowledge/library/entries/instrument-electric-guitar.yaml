@@ -1,13 +1,21 @@
 id: instrument-electric-guitar
-title: "Electric guitar: miking the amp and EQ starting points"
-title_vi: "Guitar điện: mic loa amp và điểm khởi đầu EQ"
+title: 'Electric guitar: miking the amp and EQ starting points'
+title_vi: 'Guitar điện: mic loa amp và điểm khởi đầu EQ'
 topic: instruments
 tags:
-  instrument: [electric-guitar]
-  genre: [rock, pop]
-  technique: [mic-placement, eq, di]
-  event: [concert]
-summary: "An SM57-style dynamic on a working speaker, a gentle high-pass and a mud cut, and a few stage-volume and phase pitfalls specific to guitar rigs."
+  instrument:
+  - electric-guitar
+  genre:
+  - rock
+  - pop
+  technique:
+  - mic-placement
+  - eq
+  - di
+  event:
+  - concert
+summary: An SM57-style dynamic on a working speaker, a gentle high-pass and a mud cut, and a few stage-volume and phase pitfalls specific to guitar rigs.
+summary_vi: Một dynamic kiểu SM57 hướng vào loa đang chạy, high-pass nhẹ và cut mud, cùng vài cái bẫy về stage volume và phase đặc thù của rig guitar.
 body: |
   ## Mic choice and placement
 
@@ -36,26 +44,89 @@ body: |
   ## Live and WING tips
 
   Ask for the loudest and quietest sounds at soundcheck to learn the range, and set the channel gain for the loudest. On a WING, one HPF plus one or two EQ bands is usually enough; tame harshness with a cut first, a boost second. Consider a DI or modelled output blended under the mic for a spill-free body.
+body_vi: |
+  ## Chọn mic và vị trí đặt
+
+  Dynamic mic thường là khởi đầu: SM57 và Sennheiser e906 phổ biến, và đỉnh presence của chúng làm nổi độ crunch của guitar. Condenser large-diaphragm nghe rộng và mở hơn nhưng thiếu đỉnh đó, nên khó xuyên qua band. Ribbon nghe mượt và dễ chịu nhưng mong manh trên stage to.
+
+  - **Hướng vào một loa đang chạy.** Với 2x12 hoặc 4x12, hãy chắc bạn đang hướng vào driver thực sự phát tiếng.
+  - Vị trí đổi tiếng: hướng về dust cap thì sáng và gắt hơn; hướng về mép cone thì tối và ấm hơn. Các hướng dẫn thực tế bất đồng về điểm ngọt (mép cap hay nửa đường ra), nên bắt đầu cách grille khoảng một hai inch và chỉnh bằng tai. Gần hơn thì thêm low end qua hiệu ứng tiệm cận (Proximity effect).
+  - Đánh giá vị trí từ tín hiệu trên desk hoặc headphone, đừng dựa vào tiếng amp trong phòng.
+  - Một mic cho kết quả lặp lại được, ít vấn đề phase hơn. Hai mic hoặc mic cộng DI cần check polarity.
+
+  ## EQ khởi đầu
+
+  - High-pass quanh 80-100 Hz với Slope thoải; Slope dốc có thể tách guitar khỏi bass.
+  - Mud nằm ở 200-500 Hz; cut nhẹ tâm ở chỗ đục nhất, đừng cắt mất phần body (iZotope: body 150-300 Hz, core 300 Hz đến 1.5 kHz).
+  - Độ gắt hoặc hung hãn nằm ở 2-5 kHz và thường cần cắt bớt quanh 3-6 kHz.
+  - Nhớ rằng guitar mic từ amp đã có roll-off của chính cabinet ở trên vài kHz.
+
+  ## Vấn đề thường gặp
+
+  - **Phase và comb filtering** khi dùng nhiều mic hoặc mic cộng DI. Mẹo của Burton: làm cho tiếng tổng hợp tệ nhất có thể, đảo polarity một channel, và giữ cái nào tốt hơn.
+  - **Level nhảy giữa các patch:** solo distort có thể nhỏ hơn tiếng clean; check mọi patch ở soundcheck.
+  - **Hiệu ứng stereo sụp khi nghe mono** và reverb chồng (pedal cộng amp cộng room) làm tiếng nhoè.
+  - **Spill vào mic vocal:** hướng cabinet off-axis, nâng lên stand, hoặc cách ly sau tấm màn.
+  - Guitarist nghe amp ở độ cao đầu gối; ở độ cao đầu nó có thể nghe rất khác.
+
+  ## Mẹo live và WING
+
+  Xin tiếng to nhất và nhỏ nhất ở soundcheck để biết dải level, và set channel gain theo tiếng to nhất. Trên WING, một HPF cộng một hai band EQ thường là đủ; xử lý độ gắt bằng cut trước, boost sau. Cân nhắc blend một DI hoặc output modelled phía dưới mic để có body không spill.
 rule:
-  applies_to: {source_type: [guitar.electric], genre: [rock, pop]}
+  applies_to:
+    source_type:
+    - guitar.electric
+    genre:
+    - rock
+    - pop
   params:
-    hpf_hz: [80, 100]
-    mud_cut_hz: [200, 500]
-    harsh_cut_hz: [3000, 6000]
-  notes: "Starting points; sources disagree on the speaker sweet spot."
+    hpf_hz:
+    - 80
+    - 100
+    mud_cut_hz:
+    - 200
+    - 500
+    harsh_cut_hz:
+    - 3000
+    - 6000
+  notes: Starting points; sources disagree on the speaker sweet spot.
 sources:
-  - {title: "Miking Guitar Amps On Stage", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/miking-guitar-amps-stage", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Mic Choice; Placement; Common Problems"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Electric guitar"}
-  - {title: "How to Fix Muddy Electric Guitars", publisher: "Waves Audio", kind: article, url: "https://waves.com/how-to-fix-muddy-electric-guitars", accessed: "2026-11-09", locator: "High-Pass Filtering; Mud Range"}
+- title: Miking Guitar Amps On Stage
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/miking-guitar-amps-stage
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Mic Choice; Placement; Common Problems
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Electric guitar
+- title: How to Fix Muddy Electric Guitars
+  publisher: Waves Audio
+  kind: article
+  url: https://waves.com/how-to-fix-muddy-electric-guitars
+  accessed: '2026-11-09'
+  locator: High-Pass Filtering; Mud Range
 media:
-  - {kind: diagram, path: electric-guitar-eq.png, caption: "Starting EQ for a miked guitar amp", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=81RF4964fRY"
-    title: "How to EQ Electric Guitars | Live Sound Tutorial"
-    channel: "Fuze Audio"
-    caption: "Live EQ of electric guitars (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: electric-guitar-eq.png
+  caption: Starting EQ for a miked guitar amp
+  caption_vi: EQ khởi đầu cho guitar amp được mic
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=81RF4964fRY
+  title: How to EQ Electric Guitars | Live Sound Tutorial
+  channel: Fuze Audio
+  caption: Live EQ of electric guitars (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: EQ live cho guitar điện (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

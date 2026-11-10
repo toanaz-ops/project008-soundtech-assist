@@ -1,13 +1,17 @@
 id: eq-filter-types
-title: "EQ filter types: HPF/LPF, shelves, bell, notch and Q"
-title_vi: "Các loại bộ lọc EQ: HPF/LPF, shelf, bell, notch và Q"
+title: 'EQ filter types: HPF/LPF, shelves, bell, notch and Q'
+title_vi: 'Các loại bộ lọc EQ: HPF/LPF, shelf, bell, notch và Q'
 topic: eq
 tags:
   instrument: []
   genre: []
-  technique: [eq, filters, q-factor]
+  technique:
+  - eq
+  - filters
+  - q-factor
   event: []
-summary: "The building blocks of every EQ band: cut filters with a slope, shelves that tilt the extremes, bells that act on a region, and notches for narrow faults. Q sets how wide a bell or notch is."
+summary: 'The building blocks of every EQ band: cut filters with a slope, shelves that tilt the extremes, bells that act on a region, and notches for narrow faults. Q sets how wide a bell or notch is.'
+summary_vi: 'Các khối cơ bản của mọi band EQ: bộ lọc cắt (Cut filter) có độ dốc (Slope), Shelf nghiêng hai đầu, Bell tác động lên một vùng, và Notch cho lỗi hẹp. Q quyết định độ rộng của Bell hoặc Notch.'
 body: |
   Every EQ band on a console is one of a handful of shapes. Knowing what each one does to the neighbouring frequencies matters more than memorising numbers.
 
@@ -28,33 +32,93 @@ body: |
 
   ## On the WING
   Each channel has a low-cut, a high-cut and a multi-band EQ whose bands can be set as shelf, bell and so on; the on-screen curve shows the combined result. Set the cut filters first, then the bells, and watch the curve rather than trusting a number from this page.
+body_vi: |
+  Mỗi band EQ trên console là một trong vài dạng. Hiểu mỗi dạng tác động thế nào lên các tần số lân cận quan trọng hơn nhiều so với nhớ số.
+
+  ## High-pass và low-pass (bộ lọc cắt)
+  High-pass filter (HPF, "low cut") bỏ mọi thứ dưới điểm cắt (Corner); low-pass (LPF, "high cut") bỏ mọi thứ trên Corner. **Slope** cho biết tín hiệu biến mất nhanh thế nào sau Corner: filter bậc một dốc 6 dB mỗi octave, mỗi bậc thêm cộng thêm 6 dB/oct, nên 12, 18 và 24 dB/oct là phổ biến. Slope thoải nghe tự nhiên nhưng còn để lại rumble tần thấp; Slope dốc làm sạch hơn nhưng đổi tiếng gần Corner và có thể ringing hoặc nghe "chặt". Trong diagram đầu, cùng một Corner 100 Hz được vẽ ở bốn Slope, để bạn thấy còn lại bao nhiêu ở dưới một octave.
+
+  ## Shelf
+  Shelf nâng hoặc hạ mọi thứ vượt qua Corner một lượng như nhau, nên đáp tuyến phẳng ra thay vì tiếp tục leo. Vì vậy Shelf là cách nhẹ nhàng để thêm air hoặc bớt weight cho một nguồn, và Shelf boost ít gây quá tải hơn Bell boost.
+
+  ## Bell (peaking) và Notch
+  Bell nâng hoặc hạ một vùng quanh tần số trung tâm. Notch đơn giản là một cut rất hẹp và sâu, dùng để "chộp cổ" một tiếng ring, một vạch hum hoặc một tần số feedback. Q là tần số trung tâm chia cho bandwidth giữa hai điểm -3 dB, nên Q cao nghĩa là band hẹp. Đọc diagram so sánh Q: cùng +6 dB tại 1 kHz là một gò rộng ở Q 0.7 và một mũi nhọn mảnh ở Q 4.
+
+  ## Rule of thumb thực tế (điểm khởi đầu, không phải luật)
+  - Dùng Q hẹp cho cut loại bỏ một lỗi cụ thể; dùng Q rộng cho boost tạo hình tiếng. Boost hẹp nghe thiếu tự nhiên và dễ ring.
+  - Ưu tiên boost vài dB; cut hẹp có thể sâu hơn nhiều.
+  - Nếu channel tối vì nội dung vốn không có, boost chỉ thêm noise chứ không thêm chi tiết.
+  - Check bypass thường xuyên; so sánh ở cùng loudness.
+
+  ## Trên WING
+  Mỗi channel có low-cut, high-cut và EQ nhiều band, các band có thể set là Shelf, Bell, v.v.; đường cong trên màn hình hiện kết quả tổng hợp. Set các cut filter trước, rồi đến Bell, và nhìn đường cong thay vì tin một con số trên trang này.
 rule:
-  applies_to: {source_type: [any]}
+  applies_to:
+    source_type:
+    - any
   params:
-    cut_bell_q: [3, 8]
-    boost_bell_q: [0.5, 1.5]
-    boost_gain_db: [1, 4]
-    notch_depth_db: [-6, -12]
-  notes: "Starting points: narrow Q for cuts of a specific fault, wide Q for tonal boosts; adjust by ear."
+    cut_bell_q:
+    - 3
+    - 8
+    boost_bell_q:
+    - 0.5
+    - 1.5
+    boost_gain_db:
+    - 1
+    - 4
+    notch_depth_db:
+    - -6
+    - -12
+  notes: 'Starting points: narrow Q for cuts of a specific fault, wide Q for tonal boosts; adjust by ear.'
 sources:
-  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "The Highs & Lows; What's In The Middle?"}
-  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Mixing With EQ"}
+- title: What's The Frequency?
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/whats-frequency
+  accessed: '2026-11-09'
+  locator: The Highs & Lows; What's In The Middle?
+- title: Using EQ
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-eq
+  accessed: '2026-11-09'
+  locator: Mixing With EQ
 media:
-  - {kind: diagram, path: hpf-slopes.png, caption: "A 100 Hz high-pass at 6, 12, 18 and 24 dB/oct.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - {kind: diagram, path: bell-q-compare.png, caption: "The same +6 dB bell at 1 kHz with Q 0.7, 1.4 and 4.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - {kind: diagram, path: shelves.png, caption: "A low shelf cut and a high shelf boost.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=8erPNLiMkpM"
-    title: "Parametric EQ's (EQ Explained)"
-    channel: "Groove3"
-    caption: "Groove3 explanation of parametric EQ bands (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=BsX_O8Hla0s"
-    title: "Understanding EQ Filters: Cut, Shelf, Bell, Notch & Tilt EQ Explained"
-    channel: "Solution Adenuga"
-    caption: "Cut, shelf, bell, notch and tilt filters compared (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: hpf-slopes.png
+  caption: A 100 Hz high-pass at 6, 12, 18 and 24 dB/oct.
+  caption_vi: Một high-pass 100 Hz ở 6, 12, 18 và 24 dB/oct.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: diagram
+  path: bell-q-compare.png
+  caption: The same +6 dB bell at 1 kHz with Q 0.7, 1.4 and 4.
+  caption_vi: Cùng một Bell +6 dB tại 1 kHz với Q 0.7, 1.4 và 4.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: diagram
+  path: shelves.png
+  caption: A low shelf cut and a high shelf boost.
+  caption_vi: Một low Shelf cut và một high Shelf boost.
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=8erPNLiMkpM
+  title: Parametric EQ's (EQ Explained)
+  channel: Groove3
+  caption: Groove3 explanation of parametric EQ bands (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Giải thích của Groove3 về các band parametric EQ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=BsX_O8Hla0s
+  title: 'Understanding EQ Filters: Cut, Shelf, Bell, Notch & Tilt EQ Explained'
+  channel: Solution Adenuga
+  caption: Cut, shelf, bell, notch and tilt filters compared (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: So sánh các filter cut, Shelf, Bell, Notch và tilt (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

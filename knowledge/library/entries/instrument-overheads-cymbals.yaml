@@ -1,13 +1,23 @@
 id: instrument-overheads-cymbals
-title: "Overheads, hi-hat and ride: when and how to mic cymbals live"
-title_vi: "Overhead, hi-hat và ride: mic cymbal khi chơi live"
+title: 'Overheads, hi-hat and ride: when and how to mic cymbals live'
+title_vi: 'Overhead, hi-hat và ride: mic cymbal khi chơi live'
 topic: instruments
 tags:
-  instrument: [overheads, cymbals, hi-hat]
-  genre: [rock, pop]
-  technique: [mic-placement, eq, polarity]
-  event: [concert]
-summary: "Overheads only earn their place on quieter stages; otherwise use close mics. A spaced pair with a high-pass near 250 Hz and gentle cuts handles most cases."
+  instrument:
+  - overheads
+  - cymbals
+  - hi-hat
+  genre:
+  - rock
+  - pop
+  technique:
+  - mic-placement
+  - eq
+  - polarity
+  event:
+  - concert
+summary: Overheads only earn their place on quieter stages; otherwise use close mics. A spaced pair with a high-pass near 250 Hz and gentle cuts handles most cases.
+summary_vi: Overhead chỉ đáng dùng trên stage yên hơn; nếu không thì dùng close mic. Một cặp spaced với high-pass gần 250 Hz và vài cut nhẹ xử lý được đa số trường hợp.
 body: |
   ## Do you need overheads?
 
@@ -41,34 +51,121 @@ body: |
   ## Live and WING tips
 
   Pan overheads moderately so kit width does not collapse for off-axis seats. Build the mix with overheads first if the stage allows, then add kick and snare as needed. Try polarity flips on the snare channel against the overheads and keep the fuller one.
+body_vi: |
+  ## Có cần overhead không?
+
+  Overhead đặt cao hơn snare khoảng bốn feet, nên nghe được cả stage: guitar amp, bass và vocal đều lọt vào, mic thành "máy hút rác". Lời khuyên của Burton là chỉ dùng chúng khi stage khá yên. Trên stage to, close mic cho snare, kick, tom và một mic ride cho khả năng kiểm soát tốt hơn. Overhead cũng kéo theo rắc rối phase do spill; đây là phần của bộ trống chịu thiệt nhiều nhất khi âm lượng stage cao.
+
+  ## Vị trí đặt
+
+  - **Cặp spaced:** hai mic cách đều snare, ở hai bên bộ trống. Cách dễ và phổ biến nhất, làm được với hai stand cao.
+  - **Cặp coincident (X/Y):** imaging tốt hơn, nhưng cần stand nặng và cao.
+  - Condenser large-diaphragm và pencil đều dùng được; đặt đúng chỗ quan trọng hơn mic đắt tiền. Các tay trống của Shure ưa dùng cặp condenser như KSM32 với low end được roll off, đặt rộng thay vì coincident.
+  - **Ride:** condenser small-diaphragm cách cymbal sáu đến mười hai inch; chú ý cymbal đung đưa va vào mic.
+  - **Hi-hat:** thường bỏ mic riêng nếu mic snare đã bắt đủ; chỉ thêm khi tay trống đánh hi-hat nhẹ.
+
+  ## EQ khởi đầu
+
+  - High-pass đủ mạnh để dọn low end: khoảng 250 Hz trong một hướng dẫn live, khoảng 112 Hz trong một hướng dẫn khác (slope nhẹ), và iZotope cảnh báo bất cứ thứ gì dưới 150 Hz là xung đột low end với kick và bass.
+  - 300-600 Hz: cut nhỏ để giảm bleed của snare và tom.
+  - Quanh 4 kHz: cut nhỏ nếu cymbal nghe gắt; iZotope xếp độ chói ở đây và ở hi-hat trong khoảng 3-7 kHz, và gợi ý xử lý panning, level, polarity hoặc sidechain compression trước khi EQ.
+  - 8-12 kHz là air; trim 8-10 kHz nếu crash nghe loe.
+
+  ## Dynamics
+
+  Compression trên overhead thường làm cả bộ trống bị pump. Theo Burton, bus compressor trên cả nhóm trống cũng kém hiệu quả khi chơi live. Tốt hơn: xử lý spill và cân bằng trước.
+
+  ## Vấn đề thường gặp
+
+  - **Overhead làm snare bị dẹt:** polarity so với mic snare sai, hoặc cặp mic không cách đều snare.
+  - **Cymbal quá sáng trong PA:** kéo fader xuống, đừng chỉ dùng EQ.
+  - **Có vocal lọt vào overhead:** chuyển sang close mic trên stage to.
+
+  ## Mẹo live và WING
+
+  Pan overhead vừa phải để độ rộng của bộ trống không bị sụp với khán giả ngồi lệch trục. Dựng mix bắt đầu từ overhead nếu stage cho phép, rồi thêm kick và snare khi cần. Thử đảo polarity trên channel snare so với overhead và giữ bản đầy hơn.
 rule:
-  applies_to: {source_type: [drums.overhead, drums.hihat, drums.ride], genre: [rock, pop]}
+  applies_to:
+    source_type:
+    - drums.overhead
+    - drums.hihat
+    - drums.ride
+    genre:
+    - rock
+    - pop
   params:
-    hpf_hz: [110, 250]
-    bleed_cut_hz: [300, 600]
-    harsh_cut_hz: [3000, 4000]
-    air_hz: [8000, 12000]
-  notes: "Starting points; overhead high-pass depends on how much kick/snare you want in the overheads."
+    hpf_hz:
+    - 110
+    - 250
+    bleed_cut_hz:
+    - 300
+    - 600
+    harsh_cut_hz:
+    - 3000
+    - 4000
+    air_hz:
+    - 8000
+    - 12000
+  notes: Starting points; overhead high-pass depends on how much kick/snare you want in the overheads.
 sources:
-  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Overheads; Hi-Hat and Ride"}
-  - {title: "Engineering Drums Live: Part Two", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/node/4905769", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Compression"}
-  - {title: "How to EQ Drums Live", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/eq-drums-live/", accessed: "2026-11-09", locator: "Overhead (Cymbal) EQ"}
-  - {title: "How to EQ Live Drums", publisher: "mixingaband.com", kind: article, url: "https://mixingaband.com/how-to-eq-live-drums/", author: "Simon Crome", year: 2020, accessed: "2026-11-09", locator: "Overheads"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Cymbals, overheads, and hi-hats"}
+- title: 'Engineering Drums Live: Part One'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-drums-live-part-one
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Overheads; Hi-Hat and Ride
+- title: 'Engineering Drums Live: Part Two'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/node/4905769
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Compression
+- title: How to EQ Drums Live
+  publisher: musicguymixing.com
+  kind: article
+  url: https://www.musicguymixing.com/eq-drums-live/
+  accessed: '2026-11-09'
+  locator: Overhead (Cymbal) EQ
+- title: How to EQ Live Drums
+  publisher: mixingaband.com
+  kind: article
+  url: https://mixingaband.com/how-to-eq-live-drums/
+  author: Simon Crome
+  year: 2020
+  accessed: '2026-11-09'
+  locator: Overheads
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Cymbals, overheads, and hi-hats
 media:
-  - {kind: diagram, path: overheads-eq.png, caption: "Starting EQ for a spaced overhead pair", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=q2ccgv4jaiE"
-    title: "Basic Drum Miking: The Overheads"
-    channel: "Audio-Technica USA"
-    caption: "Audio-Technica basics of drum overhead miking (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=449mDvB_tzc"
-    title: "Recording Drums: The Overhead Mic Techniques You Need to Know"
-    channel: "SonicScoop"
-    caption: "Overhead mic techniques compared (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: overheads-eq.png
+  caption: Starting EQ for a spaced overhead pair
+  caption_vi: EQ khởi đầu cho cặp overhead spaced
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=q2ccgv4jaiE
+  title: 'Basic Drum Miking: The Overheads'
+  channel: Audio-Technica USA
+  caption: Audio-Technica basics of drum overhead miking (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Kiến thức cơ bản về đặt mic overhead trống của Audio-Technica (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=449mDvB_tzc
+  title: 'Recording Drums: The Overhead Mic Techniques You Need to Know'
+  channel: SonicScoop
+  caption: Overhead mic techniques compared (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: So sánh các kỹ thuật đặt mic overhead (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

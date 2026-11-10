@@ -1,13 +1,19 @@
 id: gain-staging-digital-console
-title: "Gain staging on a digital console: dBu, dBFS, trim and fader"
-title_vi: "Chỉnh gain trên mixer số: dBu, dBFS, trim và fader"
+title: 'Gain staging on a digital console: dBu, dBFS, trim and fader'
+title_vi: 'Chỉnh gain trên mixer số: dBu, dBFS, trim và fader'
 topic: gain-staging
 tags:
   instrument: []
   genre: []
-  technique: [gain-staging, headroom, metering]
-  event: [concert, corporate]
-summary: "Set input gain so the signal sits comfortably below digital full scale, then use faders only for balance. Analogue and digital levels are linked by an alignment standard, not by a single magic number."
+  technique:
+  - gain-staging
+  - headroom
+  - metering
+  event:
+  - concert
+  - corporate
+summary: Set input gain so the signal sits comfortably below digital full scale, then use faders only for balance. Analogue and digital levels are linked by an alignment standard, not by a single magic number.
+summary_vi: Đặt input gain sao cho tín hiệu nằm thoải mái dưới trần digital (digital full scale), rồi chỉ dùng fader để cân bằng. Mức analogue và digital được nối với nhau bằng một chuẩn alignment, không phải một con số thần kỳ nào.
 body: |
   ## Two scales, one chain
 
@@ -61,44 +67,84 @@ body: |
 
   All numbers here are starting points; check your desk's own metering and
   adjust by ear and by what the meters show on the night.
+body_vi: |
+  ## Hai thang đo, một chuỗi tín hiệu
+
+  Thiết bị analogue đo bằng **dBu** (một điện áp), digital đo bằng **dBFS** (decibel dưới trần của converter, tức 0 dBFS). Console dùng A/D converter phải ánh xạ cái này sang cái kia. Có hai alignment phổ biến: một cái gắn 0 dBu với -18 dBFS, cái kia gắn +4 dBu với -20 dBFS. Desk nào theo chuẩn nào tùy hãng, nên hãy xem hiệu chuẩn meter của console trước khi tin vào một quy tắc ngón tay cái.
+
+  ## Vì sao trần digital là "cứng"
+
+  Đẩy mixer analogue quá mức nominal thường chỉ ăn vào Headroom và tiếng bẩn dần. Vượt 0 dBFS ở converter thì khác: nó clipping đột ngột và harmonic rất gắt. Vì vậy trên desk digital bạn phải chủ động chừa dư địa, vì một cú snare hay một tiếng hét của ca sĩ có thể cao hơn mức trung bình 15-20 dB.
+
+  ## Trim trước, fader sau
+
+  **Trim / preamp gain** quyết định tín hiệu vào converter nóng cỡ nào và mọi thứ phía sau. **Channel fader** chỉ quyết định channel đó to cỡ nào trong mix. Đừng dùng fader để chữa cho gain đặt sai: channel quá nhỏ ở converter thì sàn nhiễu (Noise floor) tệ hơn, còn channel quá nóng có thể đã méo trước khi fader giúp được gì.
+
+  **Thao tác thực chiến:**
+
+  1. Kéo các fader về 0 dB (unity), bắt đầu với main hạ xuống.
+  2. Cho người chơi chơi hoặc hát ở mức performance thật, không phải mức soundcheck lịch sự.
+  3. Tăng trim cho tới khi peak nằm thấp hơn hẳn 0 dBFS. Nhiều engineer nhắm mức trung bình quanh -18 đến -20 dBFS cho nguồn đều, để peak được phép lên tới khoảng -6 đến -10 dBFS.
+  4. Kiểm tra lại sau khi bật HPF, EQ boost và compression; mỗi thứ đều có thể làm level dịch chuyển.
+  5. Mix bằng fader trong một dải hợp lý, thường gần unity, để vẫn còn hành trình lên xuống.
+
+  ## Lỗi thường gặp
+
+  - Đặt gain lúc line check yên ắng, rồi bị clipping khi band chơi thật.
+  - "Chạy nóng" để có thêm tín hiệu: với converter 24-bit không có lợi gì, chỉ thêm rủi ro.
+  - Xử lý input bị clip bằng cách kéo fader xuống. Clip đã nằm trong tín hiệu rồi, kéo fader không gỡ ra được.
+  - Quên Headroom của subgroup và main bus: mười channel mỗi cái peak ở -6 dBFS có thể cộng dồn trên bus.
+
+  Tóm lại, mọi con số ở đây là điểm xuất phát; hãy xem metering của chính desk bạn và chỉnh theo tai cùng những gì meter hiện ra trong đêm diễn.
 rule:
-  applies_to: {source_type: [any], genre: [any]}
+  applies_to:
+    source_type:
+    - any
+    genre:
+    - any
   params:
-    average_level_dbfs: [-20, -18]
-    target_peak_dbfs: [-10, -6]
-  notes: "starting points only; confirm the alignment of the specific console"
+    average_level_dbfs:
+    - -20
+    - -18
+    target_peak_dbfs:
+    - -10
+    - -6
+  notes: starting points only; confirm the alignment of the specific console
 sources:
-  - title: "Q. What are reference levels in digital audio systems?"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/sound-advice/q-what-are-reference-levels-digital-audio-systems"
-    accessed: "2026-11-09"
-    locator: "Reference levels: dBu, dBV and dBFS"
-  - title: "Ins & Outs of Gain Structure"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/ins-outs-gain-structure"
-    accessed: "2026-11-09"
-    locator: "Trim and faders; Headroom and clipping"
+- title: Q. What are reference levels in digital audio systems?
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/sound-advice/q-what-are-reference-levels-digital-audio-systems
+  accessed: '2026-11-09'
+  locator: 'Reference levels: dBu, dBV and dBFS'
+- title: Ins & Outs of Gain Structure
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/ins-outs-gain-structure
+  accessed: '2026-11-09'
+  locator: Trim and faders; Headroom and clipping
 media:
-  - kind: diagram
-    path: channel-signal-chain.png
-    caption: "Where level is set along a digital console channel"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: scripts/library_diagrams.py
-  - kind: video
-    url: "https://www.youtube.com/watch?v=PA0kzFmplMg"
-    title: "How To Mix Live Music Chapter 6 - Gain Structure"
-    channel: "Yamaha Global"
-    caption: "Yamaha chapter on gain structure on a mixing console (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=M8FDiMj1tS4"
-    title: "Gain Staging for Live Sound: Set Levels the Right Way"
-    channel: "Church Tech Corner"
-    caption: "Setting input levels for live sound (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: channel-signal-chain.png
+  caption: Where level is set along a digital console channel
+  caption_vi: Nơi đặt level dọc theo một channel trên console digital
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=PA0kzFmplMg
+  title: How To Mix Live Music Chapter 6 - Gain Structure
+  channel: Yamaha Global
+  caption: Yamaha chapter on gain structure on a mixing console (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Chương của Yamaha về gain structure trên mixing console (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=M8FDiMj1tS4
+  title: 'Gain Staging for Live Sound: Set Levels the Right Way'
+  channel: Church Tech Corner
+  caption: Setting input levels for live sound (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Đặt input level cho live sound (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

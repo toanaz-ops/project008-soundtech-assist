@@ -1,13 +1,23 @@
 id: instrument-acoustic-guitar
-title: "Acoustic guitar: pickup DI, mics and feedback control"
-title_vi: "Guitar acoustic: DI từ pickup, mic và chống hú"
+title: 'Acoustic guitar: pickup DI, mics and feedback control'
+title_vi: 'Guitar acoustic: DI từ pickup, mic và chống hú'
 topic: instruments
 tags:
-  instrument: [acoustic-guitar]
-  genre: [pop, folk]
-  technique: [di, mic-placement, eq, feedback]
-  event: [concert, corporate]
-summary: "In a band, a pickup DI is usually safer than a mic; a mic near the soundhole sounds better but invites feedback and tone shift. A cut around 150-250 Hz tames boxiness."
+  instrument:
+  - acoustic-guitar
+  genre:
+  - pop
+  - folk
+  technique:
+  - di
+  - mic-placement
+  - eq
+  - feedback
+  event:
+  - concert
+  - corporate
+summary: In a band, a pickup DI is usually safer than a mic; a mic near the soundhole sounds better but invites feedback and tone shift. A cut around 150-250 Hz tames boxiness.
+summary_vi: Trong band, DI từ pickup thường an toàn hơn mic; mic gần soundhole nghe hay hơn nhưng dễ feedback và đổi âm sắc. Cut quanh 150-250 Hz để bớt tiếng hộp.
 body: |
   ## DI or mic?
 
@@ -41,27 +51,100 @@ body: |
   ## Live and WING tips
 
   Use the DI input pad and gain so the pickup preamp does not clip on strong strumming. Place a feedback notch in an EQ band, not the HPF, and keep one extra band free for the song-to-song tone. If the guitarist switches guitars, recheck gain and polarity per instrument.
+body_vi: |
+  ## DI hay mic?
+
+  Trên stage to tiếng, close-mic một cây acoustic rất khó: để mic đủ gần mà loại được spill thì âm sắc đổi mỗi khi người chơi dịch chuyển, và kết quả có thể không giống tiếng cây đàn. Vì vậy lời khuyên của Paul White cho các gig không phải acoustic là dùng DI từ pickup của đàn.
+
+  - Piezo cơ bản dưới saddle có thể nghe chói và cần EQ mạnh hoặc một acoustic preamp/processor.
+  - Hệ thống tốt hơn kết hợp pickup với một mic nhỏ gắn bên trong và cần chỉnh ít hơn nhiều.
+  - Khi pickup nghe mỏng dính, mic có thể thêm chút ấm ở low-mid, blend nhẹ dưới DI.
+
+  ## Mic khi bạn dùng mic
+
+  Thực hành phổ biến (kiến thức chung, không lấy từ các trang được trích dẫn): condenser small-diaphragm dùng được khi stage yên; khi monitor đẩy gain lên, dynamic hoặc pattern chặt hơn (hyper/supercardioid) cho nhiều gain before feedback hơn. Bắt đầu cách đàn vài inch, nghe thử, và dời mic khỏi soundhole nếu bị boom; vị trí chính xác tùy từng cây đàn và phòng.
+
+  ## EQ khởi đầu
+
+  - High-pass khoảng 70-100 Hz; iZotope lưu ý dưới 70 Hz có lẽ không cần thiết.
+  - Cut ở 150-250 Hz giảm tiếng hộp (White); iZotope xếp body/mud ở 200-400 Hz.
+  - Presence hoặc độ chói ở 1.5-2.5 kHz; trim ở đó nếu pickup bị quack.
+  - 8-12 kHz là air; nâng nhẹ có thể trả lại độ lấp lánh mà piezo thiếu.
+
+  ## Dynamics
+
+  Chỉ nén nhẹ nếu dynamics của tiếng quạt dây nhảy ra khỏi mix. Compression cũng làm tăng nguy cơ feedback, nên chỉ áp dụng sau khi đã kiểm soát được feedback.
+
+  ## Vấn đề thường gặp
+
+  - **Feedback low end gần soundhole:** một notch hẹp, hoặc nắp che soundhole, hoặc dời mic xa lỗ hơn.
+  - **Piezo quack:** cut upper-mid thay vì boost.
+  - **Boom từ stage monitor:** kiểm tra polarity giữa pickup và mic và giữ monitor nằm off-axis so với phía sau mic.
+
+  ## Mẹo live và WING
+
+  Dùng pad và gain của input DI để preamp pickup không clipping khi quạt mạnh. Đặt notch chống feedback trong một band EQ, không dùng HPF, và để dành một band trống cho việc chỉnh âm sắc từng bài. Nếu guitarist đổi đàn, kiểm tra lại gain và polarity cho từng cây.
 rule:
-  applies_to: {source_type: [guitar.acoustic], genre: [pop, folk]}
+  applies_to:
+    source_type:
+    - guitar.acoustic
+    genre:
+    - pop
+    - folk
   params:
-    hpf_hz: [70, 100]
-    box_cut_hz: [150, 250]
-    harsh_cut_hz: [1500, 2500]
-  notes: "Starting points; prefer pickup DI on loud stages."
+    hpf_hz:
+    - 70
+    - 100
+    box_cut_hz:
+    - 150
+    - 250
+    harsh_cut_hz:
+    - 1500
+    - 2500
+  notes: Starting points; prefer pickup DI on loud stages.
 sources:
-  - {title: "Using Mics & DI Boxes On Stage", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-mics-di-boxes-stage", author: "Paul White", year: 2004, accessed: "2026-11-09", locator: "Acoustic Guitars"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Acoustic guitar"}
+- title: Using Mics & DI Boxes On Stage
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-mics-di-boxes-stage
+  author: Paul White
+  year: 2004
+  accessed: '2026-11-09'
+  locator: Acoustic Guitars
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Acoustic guitar
 media:
-  - {kind: diagram, path: acoustic-guitar-eq.png, caption: "Starting EQ for an acoustic guitar DI", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=puY8so8eb5A", title: "How to Mic an Acoustic Guitar Featuring 9 Different Shure Mics", channel: "Shure Creators", caption: "Comparison of mic choices on one guitar"}
-  - {kind: video, url: "https://www.youtube.com/watch?v=cfAc1D5D8Wk", title: "How to mount the DPA 4099 Instrument Mic on a guitar with a DPA Clip", channel: "DPA Microphones A/S", caption: "Clip-on mic mounting"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Lni_H8Ryklk"
-    title: "Compressing Acoustic Guitar | Live Sound Tutorial"
-    channel: "Fuze Audio"
-    caption: "Compressing a live acoustic guitar (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: acoustic-guitar-eq.png
+  caption: Starting EQ for an acoustic guitar DI
+  caption_vi: EQ khởi đầu cho DI guitar acoustic
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=puY8so8eb5A
+  title: How to Mic an Acoustic Guitar Featuring 9 Different Shure Mics
+  channel: Shure Creators
+  caption: Comparison of mic choices on one guitar
+  caption_vi: So sánh các lựa chọn mic trên cùng một cây guitar
+- kind: video
+  url: https://www.youtube.com/watch?v=cfAc1D5D8Wk
+  title: How to mount the DPA 4099 Instrument Mic on a guitar with a DPA Clip
+  channel: DPA Microphones A/S
+  caption: Clip-on mic mounting
+  caption_vi: Cách gắn mic clip-on
+- kind: video
+  url: https://www.youtube.com/watch?v=Lni_H8Ryklk
+  title: Compressing Acoustic Guitar | Live Sound Tutorial
+  channel: Fuze Audio
+  caption: Compressing a live acoustic guitar (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Nén guitar acoustic khi chơi live (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

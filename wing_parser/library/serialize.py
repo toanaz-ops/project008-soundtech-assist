@@ -43,10 +43,10 @@ def _ordered(mapping: dict, order: tuple[str, ...]) -> dict:
 
 def _normalise(entry: dict) -> dict:
     data = _ordered(_plain(entry), schema.KEY_ORDER)
-    for key in ("title", "title_vi", "summary", "body"):
+    for key in ("title", "title_vi", "summary", "summary_vi", "body", "body_vi"):
         if isinstance(data.get(key), str):
             data[key] = data[key].replace("\r\n", "\n").replace("\r", "\n")
-            if key == "body":
+            if key in ("body", "body_vi"):
                 data[key] = data[key].rstrip("\n") + "\n"
     if isinstance(data.get("sources"), list):
         data["sources"] = [_ordered(s, schema.SOURCE_ORDER) if isinstance(s, dict) else s

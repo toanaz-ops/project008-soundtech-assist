@@ -1,13 +1,25 @@
 id: monitor-wedge-mixes
-title: "Monitor wedge mixes: placement, mix content and level"
-title_vi: "Mix monitor wedge: đặt loa, nội dung mix và mức"
+title: 'Monitor wedge mixes: placement, mix content and level'
+title_vi: 'Mix monitor wedge: đặt loa, nội dung mix và mức'
 topic: monitoring
 tags:
-  instrument: [vocal, drums, guitar, bass, keys]
-  genre: [pop, rock]
-  technique: [wedge-monitors, mic-null-placement, ringing-out]
-  event: [concert]
-summary: "A good wedge mix gives each performer only what they need to hear, from a speaker placed in the mic's rejection zone. Less in the mix means more gain before feedback and a cleaner stage."
+  instrument:
+  - vocal
+  - drums
+  - guitar
+  - bass
+  - keys
+  genre:
+  - pop
+  - rock
+  technique:
+  - wedge-monitors
+  - mic-null-placement
+  - ringing-out
+  event:
+  - concert
+summary: A good wedge mix gives each performer only what they need to hear, from a speaker placed in the mic's rejection zone. Less in the mix means more gain before feedback and a cleaner stage.
+summary_vi: Một wedge mix tốt chỉ cho mỗi người biểu diễn nghe đúng thứ họ cần, từ một loa đặt trong vùng mic "điếc". Mix càng ít thứ thì gain before feedback càng nhiều và sân khấu càng sạch.
 body: |
   ## What a wedge mix is for
 
@@ -61,46 +73,91 @@ body: |
 
   Treat numbers here as starting points; the best monitor mix is the one the
   performer can use without asking for it louder.
+body_vi: |
+  ## Wedge mix dùng để làm gì
+
+  Wedge giúp người biểu diễn nghe được chính mình và các cue từ band mà không phải đeo earpiece. Cái giá phải trả: mic, loa và người biểu diễn đều ở sát nhau, nên wedge có rất ít gain before feedback, và âm thanh phụ thuộc nhiều vào căn phòng cũng như chỗ người biểu diễn đứng ("sweet spot").
+
+  ## Đặt wedge ở chỗ mic điếc
+
+  Mic kém nhạy nhất ở những góc nhất định. Wedge phải nằm đúng ở đó:
+
+  - **Mic vocal cardioid**: kém nhạy nhất ngay phía sau (180 độ), nên một wedge duy nhất đặt trước ca sĩ, hướng ngược về phía sau mic, là giải pháp kinh điển.
+  - **Supercardioid / hypercardioid**: kém nhạy nhất ở khoảng 125 và 110 độ lệch trục (off-axis), nên một wedge nằm ngay sau mic là lựa chọn tồi; hãy đặt wedge sang hai bên ở góc đó (thường là một cặp chếch ra ngoài).
+  - **Mic omnidirectional**: không có null, nên dễ hú rít (feedback) hơn với wedge.
+
+  Kiểm tra polar plot thật của con mic đang dùng; góc null khác nhau giữa các model. Dời wedge một đoạn ngắn thường có ích hơn là thêm hàng loạt notch filter.
+
+  ## Đưa gì vào mix
+
+  1. Bắt đầu bằng giọng hoặc nhạc cụ của chính người biểu diễn, đủ lớn để bắt cao độ và nhịp.
+  2. Chỉ thêm các cue họ yêu cầu: kick và snare cho tay trống, bass cho tay guitar, một click hoặc cue vocal khi cần.
+  3. Giữ monitor mix mỏng ở low end. Roll off phần thấp trên các send vocal bằng HPF (thường 100-150 Hz làm điểm bắt đầu) và đừng gửi bass lớn vào mọi wedge.
+  4. Để tiếng tràn sân khấu (stage wash) cho âm lượng sân khấu lo, không phải wedge.
+  5. Tuyệt đối không gửi dàn hợp xướng hay các mic mở khác vào cùng wedge mà một mic có thể nghe thấy; đó là cách nhanh nhất để gây feedback.
+
+  ## Level và quy trình
+
+  - Ring out từng wedge (xem entry về ringing-out) với mic thật đang mở ở đúng vị trí biểu diễn.
+  - Chỉ nâng level đến mức cần thiết. Con wedge to nhất trên sân khấu thường là con giới hạn gain của tất cả mọi người.
+  - Kiểm tra lại sau khi band vào, khi cửa mở và phòng thay đổi.
+  - Chỗ nào feedback hoặc âm lượng sân khấu là vấn đề lặp lại, in-ear monitor (xem entry iem-mixes) loại bỏ hẳn vòng lặp acoustic.
+
+  Coi các con số ở đây là điểm khởi đầu; monitor mix tốt nhất là mix mà người biểu diễn dùng được mà không phải xin to hơn.
 rule:
-  applies_to: {source_type: [vocal.lead], event: [concert]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    event:
+    - concert
   params:
-    monitor_send_hpf_hz: [100, 150]
-    cardioid_wedge_angle_deg: [180, 180]
-    supercardioid_wedge_angle_deg: [125, 125]
-    hypercardioid_wedge_angle_deg: [110, 110]
-  notes: "starting points; check each mic's own polar plot; adjust by ear"
+    monitor_send_hpf_hz:
+    - 100
+    - 150
+    cardioid_wedge_angle_deg:
+    - 180
+    - 180
+    supercardioid_wedge_angle_deg:
+    - 125
+    - 125
+    hypercardioid_wedge_angle_deg:
+    - 110
+    - 110
+  notes: starting points; check each mic's own polar plot; adjust by ear
 sources:
-  - title: "Microphone Basics: Transducers, Polar Patterns & Frequency Response"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/microphone-basics-transducers-polar-patterns-frequency-response"
-    accessed: "2026-11-09"
-    locator: "Polar patterns: Omnidirectional, Supercardioid, Hypercardioid"
-  - title: "In-ear monitoring basics"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/in-ear-monitoring-basics"
-    accessed: "2026-11-09"
-    locator: "Gain-Before-Feedback; Mobility"
-  - title: "Of Mics and Monitors: Live Sound Reinforcement Tips for Choirs"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-GB/insights/of-mics-and-monitors-live-sound-reinforcement-tips-for-choirs"
-    accessed: "2026-11-09"
-    locator: "What about monitors?"
+- title: 'Microphone Basics: Transducers, Polar Patterns & Frequency Response'
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/microphone-basics-transducers-polar-patterns-frequency-response
+  accessed: '2026-11-09'
+  locator: 'Polar patterns: Omnidirectional, Supercardioid, Hypercardioid'
+- title: In-ear monitoring basics
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/in-ear-monitoring-basics
+  accessed: '2026-11-09'
+  locator: Gain-Before-Feedback; Mobility
+- title: 'Of Mics and Monitors: Live Sound Reinforcement Tips for Choirs'
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-GB/insights/of-mics-and-monitors-live-sound-reinforcement-tips-for-choirs
+  accessed: '2026-11-09'
+  locator: What about monitors?
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=w_2M86O8Q5U"
-    title: "The Secret to Better Wedge Mixes (yes, they still exist)"
-    channel: "MxU"
-    caption: "Better wedge mixes (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=QVJDpd9r-Pc"
-    title: "Monitor Wedges From Front Of House In A Small Venue Part 1"
-    channel: "Steven Thompson"
-    caption: "Mixing monitor wedges from front of house in a small venue (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=w_2M86O8Q5U
+  title: The Secret to Better Wedge Mixes (yes, they still exist)
+  channel: MxU
+  caption: Better wedge mixes (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Wedge mix tốt hơn (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
+- kind: video
+  url: https://www.youtube.com/watch?v=QVJDpd9r-Pc
+  title: Monitor Wedges From Front Of House In A Small Venue Part 1
+  channel: Steven Thompson
+  caption: Mixing monitor wedges from front of house in a small venue (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Mix monitor wedge từ front of house ở venue nhỏ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

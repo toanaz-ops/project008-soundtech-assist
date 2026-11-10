@@ -19,7 +19,8 @@
       unavailable: "Dịch vụ xác thực tạm thời không khả dụng. Thử lại sau.", errorGeneric: "Có lỗi xảy ra",
       exportNote: "Bản xuất chỉ đọc", save: "Lưu", cancel: "Huỷ", note: "Ghi chú thay đổi (bắt buộc)",
       f_id: "Mã (kebab-case, không đổi được)", f_title: "Tiêu đề (EN)", f_title_vi: "Tiêu đề (VI)", f_topic: "Chủ đề",
-      f_tags: "Thẻ (cách nhau bằng dấu phẩy)", f_summary: "Tóm tắt (1-3 câu)", f_body: "Nội dung (Markdown)", f_rule: "rule (JSON, tuỳ chọn)",
+      f_tags: "Thẻ (cách nhau bằng dấu phẩy)", f_summary: "Tóm tắt (1-3 câu)", f_summary_vi: "Tóm tắt (VI)", f_body: "Nội dung (Markdown)",
+      f_body_vi: "Nội dung (VI, Markdown)", m_caption_vi: "Chú thích (VI)", noVi: "Chưa có bản tiếng Việt — đang hiện bản tiếng Anh.", f_rule: "rule (JSON, tuỳ chọn)",
       f_conf: "Độ tin cậy", f_status: "Trạng thái", addSource: "+ Thêm nguồn", addMedia: "+ Thêm media", remove: "Xoá dòng",
       needSource: "Cần ít nhất một nguồn đầy đủ (tiêu đề, nhà xuất bản, loại, ngày truy cập, URL trừ sách).",
       needNote: "Cần ghi chú thay đổi.", badJson: "rule không phải JSON hợp lệ.", conflict: "Mục này vừa được người khác sửa. Tải lại rồi sửa lại.",
@@ -41,7 +42,8 @@
       unavailable: "The sign-in service is temporarily unavailable. Try again later.", errorGeneric: "Something went wrong",
       exportNote: "Read-only export", save: "Save", cancel: "Cancel", note: "Change note (required)",
       f_id: "Id (kebab-case, fixed)", f_title: "Title (EN)", f_title_vi: "Title (VI)", f_topic: "Topic",
-      f_tags: "Tags (comma separated)", f_summary: "Summary (1-3 sentences)", f_body: "Body (Markdown)", f_rule: "rule (JSON, optional)",
+      f_tags: "Tags (comma separated)", f_summary: "Summary (1-3 sentences)", f_summary_vi: "Summary (VI)", f_body: "Body (Markdown)",
+      f_body_vi: "Body (VI, Markdown)", m_caption_vi: "Caption (VI)", noVi: "", f_rule: "rule (JSON, optional)",
       f_conf: "Confidence", f_status: "Status", addSource: "+ Add source", addMedia: "+ Add media", remove: "Remove row",
       needSource: "At least one complete source is required (title, publisher, kind, accessed date, URL unless a book).",
       needNote: "A change note is required.", badJson: "rule is not valid JSON.", conflict: "Someone else just changed this entry. Reload and redo your edit.",
@@ -125,6 +127,8 @@
     return S.detail[id];
   }
   const topicLabel = (id) => { const tp = S.data.topics.find((x) => x.id === id); return tp ? lbl(tp) : id; };
+  const viPick = (vi, en) => (S.lang === "vi" && vi) || en;
+  const capOf = (m) => viPick(m.caption_vi, m.caption);
   const titleOf = (e) => (S.lang === "vi" && e.title_vi) || e.title;
 
   /* ---------- sidebar ---------- */
@@ -214,10 +218,10 @@
     const out = [];
     for (const m of e.media || []) {
       if (m.kind === "diagram" && m.src) {
-        out.push(h("figure", {}, blobImg(m.src, m.caption), h("figcaption", {}, m.caption || "")));
+        out.push(h("figure", {}, blobImg(m.src, capOf(m)), h("figcaption", {}, capOf(m) || "")));
       } else if (m.kind === "image") {
         const url = safeHttp(m.url);
-        out.push(h("p", {}, "🖼 ", url ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, m.caption || m.url) : (m.caption || ""),
+        out.push(h("p", {}, "🖼 ", url ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, capOf(m) || m.url) : (capOf(m) || ""),
           h("span", { class: "muted" }, " · " + t("licence") + " " + (m.license || "?") + " · " + t("credit") + " " + (m.attribution || "?"))));
       } else if (m.kind === "video") {
         const url = safeHttp(m.url), id = ytId(m.url || "");
@@ -226,7 +230,7 @@
           // Iframes are blocked on the artifact host: a link card that opens YouTube in a new tab.
           const start = startSeconds(m.timestamp);
           const href = id ? "https://www.youtube.com/watch?v=" + encodeURIComponent(id) + (start ? "&t=" + start + "s" : "") : url;
-          const label = ["▶ " + (m.title || "video"), m.channel, m.timestamp].filter(Boolean).join(" · ") + (m.caption ? " — " + m.caption : "");
+          const label = ["▶ " + (m.title || "video"), m.channel, m.timestamp].filter(Boolean).join(" · ") + (capOf(m) ? " — " + capOf(m) : "");
           out.push(href ? h("a", { class: "video-card", href, target: "_blank", rel: "noopener noreferrer" }, label) : h("div", { class: "video-card" }, label));
           continue;
         }
@@ -237,7 +241,7 @@
             allow: "accelerometer; encrypted-media; gyroscope; picture-in-picture" }));
         }
         block.append(h("div", {}, "▶ ", url ? h("a", { href: url, target: "_blank", rel: "noopener noreferrer" }, m.title) : m.title,
-          h("span", { class: "muted" }, " · " + (m.channel || "") + (m.timestamp ? " · " + m.timestamp : "") + (m.caption ? " — " + m.caption : ""))));
+          h("span", { class: "muted" }, " · " + (m.channel || "") + (m.timestamp ? " · " + m.timestamp : "") + (capOf(m) ? " — " + capOf(m) : ""))));
         out.push(block);
       }
     }
@@ -261,10 +265,14 @@
       h("button", { class: "btn", type: "button", onclick: () => go("hist", id) }, t("history")),
       S.canEdit && e.status !== "retired" && h("button", { class: "btn danger", type: "button", onclick: () => retireEntry(id, e.revision) }, t("retire")));
     const media = mediaBlocks(e);
+    const fallback = S.lang === "vi" && !(e.summary_vi && e.body_vi_html);
     setView(
-      h("h1", {}, e.title), e.title_vi && h("div", { class: "vi" }, e.title_vi), badges, actions,
-      h("p", { class: "summary" }, e.summary),
-      h("div", { class: "body", html: e.body_html }),
+      h("h1", {}, S.lang === "vi" ? titleOf(e) : e.title),
+      S.lang === "vi" ? (e.title_vi && h("div", { class: "vi" }, e.title)) : (e.title_vi && h("div", { class: "vi" }, e.title_vi)),
+      badges, actions,
+      fallback && h("p", { class: "muted vi-note" }, t("noVi")),
+      h("p", { class: "summary" }, viPick(e.summary_vi, e.summary)),
+      h("div", { class: "body", html: viPick(e.body_vi_html, e.body_html) }),
       media.length ? [h("h2", {}, t("media")), media] : null,
       h("h2", {}, t("sources")),
       e.sources.length ? h("ol", { class: "src-list" }, e.sources.map(sourceLine)) : h("p", { class: "badge danger" }, t("unsourced")),
@@ -292,7 +300,7 @@
 
   /* ---------- edit form ---------- */
   const SRC_FIELDS = ["title", "publisher", "kind", "url", "author", "year", "accessed", "locator"];
-  const MEDIA_FIELDS = ["kind", "path", "url", "title", "channel", "timestamp", "caption", "license", "attribution", "generated_by"];
+  const MEDIA_FIELDS = ["kind", "path", "url", "title", "channel", "timestamp", "caption", "caption_vi", "license", "attribution", "generated_by"];
   function field(label, input) { return h("div", {}, h("label", {}, label), input); }
   function sel(options, value, extra) {
     return h("select", extra || {}, options.map((o) => h("option", { value: o, selected: o === value }, o)));
@@ -322,6 +330,7 @@
       title: h("input", { value: e.title || "" }), title_vi: h("input", { value: e.title_vi || "" }),
       topic: h("select", {}, S.data.topics.map((tp) => h("option", { value: tp.id, selected: tp.id === e.topic }, lbl(tp)))),
       summary: h("textarea", { rows: 3 }, e.summary || ""), body: h("textarea", { rows: 14 }, e.body || ""),
+      summary_vi: h("textarea", { rows: 3 }, e.summary_vi || ""), body_vi: h("textarea", { rows: 14 }, e.body_vi || ""),
       rule: h("textarea", { rows: 4 }, e.rule ? JSON.stringify(e.rule, null, 2) : ""),
       confidence: sel(sch.confidence, e.confidence), status: sel(sch.status, e.status),
       note: h("input", { value: "" })
@@ -342,6 +351,8 @@
         tags: Object.fromEntries(sch.tag_keys.map((k) => [k, split(tagInputs[k].value)])),
         sources: [...srcBox.children].map((c) => c.read()), media: [...mediaBox.children].map((c) => c.read()) };
       if (f.title_vi.value.trim()) entry.title_vi = f.title_vi.value.trim();
+      if (f.summary_vi.value.trim()) entry.summary_vi = f.summary_vi.value.trim();
+      if (f.body_vi.value.trim()) entry.body_vi = f.body_vi.value;
       if (f.rule.value.trim()) entry.rule = JSON.parse(f.rule.value);
       return entry;
     };
@@ -375,7 +386,8 @@
     setView(h("form", { class: "form", onsubmit: (ev) => { ev.preventDefault(); submit(); } },
       h("h1", {}, creating ? t("newEntry") : t("edit") + ": " + e.title),
       field(t("f_id"), f.id), field(t("f_title"), f.title), field(t("f_title_vi"), f.title_vi), field(t("f_topic"), f.topic),
-      h("div", { class: "grid" }, tagFields), field(t("f_summary"), f.summary), field(t("f_body"), f.body),
+      h("div", { class: "grid" }, tagFields), field(t("f_summary"), f.summary), field(t("f_summary_vi"), f.summary_vi),
+      field(t("f_body"), f.body), field(t("f_body_vi"), f.body_vi),
       h("div", { class: "grid" }, field(t("f_conf"), f.confidence), field(t("f_status"), f.status)),
       h("h2", {}, t("sources")), srcBox, h("button", { type: "button", class: "btn", onclick: () => addSrc() }, t("addSource")),
       h("h2", {}, t("media")), mediaBox, h("button", { type: "button", class: "btn", onclick: () => addMedia() }, t("addMedia")),

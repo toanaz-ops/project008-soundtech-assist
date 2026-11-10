@@ -1,13 +1,22 @@
 id: instrument-kick-drum
-title: "Kick drum: mic choice, placement and EQ starting points"
-title_vi: "Trống kick: chọn mic, đặt mic và điểm khởi đầu EQ"
+title: 'Kick drum: mic choice, placement and EQ starting points'
+title_vi: 'Trống kick: chọn mic, đặt mic và điểm khởi đầu EQ'
 topic: instruments
 tags:
-  instrument: [kick, drums]
-  genre: [rock, pop]
-  technique: [mic-placement, eq, gating]
-  event: [concert]
-summary: "Where to put the mic on a live kick (inside for attack, outside for weight), a conservative starting EQ, and gate/phase habits that keep the kick tight."
+  instrument:
+  - kick
+  - drums
+  genre:
+  - rock
+  - pop
+  technique:
+  - mic-placement
+  - eq
+  - gating
+  event:
+  - concert
+summary: Where to put the mic on a live kick (inside for attack, outside for weight), a conservative starting EQ, and gate/phase habits that keep the kick tight.
+summary_vi: Đặt mic ở đâu trên kick live (bên trong cho attack, bên ngoài cho độ nặng), EQ khởi điểm thận trọng, và thói quen gate/phase giữ cho kick chặt.
 body: |
   ## Mic choice and placement
 
@@ -41,36 +50,123 @@ body: |
   ## Live and WING tips
 
   On a WING use the channel high-pass for the rumble cut, one EQ band for the body boost and one for the box cut, and the channel gate with its key filter set to the beater. Check polarity with a spare ear in the room, not only on headphones. Keep gains so faders sit near the unity mark for resolution.
+body_vi: |
+  ## Chọn mic và vị trí đặt
+
+  **Vấn đề:** kick live gánh hai việc: độ nặng ở low-end và attack của beater. Một vị trí mic hiếm khi làm được cả hai, nên engineer chọn vị trí theo việc mà mix cần nhất.
+
+  - **Bên trong trống** (mic hướng vào batter head, cách beater vài inch) cho attack chặt, đanh và loại spill từ phần còn lại của bộ trống.
+  - **Ngay ngoài resonant head hoặc ở port hole** nghe ấm và đầy hơn, ít click hơn.
+  - Nhiều show dùng **cả hai**: mic bên trong cho attack và một dynamic large-diaphragm bên ngoài cho độ nặng. Các cuộc phỏng vấn drummer của Shure mô tả đúng cách ghép hai mic khác nhau trên một trống.
+  - Tránh vị trí phía pedal; drummer đá vào chân mic và tiếng kẽo kẹt của pedal lọt vào.
+
+  ## EQ khởi điểm (không phải công thức)
+
+  Các nguồn không thống nhất, và mỗi kick một khác, nên coi đây là chỗ để bắt đầu nghe:
+
+  - High-pass khoảng 40 Hz để bỏ sub-rumble mà PA không dùng được (một hướng dẫn xuống tới 20 Hz cho thận trọng).
+  - Boost vài dB quanh 60 Hz cho fundamental; iZotope đặt vùng punch ở 60-80 Hz.
+  - Cut ở đâu đó giữa 150 và 500 Hz để bỏ tiếng hộp và bìa các-tông. Với mic ngoài, Burton khoét 200-400 Hz.
+  - Một chút 2-5 kHz cho beater click nếu kick bị chìm sau guitar.
+  - Một bài còn boost 50-100 Hz và cut 80-120 Hz; hai vùng này chồng nhau, nên sweep và nghe thay vì áp dụng cả hai.
+
+  ## Dynamics
+
+  Gate kick để spill từ mic mở (tom, floor wash) không lọt vào, cũng như "đóng cửa khi vắng khách". Burton cấp key cho gate từ tín hiệu đã filter gần tần số beater, dùng Attack ngắn, và để gate đóng khoảng 20-30 dB thay vì đóng hẳn, để trống không bao giờ nghe bị chặt cụt. Compress sau gate để đều các cú đánh và bảo vệ hệ thống; bài đó không đưa ra Ratio.
+
+  ## Vấn đề thường gặp
+
+  - **Low-end mỏng khi có hai mic kick:** hai mic lệch polarity một phần. Đảo polarity một mic và giữ cái đầy hơn.
+  - **Kick ù, một nốt:** resonant head được lên dây thấp hoặc mic nằm ở điểm standing-wave; dời mic trước khi với tay lấy EQ.
+  - **Click nhưng yếu:** bạn chỉ có mic bên trong; trộn thêm mic ngoài.
+
+  ## Mẹo live và WING
+
+  Trên WING dùng high-pass của channel để cắt rumble, một band EQ để boost body và một band để cut tiếng hộp, và gate của channel với key filter set vào beater. Kiểm tra polarity bằng một tai nghe ngay trong phòng, không chỉ trên headphone. Giữ gain sao cho fader nằm gần vạch unity để có độ phân giải.
 rule:
-  applies_to: {source_type: [drums.kick], genre: [rock, pop]}
+  applies_to:
+    source_type:
+    - drums.kick
+    genre:
+    - rock
+    - pop
   params:
-    hpf_hz: [20, 40]
-    boost_hz: [50, 80]
-    boost_gain_db: [3, 6]
-    cut_hz: [150, 500]
-    click_boost_hz: [2000, 5000]
-    gate_range_db: [-30, -20]
-  notes: "Starting points only. Sources disagree between boost and cut in 50-120 Hz; sweep by ear."
+    hpf_hz:
+    - 20
+    - 40
+    boost_hz:
+    - 50
+    - 80
+    boost_gain_db:
+    - 3
+    - 6
+    cut_hz:
+    - 150
+    - 500
+    click_boost_hz:
+    - 2000
+    - 5000
+    gate_range_db:
+    - -30
+    - -20
+  notes: Starting points only. Sources disagree between boost and cut in 50-120 Hz; sweep by ear.
 sources:
-  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Kick Drum"}
-  - {title: "Engineering Drums Live: Part Two", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/node/4905769", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "EQ, Gating, Compression"}
-  - {title: "Beyond the Basics: Drum Miking", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking", accessed: "2026-11-09", locator: "Kick sections"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Kick drum"}
-  - {title: "Live Kick Drum EQ", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/live-kick-drum-eq/", accessed: "2026-11-09", locator: "Live Kick Drum EQ Settings"}
+- title: 'Engineering Drums Live: Part One'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-drums-live-part-one
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Kick Drum
+- title: 'Engineering Drums Live: Part Two'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/node/4905769
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: EQ, Gating, Compression
+- title: 'Beyond the Basics: Drum Miking'
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking
+  accessed: '2026-11-09'
+  locator: Kick sections
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Kick drum
+- title: Live Kick Drum EQ
+  publisher: musicguymixing.com
+  kind: article
+  url: https://www.musicguymixing.com/live-kick-drum-eq/
+  accessed: '2026-11-09'
+  locator: Live Kick Drum EQ Settings
 media:
-  - {kind: diagram, path: kick-eq.png, caption: "Typical starting EQ for a live kick (values from the cited sources)", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=fU1a_fZvzs0"
-    title: "How to Mic a Kick Drum, by Sweetwater"
-    channel: "Sweetwater"
-    caption: "Sweetwater on miking a kick drum (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=fFtMa5jfUMQ"
-    title: "Quick Tip: Define the Sound of Your Kick Drum Using Mic Placement"
-    channel: "PSL LAB"
-    caption: "How mic position changes the kick sound (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: kick-eq.png
+  caption: Typical starting EQ for a live kick (values from the cited sources)
+  caption_vi: EQ khởi điểm điển hình cho kick live (giá trị lấy từ các nguồn đã trích dẫn)
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=fU1a_fZvzs0
+  title: How to Mic a Kick Drum, by Sweetwater
+  channel: Sweetwater
+  caption: Sweetwater on miking a kick drum (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Sweetwater về cách đặt mic kick (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=fFtMa5jfUMQ
+  title: 'Quick Tip: Define the Sound of Your Kick Drum Using Mic Placement'
+  channel: PSL LAB
+  caption: How mic position changes the kick sound (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Vị trí mic thay đổi âm kick ra sao (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

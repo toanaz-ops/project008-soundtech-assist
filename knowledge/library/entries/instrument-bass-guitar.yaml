@@ -1,13 +1,22 @@
 id: instrument-bass-guitar
-title: "Bass guitar: DI versus amp mic, and how to blend them"
-title_vi: "Bass guitar: DI hay mic amp, và cách trộn hai nguồn"
+title: 'Bass guitar: DI versus amp mic, and how to blend them'
+title_vi: 'Bass guitar: DI hay mic amp, và cách trộn hai nguồn'
 topic: instruments
 tags:
-  instrument: [bass-guitar]
-  genre: [rock, pop]
-  technique: [di, blending, polarity, compression]
-  event: [concert]
-summary: "A DI gives clean, spill-free low end; a mic on the amp adds grit and character. Blend the two with the mic high-passed, and fix polarity before EQ."
+  instrument:
+  - bass-guitar
+  genre:
+  - rock
+  - pop
+  technique:
+  - di
+  - blending
+  - polarity
+  - compression
+  event:
+  - concert
+summary: A DI gives clean, spill-free low end; a mic on the amp adds grit and character. Blend the two with the mic high-passed, and fix polarity before EQ.
+summary_vi: DI cho low end sạch, không spill; mic ở amp thêm độ gằn và cá tính. Blend hai bên với mic được high-pass, và sửa polarity trước khi EQ.
 body: |
   ## DI or mic?
 
@@ -41,29 +50,106 @@ body: |
   - Thin or hollow low end: polarity or time offset between DI and mic.
   - Booming stage, quiet DI: the amp is loud on stage; keep the player's amp level reasonable.
   - Buzzy low mid on slap: shorten attack, trim 300-500 Hz.
+body_vi: |
+  ## DI hay mic?
+
+  DI box thu bass gần như không nhuộm màu, không spill và không có rủi ro feedback, nên đây là mặc định khi live. Mic ở cab thêm cá tính của amp và độ gằn ở mid, đáng dùng khi pedal và tông amp là một phần của âm thanh.
+
+  - Lấy DI **sau pedal cuối cùng**, hoặc từ DI out post-preamp/post-EQ của amp nếu có, để FOH nghe đúng tông của người chơi.
+  - Với mic, Burton gợi ý large-diaphragm dynamic (AKG D12/D112, EV RE20) cho dải đầy đủ, hoặc SM57/M88 khi muốn mid gằn hơn.
+  - Test level pedal ở soundcheck: một pedal có thể nhảy vài dB giữa các setting.
+
+  ## Blend
+
+  Công thức thường dùng là DI cho low end, mic cho mid và phần trên. High-pass kênh mic để bỏ phần lớn bass của nó, để hai bên không đánh nhau ở low end.
+
+  ## Polarity và timing
+
+  DI đến sớm hơn mic đặt cách loa một foot, nên các tần số thấp có thể triệt nhau và bass mỏng đi. Flip polarity một kênh và giữ phiên bản có low end đầy hơn, tốt nhất là nghe từ chỗ mà mức stage và PA xấp xỉ nhau. Các thiết bị phase aligner chuyên dụng (Radial Phazer, Little Labs IBP) giúp khi flip chưa đủ. Trên WING, công tắc polarity ở input và channel delay làm cùng việc đó.
+
+  ## EQ xuất phát
+
+  - Dây low E của bass 4 dây khoảng 41 Hz; dây low B của bass 5 dây khoảng 30 Hz (Burton), nên high-pass dưới các mức đó là an toàn.
+  - 40-120 Hz là low end, 120-250 Hz là body (iZotope).
+  - 300-500 Hz là nơi mud tích tụ; cắt bớt low-mid và thêm độ rõ ở midrange giữ được độ nặng mà vẫn rõ nốt.
+  - 800 Hz đến 1 kHz mang lại articulation; mẹo của Paul White là quét 250 Hz đến 1 kHz để tìm chỗ bass "nói" trên loa nhỏ.
+
+  ## Dynamics
+
+  Dùng Attack chậm để giữ transient của nốt và dằn phần đuôi; Burton còn gợi ý Release trung bình để compressor kịp hồi trước nốt kế tiếp, và Attack nhanh hơn cho slap. Với con số xuất phát, White gợi ý Ratio khoảng 5:1 với chừng 8 dB Gain Reduction ở các đỉnh, rồi chỉnh bằng tai. Đưa bass và kick qua cùng một compressor có thể làm chúng dính vào nhau.
+
+  ## Vấn đề thường gặp
+
+  - Low end mỏng hoặc rỗng: polarity hoặc lệch thời gian giữa DI và mic.
+  - Sân khấu ì ầm, DI nhỏ: amp to trên sân khấu; giữ level amp của người chơi ở mức hợp lý.
+  - Low-mid ù rè khi slap: rút ngắn Attack, cắt bớt 300-500 Hz.
 rule:
-  applies_to: {source_type: [bass.di, bass.amp], genre: [rock, pop]}
+  applies_to:
+    source_type:
+    - bass.di
+    - bass.amp
+    genre:
+    - rock
+    - pop
   params:
-    hpf_hz: [25, 40]
-    mud_cut_hz: [300, 500]
-    presence_hz: [800, 1000]
-    comp_ratio: [4, 6]
-    comp_gr_db: [6, 10]
-    mic_hpf_hz: [100, 200]
-  notes: "Starting points. mic_hpf_hz is a typical crossover for the mic track, not a quoted figure; set by ear against the DI."
+    hpf_hz:
+    - 25
+    - 40
+    mud_cut_hz:
+    - 300
+    - 500
+    presence_hz:
+    - 800
+    - 1000
+    comp_ratio:
+    - 4
+    - 6
+    comp_gr_db:
+    - 6
+    - 10
+    mic_hpf_hz:
+    - 100
+    - 200
+  notes: Starting points. mic_hpf_hz is a typical crossover for the mic track, not a quoted figure; set by ear against the DI.
 sources:
-  - {title: "Engineering Bass Guitars Live", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "DI vs Mic; Blending; Phase; Compression"}
-  - {title: "Bass Guitars In The Mix", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/bass-guitars-mix", author: "Paul White", year: 2010, accessed: "2026-11-09", locator: "EQ; Compression; DI and Amp Blend"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Bass guitar"}
+- title: Engineering Bass Guitars Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-bass-guitars-live
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: DI vs Mic; Blending; Phase; Compression
+- title: Bass Guitars In The Mix
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/bass-guitars-mix
+  author: Paul White
+  year: 2010
+  accessed: '2026-11-09'
+  locator: EQ; Compression; DI and Amp Blend
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Bass guitar
 media:
-  - {kind: diagram, path: bass-eq.png, caption: "Starting EQ for bass guitar DI", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Cmhd8fZ28fk"
-    title: "Mixing Bass Guitar | Fat Bottomed Tips by Joe Barresi"
-    channel: "Waves Audio"
-    caption: "Joe Barresi on mixing bass guitar (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: bass-eq.png
+  caption: Starting EQ for bass guitar DI
+  caption_vi: EQ xuất phát cho bass guitar DI
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=Cmhd8fZ28fk
+  title: Mixing Bass Guitar | Fat Bottomed Tips by Joe Barresi
+  channel: Waves Audio
+  caption: Joe Barresi on mixing bass guitar (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Joe Barresi về mix bass guitar (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

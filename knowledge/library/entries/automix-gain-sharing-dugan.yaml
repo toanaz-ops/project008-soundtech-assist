@@ -1,13 +1,20 @@
 id: automix-gain-sharing-dugan
-title: "Dugan gain-sharing automixing"
-title_vi: "Automix chia sẻ gain kiểu Dugan"
+title: Dugan gain-sharing automixing
+title_vi: Automix chia sẻ gain kiểu Dugan
 topic: automix
 tags:
-  instrument: [microphone]
+  instrument:
+  - microphone
   genre: []
-  technique: [automix, gain-sharing]
-  event: [corporate, panel, conference]
-summary: "Gain-sharing keeps the total gain of a group of microphones roughly constant and splits it between the mics according to how loud each one is, instead of switching mics on and off. It sounds smoother than a gate but cannot silence an idle mic."
+  technique:
+  - automix
+  - gain-sharing
+  event:
+  - corporate
+  - panel
+  - conference
+summary: Gain-sharing keeps the total gain of a group of microphones roughly constant and splits it between the mics according to how loud each one is, instead of switching mics on and off. It sounds smoother than a gate but cannot silence an idle mic.
+summary_vi: Gain-sharing giữ tổng gain của cả nhóm mic gần như không đổi và chia nó cho từng mic theo độ to của mic đó, thay vì bật/tắt mic. Nghe mượt hơn gate nhưng không thể làm im hẳn một mic đang rảnh.
 body: |
   ## The idea
 
@@ -35,64 +42,98 @@ body: |
   ## Where sources differ
 
   Sources agree on the broad contrast above but differ on details such as thresholds and counts, so check your own console manual before relying on a specific behaviour.
+body_vi: |
+  ## Ý tưởng
+
+  Dan Dugan, người được xem là cha đẻ của bộ trộn mic tự động (Automatic Microphone Mixer), đưa ra nguyên tắc này từ thập niên 1970: tổng gain của hệ thống phải giữ gần như không đổi dù có bao nhiêu người đang nói. Mixer xây trên ý tưởng này không bao giờ "quyết định" mic đang mở hay đóng. Mỗi channel được kéo lên xuống liên tục, và người nói to nhất đơn giản là nhận phần lớn nhất trong ngân sách gain cố định.
+
+  ## Gain được chia như thế nào
+
+  Một mô tả của nhà sản xuất nêu quy tắc thế này: mỗi channel bị giảm đúng bằng chênh lệch dB giữa mức của chính nó và mức tổng hợp của cả nhóm. Một mic to và vài mic nhỏ: mic to nằm gần unity, các mic còn lại bị đè xuống. Hai người nói cùng mức: họ chia nhau gain, mỗi người thấp đi một chút và mic thứ ba bị hạ sâu hơn. Không ai nói: mixer nhìn mức nền trên từng mic rồi chia gain theo đó, nên fader có thể để cao giữa các lượt nói.
+
+  ## Gain-sharing và gating
+
+  - Automixer dạng gate chạy như một noise gate trên mỗi mic: mở hoặc đóng, thường kèm giảm theo số mic đang mở (NOM) và cơ chế "last mic on". Xem entry về gated automixer.
+  - Automixer gain-sharing hoạt động như một dàn expander liên kết với nhau. Không có Threshold cố định để chỉnh, không bị chatter, và sàn nhiễu (Noise floor) của phòng giữ ổn định, nên thường được xem là tự nhiên hơn trong hai loại.
+  - Cái giá phải trả là quyền kiểm soát: mixer dạng gate thường cho giới hạn số mic mở và xử lý phòng khó; gain-sharing có ít nút chỉnh hơn. Hướng dẫn của một hãng ưu tiên gating khi có nhiều mic hoặc âm học khó; coi đó là kinh nghiệm ngón tay cái, không phải định luật.
+  - Symetrix lưu ý giảm NOM không phải khái niệm hữu ích cho gain-sharing, vì việc chia một tổng cố định đã làm đúng việc đó.
+
+  ## Dùng tại show
+
+  - Phải biết automixer "nghe" ở điểm nào. Yamaha khuyên insert post-fader (POST ON) để nó thấy mức đã qua fader: channel đang tắt hoặc fader ở mức tối thiểu không làm rối việc chia gain, và bạn ưu tiên một người nói bằng cách nâng fader của họ.
+  - Đừng coi nó là gate. Đẩy weight xuống rất thấp để ép im là đi ngược mục đích; mic nào thật sự không dùng thì mute.
+  - Muốn ưu tiên người nói (chủ tọa, lectern) thì dùng fader của channel đó hoặc điều khiển weight/priority, đừng nâng tất cả mic còn lại.
+  - Nhớ giới hạn hú rít (Feedback): thuật toán chỉ chia gain chứ không tạo thêm headroom. Mỗi mic mở vẫn thêm nhiễu và nguy cơ feedback.
+  - Giá trị khởi điểm phụ thuộc vào console; ở đây không đưa ra vì các nguồn mô tả hành vi, không mô tả thông số.
+
+  ## Chỗ các nguồn khác nhau
+
+  Các nguồn đồng ý với sự đối lập tổng quát ở trên nhưng khác nhau ở chi tiết như Threshold và số lượng. Tóm lại, đọc manual console của bạn trước khi dựa vào một hành vi cụ thể.
 rule:
   applies_to:
-    source_type: [speech.panel, speech.lectern]
-    event: [corporate, conference]
+    source_type:
+    - speech.panel
+    - speech.lectern
+    event:
+    - corporate
+    - conference
   params: {}
-  notes: "Behavioural guidance only; no numeric starting values in the cited sources. Insert automix post-input-processing and keep unused mics muted."
+  notes: Behavioural guidance only; no numeric starting values in the cited sources. Insert automix post-input-processing and keep unused mics muted.
 sources:
-  - title: "Gain Sharing vs. Gating Automixer"
-    publisher: "Biamp"
-    kind: article
-    url: "https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer"
-    accessed: "2026-11-09"
-    locator: "Gain Sharing Automixer / Gating Automixer"
-  - title: "Automixer Technology"
-    publisher: "Symetrix"
-    kind: article
-    url: "https://composer-docs.symetrix.co/software/toolkit/design-view/automixers/Automixer_Technology.html"
-    accessed: "2026-11-09"
-    locator: "Gain-Sharing Automixers / NOM Attenuation"
-  - title: "Theory of Automixer operation (RIVAGE PM series)"
-    publisher: "Yamaha"
-    kind: manual
-    url: "https://manual.yamaha.com/pa/mixers/RIVAGE_PM_series/en-US/5462888203.html"
-    accessed: "2026-11-09"
-    locator: "How Gain Is Distributed; Level-Based Priority"
-  - title: "Dan Dugan Sound Design"
-    publisher: "Dan Dugan Sound Design"
-    kind: article
-    url: "https://www.dandugan.com/"
-    accessed: "2026-11-09"
-    locator: "home page (inventor attribution)"
-  - title: "Ten Years of Automatic Mixing"
-    publisher: "Queen Mary University of London"
-    kind: paper
-    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
-    author: "Brecht De Man, Joshua D. Reiss, Ryan Stables"
-    year: 2017
-    accessed: "2026-11-09"
-    locator: "Sec. 2 History; reference [5] (Dugan, JAES vol. 23, June 1975)"
+- title: Gain Sharing vs. Gating Automixer
+  publisher: Biamp
+  kind: article
+  url: https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer
+  accessed: '2026-11-09'
+  locator: Gain Sharing Automixer / Gating Automixer
+- title: Automixer Technology
+  publisher: Symetrix
+  kind: article
+  url: https://composer-docs.symetrix.co/software/toolkit/design-view/automixers/Automixer_Technology.html
+  accessed: '2026-11-09'
+  locator: Gain-Sharing Automixers / NOM Attenuation
+- title: Theory of Automixer operation (RIVAGE PM series)
+  publisher: Yamaha
+  kind: manual
+  url: https://manual.yamaha.com/pa/mixers/RIVAGE_PM_series/en-US/5462888203.html
+  accessed: '2026-11-09'
+  locator: How Gain Is Distributed; Level-Based Priority
+- title: Dan Dugan Sound Design
+  publisher: Dan Dugan Sound Design
+  kind: article
+  url: https://www.dandugan.com/
+  accessed: '2026-11-09'
+  locator: home page (inventor attribution)
+- title: Ten Years of Automatic Mixing
+  publisher: Queen Mary University of London
+  kind: paper
+  url: https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf
+  author: Brecht De Man, Joshua D. Reiss, Ryan Stables
+  year: 2017
+  accessed: '2026-11-09'
+  locator: Sec. 2 History; reference [5] (Dugan, JAES vol. 23, June 1975)
 media:
-  - kind: diagram
-    path: gain-sharing-flow.png
-    caption: "Gain-sharing in one picture: each channel is compared with the group level and its gain follows"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=P_KSBx02jCI"
-    title: "Dugan Automixing Explained By Dan Dugan"
-    channel: "Sound Speeds"
-    caption: "The inventor explains the idea (title seen in search results; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=e4lnJO9kOB8"
-    title: "Introducing Waves Dugan Automixer"
-    channel: "Waves Audio"
-    caption: "Plug-in introduction (title seen in search results; not watched in full)"
+- kind: diagram
+  path: gain-sharing-flow.png
+  caption: 'Gain-sharing in one picture: each channel is compared with the group level and its gain follows'
+  caption_vi: 'Gain-sharing trong một hình: mỗi channel được so với mức của nhóm và gain của nó đi theo'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=P_KSBx02jCI
+  title: Dugan Automixing Explained By Dan Dugan
+  channel: Sound Speeds
+  caption: The inventor explains the idea (title seen in search results; not watched in full)
+  caption_vi: Chính người phát minh giải thích ý tưởng (tiêu đề thấy trong kết quả tìm kiếm; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=e4lnJO9kOB8
+  title: Introducing Waves Dugan Automixer
+  channel: Waves Audio
+  caption: Plug-in introduction (title seen in search results; not watched in full)
+  caption_vi: Giới thiệu plug-in (tiêu đề thấy trong kết quả tìm kiếm; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

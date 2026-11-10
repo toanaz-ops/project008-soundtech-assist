@@ -1,13 +1,24 @@
 id: sidechain-ducking-and-keying
-title: "Side-chain: key filters on gates and ducking music under speech"
-title_vi: "Side-chain: key filter cho gate và ducking nhạc nền dưới giọng nói"
+title: 'Side-chain: key filters on gates and ducking music under speech'
+title_vi: 'Side-chain: key filter cho gate và ducking nhạc nền dưới giọng nói'
 topic: dynamics
 tags:
-  instrument: [kick, snare, vocal]
-  genre: [edm]
-  technique: [sidechain, ducking, key-filter, gate]
-  event: [corporate, concert]
-summary: "The side-chain (key) is the signal a dynamics processor listens to. Filtering it makes a gate respond to the right instrument, and driving a compressor from a voice lets music duck automatically under speech."
+  instrument:
+  - kick
+  - snare
+  - vocal
+  genre:
+  - edm
+  technique:
+  - sidechain
+  - ducking
+  - key-filter
+  - gate
+  event:
+  - corporate
+  - concert
+summary: The side-chain (key) is the signal a dynamics processor listens to. Filtering it makes a gate respond to the right instrument, and driving a compressor from a voice lets music duck automatically under speech.
+summary_vi: Sidechain (key) là tín hiệu mà bộ xử lý dynamics "nghe". Lọc key giúp gate phản ứng đúng nhạc cụ, và dùng giọng nói để điều khiển compressor giúp nhạc tự duck xuống dưới tiếng nói.
 body: |
   Every compressor or gate has a **detector** that decides when to act. By default it listens to the same signal it processes. The **side-chain** (also called the key) lets you change that in two ways: filter what the detector hears, or feed it a different signal altogether.
 
@@ -46,35 +57,82 @@ body: |
   - Release too short, so music pumps between words.
   - Over-ducking so the music disappears, then having the room sound empty.
   - Forgetting to turn the ducker off when the presenter leaves the stage.
+body_vi: |
+  Mỗi compressor hoặc gate đều có một **detector** quyết định khi nào tác động. Mặc định nó nghe chính tín hiệu mà nó xử lý. **Sidechain** (còn gọi là key) cho phép bạn đổi điều đó theo hai cách: lọc thứ mà detector nghe, hoặc cấp cho nó một tín hiệu hoàn toàn khác.
+
+  ## 1. Key filter trên gate
+
+  Gate mở khi key vượt Threshold. Lọc key kiểm soát cái gì được tính.
+
+  - **Kick:** high-pass hiếm khi hữu ích, nhưng low-pass trên key ngăn bleed của cymbal làm gate mở. Giữ nhiều năng lượng low-frequency hơn trong key của gate kích bằng snare giúp nó mở lâu hơn.
+  - **Snare:** high-pass key phía trên vùng kick để bleed kick từ mic bên cạnh không kích nó; low-pass để bỏ qua hi-hat. Một bell hẹp trên key ở tần số thân của snare cũng giúp.
+  - **Tom:** band-pass quanh fundamental của từng tom để các tom khác và cymbal không làm nó mở.
+
+  Nghe tín hiệu key nếu console có nút listen. Sound On Sound lưu ý filter, EQ và Threshold hoạt động cùng nhau; sửa key trước khi đụng tới Hold và Release.
+
+  ## 2. Keyed compression (ducking)
+
+  Ở đây một kênh khác điều khiển compressor. Ví dụ EDM kinh điển là kick làm key cho compressor trên các nhạc cụ khác, tạo nhịp pump. Ví dụ của iZotope dùng Attack khoảng 0.1 ms, Ratio khoảng 6:1 và Release gần 175 ms sync theo tempo, với mức giảm lớn cho hiệu ứng cố ý (khoảng 14 dB, tùy gu).
+
+  ## 3. Duck nhạc dưới tiếng nói
+
+  Đây là cách dùng cho event công ty. Mic của người dẫn làm key; compressor trên music bus hạ nhạc xuống khi người dẫn nói và đưa nhạc lên lại khi họ dừng.
+
+  Điểm xuất phát (chỉnh bằng tai, đây là các khoảng thực dụng chứ không từ một nguồn duy nhất):
+  - Mức duck: khoảng 6 đến 12 dB. Nhiều hơn thì cảm giác như nhạc bị tắt.
+  - Attack: nhanh đến trung bình để từ đầu tiên không bị mất dưới nhạc.
+  - Release: khoảng 0.5 đến 1.5 s để nhạc không bật lên giữa các từ.
+  - Hold hoặc Ratio vừa phải để nhạc ổn định qua các quãng nghỉ ngắn.
+  - Key filter: high-pass key tiếng nói (khoảng 100 đến 150 Hz) để tiếng cầm mic và hơi thở không kích nó.
+
+  ## Trên WING
+
+  WING cho phép khối dynamics lấy key từ nguồn khác và có key filter trên các khối dynamics. Hãy kiểm tra menu key source và filter chính xác trong manual cho firmware của bạn trước khi tin vào tên gọi ở đây.
+
+  ## Lỗi thường gặp
+
+  - Ducking bị kích bởi mic luôn mở (hum, tiếng phòng). Gate mic key trước, hoặc nâng Threshold lên trên mức noise.
+  - Release quá ngắn, khiến nhạc pump giữa các từ.
+  - Duck quá sâu làm nhạc biến mất, rồi phòng nghe trống trải.
+  - Quên tắt ducker khi người dẫn rời sân khấu.
 rule:
-  applies_to: {source_type: [music.playback, vocal.speech]}
+  applies_to:
+    source_type:
+    - music.playback
+    - vocal.speech
   params:
-    duck_db: [6, 12]
-    duck_release_ms: [500, 1500]
-    key_hpf_hz: [100, 150]
-  notes: "starting points; practical ranges, not from a single published figure"
+    duck_db:
+    - 6
+    - 12
+    duck_release_ms:
+    - 500
+    - 1500
+    key_hpf_hz:
+    - 100
+    - 150
+  notes: starting points; practical ranges, not from a single published figure
 sources:
-  - title: "Production Techniques: Using Gates & Expanders"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/production-techniques-using-gates-expanders"
-    accessed: "2026-11-09"
-    locator: "Ducking; Gate Expectations (side-chain / key filter)"
-  - title: "What Is Audio Compression? Everything You Need to Know"
-    publisher: "iZotope"
-    kind: article
-    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
-    accessed: "2026-11-09"
-    locator: "Sidechain Compression"
-media: []
+- title: 'Production Techniques: Using Gates & Expanders'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/production-techniques-using-gates-expanders
+  accessed: '2026-11-09'
+  locator: Ducking; Gate Expectations (side-chain / key filter)
+- title: What Is Audio Compression? Everything You Need to Know
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/en/learn/what-is-audio-compression
+  accessed: '2026-11-09'
+  locator: Sidechain Compression
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=oCaPftIbpaQ"
-    title: "Introduction to Side Chain Compression / Ducking"
-    channel: "Waves Audio"
-    caption: "Waves introduction to side chain compression and ducking (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=oCaPftIbpaQ
+  title: Introduction to Side Chain Compression / Ducking
+  channel: Waves Audio
+  caption: Waves introduction to side chain compression and ducking (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Waves giới thiệu side chain compression và ducking (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

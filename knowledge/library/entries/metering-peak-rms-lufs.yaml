@@ -1,13 +1,20 @@
 id: metering-peak-rms-lufs
-title: "Metering: peak, RMS and LUFS (BS.1770 / EBU R128 basics)"
-title_vi: "Đo mức: peak, RMS và LUFS (cơ bản BS.1770 / EBU R128)"
+title: 'Metering: peak, RMS and LUFS (BS.1770 / EBU R128 basics)'
+title_vi: 'Đo mức: peak, RMS và LUFS (cơ bản BS.1770 / EBU R128)'
 topic: gain-staging
 tags:
   instrument: []
   genre: []
-  technique: [metering, loudness, lufs]
-  event: [concert, corporate, broadcast]
-summary: "Peak meters show the loudest instant, RMS-style meters show average energy, and LUFS measures perceived loudness over a time window. Each answers a different question, so use the right one for the job."
+  technique:
+  - metering
+  - loudness
+  - lufs
+  event:
+  - concert
+  - corporate
+  - broadcast
+summary: Peak meters show the loudest instant, RMS-style meters show average energy, and LUFS measures perceived loudness over a time window. Each answers a different question, so use the right one for the job.
+summary_vi: Peak meter cho thấy khoảnh khắc to nhất, meter kiểu RMS cho thấy năng lượng trung bình, còn LUFS đo độ to cảm nhận trong một cửa sổ thời gian. Mỗi loại trả lời một câu hỏi khác nhau, nên hãy dùng đúng loại cho đúng việc.
 body: |
   ## Three questions, three meters
 
@@ -61,40 +68,87 @@ body: |
 
   The numbers in this entry are reference points from the standards, not
   mixing targets for a live PA.
+body_vi: |
+  ## Ba câu hỏi, ba loại meter
+
+  - **Peak** cho biết tín hiệu còn cách clipping bao xa. Nó phản ứng gần như tức thì, nên là meter đúng để chỉnh trim và bảo vệ converter.
+  - **RMS / average** phản ánh năng lượng trong một cửa sổ ngắn và bám sát cảm giác "nặng" của âm thanh hơn peak meter. Một cú đánh trống có thể peak cao nhưng RMS khiêm tốn.
+  - **LUFS** áp dụng một weighting xấp xỉ cách con người nghe độ to, rồi lấy trung bình. Đây là đơn vị của các chuẩn loudness bên dưới.
+
+  ## BS.1770 và R128 quy định gì
+
+  ITU-R BS.1770 quy định thuật toán đo; EBU R 128 là khuyến nghị của châu Âu xây dựng trên đó cho loudness của chương trình. Một meter ở chế độ R128 thường hiển thị ba chỉ số:
+
+  - **Momentary (M)**: cửa sổ 400 ms, không gating. Theo sát nhạc từng nhịp.
+  - **Short-term (S)**: cửa sổ 3 giây. Hợp để đánh giá một verse hay một chorus.
+  - **Integrated (I)**: cả chương trình kể từ lần reset, với gating bỏ qua các đoạn rất nhỏ.
+
+  Thang tuyệt đối là **LUFS** (tương đương LKFS trong BS.1770). **LU** là đơn vị *tương đối*: với mục tiêu -23 LUFS, số đo -23 LUFS hiển thị là 0 LU. R128 cũng giới hạn true peak, thường được trích là -1 dBTP; một phụ lục cho nội dung ngắn thêm giới hạn short-term. Hãy kiểm tra văn bản EBU hiện hành trước khi trích một con số vào spec, vì dung sai phụ thuộc chế độ của meter.
+
+  ## Dùng khi live
+
+  Mục tiêu loudness của broadcast không phải mục tiêu của live sound. Một buổi concert không được normalize về -23 LUFS. Tuy vậy, meter kiểu LUFS vẫn hữu ích trong ba tình huống:
+
+  1. **Stream và bản ghi** của show: nếu feed đi ra broadcast hay một platform, hãy khớp mục tiêu được chỉ định.
+  2. Cân bằng **speech và music** ở sự kiện doanh nghiệp: LUFS short-term cho so sánh công bằng hơn peak.
+  3. **Giữ level nhất quán** từ tiết mục này sang tiết mục khác trong một ngày festival.
+
+  ## Lỗi thường gặp
+
+  - Đọc integrated loudness mà không reset giữa các bài.
+  - Coi peak meter là loudness meter: hai tín hiệu cùng peak có thể chênh nhau nhiều dB về độ to cảm nhận.
+  - Nhầm LU (tương đối) với LUFS (tuyệt đối).
+
+  Tóm lại, các con số trong mục này là điểm tham chiếu từ các chuẩn, không phải mục tiêu mix cho PA live.
 rule:
-  applies_to: {source_type: [programme], event: [broadcast, stream]}
+  applies_to:
+    source_type:
+    - programme
+    event:
+    - broadcast
+    - stream
   params:
-    momentary_window_ms: [400, 400]
-    short_term_window_s: [3, 3]
-    target_lufs: [-23, -23]
-    max_true_peak_dbtp: [-1, -1]
-  notes: "broadcast reference values from EBU R128; not a live-sound mix target"
+    momentary_window_ms:
+    - 400
+    - 400
+    short_term_window_s:
+    - 3
+    - 3
+    target_lufs:
+    - -23
+    - -23
+    max_true_peak_dbtp:
+    - -1
+    - -1
+  notes: broadcast reference values from EBU R128; not a live-sound mix target
 sources:
-  - title: "Loudness metering"
-    publisher: "Flux"
-    kind: manual
-    url: "https://doc.flux.audio/analyzer/Metering_Loudness.html"
-    accessed: "2026-11-09"
-    locator: "LUFS; Time windows"
-  - title: "EBU R 128 (loudness normalisation and permitted maximum level)"
-    publisher: "EBU"
-    kind: standard
-    url: "https://tech.ebu.ch/docs/r/r128-2014.pdf"
-    accessed: "2026-11-09"
-    locator: "PDF could not be read as text; figures taken from search-result summaries"
+- title: Loudness metering
+  publisher: Flux
+  kind: manual
+  url: https://doc.flux.audio/analyzer/Metering_Loudness.html
+  accessed: '2026-11-09'
+  locator: LUFS; Time windows
+- title: EBU R 128 (loudness normalisation and permitted maximum level)
+  publisher: EBU
+  kind: standard
+  url: https://tech.ebu.ch/docs/r/r128-2014.pdf
+  accessed: '2026-11-09'
+  locator: PDF could not be read as text; figures taken from search-result summaries
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=DZIrlcIV4PM"
-    title: "All Your Audio Meters explained  |  LU, LUFS and more"
-    channel: "Next Level Sound"
-    caption: "Peak, LU and LUFS meters explained (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=myTcnK1lRUA"
-    title: "Levels and Loudness Metering (RMS, LUFS and True Peak)"
-    channel: "Sean Divine"
-    caption: "RMS, LUFS and true peak metering (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=DZIrlcIV4PM
+  title: All Your Audio Meters explained  |  LU, LUFS and more
+  channel: Next Level Sound
+  caption: Peak, LU and LUFS meters explained (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Giải thích peak, LU và LUFS meter (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=myTcnK1lRUA
+  title: Levels and Loudness Metering (RMS, LUFS and True Peak)
+  channel: Sean Divine
+  caption: RMS, LUFS and true peak metering (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Metering RMS, LUFS và true peak (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

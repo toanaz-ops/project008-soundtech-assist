@@ -1,16 +1,26 @@
 id: speech-headset-and-lavalier
-title: "Headset and lavalier mics: placement, chest resonance and EQ"
-title_vi: "Micro đeo đầu (headset) và cài áo (lavalier): vị trí, cộng hưởng ngực và EQ"
+title: 'Headset and lavalier mics: placement, chest resonance and EQ'
+title_vi: 'Micro đeo đầu (headset) và cài áo (lavalier): vị trí, cộng hưởng ngực và EQ'
 topic: speech
 tags:
-  instrument: [headset-mic, lavalier-mic]
+  instrument:
+  - headset-mic
+  - lavalier-mic
   genre: []
-  technique: [mic-placement, eq, wireless]
-  event: [corporate, conference, ceremony, theatre]
+  technique:
+  - mic-placement
+  - eq
+  - wireless
+  event:
+  - corporate
+  - conference
+  - ceremony
+  - theatre
 summary: |
   Where a body-worn mic sits decides the tone: a chest lavalier loses the 2-4 kHz consonant band and
   gains a chesty bump, while a headset near the mouth is much closer to a handheld. Place it well
   first, then apply a small, wide fix on the desk.
+summary_vi: 'Vị trí của mic đeo người quyết định tiếng: lavalier trên ngực mất dải phụ âm 2-4 kHz và thêm một gò "chesty", còn headset gần miệng thì gần với handheld hơn nhiều. Đặt cho tốt trước, rồi mới sửa nhỏ, rộng trên desk.'
 body: |
   **Position decides the sound.** Shure notes that the best lavalier spot depends on the clothing
   and the needs of the production. On shirts and blouses, clip just above the breastbone and hide the
@@ -49,56 +59,89 @@ body: |
   **Common mistakes:** boosting 3-4 kHz on a headset that did not need it (it sounds harsh),
   cutting the "chest" frequency too deeply (the voice goes hollow), and forgetting that sweat,
   fabric and hair change the sound minute by minute.
+body_vi: |
+  **Vị trí quyết định tiếng.** Shure lưu ý vị trí lavalier tốt nhất phụ thuộc vào quần áo và nhu cầu của production. Với áo sơ mi, kẹp ngay trên xương ức và giấu dây dưới áo; với cà vạt, kẹp trên xương ức và giấu dây sau cà vạt; với áo thun hoặc áo len, dùng cổ áo và giữ mic khỏi cọ vào cổ. Tiếng cọ và tiếng quần áo là kẻ thù thực tế chính của lavalier.
+
+  **Ngực làm gì với giọng.** Ghi chú về độ rõ lời (Speech intelligibility) của DPA giải thích rằng mic đặt trên ngực, nhất là dưới cằm hoặc dưới quần áo, mất nhiều dải phụ âm 2-4 kHz. Nó cũng có xu hướng thu một gò quanh 800 Hz từ khoang ngực. Headset gần má chỉ cần boost nhẹ ở top end và gần tiếng tự nhiên hơn nhiều; đặt ở trán được mô tả là trung tính nhất.
+
+  **EQ khởi đầu.** Với lav trên ngực, DPA gợi ý nâng khoảng 3-4 kHz chừng 5-10 dB (nhiều mic DPA đã có sẵn việc này, nên check dữ liệu của hãng trước khi thêm, kẻo boost chồng boost). Sau đó cut vài dB quanh 800 Hz nếu giọng nghe boxy hoặc "trong ngực". Windscreen dày làm tối tiếng cao và có thể cần nâng thêm chút. Với headset, chỉ cần một high Shelf nhẹ hoặc không cần gì. Luôn dùng Q rộng, và so với tiếng giọng trong phòng khi không có PA.
+
+  **High-pass filter.** HPF quanh 80-120 Hz loại bỏ handling noise và hơi thở, và trên WING chỉ cần một cú click trên channel. Nâng cao hơn cho giọng nữ hoặc giọng mỏng; giữ thấp hơn cho giọng nam trầm để tránh tiếng bị mỏng dính như tờ giấy.
+
+  **Gain before feedback.** Mic đeo người ở xa miệng hơn handheld (nhất là ở ngực), nên cần nhiều gain hơn và hú rít (Feedback) sớm hơn. Headset gần miệng to hơn nhiều ở capsule so với lav ngực, đó là lý do headset dễ chạy to hơn. Nếu lavalier là lựa chọn duy nhất, một Notch trên tần số ring đầu tiên và PA mix nhỏ hơn gần người thuyết trình là công cụ của bạn.
+
+  **Mẹo thực tế.** Check RF wireless và mức pin, test với quần áo thật trước giờ mở cửa, và nhờ người thuyết trình quay đầu: lav đặt một bên có thể yếu đi khi họ quay đi. Mute pack khi người nói rời stage để tiếng quần áo và chuyện trò hậu trường không ra loa.
+
+  **Lỗi thường gặp:** boost 3-4 kHz trên headset không cần (nghe gắt), cut tần "ngực" quá sâu (giọng thành rỗng), và quên rằng mồ hôi, vải và tóc thay đổi tiếng từng phút.
 rule:
-  applies_to: {source_type: [speech.lavalier, speech.headset], event: [corporate, conference]}
+  applies_to:
+    source_type:
+    - speech.lavalier
+    - speech.headset
+    event:
+    - corporate
+    - conference
   params:
-    lav_chest_presence_boost_db: [5, 10]
-    lav_chest_presence_region_hz: [3000, 4000]
-    chest_cut_region_hz: [700, 900]
-    hpf_hz: [80, 120]
-  notes: "Starting points. Chest-lav boost is from DPA; the 800 Hz bump is noted there as typical of body-worn placement and correctable; cut amount is by ear."
+    lav_chest_presence_boost_db:
+    - 5
+    - 10
+    lav_chest_presence_region_hz:
+    - 3000
+    - 4000
+    chest_cut_region_hz:
+    - 700
+    - 900
+    hpf_hz:
+    - 80
+    - 120
+  notes: Starting points. Chest-lav boost is from DPA; the 800 Hz bump is noted there as typical of body-worn placement and correctable; cut amount is by ear.
 sources:
-  - title: "Facts about speech intelligibility"
-    publisher: "DPA Microphones"
-    kind: article
-    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
-    accessed: "2026-11-09"
-    locator: "Chest mic placement; EQ suggestions"
-  - title: "How to choose the best lavalier microphone"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/how-to-choose-the-best-lavalier-microphone"
-    accessed: "2026-11-09"
-    locator: "Placement by clothing"
+- title: Facts about speech intelligibility
+  publisher: DPA Microphones
+  kind: article
+  url: https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility
+  accessed: '2026-11-09'
+  locator: Chest mic placement; EQ suggestions
+- title: How to choose the best lavalier microphone
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/how-to-choose-the-best-lavalier-microphone
+  accessed: '2026-11-09'
+  locator: Placement by clothing
 media:
-  - kind: diagram
-    path: lav-chest-eq.png
-    caption: "Chest-lavalier presence lift: +5 and +10 dB around 3.5 kHz (the range suggested by DPA)."
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py"
-  - kind: video
-    url: "https://youtube.com/watch?pp=0gcJCdgAo7VqN5tD&v=H-L2iHjxGp4"
-    title: "Lavalier Mic Techniques for Theater"
-    channel: "Shure Performance & Production"
-    caption: "Shure livestream on rigging and mounting lavaliers (theatre context, concepts carry over)."
-  - kind: video
-    url: "https://www.youtube.com/watch?v=CE738Qoyv98"
-    title: "Clinica de colocacion de Lavaliers"
-    channel: "Representaciones de Audio México"
-    caption: "Lavalier placement clinic, in Spanish (originally labelled Shure; the uploader is a Mexican audio distributor)."
-  - kind: video
-    url: "https://www.youtube.com/watch?v=XE23JgFQG9k"
-    title: "DPA d:fine™ Headset Mic - tips & tricks"
-    channel: "DPA Microphones A/S"
-    caption: "DPA tips for fitting a headset mic (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Wyd9QAoeNs0"
-    title: "How to fit the DPA 6388 CORE+ headset mic the right way | IBC2026"
-    channel: "DPA Microphones A/S"
-    caption: "Fitting a DPA headset mic (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: lav-chest-eq.png
+  caption: 'Chest-lavalier presence lift: +5 and +10 dB around 3.5 kHz (the range suggested by DPA).'
+  caption_vi: 'Nâng presence cho lavalier trên ngực: +5 và +10 dB quanh 3.5 kHz (khoảng DPA gợi ý).'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://youtube.com/watch?pp=0gcJCdgAo7VqN5tD&v=H-L2iHjxGp4
+  title: Lavalier Mic Techniques for Theater
+  channel: Shure Performance & Production
+  caption: Shure livestream on rigging and mounting lavaliers (theatre context, concepts carry over).
+  caption_vi: Livestream của Shure về rigging và gắn lavalier (bối cảnh sân khấu kịch, các khái niệm vẫn áp dụng được).
+- kind: video
+  url: https://www.youtube.com/watch?v=CE738Qoyv98
+  title: Clinica de colocacion de Lavaliers
+  channel: Representaciones de Audio México
+  caption: Lavalier placement clinic, in Spanish (originally labelled Shure; the uploader is a Mexican audio distributor).
+  caption_vi: Buổi hướng dẫn đặt lavalier, bằng tiếng Tây Ban Nha (ban đầu gắn nhãn Shure; người đăng là một nhà phân phối audio Mexico).
+- kind: video
+  url: https://www.youtube.com/watch?v=XE23JgFQG9k
+  title: DPA d:fine™ Headset Mic - tips & tricks
+  channel: DPA Microphones A/S
+  caption: DPA tips for fitting a headset mic (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Mẹo của DPA khi đeo mic headset (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=Wyd9QAoeNs0
+  title: How to fit the DPA 6388 CORE+ headset mic the right way | IBC2026
+  channel: DPA Microphones A/S
+  caption: Fitting a DPA headset mic (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Cách đeo mic headset DPA (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi
