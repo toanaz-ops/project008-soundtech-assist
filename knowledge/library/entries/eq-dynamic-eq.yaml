@@ -1,13 +1,20 @@
 id: eq-dynamic-eq
-title: "Dynamic EQ: a band that reacts to level"
-title_vi: "EQ động: băng tần thay đổi theo mức tín hiệu"
+title: 'Dynamic EQ: a band that reacts to level'
+title_vi: 'EQ động: băng tần thay đổi theo mức tín hiệu'
 topic: eq
 tags:
-  instrument: [vocal, kick, bass]
+  instrument:
+  - vocal
+  - kick
+  - bass
   genre: []
-  technique: [eq, dynamic-eq, de-essing]
+  technique:
+  - eq
+  - dynamic-eq
+  - de-essing
   event: []
-summary: "A dynamic EQ band changes its gain only when the signal in that region crosses a threshold, so a problem is treated only while it occurs."
+summary: A dynamic EQ band changes its gain only when the signal in that region crosses a threshold, so a problem is treated only while it occurs.
+summary_vi: Một band Dynamic EQ chỉ đổi gain khi tín hiệu ở vùng đó vượt Threshold, nên vấn đề chỉ bị xử lý đúng lúc nó xảy ra, không đè cả tiếng xuống.
 body: |
   A static EQ band always applies the same gain. A dynamic EQ band moves its gain with the level of the signal: when the band's region gets loud, the band cuts (or boosts); when it is quiet, the band leaves the sound alone. It behaves like a very narrow multiband compressor or expander that is easier to think about, because you pick a frequency, a width and a range.
 
@@ -37,28 +44,77 @@ body: |
 
   ## On the WING
   Check what your firmware offers (dynamic EQ or multiband/de-esser modules) in the WING manual; the principle is the same as above.
+body_vi: |
+  Một band EQ tĩnh lúc nào cũng áp cùng một mức gain. Band Dynamic EQ thì gain chạy theo level tín hiệu: khi vùng của band to lên, band cut (hoặc boost); khi nhỏ, band để yên âm thanh. Hiểu đơn giản, nó là một con multiband compressor hoặc expander cực hẹp, nhưng dễ dùng hơn vì bạn chỉ cần chọn tần số, độ rộng và Range.
+
+  ## Các điều khiển thường có
+  - **Frequency, Q, shape** như band thường (bell hoặc shelf).
+  - **Threshold:** mức level bắt đầu xử lý. Một số thiết bị có chế độ Threshold tự động.
+  - **Range:** band được phép di chuyển bao nhiêu dB. Ở một plug-in phổ biến, Range âm là nén còn Range dương là expand.
+  - **Attack và Release:** phản ứng nhanh cỡ nào; cài quá nhanh có thể nghe gắt.
+  - **Trigger:** vùng tần số của chính band đó, hoặc một tín hiệu sidechain bên ngoài.
+
+  ## Chỗ nó phát huy khi chạy live
+  - **Âm xuýt (Sibilance):** một cú cut dynamic hẹp quanh vùng "s" gắt chỉ tác động khi có âm tiết gắt lọt ra. Cut tĩnh thì khác, nó làm tối cả giọng hát từ đầu đến cuối.
+  - **Proximity boom hoặc resonance** chỉ xuất hiện ở một số nốt nhất định.
+  - **Kick và bass:** duck một band của bass theo trigger từ kick để kick xuyên ra được mà không phải cut bass vĩnh viễn.
+  - **Hi-hat bleed hoặc cymbal gắt:** chỉ kìm các peak.
+
+  ## Thao tác thực chiến
+  1. Tìm vấn đề bằng một cú sweep ngắn, đặt một band thường tại đó.
+  2. Chuyển nó sang dynamic, đặt Threshold để chỉ phản ứng ở những lúc xấu.
+  3. Giới hạn Range ở mức vừa đủ; vài dB là đủ.
+  4. Bypass và nghe ở mức performance.
+
+  ## Lưu ý
+  - Đây là xử lý thật: có thể phát sinh thêm latency và CPU, nhất là khi thiết bị chạy cả linear phase (một số plug-in giới hạn band dynamic khi chọn độ phân giải linear-phase cao nhất).
+  - Cài đặt chạy tốt lúc rehearsal có thể trục trặc khi ca sĩ ghé sát mic hoặc band chơi to hơn; chừa dư địa.
+  - Nếu được thì sửa nguyên nhân trước: vị trí mic, kỹ thuật hát hoặc chọn mic.
+
+  ## Trên WING
+  Xem firmware của bạn có những gì (module Dynamic EQ hoặc multiband/de-esser) trong manual WING; nguyên lý vẫn như trên.
 rule:
-  applies_to: {source_type: [vocal.lead, kick, bass]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    - kick
+    - bass
   params:
-    dyn_range_db: [-3, -8]
-    dyn_q: [2, 6]
-  notes: "Starting points; threshold set so the band acts only on bad moments."
+    dyn_range_db:
+    - -3
+    - -8
+    dyn_q:
+    - 2
+    - 6
+  notes: Starting points; threshold set so the band acts only on bad moments.
 sources:
-  - {title: "Pro-Q: Dynamic EQ", publisher: "FabFilter", kind: manual, url: "https://fabfilter.com/help/pro-q/using/dynamic-eq", accessed: "2026-11-09", locator: "How Dynamic EQ Works; Uses; Linear Phase Limitation"}
-  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Vocals (sibilance 7-12 kHz)"}
+- title: 'Pro-Q: Dynamic EQ'
+  publisher: FabFilter
+  kind: manual
+  url: https://fabfilter.com/help/pro-q/using/dynamic-eq
+  accessed: '2026-11-09'
+  locator: How Dynamic EQ Works; Uses; Linear Phase Limitation
+- title: Using EQ
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-eq
+  accessed: '2026-11-09'
+  locator: Vocals (sibilance 7-12 kHz)
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=IXWkViqU2K8"
-    title: "Introduction to FabFilter Pro-Q 4"
-    channel: "FabFilter"
-    caption: "FabFilter overview of an EQ with dynamic bands (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=6kXHJr2zYiA"
-    title: "Fix a Ringing Snare with Dynamic EQ on the Behringer WING"
-    channel: "Drew Brashler"
-    caption: "Dynamic EQ on the Behringer WING taming a ringing snare (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=IXWkViqU2K8
+  title: Introduction to FabFilter Pro-Q 4
+  channel: FabFilter
+  caption: FabFilter overview of an EQ with dynamic bands (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: FabFilter giới thiệu một EQ có band dynamic (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=6kXHJr2zYiA
+  title: Fix a Ringing Snare with Dynamic EQ on the Behringer WING
+  channel: Drew Brashler
+  caption: Dynamic EQ on the Behringer WING taming a ringing snare (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Dynamic EQ trên Behringer WING kìm tiếng snare bị ringing (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

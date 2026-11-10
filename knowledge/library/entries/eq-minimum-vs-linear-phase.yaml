@@ -1,13 +1,20 @@
 id: eq-minimum-vs-linear-phase
-title: "Minimum phase vs linear phase EQ (and why live uses minimum phase)"
-title_vi: "EQ minimum phase và linear phase (vì sao live dùng minimum phase)"
+title: Minimum phase vs linear phase EQ (and why live uses minimum phase)
+title_vi: EQ minimum phase và linear phase (vì sao live dùng minimum phase)
 topic: eq
 tags:
-  instrument: [drums]
+  instrument:
+  - drums
   genre: []
-  technique: [eq, phase, latency]
-  event: [concert, corporate]
-summary: "Minimum-phase EQ shifts phase near the adjusted bands but adds almost no delay; linear-phase EQ keeps phase relationships but delays the whole signal. Live work favours minimum phase because delay is costly."
+  technique:
+  - eq
+  - phase
+  - latency
+  event:
+  - concert
+  - corporate
+summary: Minimum-phase EQ shifts phase near the adjusted bands but adds almost no delay; linear-phase EQ keeps phase relationships but delays the whole signal. Live work favours minimum phase because delay is costly.
+summary_vi: EQ pha tối thiểu (Minimum-phase) làm lệch phase quanh các band được chỉnh nhưng gần như không thêm delay; EQ pha tuyến tính (Linear-phase) giữ nguyên quan hệ phase nhưng làm trễ toàn bộ tín hiệu. Live ưu tiên Minimum-phase vì delay rất đắt.
 body: |
   Every analogue-style EQ band changes the phase of the signal around the frequencies it adjusts. That behaviour is called minimum phase. A linear-phase EQ is built to avoid this phase change and delays every frequency by the same amount instead.
 
@@ -31,28 +38,72 @@ body: |
 
   ## Contested point
   Sources agree on the trade-off but disagree on how audible minimum-phase shift is; most say it is hard to hear, others value linear phase for corrective work. Treat it as a judgement call.
+body_vi: |
+  Mỗi band EQ kiểu analogue đổi phase của tín hiệu quanh các tần số nó chỉnh. Hành vi đó gọi là Minimum-phase. EQ Linear-phase được thiết kế để tránh việc đổi phase này, thay vào đó làm trễ mọi tần số một lượng như nhau.
+
+  ## Mỗi loại cho bạn gì
+  - **Minimum-phase:** latency không đáng kể, CPU thấp, và độ lệch phase khó nghe ra ở đa số chất liệu. Thay đổi phase thậm chí có thể nghe dễ chịu và là một phần chất của nhiều EQ kinh điển.
+  - **Linear-phase:** không đổi phase, nên quan hệ phase giữa các nguồn liên quan được giữ nguyên. Cái giá là latency (thường hàng chục mili giây, tuỳ plug-in và chế độ), CPU cao hơn, và pre-ringing trên filter rất dốc hoặc rất hẹp.
+
+  ## Khi nào Linear-phase đáng dùng
+  Khi thu âm và mastering, nó giúp với các nguồn được thu bằng nhiều mic gần như drum kit, snare top/bottom, hoặc cặp stereo piano và guitar, nơi chênh lệch phase dễ nghe nhất. Cut hẹp kiểu phẫu thuật và high-pass dốc là một trường hợp điển hình khác. Một số plug-in cho phép blend giữa hai loại.
+
+  ## Vì sao live sound ở lại với Minimum-phase
+  - Channel cấp tín hiệu cho PA và monitor real-time; thêm delay trên một channel làm nó đến trễ so với phần còn lại và so với tiếng acoustic từ stage. Ca sĩ dùng IEM nhận ra delay rất nhanh.
+  - Một bus xử lý Linear-phase làm trễ mọi thứ đi qua nó, nên các channel bỏ qua bus đó bị lệch thời gian.
+  - EQ của console, kể cả channel EQ của WING, được xây dưới dạng filter Minimum-phase latency thấp. Hãy dùng chúng đúng như vậy.
+  - Nếu bắt buộc dùng plug-in hoặc outboard Linear-phase, hãy kiểm tra latency của nó và bù lại.
+
+  ## Lời khuyên thực tế
+  1. Mặc định dùng Minimum-phase để tạo hình tiếng.
+  2. Nếu tiếng của nguồn nhiều mic (drums) bị hỏng vì EQ chồng EQ, hãy giảm số lần chỉnh EQ, hoặc dùng cùng setting EQ cho các mic ghép cặp, trước khi nghĩ đến công cụ thêm delay.
+  3. Đừng chồng nhiều processor Linear-phase trong đường live.
+
+  ## Điểm còn tranh cãi
+  Các nguồn đồng ý về sự đánh đổi nhưng bất đồng về độ nghe được của lệch phase Minimum-phase; đa số nói là khó nghe, một số khác đánh giá cao Linear-phase cho việc sửa lỗi. Tóm lại, đây là một phán đoán tuỳ người.
 rule:
-  applies_to: {source_type: [any]}
+  applies_to:
+    source_type:
+    - any
   params:
-    live_latency_budget_ms: [0, 5]
-  notes: "Starting point: keep live signal paths at low latency; no number is given by the cited sources, this is a conservative guideline to be confirmed."
+    live_latency_budget_ms:
+    - 0
+    - 5
+  notes: 'Starting point: keep live signal paths at low latency; no number is given by the cited sources, this is a conservative guideline to be confirmed.'
 sources:
-  - {title: "What is linear phase EQ?", publisher: "iZotope", kind: article, url: "https://www.izotope.com/en/learn/what-is-linear-phase-eq", accessed: "2026-11-09", locator: "Latency; When to Use Minimum Phase; When to Use Linear Phase"}
-  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Minimum Vs Linear Phase"}
-  - {title: "Pro-Q: Dynamic EQ", publisher: "FabFilter", kind: manual, url: "https://fabfilter.com/help/pro-q/using/dynamic-eq", accessed: "2026-11-09", locator: "Linear Phase Limitation"}
+- title: What is linear phase EQ?
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/en/learn/what-is-linear-phase-eq
+  accessed: '2026-11-09'
+  locator: Latency; When to Use Minimum Phase; When to Use Linear Phase
+- title: What's The Frequency?
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/whats-frequency
+  accessed: '2026-11-09'
+  locator: Minimum Vs Linear Phase
+- title: 'Pro-Q: Dynamic EQ'
+  publisher: FabFilter
+  kind: manual
+  url: https://fabfilter.com/help/pro-q/using/dynamic-eq
+  accessed: '2026-11-09'
+  locator: Linear Phase Limitation
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=efKabAQQsPQ"
-    title: "EQ: Linear Phase vs Minimum Phase"
-    channel: "FabFilter"
-    caption: "FabFilter comparison of linear phase and minimum phase EQ (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=2wh3QBE6wco"
-    title: "What's the difference between linear-phase, minimum-phase, and maximum-phase?"
-    channel: "Nathan Lively"
-    caption: "Nathan Lively on linear, minimum and maximum phase (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=efKabAQQsPQ
+  title: 'EQ: Linear Phase vs Minimum Phase'
+  channel: FabFilter
+  caption: FabFilter comparison of linear phase and minimum phase EQ (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: So sánh của FabFilter giữa EQ Linear-phase và Minimum-phase (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=2wh3QBE6wco
+  title: What's the difference between linear-phase, minimum-phase, and maximum-phase?
+  channel: Nathan Lively
+  caption: Nathan Lively on linear, minimum and maximum phase (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Nathan Lively về Linear, Minimum và Maximum phase (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

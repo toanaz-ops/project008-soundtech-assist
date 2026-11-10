@@ -1,13 +1,19 @@
 id: wing-fx-slots-and-models
-title: "WING FX slots, reverb bus setup and model ranges (partly unverified)"
-title_vi: "Slot FX của WING, cách dựng bus reverb và dải thông số (một phần chưa xác minh)"
+title: WING FX slots, reverb bus setup and model ranges (partly unverified)
+title_vi: Slot FX của WING, cách dựng bus reverb và dải thông số (một phần chưa xác minh)
 topic: wing-console
 tags:
   instrument: []
   genre: []
-  technique: [wing-fx, reverb-bus, aux-send]
-  event: [concert, corporate]
-summary: "How a reverb is typically built on a WING: an effect in one of the first eight slots, fed from channel sends on a dedicated stereo bus. The official effects guide could not be opened, so the slot split and most model parameter ranges are unverified; only one plate model has ranges from a third-party blog."
+  technique:
+  - wing-fx
+  - reverb-bus
+  - aux-send
+  event:
+  - concert
+  - corporate
+summary: 'How a reverb is typically built on a WING: an effect in one of the first eight slots, fed from channel sends on a dedicated stereo bus. The official effects guide could not be opened, so the slot split and most model parameter ranges are unverified; only one plate model has ranges from a third-party blog.'
+summary_vi: 'Cách một reverb thường được dựng trên WING: một effect nằm trong một trong tám slot đầu, được cấp từ channel send trên một stereo bus riêng. Không mở được effects guide chính thức, nên cách chia slot và hầu hết dải thông số của các model chưa được xác minh; chỉ một model plate có dải thông số, lấy từ một blog bên thứ ba.'
 body: |
   ## What is known
 
@@ -35,51 +41,93 @@ body: |
   ## Limits
 
   This entry records a working pattern and a gap, not a manual. Replace it with the manual's content once the effects guide has been read.
+body_vi: |
+  ## Điều đã biết
+
+  Một blog tập trung vào WING mô tả một setup vocal reverb chạy được. Reverb nằm trong một slot effect premium, mà tác giả xếp vào slot 1 đến 8, và effect đó được insert trên một stereo bus riêng. Fader của bus giữ ở 0 dB và bus được route về Main. Các channel cấp vào qua post-fader send, cũng là lời khuyên chung trong các bài viết về mix: khi đó effect đi theo fader. Điều này khớp với cách mọi console xử lý một send effect, và là mặc định hợp lý để bắt đầu.
+
+  Cũng blog đó liệt kê dải thông số của một model plate (gọi là Blue Plate ở đó): pre-delay 0 đến 200 ms, decay 0.2 đến 5 s, damping 2 đến 20 kHz, low cut 20 đến 400 Hz và high cut 2 đến 20 kHz. Gợi ý riêng của họ cho return vocal là low cut khoảng 150 đến 200 Hz, high cut gần 7 kHz và damping khoảng 5 đến 6 kHz.
+
+  ## Điều chưa xác minh
+
+  Phần nghiên cứu đằng sau entry này không mở được WING Effects Guide chính thức (PDF quá lớn hoặc bị từ chối). Vì vậy các điểm sau chưa được xác nhận và bắt buộc phải kiểm tra trên mixer của bạn hoặc trong manual:
+
+  - Việc có 16 slot effect, với reverb và delay chỉ ở slot 1 đến 8 còn slot 9 đến 16 giới hạn ở các effect kiểu channel.
+  - Danh sách đầy đủ các model (hall, room, chamber, plate, vintage plate và room, stereo delay, gated và reverse reverb và các loại khác) cùng dải thông số của chúng.
+  - Model nào được tính là premium.
+
+  Vì blog là một nguồn đơn lẻ không thuộc hãng, ngay cả các dải thông số nó liệt kê cũng chỉ ở độ tin cậy trung bình. Hãy đọc dải thực từ scene hoặc từ console trước khi một công cụ tự động dùng chúng.
+
+  ## Các bước thực tế
+
+  1. Đặt reverb vào một slot có số thấp, insert nó trên một stereo bus dự phòng, fader bus ở 0 dB, bus route về Main.
+  2. Dùng post-fader send từ các channel và đặt lượng theo từng nguồn (xem entry về send-levels).
+  3. Đặt pre-delay, decay và các filter của return, dùng entry theo thể loại làm phỏng đoán đầu tiên.
+  4. Chưa đưa các effect lên live desk cho tới khi bạn xác nhận luật slot trên firmware của mình.
+
+  ## Giới hạn
+
+  Entry này ghi lại một mẫu làm việc và một khoảng trống, không phải manual. Tóm lại: hãy thay bằng nội dung của manual khi đã đọc effects guide.
 rule:
   kind: fx_model
-  applies_to: {source_type: [fx.reverb]}
+  applies_to:
+    source_type:
+    - fx.reverb
   params:
     blue_plate_ranges:
-      predelay_ms: [0, 200]
-      decay_s: [0.2, 5]
-      damping_hz: [2000, 20000]
-      lowcut_hz: [20, 400]
-      hicut_hz: [2000, 20000]
-    routing: "reverb in slot 1-8 inserted on a dedicated stereo bus, bus fader 0 dB, bus to Main, post-fader channel sends"
-  notes: "Slot split and other model ranges unverified (effects guide not opened); only the plate model has third-party ranges, medium confidence."
+      predelay_ms:
+      - 0
+      - 200
+      decay_s:
+      - 0.2
+      - 5
+      damping_hz:
+      - 2000
+      - 20000
+      lowcut_hz:
+      - 20
+      - 400
+      hicut_hz:
+      - 2000
+      - 20000
+    routing: reverb in slot 1-8 inserted on a dedicated stereo bus, bus fader 0 dB, bus to Main, post-fader channel sends
+  notes: Slot split and other model ranges unverified (effects guide not opened); only the plate model has third-party ranges, medium confidence.
 sources:
-  - title: "How to Create a Behringer WING Vocal Reverb Using Blue Plate"
-    publisher: "Drew Brashler"
-    kind: article
-    url: "https://drewbrashler.com/?p=44222"
-    author: "Drew Brashler"
-    accessed: "2026-11-09"
-    locator: "routing and Blue Plate parameter ranges"
-  - title: "How To Use Reverb Like A Pro (page 2)"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2"
-    accessed: "2026-11-09"
-    locator: "return EQ, post-fader sends"
+- title: How to Create a Behringer WING Vocal Reverb Using Blue Plate
+  publisher: Drew Brashler
+  kind: article
+  url: https://drewbrashler.com/?p=44222
+  author: Drew Brashler
+  accessed: '2026-11-09'
+  locator: routing and Blue Plate parameter ranges
+- title: How To Use Reverb Like A Pro (page 2)
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/how-use-reverb-pro-1?page=2
+  accessed: '2026-11-09'
+  locator: return EQ, post-fader sends
 media:
-  - kind: diagram
-    path: reverb-routing.png
-    caption: "Reverb routing on the WING"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=s_RVSvfmNv8"
-    title: "Wing How To: Episode 07 -  Inserts & Effects"
-    channel: "Behringer Knowledge Base"
-    caption: "Behringer WING how-to episode on inserts and effects (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=y_WgPYZziDI"
-    title: "Behringer Wing FX Basics: Get Pro Sound for Vocals & Instruments"
-    channel: "Alan Hamilton Audio"
-    caption: "WING FX basics for vocals and instruments (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: reverb-routing.png
+  caption: Reverb routing on the WING
+  caption_vi: Routing reverb trên WING
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=s_RVSvfmNv8
+  title: 'Wing How To: Episode 07 -  Inserts & Effects'
+  channel: Behringer Knowledge Base
+  caption: Behringer WING how-to episode on inserts and effects (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Tập Behringer WING how-to về insert và effects (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=y_WgPYZziDI
+  title: 'Behringer Wing FX Basics: Get Pro Sound for Vocals & Instruments'
+  channel: Alan Hamilton Audio
+  caption: WING FX basics for vocals and instruments (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Cơ bản về FX của WING cho vocal và nhạc cụ (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-import"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

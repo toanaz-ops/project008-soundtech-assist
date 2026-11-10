@@ -1,13 +1,25 @@
 id: fx-reverb-types-and-parameters
-title: "Reverb types and parameters: hall, plate, room, chamber"
-title_vi: "Các loại reverb và thông số: hall, plate, room, chamber"
+title: 'Reverb types and parameters: hall, plate, room, chamber'
+title_vi: 'Các loại reverb và thông số: hall, plate, room, chamber'
 topic: effects
 tags:
-  instrument: [vocal, snare, drums]
+  instrument:
+  - vocal
+  - snare
+  - drums
   genre: []
-  technique: [reverb, aux-send, pre-delay, decay-time, damping, return-eq]
-  event: [concert, corporate]
-summary: "Reverb types differ mainly in decay length, density and brightness. Four controls do most of the work: pre-delay, decay time, high-frequency damping and EQ on the return, fed from an aux send rather than inserted."
+  technique:
+  - reverb
+  - aux-send
+  - pre-delay
+  - decay-time
+  - damping
+  - return-eq
+  event:
+  - concert
+  - corporate
+summary: 'Reverb types differ mainly in decay length, density and brightness. Four controls do most of the work: pre-delay, decay time, high-frequency damping and EQ on the return, fed from an aux send rather than inserted.'
+summary_vi: 'Các loại reverb khác nhau chủ yếu ở độ dài decay, mật độ và độ sáng. Bốn nút chỉnh làm phần lớn công việc: Pre-delay, Decay time, damping tần số cao và EQ trên return, cấp từ aux send thay vì insert.'
 body: |
   ## What the types are for
 
@@ -31,65 +43,103 @@ body: |
   - Setting it solo. Judge reverb in the full mix and from audience position.
 
   Every number above is a starting point drawn from studio and magazine sources; set the final values by ear in the venue.
+body_vi: |
+  ## Các loại dùng cho việc gì
+
+  **Plate** là reverb sáng, dày, khá ngắn, gắn với vocal pop và snare. Một plate thật decay khoảng ba đến bốn giây, và hầu hết reverb digital mô phỏng nó. **Room** và **chamber** là không gian ngắn hơn, gần gũi hơn, hợp khi bạn muốn ambience không tràn lên từ kế tiếp. **Hall** dài và rộng, hợp với ballad, pad và hợp xướng. Nhiều bộ multi-effects rẻ tiền dùng một thuật toán cho mọi preset, nên "hall" và "room" có thể nghe giống nhau. Phải đánh giá theo decay và màu âm, không theo nhãn.
+
+  ## Bốn nút chỉnh quan trọng
+
+  - **Pre-delay**: khoảng cách giữa tiếng khô và lúc reverb bắt đầu. Không có hoặc rất ngắn thì nguồn hòa vào không gian, hợp với trống rock. Khoảng cách dài hơn giữ vocal hoặc line chính đứng phía trước và khô. Một tác giả SOS gợi ý 100 ms trở lên cho vocal, hoặc một giá trị đồng bộ theo nốt; một hướng dẫn SOS cũ hơn dùng 0 đến khoảng 80 ms cho vocal pop. Pre-delay rất ngắn cộng early reflections nghe rõ có thể bị phasey.
+  - **Decay time (RT60)**: thời gian đuôi giảm 60 dB. Bài nhanh, dày cần decay ngắn để mỗi cú đánh tan trước cú kế tiếp; bài chậm mang được decay dài hơn. Các nguồn khác nhau về trần: một nguồn nói ngay cả hall lớn hiếm khi vượt khoảng bốn giây và hai giây thường là đủ, nguồn khác trích không gian cỡ nhà thờ lớn tới 10 giây trở lên. Coi 2 đến 4 giây là khoảng cho cỡ hall và dưới một giây là ambience.
+  - **Damping / low-pass**: phòng thật mất tiếng cao rất nhanh, nên đuôi tối nghe tự nhiên hơn đuôi sáng. Hạ damping hoặc low-pass xuống đến khi reverb hết xì xì.
+  - **Return EQ**: cắt phần thấp của reverb return để đuôi không thêm mud bên dưới kick và bass. Ví dụ SOS năm 1996 dùng damping tần số thấp 100 Hz cho plate và khoảng 300 Hz cho drum room.
+
+  ## Routing khi làm live
+
+  Dùng aux send vào một reverb set 100% wet, rồi đưa về trên một channel hoặc return riêng. Send thường lấy post-fader, nên kéo ca sĩ xuống thì reverb của họ cũng xuống theo. Return stereo có thể thu hẹp về phía giữa để tương thích mono tốt hơn, điều quan trọng trong phòng mà nửa khán giả ngồi lệch trục. Trên WING, nạp reverb vào một FX slot, cấp từ bus send, và đưa về một channel để có EQ và fader cho nó; tự kiểm tra routing và tap point của bạn.
+
+  ## Lỗi cần tránh
+
+  - Reverb lên mọi thứ: nó ăn độ trong, nhất là trong phòng vốn đã vang.
+  - Đuôi dài và sáng trên speech: phụ âm bị nhòe và độ rõ lời tụt.
+  - Chỉnh khi solo. Phải đánh giá reverb trong full mix và từ vị trí khán giả.
+
+  Tóm lại, mọi con số ở trên là điểm xuất phát lấy từ nguồn studio và tạp chí; set giá trị cuối bằng tai tại venue.
 rule:
   applies_to:
-    source_type: [reverb.return]
+    source_type:
+    - reverb.return
   params:
-    plate_decay_s: [3, 4]
-    hall_decay_s: [2, 4]
-    ambience_decay_s: [0.1, 1]
-    vocal_pre_delay_ms: [0, 100]
-    return_low_damping_hz: [100, 300]
-  notes: "Starting points from SOS articles (White 1996, Robjohns 1997, Inglis 2020). Sources differ on long-hall decay; adjust by ear and to song tempo."
+    plate_decay_s:
+    - 3
+    - 4
+    hall_decay_s:
+    - 2
+    - 4
+    ambience_decay_s:
+    - 0.1
+    - 1
+    vocal_pre_delay_ms:
+    - 0
+    - 100
+    return_low_damping_hz:
+    - 100
+    - 300
+  notes: Starting points from SOS articles (White 1996, Robjohns 1997, Inglis 2020). Sources differ on long-hall decay; adjust by ear and to song tempo.
 sources:
-  - title: "Reverb: What Do All Those Knobs Do?"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/reverb-what-do-all-those-knobs-do"
-    author: "Sam Inglis"
-    year: 2020
-    accessed: "2026-11-09"
-    locator: "Pre Possessing; Tone & Time"
-  - title: "Improving The Sound Of Your Reverb"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/improving-sound-your-reverb"
-    author: "Paul White"
-    year: 1996
-    accessed: "2026-11-09"
-    locator: "Plate vs. hall vs. room; low-frequency damping"
-  - title: "Reverb From First Principles"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/reverb-first-principles"
-    author: "Hugh Robjohns"
-    year: 1997
-    accessed: "2026-11-09"
-    locator: "Choosing And Using Reverb"
+- title: 'Reverb: What Do All Those Knobs Do?'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/reverb-what-do-all-those-knobs-do
+  author: Sam Inglis
+  year: 2020
+  accessed: '2026-11-09'
+  locator: Pre Possessing; Tone & Time
+- title: Improving The Sound Of Your Reverb
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/improving-sound-your-reverb
+  author: Paul White
+  year: 1996
+  accessed: '2026-11-09'
+  locator: Plate vs. hall vs. room; low-frequency damping
+- title: Reverb From First Principles
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/reverb-first-principles
+  author: Hugh Robjohns
+  year: 1997
+  accessed: '2026-11-09'
+  locator: Choosing And Using Reverb
 media:
-  - kind: diagram
-    path: reverb-aux-routing.png
-    caption: "Aux send to reverb to return EQ to the main mix"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: scripts/library_diagrams.py
-  - kind: video
-    url: "https://www.youtube.com/watch?v=lseGTGRK3fM"
-    title: "Pre-Delay Tips: How to Use It With Reverb in Your Mix"
-    channel: "LANDR"
-    caption: "Pre-delay in a mix (found via search; contents not reviewed beyond the title)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=TXAHYFezGiA"
-    title: "The 4 types of reverb EXPLAINED (and when to use each one)."
-    channel: "Jordan McCrae"
-    caption: "Four reverb types and when to use each (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=YA4rZgq0RaI"
-    title: "What You Don't Know About Reverb - Reverb Masterclass"
-    channel: "In The Mix"
-    caption: "Reverb masterclass covering how reverb parameters work (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: reverb-aux-routing.png
+  caption: Aux send to reverb to return EQ to the main mix
+  caption_vi: Aux send tới reverb, tới return EQ, tới main mix
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=lseGTGRK3fM
+  title: 'Pre-Delay Tips: How to Use It With Reverb in Your Mix'
+  channel: LANDR
+  caption: Pre-delay in a mix (found via search; contents not reviewed beyond the title)
+  caption_vi: Pre-delay trong một mix (tìm qua tìm kiếm; nội dung chưa xem ngoài tiêu đề)
+- kind: video
+  url: https://www.youtube.com/watch?v=TXAHYFezGiA
+  title: The 4 types of reverb EXPLAINED (and when to use each one).
+  channel: Jordan McCrae
+  caption: Four reverb types and when to use each (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Bốn loại reverb và khi nào dùng mỗi loại (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=YA4rZgq0RaI
+  title: What You Don't Know About Reverb - Reverb Masterclass
+  channel: In The Mix
+  caption: Reverb masterclass covering how reverb parameters work (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Reverb masterclass về cách các thông số reverb hoạt động (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

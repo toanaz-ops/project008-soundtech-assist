@@ -1,13 +1,26 @@
 id: instrument-brass-winds
-title: "Brass and winds: mic distance, angle and EQ starting points"
-title_vi: "Kèn đồng và kèn hơi: khoảng cách mic, góc mic và EQ"
+title: 'Brass and winds: mic distance, angle and EQ starting points'
+title_vi: 'Kèn đồng và kèn hơi: khoảng cách mic, góc mic và EQ'
 topic: instruments
 tags:
-  instrument: [brass, trumpet, trombone, saxophone, flute]
-  genre: [pop, funk]
-  technique: [mic-placement, eq, feedback]
-  event: [concert, corporate]
-summary: "Brass wants a little distance and an on- or off-axis choice for brightness; saxophone can be miked at the bell or the body; EQ is mostly gentle cuts of honk and harshness."
+  instrument:
+  - brass
+  - trumpet
+  - trombone
+  - saxophone
+  - flute
+  genre:
+  - pop
+  - funk
+  technique:
+  - mic-placement
+  - eq
+  - feedback
+  event:
+  - concert
+  - corporate
+summary: Brass wants a little distance and an on- or off-axis choice for brightness; saxophone can be miked at the bell or the body; EQ is mostly gentle cuts of honk and harshness.
+summary_vi: Brass cần một chút khoảng cách và lựa chọn on-axis hay off-axis để chỉnh độ sáng; saxophone có thể đặt mic ở bell hoặc thân kèn; EQ chủ yếu là cut nhẹ phần honk và độ gắt.
 body: |
   ## Brass (trumpet, trombone, tuba)
 
@@ -50,36 +63,114 @@ body: |
   ## Live and WING tips
 
   Ask the horn players to play their loudest passage at soundcheck, set gain for that, and subgroup the section so one fader and one EQ handle the stack. Use a high-pass around 100-150 Hz on trumpets and saxes to clear space for bass and kick.
+body_vi: |
+  ## Brass (trumpet, trombone, tuba)
+
+  Brass cần một khoảng cách để tiếng kịp nở; đặt quá sát làm lệch tone. Shure gợi ý bắt đầu cách bell khoảng một đến hai feet. Đặt gần thì tiếng chặt hơn, giảm leakage và feedback, còn xa hơn thì thêm chiều sâu.
+
+  - **On-axis ở bell:** sáng hơn, sắc hơn, nhiều bite hơn.
+  - **Off-axis:** mềm hơn, bớt cạnh.
+  - Mic clip-on condenser/instrument (Beta 98H/C, PGA98H, SM137) hợp với việc nghệ sĩ di chuyển trên sân khấu và monitor to.
+  - Với một section, mỗi người một mic cho dễ kiểm soát; một mic chung cho hai người là cách dung hòa nhanh trên sân khấu nhỏ.
+
+  ## Saxophone
+
+  Mic có đáp ứng định hình kiểu vocal hợp với sax. Hướng vào bell từ cách vài inch cho tiếng sáng, ít feedback và spill hơn. Mic đặt cách các lỗ thoát âm vài inch cho tone ấm và đầy hơn nhưng bắt cả tiếng ngón tay và phím, nên tránh xa các lỗ bấm.
+
+  ## Flute
+
+  Đặt gần, nhưng không gần đến mức tiếng hơi thở lấn át; windscreen giữ độ rõ và làm dịu tiếng thở. Nguồn không đưa khoảng cách cụ thể.
+
+  ## EQ điểm xuất phát
+
+  Các vùng của brass section theo iZotope:
+
+  - Dưới 150 Hz: low end cần cắt (trừ tuba).
+  - 500-800 Hz: honkiness hoặc boxiness; cut nhẹ sẽ giúp.
+  - 1-5 kHz: attack hoặc độ gắt.
+  - 5 kHz trở lên: độ hung hoặc air, tùy ngữ cảnh.
+
+  Giữ các cú chỉnh nhỏ; như iZotope nói, "less is always more."
+
+  ## Dynamics
+
+  Brass có dải động rất rộng. Một compressor nhẹ trên section bus làm đều các cú stab; một limiter trên bus bảo vệ PA khỏi những cú bùng đột ngột từ bell vào mic.
+
+  ## Vấn đề thường gặp
+
+  - **Trumpet on-axis bị gắt:** xoay mic hơi lệch trục trước khi nghĩ đến EQ.
+  - **Sax bị tiếng lách cách:** dời mic ra xa các phím hoặc hướng về phía bell.
+  - **Feedback khi kèn đứng gần wedge:** mic gần hơn, pattern hẹp hơn, góc wedge đúng.
+
+  ## Mẹo live và WING
+
+  Nhờ người chơi kèn chơi đoạn to nhất của họ lúc soundcheck, đặt gain theo đó, và gom section vào một subgroup để một fader và một EQ lo cả khối. Dùng high-pass quanh 100-150 Hz trên trumpet và sax để nhường chỗ cho bass và kick.
 rule:
-  applies_to: {source_type: [brass.section, brass.trumpet, brass.trombone, wind.sax, wind.flute], genre: [pop, funk]}
+  applies_to:
+    source_type:
+    - brass.section
+    - brass.trumpet
+    - brass.trombone
+    - wind.sax
+    - wind.flute
+    genre:
+    - pop
+    - funk
   params:
-    hpf_hz: [100, 150]
-    honk_cut_hz: [500, 800]
-    harsh_cut_hz: [1000, 5000]
-    mic_distance_ft: [1, 2]
-  notes: "Starting points; bell mic distance is for brass only."
+    hpf_hz:
+    - 100
+    - 150
+    honk_cut_hz:
+    - 500
+    - 800
+    harsh_cut_hz:
+    - 1000
+    - 5000
+    mic_distance_ft:
+    - 1
+    - 2
+  notes: Starting points; bell mic distance is for brass only.
 sources:
-  - {title: "How to Choose the Best Mics for Brass, Wind and String Instruments", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/how-to-choose-the-best-mics-for-brass-wind-and-string-instruments", accessed: "2026-11-09", locator: "Brass; Saxophone; Flute"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Brass section"}
+- title: How to Choose the Best Mics for Brass, Wind and String Instruments
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/how-to-choose-the-best-mics-for-brass-wind-and-string-instruments
+  accessed: '2026-11-09'
+  locator: Brass; Saxophone; Flute
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Brass section
 media:
-  - {kind: diagram, path: brass-eq.png, caption: "Starting EQ for a brass section channel", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=XlYNFXVTzYI"
-    title: "beyerdynamic | How to mic a saxophone"
-    channel: "beyerdynamic"
-    caption: "beyerdynamic on miking a saxophone (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=hkQ5LVo-Yw8"
-    title: "How to mount the 4099 Instrument Mic on a trumpet with a DPA Clip"
-    channel: "DPA Microphones A/S"
-    caption: "Mounting a clip-on instrument mic on a trumpet (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=ViYLbc9mdhU"
-    title: "Royer Mic Techniques for Brass Players ft. Wayne Bergeron"
-    channel: "Sweetwater Band & Orchestra"
-    caption: "Ribbon mic techniques for brass players (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: brass-eq.png
+  caption: Starting EQ for a brass section channel
+  caption_vi: EQ điểm xuất phát cho channel brass section
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=XlYNFXVTzYI
+  title: beyerdynamic | How to mic a saxophone
+  channel: beyerdynamic
+  caption: beyerdynamic on miking a saxophone (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: beyerdynamic hướng dẫn đặt mic cho saxophone (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=hkQ5LVo-Yw8
+  title: How to mount the 4099 Instrument Mic on a trumpet with a DPA Clip
+  channel: DPA Microphones A/S
+  caption: Mounting a clip-on instrument mic on a trumpet (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Gắn mic clip-on instrument lên trumpet (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=ViYLbc9mdhU
+  title: Royer Mic Techniques for Brass Players ft. Wayne Bergeron
+  channel: Sweetwater Band & Orchestra
+  caption: Ribbon mic techniques for brass players (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Kỹ thuật dùng ribbon mic cho người chơi brass (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

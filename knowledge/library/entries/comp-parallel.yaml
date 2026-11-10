@@ -1,13 +1,22 @@
 id: comp-parallel
-title: "Parallel compression"
-title_vi: "Nén song song (parallel compression)"
+title: Parallel compression
+title_vi: Nén song song (parallel compression)
 topic: dynamics
 tags:
-  instrument: [drums, vocal, bass]
-  genre: [rock, pop]
-  technique: [compression, parallel-compression, blend]
+  instrument:
+  - drums
+  - vocal
+  - bass
+  genre:
+  - rock
+  - pop
+  technique:
+  - compression
+  - parallel-compression
+  - blend
   event: []
-summary: "Blend a heavily compressed copy of a signal under the untouched original to gain density and sustain while keeping the natural transients."
+summary: Blend a heavily compressed copy of a signal under the untouched original to gain density and sustain while keeping the natural transients.
+summary_vi: Trộn một bản copy bị nén mạnh xuống dưới bản gốc nguyên vẹn để có độ dày và sustain mà vẫn giữ transient tự nhiên.
 body: |
   Normal (downward) compression turns the loud parts down, so keeping the signal natural and getting it dense pull in opposite directions. **Parallel compression** sidesteps that: you keep the original signal and add a second, heavily compressed copy of it underneath. The loud moments are dominated by the dry signal, the quiet moments and tails are raised by the squashed copy, and the mix of the two keeps both life and weight. It is often called "New York" compression because of its drum use.
 
@@ -40,33 +49,74 @@ body: |
   ## Live use
 
   It is most common on drum groups and sometimes on bass guitar or a lead vocal in a concert. In corporate speech it is rarely needed; a single moderate compressor is cleaner and safer for feedback.
+body_vi: |
+  Nén thông thường (downward compression) hạ phần lớn xuống, nên "giữ tín hiệu tự nhiên" và "làm nó dày" kéo về hai hướng ngược nhau. **Nén song song (Parallel compression)** né chuyện đó: bạn giữ nguyên tín hiệu gốc và thêm một bản copy thứ hai bị nén mạnh ở bên dưới. Những khoảnh khắc lớn bị tín hiệu dry chi phối, phần nhỏ và đuôi được bản copy bị nén nâng lên, nên hỗn hợp hai bản giữ được cả sức sống lẫn độ nặng. Kỹ thuật này hay được gọi là nén kiểu "New York" vì hay dùng cho drum.
+
+  ## Vì sao hiệu quả
+
+  Sound On Sound mô tả compression cổ điển với Makeup Gain là nâng phần nhỏ lên nhưng vẫn ép phần lớn. Ở bản parallel, phần lớn trên đường dry gần như không bị đụng tới, nên transient còn nguyên trong khi chi tiết và sustain tăng lên.
+
+  ## Cách dựng trên desk live
+
+  1. Send nguồn (ví dụ drum bus, hoặc lead vocal) sang một bus hoặc aux dự phòng, hoặc dùng một channel dự phòng lấy từ cùng nguồn đó.
+  2. Đặt một compressor lên bus đó với setting mạnh tay: Ratio từ khoảng 6:1 đến 10:1 hoặc hơn, Attack nhanh đến vừa, Release hồi kịp trong một nhịp, và Threshold thấp để thấy khoảng 6 đến 10 dB Gain Reduction hoặc hơn. Các nguồn khác nhau về mức đẩy bao xa; đây chỉ là điểm khởi đầu.
+  3. Từ từ đưa bus lên dưới tín hiệu dry cho đến khi âm thanh thấy dày hơn, rồi dừng. Thông thường bản nén ngồi thấp hơn dry khá nhiều.
+  4. Kiểm tra polarity và delay. Nếu hai đường có độ trễ (latency) khác nhau sẽ xuất hiện comb filtering; trên desk digital hãy giữ cả hai đường trong cùng một đường xử lý hoặc bù lại.
+
+  Một số compressor có sẵn nút **mix** wet/dry. Tiện đấy, nhưng nói chặt thì đó không phải một đường riêng và có thể hoạt động hơi khác.
+
+  ## Nghe gì
+
+  - Sustain và đuôi room của snare hoặc cả bộ drum nổi lên mà cú đánh không mất độ giòn.
+  - Với vocal, âm mềm và hơi thở nổi lên; đây cũng chính là thứ làm tăng noise và nguy cơ hú rít (feedback), nên phải cẩn thận với wedge hoặc mic mở.
+  - Trong phòng nhỏ, năng lượng mức thấp thêm vào có thể làm tiếng phòng to lên. Hãy nghe ở level lúc show.
+
+  ## Lỗi thường gặp
+
+  - Kéo parallel bus lên nhiều đến mức không còn là parallel nữa; kết quả nghe như bị nén nặng.
+  - Quên chênh lệch latency giữa các đường.
+  - Dùng cho nguồn vốn đã nén mạnh; lợi ích rất nhỏ.
+  - Áp lên lead vocal trước một monitor mix lớn, làm mất gain before feedback.
+
+  ## Dùng khi live
+
+  Phổ biến nhất trên drum group và đôi khi trên bass guitar hoặc lead vocal ở concert. Với speech doanh nghiệp hiếm khi cần; một con compressor vừa phải là sạch hơn và an toàn hơn cho feedback.
 rule:
-  applies_to: {source_type: [drums, vocal.lead, bass]}
+  applies_to:
+    source_type:
+    - drums
+    - vocal.lead
+    - bass
   params:
-    parallel_ratio: [6, 20]
-    parallel_gr_db: [6, 10]
-  notes: "starting points; sources differ on how far to push the compressed copy; blend until density rises, then stop"
+    parallel_ratio:
+    - 6
+    - 20
+    parallel_gr_db:
+    - 6
+    - 10
+  notes: starting points; sources differ on how far to push the compressed copy; blend until density rises, then stop
 sources:
-  - title: "Parallel compression (Downward Compression, Uplift Compression)"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/parallel-compression"
-    accessed: "2026-11-09"
-    locator: "Downward Compression / Uplift Compression (page 1 only; the Parallel Compression section on page 2 was not opened)"
-media: []
+- title: Parallel compression (Downward Compression, Uplift Compression)
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/parallel-compression
+  accessed: '2026-11-09'
+  locator: Downward Compression / Uplift Compression (page 1 only; the Parallel Compression section on page 2 was not opened)
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=v7NhjvB8jUM"
-    title: "FOH Mixing: Live Tips and Tricks by Ozzy’s Mix Engineer"
-    channel: "Waves Audio"
-    caption: "Ozzy Osbourne's FOH engineer on live tips including parallel drum compression (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=yB-uyzdDsik"
-    title: "Live Mixing Tips from FOH Engineer Greg Price"
-    channel: "Waves Audio"
-    caption: "Greg Price on live mixing with Waves, including his parallel drum compression (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=v7NhjvB8jUM
+  title: 'FOH Mixing: Live Tips and Tricks by Ozzy’s Mix Engineer'
+  channel: Waves Audio
+  caption: Ozzy Osbourne's FOH engineer on live tips including parallel drum compression (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Kỹ sư FOH của Ozzy Osbourne nói về các mẹo live, trong đó có parallel drum compression (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
+- kind: video
+  url: https://www.youtube.com/watch?v=yB-uyzdDsik
+  title: Live Mixing Tips from FOH Engineer Greg Price
+  channel: Waves Audio
+  caption: Greg Price on live mixing with Waves, including his parallel drum compression (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Greg Price nói về mix live với Waves, gồm cả parallel drum compression của ông (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

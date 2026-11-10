@@ -242,3 +242,36 @@ def test_a_new_entry_never_overwrites_an_existing_hand_written_file(qt_app, lib,
     before = path.read_text(encoding="utf-8")
     dialog.save()
     assert shown and path.read_text(encoding="utf-8") == before
+
+
+def test_vietnamese_view_shows_vi_text_and_falls_back_with_a_note(lib):
+    from wing_parser.ui.library_markdown import entry_markdown
+    media = [{"kind": "image", "url": "https://example.org/i", "caption": "A photo",
+              "caption_vi": "Ảnh minh hoạ", "license": "CC0-1.0", "attribution": "S"}]
+    _write(lib.root, _entry("has-vi", "Has VI", title_vi="Có VI", media=media,
+                            summary_vi="Tóm tắt VI", body_vi="Nội dung VI"))
+    _write(lib.root, _entry("no-vi", "No VI"))
+    set_language("vi")
+    try:
+        md = entry_markdown(lib.get("has-vi"), lib, {})
+        assert md.startswith("# Có VI") and "Nội dung VI" in md and "Ảnh minh hoạ" in md
+        assert text("library.view.no_vi") not in md
+        fallback = entry_markdown(lib.get("no-vi"), lib, {})
+        assert text("library.view.no_vi") in fallback and "Compressor" in fallback
+    finally:
+        set_language("en")
+    english = entry_markdown(lib.get("has-vi"), lib, {})
+    assert english.startswith("# Has VI") and "Nội dung VI" not in english
+    assert "A photo" in english and "Ảnh minh hoạ" not in english
+
+
+def test_edit_form_round_trips_vietnamese_fields_and_omits_empty(qt_app, lib):
+    from wing_parser.ui.library_edit_form import EntryForm
+    form = EntryForm({"dynamics": {"id": "dynamics", "en": "Dynamics", "vi": "Động"}}, True)
+    form.load(_entry("x", "X", summary_vi="Tóm tắt", body_vi="Nội dung"))
+    out = form.to_entry()
+    assert out["summary_vi"] == "Tóm tắt" and out["body_vi"] == "Nội dung"
+    form.summary_vi_edit.setPlainText("")
+    form.body_vi_edit.setPlainText("  \n")
+    out = form.to_entry()
+    assert "summary_vi" not in out and "body_vi" not in out

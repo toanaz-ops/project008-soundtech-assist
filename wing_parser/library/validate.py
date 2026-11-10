@@ -113,6 +113,10 @@ def _check_media(index: int, item, entry_id: str, media_roots: list[Path],
     if kind in ("image", "video") and not _blank(url) and \
             not str(url).startswith(("http://", "https://")):
         issues.append(_err("bad-media", f"{field}.url", "url must be http or https"))
+    if "caption_vi" in item and (not isinstance(item["caption_vi"], str)
+                                 or _blank(item["caption_vi"])):
+        issues.append(_err("bad-media", f"{field}.caption_vi",
+                           "caption_vi must be a non-empty string when present"))
     stamp = item.get("timestamp")
     if not _blank(stamp) and not schema.TIMESTAMP_RE.match(str(stamp)):
         issues.append(_err("bad-media", f"{field}.timestamp", "use mm:ss"))
@@ -139,6 +143,9 @@ def validate(entry: dict, *, topics: dict, publishers: list[dict],
             missing = _blank(value)
         if missing and key != "sources":
             issues.append(_err("missing-field", key, f"{key} is required"))
+    for key in ("title_vi", "summary_vi", "body_vi"):
+        if key in entry and (not isinstance(entry[key], str) or _blank(entry[key])):
+            issues.append(_err("bad-field", key, f"{key} must be a non-empty string when present"))
     entry_id = entry.get("id")
     if not _blank(entry_id) and not schema.ID_RE.match(str(entry_id)):
         issues.append(_err("bad-id", "id", f"{entry_id!r} is not kebab-case"))

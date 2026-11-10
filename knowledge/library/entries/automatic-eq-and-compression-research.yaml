@@ -1,13 +1,22 @@
 id: automatic-eq-and-compression-research
-title: "Automatic EQ and compression research"
-title_vi: "Nghiên cứu EQ và compressor tự động"
+title: Automatic EQ and compression research
+title_vi: Nghiên cứu EQ và compressor tự động
 topic: automix
 tags:
-  instrument: [multitrack]
-  genre: [rock, pop, folk]
-  technique: [automatic-eq, automatic-compression, masking]
-  event: [concert]
-summary: "Research systems set EQ to reduce masking between tracks and set compressor ratio, threshold, knee, attack and release from the signal's own features. In one test the automatic compression matched or beat semi-professional manual mixes, but the evidence is small and studio-based."
+  instrument:
+  - multitrack
+  genre:
+  - rock
+  - pop
+  - folk
+  technique:
+  - automatic-eq
+  - automatic-compression
+  - masking
+  event:
+  - concert
+summary: Research systems set EQ to reduce masking between tracks and set compressor ratio, threshold, knee, attack and release from the signal's own features. In one test the automatic compression matched or beat semi-professional manual mixes, but the evidence is small and studio-based.
+summary_vi: Các hệ thống nghiên cứu tự set EQ để giảm hiện tượng che lấp tiếng (Masking) giữa các track, và tự set Ratio, Threshold, Knee, Attack, Release của compressor từ chính đặc trưng của tín hiệu. Trong một bài test, compression tự động ngang hoặc hơn bản mix tay của người bán chuyên, nhưng bằng chứng còn ít và làm trong studio.
 body: |
   ## Automatic EQ
 
@@ -32,58 +41,98 @@ body: |
   - Choose time constants by how percussive the source is, not by a single "vocal" or "drum" preset.
   - Compare compressed and bypassed at equal loudness; the paper notes that a compressor with automatic make-up gain can fool you with loudness changes.
   - Caveats: 15 and 16 participants, half from one research group, studio multitracks and 20-second excerpts. Live rooms add bleed and feedback that these tests did not.
+body_vi: |
+  ## Automatic EQ
+
+  Công trình multitrack EQ của Hafezi và Reiss định nghĩa một thước đo Masking đơn giản hoá (một track che track khác trong cùng vùng tần số) rồi cut hoặc boost các track để giảm nó. Có bốn phiên bản: hai offline (hoàn toàn tự động và bán tự động, áp một EQ cố định từ Masking trung bình) và hai real-time. Trong listening test, các bản tự động giảm cả Masking đo được lẫn Masking cảm nhận được; bản offline bán tự động, chỉ với một nút chỉnh của người dùng, cải thiện bản mix thô tốt hơn người nghiệp dư và gần bằng người chuyên. Các tác giả cũng thấy các thước đo Masking khách quan hiện có dự đoán Masking cảm nhận rất kém trên nhạc multitrack. Vì vậy hãy dè chừng bất kỳ công cụ nào tuyên bố "đo" Masking chính xác. (Chỉ đọc được phần abstract.)
+
+  ## Automatic compression
+
+  Ma và cộng sự (JAES 2015) cấu hình mọi tham số compressor từ các đặc trưng side-chain. Thiết kế dựa trên sáu giả định làm việc, cũng là sáu rule of thumb đáng nhớ:
+
+  - tín hiệu có biên độ dao động lớn thì nén nhiều hơn;
+  - tín hiệu nhiều năng lượng tần thấp thì nén nhiều hơn;
+  - Attack và Release theo độ transient của tín hiệu: nguồn đánh (percussive) cần thời gian ngắn hơn;
+  - độ rộng Knee theo lượng compression;
+  - Makeup Gain nên khôi phục loudness của đầu vào;
+  - có một trần compression hữu ích, tuỳ theo nguồn.
+
+  Trong bài test method-of-adjustment, 15 kỹ sư chỉnh Ratio và Threshold trên bốn bài hát. Ratio trung bình khá vừa phải (đọc từ hình trong paper: chủ yếu khoảng 1.5:1 đến 3:1), và độ chênh giữa các kỹ sư nhỏ hơn dự kiến, dù khác biệt giữa các nhạc cụ thì rõ. Paper nêu khoảng thường dùng cho Attack là 5 đến 250 ms và Release là 5 đến 3000 ms. Hệ thống cuối cùng dùng Attack tối đa 80 ms và Release tối đa 1000 ms trước khi scale theo crest factor. Trong listening test (16 người, sáu bài), bản mix tự động được đánh giá tốt nhất về lượng compression phù hợp và về độ ưa thích chung, và gần bằng bản mix tay tốt hơn về độ ổn định level.
+
+  ## Rút ra gì
+
+  - Ratio vừa phải là đủ trong đa số trường hợp; các kỹ sư trong thí nghiệm không chọn compression nặng.
+  - Chọn time constant theo độ percussive của nguồn, đừng theo một preset "vocal" hay "drum" duy nhất.
+  - Luôn so sánh compressed và bypass ở cùng loudness. Paper lưu ý compressor có automatic Makeup Gain có thể đánh lừa bạn bằng thay đổi loudness, nên tai bạn tưởng hay mà thực ra chỉ là to hơn.
+  - Lưu ý: chỉ 15 và 16 người tham gia, một nửa từ cùng một nhóm nghiên cứu, multitrack studio và đoạn trích 20 giây. Phòng live có bleed và feedback mà các test này không tính đến.
 rule:
   applies_to:
-    source_type: [multitrack]
-    genre: [rock, pop, folk]
+    source_type:
+    - multitrack
+    genre:
+    - rock
+    - pop
+    - folk
   params:
-    comp_ratio: [1.5, 3]
-    attack_ms: [5, 250]
-    release_ms: [5, 3000]
-    attack_ms_max_used_by_system: [80, 80]
-    release_ms_max_used_by_system: [1000, 1000]
-  notes: "Ratio range is read off Fig. 2 of the cited study (studio multitracks); attack/release ranges are the paper's quoted 'usual' spans, not recommendations. Starting points only, adjust by ear."
+    comp_ratio:
+    - 1.5
+    - 3
+    attack_ms:
+    - 5
+    - 250
+    release_ms:
+    - 5
+    - 3000
+    attack_ms_max_used_by_system:
+    - 80
+    - 80
+    release_ms_max_used_by_system:
+    - 1000
+    - 1000
+  notes: Ratio range is read off Fig. 2 of the cited study (studio multitracks); attack/release ranges are the paper's quoted 'usual' spans, not recommendations. Starting points only, adjust by ear.
 sources:
-  - title: "Intelligent Multitrack Dynamic Range Compression"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf"
-    author: "Zheng Ma, Brecht De Man, Pedro D. L. Pestana, Dawn A. A. Black, Joshua D. Reiss"
-    year: 2015
-    accessed: "2026-11-09"
-    locator: "J. Audio Eng. Soc. 63(6): Sec. 2.2 Control Assumptions, Sec. 3.1, Sec. 4, Sec. 5"
-    doi: "10.17743/jaes.2015.0053"
-  - title: "Autonomous Multitrack Equalization Based on Masking Reduction"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://www.aes.org/e-lib/browse.cfm?elib=17637"
-    author: "Sina Hafezi, Joshua D. Reiss"
-    year: 2015
-    accessed: "2026-11-09"
-    locator: "J. Audio Eng. Soc. 63(5), pp. 312-323, abstract only (page not opened; abstract seen in search result)"
-    doi: "10.17743/jaes.2015.0021"
-  - title: "Ten Years of Automatic Mixing"
-    publisher: "Queen Mary University of London"
-    kind: paper
-    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
-    author: "Brecht De Man, Joshua D. Reiss, Ryan Stables"
-    year: 2017
-    accessed: "2026-11-09"
-    locator: "Sec. 2 (compressor automation trend); references [26], [33], [34]"
+- title: Intelligent Multitrack Dynamic Range Compression
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf
+  author: Zheng Ma, Brecht De Man, Pedro D. L. Pestana, Dawn A. A. Black, Joshua D. Reiss
+  year: 2015
+  accessed: '2026-11-09'
+  locator: 'J. Audio Eng. Soc. 63(6): Sec. 2.2 Control Assumptions, Sec. 3.1, Sec. 4, Sec. 5'
+  doi: 10.17743/jaes.2015.0053
+- title: Autonomous Multitrack Equalization Based on Masking Reduction
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://www.aes.org/e-lib/browse.cfm?elib=17637
+  author: Sina Hafezi, Joshua D. Reiss
+  year: 2015
+  accessed: '2026-11-09'
+  locator: J. Audio Eng. Soc. 63(5), pp. 312-323, abstract only (page not opened; abstract seen in search result)
+  doi: 10.17743/jaes.2015.0021
+- title: Ten Years of Automatic Mixing
+  publisher: Queen Mary University of London
+  kind: paper
+  url: https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf
+  author: Brecht De Man, Joshua D. Reiss, Ryan Stables
+  year: 2017
+  accessed: '2026-11-09'
+  locator: Sec. 2 (compressor automation trend); references [26], [33], [34]
 media:
-  - kind: diagram
-    path: auto-compression-flow.png
-    caption: "Cross-adaptive compression: features from all tracks set each compressor's parameters (after Ma et al. 2015, Fig. 7)"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=hED9wfRByw4"
-    title: "Intelligent Music Production: Challenges, Frontiers and Implications - Josh Reiss"
-    channel: "Semantic Audio"
-    caption: "Josh Reiss on automated mixing research, relevant to automatic EQ and compression (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: auto-compression-flow.png
+  caption: 'Cross-adaptive compression: features from all tracks set each compressor''s parameters (after Ma et al. 2015, Fig. 7)'
+  caption_vi: 'Cross-adaptive compression: đặc trưng từ tất cả các track set tham số cho từng compressor (theo Ma et al. 2015, Fig. 7)'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=hED9wfRByw4
+  title: 'Intelligent Music Production: Challenges, Frontiers and Implications - Josh Reiss'
+  channel: Semantic Audio
+  caption: Josh Reiss on automated mixing research, relevant to automatic EQ and compression (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Josh Reiss nói về nghiên cứu automated mixing, liên quan đến automatic EQ và compression (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

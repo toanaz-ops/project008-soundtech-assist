@@ -1,13 +1,19 @@
 id: wing-automix
-title: "WING automix: two groups, post-insert slot"
-title_vi: "Automix trên WING: hai nhóm, vị trí post-insert"
+title: 'WING automix: two groups, post-insert slot'
+title_vi: 'Automix trên WING: hai nhóm, vị trí post-insert'
 topic: wing-console
 tags:
-  instrument: [microphone]
+  instrument:
+  - microphone
   genre: []
-  technique: [automix]
-  event: [corporate, panel, conference]
-summary: "On WING, up to 16 channels can use automix in two groups, A and B, placed in the channel's post-insert slot. Only these facts come from the manual excerpt opened; weighting, algorithm type and menu paths are unverified."
+  technique:
+  - automix
+  event:
+  - corporate
+  - panel
+  - conference
+summary: On WING, up to 16 channels can use automix in two groups, A and B, placed in the channel's post-insert slot. Only these facts come from the manual excerpt opened; weighting, algorithm type and menu paths are unverified.
+summary_vi: Trên WING, tối đa 16 channel có thể dùng automix trong hai nhóm, A và B, đặt ở slot post-insert của channel. Chỉ những dữ kiện này lấy từ đoạn manual đã mở; weighting, loại thuật toán và đường dẫn menu chưa được xác minh.
 body: |
   ## What the manual says (verified)
 
@@ -33,52 +39,86 @@ body: |
   ## Next step
 
   Open the full WING manual's automix section and record the algorithm, any weight control and the on-screen meters; then promote this entry from draft.
+body_vi: |
+  ## Manual nói gì (đã xác minh)
+
+  Một đoạn trích manual WING (các mục SETUP > Audio và màn hình HOME) nêu rằng automix điều chỉnh mức của nhiều nguồn để mức đầu ra giữ đồng đều, với ví dụ nhiều người cùng nói trên sân khấu. Nó nói tối đa 16 channel có thể dùng automix, trong hai nhóm (A/B), và automix nằm ở slot post-insert. Slot đó là insert thứ hai, mà manual mô tả là cố định sau fader và sau phần xử lý; nó có thể chứa một effect hoặc một trong hai nhóm automix, chia sẻ gain giữa các channel được gán vào.
+
+  ## Điều CHƯA được xác minh
+
+  - **Thuật toán.** Đoạn trích không nói WING dùng gain-sharing (kiểu Dugan) hay gating, hoặc có con số nào như thời gian đáp ứng không. Đừng giả định cái nào.
+  - **Weight.** Các console khác (ví dụ Yamaha và Midas) có weight hoặc priority theo từng channel; đoạn trích WING đã mở không nhắc đến. Phải kiểm tra manual đầy đủ.
+  - **Tên gọi.** Một hướng dẫn của nhà bán lẻ (chỉ thấy trong kết quả tìm kiếm) gọi các nhóm là Auto-X và Auto-Y, còn đoạn trích manual nói A/B. Kiểm tra nhãn trên firmware của bạn.
+  - **Đường dẫn menu và meter.** Chưa đọc.
+
+  ## Cách áp dụng, dựa trên hành vi automix nói chung
+
+  Phần sau đây đến từ các mô tả automixer nói chung, không phải từ trang WING nào:
+
+  - Chỉ gán vào một nhóm những mic thật sự chia sẻ vai trò nói, như mic panel hoặc mic bàn. Giữ input nhạc, playback và effects return ngoài nhóm.
+  - Vì slot nằm sau fader, một channel rảnh với fader kéo xuống được automixer thấy ở mức thấp hơn. Yamaha khuyên vị trí post-insert (POST ON) vì cùng lý do: nó giữ cho channel rảnh không kéo gain và cho phép bạn ưu tiên người nói bằng fader.
+  - Coi automix là bộ quản lý gain, không phải gate. Mic nào không dùng thì mute.
+  - Thử với hai người nói cùng lúc và với phòng im lặng trước show.
+  - Dùng nhóm thứ hai cho một tập mic riêng (ví dụ presenter so với mic hỏi đáp của khán giả) để một nhóm không phạt nhóm kia.
+
+  ## Bước tiếp theo
+
+  Mở mục automix trong manual WING đầy đủ và ghi lại thuật toán, mọi điều khiển weight và các meter trên màn hình; sau đó nâng entry này khỏi trạng thái draft.
 rule:
   applies_to:
-    console: [wing]
-    source_type: [speech.panel]
+    console:
+    - wing
+    source_type:
+    - speech.panel
   params:
-    automix_max_channels: [16, 16]
-    automix_groups: [2, 2]
-  notes: "Counts come from the opened WING manual mirror excerpt (SETUP > Audio). Weighting and algorithm unverified."
+    automix_max_channels:
+    - 16
+    - 16
+    automix_groups:
+    - 2
+    - 2
+  notes: Counts come from the opened WING manual mirror excerpt (SETUP > Audio). Weighting and algorithm unverified.
 sources:
-  - title: "Behringer WING RACK manual (mirror), SETUP > Audio: AUTOMIX"
-    publisher: "ManualsLib (mirror of Behringer WING Rack manual)"
-    kind: manual
-    url: "https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html"
-    accessed: "2026-11-09"
-    locator: "SETUP > Audio, AUTOMIX; post-fader insert"
-  - title: "Theory of Automixer operation (RIVAGE PM series)"
-    publisher: "Yamaha"
-    kind: manual
-    url: "https://manual.yamaha.com/pa/mixers/RIVAGE_PM_series/en-US/5462888203.html"
-    accessed: "2026-11-09"
-    locator: "Level-Based Priority (general automixer behaviour, not WING-specific)"
-  - title: "Gain Sharing vs. Gating Automixer"
-    publisher: "Biamp"
-    kind: article
-    url: "https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer"
-    accessed: "2026-11-09"
-    locator: "Choosing Between Them (general background)"
+- title: 'Behringer WING RACK manual (mirror), SETUP > Audio: AUTOMIX'
+  publisher: ManualsLib (mirror of Behringer WING Rack manual)
+  kind: manual
+  url: https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html
+  accessed: '2026-11-09'
+  locator: SETUP > Audio, AUTOMIX; post-fader insert
+- title: Theory of Automixer operation (RIVAGE PM series)
+  publisher: Yamaha
+  kind: manual
+  url: https://manual.yamaha.com/pa/mixers/RIVAGE_PM_series/en-US/5462888203.html
+  accessed: '2026-11-09'
+  locator: Level-Based Priority (general automixer behaviour, not WING-specific)
+- title: Gain Sharing vs. Gating Automixer
+  publisher: Biamp
+  kind: article
+  url: https://support.biamp.com/Tesira/Programming/Gain_Sharing_vs._Gating_Automixer
+  accessed: '2026-11-09'
+  locator: Choosing Between Them (general background)
 media:
-  - kind: diagram
-    path: wing-automix-position.png
-    caption: "Where automix sits in a WING channel (post-fader insert slot), per the manual excerpt"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=3SNuOdb62xY"
-    title: "Wing How To: Episode 14 - Automix"
-    channel: "Behringer Knowledge Base"
-    caption: "Behringer WING how-to episode on automix (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=kB6P-AaiCjI"
-    title: "How to Use the Automixer on the Behringer Wing"
-    channel: "Drew Brashler"
-    caption: "Using the automixer on the Behringer WING (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: wing-automix-position.png
+  caption: Where automix sits in a WING channel (post-fader insert slot), per the manual excerpt
+  caption_vi: Vị trí của automix trong một channel WING (slot insert post-fader), theo đoạn trích manual
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=3SNuOdb62xY
+  title: 'Wing How To: Episode 14 - Automix'
+  channel: Behringer Knowledge Base
+  caption: Behringer WING how-to episode on automix (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Tập how-to về automix trên Behringer WING (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=kB6P-AaiCjI
+  title: How to Use the Automixer on the Behringer Wing
+  channel: Drew Brashler
+  caption: Using the automixer on the Behringer WING (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Dùng automixer trên Behringer WING (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

@@ -11,7 +11,7 @@ from PySide6.QtCore import QUrl
 
 from wing_parser.library.store import LibraryStore, LoadedEntry
 from wing_parser.ui.library_support import topic_label
-from wing_parser.ui.texts import text
+from wing_parser.ui.texts import current_language, text
 
 
 def _esc(value) -> str:
@@ -37,11 +37,12 @@ def _tag_line(entry: dict) -> str:
 
 
 def _media_lines(loaded: LoadedEntry, store: LibraryStore) -> list[str]:
-    entry, lines = loaded.entry, []
+    entry, lines, vi = loaded.entry, [], current_language() == "vi"
     for item in entry.get("media") or []:
         if not isinstance(item, dict):
             continue
-        kind, caption = item.get("kind"), str(item.get("caption", "") or "")
+        kind = item.get("kind")
+        caption = str((vi and item.get("caption_vi")) or item.get("caption", "") or "")
         credit = " - ".join(
             f"{text('library.view.' + key)}: {item[key]}"
             for key in ("license", "attribution") if item.get(key))
@@ -86,17 +87,24 @@ def _source_lines(entry: dict) -> list[str]:
 
 def entry_markdown(loaded: LoadedEntry, store: LibraryStore, topics: dict) -> str:
     entry = loaded.entry
-    out = [f"# {_esc(entry.get('title', loaded.id))}"]
-    if entry.get("title_vi"):
-        out += ["", f"*{_esc(entry['title_vi'])}*"]
+    vi = current_language() == "vi"
+    title, title_vi = entry.get("title", loaded.id), entry.get("title_vi")
+    out = [f"# {_esc(title_vi if vi and title_vi else title)}"]
+    if title_vi:
+        out += ["", f"*{_esc(title if vi else title_vi)}*"]
+    summary = (vi and entry.get("summary_vi")) or entry.get("summary", "")
+    body = (vi and entry.get("body_vi")) or entry.get("body", "")
+    fallback = vi and not (entry.get("summary_vi") and entry.get("body_vi"))
     meta = [f"{text('library.view.topic')}: {_esc(topic_label(topics, entry.get('topic', '')))}"]
     if _tag_line(entry):
         meta.append(_esc(_tag_line(entry)))
     meta.append(text("library.view.revision").format(
         rev=entry.get("revision", "?"), when=entry.get("updated_at", ""),
         who=_esc(entry.get("updated_by", ""))))
-    out += ["", "  \n".join(meta), "", str(entry.get("summary", "") or "").strip(), "",
-            str(entry.get("body", "") or "").strip(), ""]
+    out += ["", "  \n".join(meta), ""]
+    if fallback:
+        out += [f"*{text('library.view.no_vi')}*", ""]
+    out += [str(summary or "").strip(), "", str(body or "").strip(), ""]
     media = _media_lines(loaded, store)
     if media:
         out += [f"## {text('library.view.media')}", "", *media]

@@ -26,7 +26,7 @@ undo. Real open questions are on the Decision Box (codes at the bottom).
 
 Posted 2026-11-09 to the Decision Box (group "PROJECT008 Soundtech Assist"):
 
-- **HW-204.Q1** — entry bodies English only, or add `body_vi` (agent-translated, flagged unreviewed)? Recommend B; interim A (L9).
+- **HW-204.Q1** — entry bodies English only, or add `body_vi` (agent-translated, flagged unreviewed)? Recommend B; interim A (L9). **Answered by the owner 2026-11-10: B, see L18.**
 - **HW-204.Q2** — may automix use `draft` entries for suggestions? Recommend B (suggest, labelled "unreviewed source"; desk writes still only via Repair); interim: entries stay draft (L12).
 - **HW-204.Q3** — how web edits on the VPS come back to the repo. Recommend A (agent export → PR, periodic or on request); interim A documented in `deploy/library-web/README.md`.
 - **HW-204.Q4** — external images/videos as links or local copies? Recommend A (links); interim A (L8).
@@ -39,3 +39,4 @@ Owned by PRJ012 (asked of the owner directly in the PRJ012 session by PRJ012 DEV
 |---|---|---|---|
 | L16 | Online access (owner request 09/11 ~22:50): same single-page app as a private claude.ai artifact (read-only export) and as `wing-library-web` on the VPS at `master.azsoundtech.com/library/` behind PRJ012 login (route b: browser sends the PRJ012 Supabase token, server asks PRJ012 for permission codes, never verifies JWTs itself). | Agreed with PRJ012 DEV01; one origin = one login session; P008 owns no users. | Container can be stopped; nginx location removed by PRJ012. |
 | L17 | Web edit author = `"<display_name> (prj012:<member_id>)"` from PRJ012 `/api/v1/me`, set by the server, never by the browser. | History must say who changed what; the client cannot be trusted. | — |
+| L18 | Entries carry `summary_vi`, `body_vi` and media `caption_vi`, written by agents and shown when the VI toggle is on (English fallback with a note). Technical terms stay English, and the voice follows the owner's own technical posts (`knowledge/library/STYLE_VI.md`). | Owner, 2026-11-10: "Bấm đổi VI/EN vẫn là nội dung tiếng Anh … giữ những từ kỹ thuật đặc trưng như eq gain fader feedback compressor … giữ nguyên" and "Tham khảo giọng văn của tôi trên facebook các bài kỹ thuật". Answers HW-204.Q1 (option B). | HW-204.Q1 closed |

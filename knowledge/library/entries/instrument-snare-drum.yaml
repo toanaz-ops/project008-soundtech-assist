@@ -1,13 +1,22 @@
 id: instrument-snare-drum
-title: "Snare drum: mic choice, placement and EQ starting points"
-title_vi: "Trống snare: chọn mic, đặt mic và điểm khởi đầu EQ"
+title: 'Snare drum: mic choice, placement and EQ starting points'
+title_vi: 'Trống snare: chọn mic, đặt mic và điểm khởi đầu EQ'
 topic: instruments
 tags:
-  instrument: [snare, drums]
-  genre: [rock, pop]
-  technique: [mic-placement, eq, polarity]
-  event: [concert]
-summary: "Top mic about four inches off the head, optional bottom mic with reversed polarity, and small EQ moves to control ring and add crack."
+  instrument:
+  - snare
+  - drums
+  genre:
+  - rock
+  - pop
+  technique:
+  - mic-placement
+  - eq
+  - polarity
+  event:
+  - concert
+summary: Top mic about four inches off the head, optional bottom mic with reversed polarity, and small EQ moves to control ring and add crack.
+summary_vi: Mic top cách mặt trống khoảng bốn inch, mic bottom tùy chọn với polarity đảo, và các cú chỉnh EQ nhỏ để kiểm soát ring và thêm độ crack.
 body: |
   ## Mic choice and placement
 
@@ -42,31 +51,118 @@ body: |
   ## Live and WING tips
 
   Use the channel polarity switch before reaching for EQ. On a WING, one EQ band swept narrowly handles the ring; solo it only briefly in headphones, then confirm out in the room.
+body_vi: |
+  ## Chọn mic và vị trí đặt
+
+  SM57 là mic snare live tiêu chuẩn. Các mic dynamic hypercardioid như Beyerdynamic M201 hay Sennheiser MD441 được ưa chuộng vì loại bỏ spill từ hi-hat và tom tốt hơn.
+
+  - Đặt mic top cách mặt trống khoảng **bốn inch**, nghiêng để bắt mặt trống và một phần thân. Quá sát nghe tối và nghẹt.
+  - Tránh đường đi của dùi và kẹp chắc clip; bộ trống đặt trên riser hay bị xê dịch trong show.
+  - **Mic bottom** thêm độ snap của snare wire. Nó thấy dây snare chuyển động ngược chiều so với mic top, nên bắt buộc phải **đảo polarity** của nó, không thì tiếng tổng hợp bị mỏng và rỗng. Không phải snare nào cũng cần: snare piccolo mỏng thường chỉ cần một mic, snare sâu có thể thích hai mic.
+  - Trong bài của Shure, một tay trống được phỏng vấn đặt một mic duy nhất ở cạnh thân trống, cách một inch hoặc ít hơn và vuông góc với thân, tránh lỗ thoát khí, cho tiếng nghiêng về tone thân trống với ít ring từ mặt trên hơn.
+
+  ## EQ điểm xuất phát
+
+  Chỉnh nhỏ, 1-2 dB là điển hình:
+
+  - High-pass khoảng 100 Hz (12-24 dB/oct) để dọn rumble; một engineer khác giữ độ đầy và lọc gần 140 Hz.
+  - 150-250 Hz là phần body: boost nhẹ nếu mỏng, cut nhẹ nếu ù.
+  - 300-500 Hz là boxiness; cut nhẹ quanh 450 Hz sẽ giúp.
+  - Ring nằm trong một dải hẹp (iZotope: 400-700 Hz; nguồn khác: 3-5 kHz). Tìm nó bằng cách tạm boost 10-20 dB, sweep cho tới khi nó rít lên, rồi cut đúng tần số đó.
+  - 2-5 kHz là stick attack và crack: boost nhẹ quanh 5 kHz nếu snare bị chìm mất.
+  - Low-pass gần 15 kHz là tùy chọn.
+
+  ## Dynamics
+
+  Mic top snare hiếm khi bị gate; thay vào đó, tín hiệu snare top có thể làm key cho gate trên mic bottom. Nếu nén thì nén nhẹ; xử lý nặng làm nghẹt tone tự nhiên.
+
+  ## Vấn đề thường gặp
+
+  - **Hi-hat bleed:** xoay mic tránh khỏi hi-hat hoặc đổi sang pattern hẹp hơn.
+  - **Snare bị ringing:** tune nó trước, rồi notch, rồi có thể dùng chút băng dính hoặc vòng giảm rung.
+  - **Tiếng rỗng:** polarity giữa top và bottom (hoặc so với overhead) bị sai.
+
+  ## Mẹo live và WING
+
+  Dùng công tắc polarity của channel trước khi mò đến EQ. Trên WING, một band EQ sweep hẹp là đủ xử lý ring; chỉ solo nó thật ngắn trong headphone, rồi xác nhận lại ngoài phòng.
 rule:
-  applies_to: {source_type: [drums.snare], genre: [rock, pop]}
+  applies_to:
+    source_type:
+    - drums.snare
+    genre:
+    - rock
+    - pop
   params:
-    hpf_hz: [100, 140]
-    body_hz: [150, 250]
-    box_cut_hz: [300, 500]
-    ring_notch_hz: [400, 700]
-    crack_boost_hz: [2000, 5000]
-    eq_move_db: [1, 2]
-  notes: "Starting points; ring frequency is drum-specific, find it by sweep."
+    hpf_hz:
+    - 100
+    - 140
+    body_hz:
+    - 150
+    - 250
+    box_cut_hz:
+    - 300
+    - 500
+    ring_notch_hz:
+    - 400
+    - 700
+    crack_boost_hz:
+    - 2000
+    - 5000
+    eq_move_db:
+    - 1
+    - 2
+  notes: Starting points; ring frequency is drum-specific, find it by sweep.
 sources:
-  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Snare Drum"}
-  - {title: "Beyond the Basics: Drum Miking", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking", accessed: "2026-11-09", locator: "Snare"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Snare drum"}
-  - {title: "How to EQ Live Drums", publisher: "mixingaband.com", kind: article, url: "https://mixingaband.com/how-to-eq-live-drums/", author: "Simon Crome", year: 2020, accessed: "2026-11-09", locator: "Snare Drum"}
-  - {title: "How to EQ Drums Live", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/eq-drums-live/", accessed: "2026-11-09", locator: "Live Snare EQ"}
+- title: 'Engineering Drums Live: Part One'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-drums-live-part-one
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Snare Drum
+- title: 'Beyond the Basics: Drum Miking'
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking
+  accessed: '2026-11-09'
+  locator: Snare
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Snare drum
+- title: How to EQ Live Drums
+  publisher: mixingaband.com
+  kind: article
+  url: https://mixingaband.com/how-to-eq-live-drums/
+  author: Simon Crome
+  year: 2020
+  accessed: '2026-11-09'
+  locator: Snare Drum
+- title: How to EQ Drums Live
+  publisher: musicguymixing.com
+  kind: article
+  url: https://www.musicguymixing.com/eq-drums-live/
+  accessed: '2026-11-09'
+  locator: Live Snare EQ
 media:
-  - {kind: diagram, path: snare-eq.png, caption: "Typical starting EQ for a live snare top mic", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=4gN8ju3V9BM"
-    title: "Snare drum microphone technique using two Shure SM57 microphones"
-    channel: "Jsoundservices"
-    caption: "Snare top and bottom miking with two dynamic mics (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: snare-eq.png
+  caption: Typical starting EQ for a live snare top mic
+  caption_vi: EQ điểm xuất phát điển hình cho mic top của snare live
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=4gN8ju3V9BM
+  title: Snare drum microphone technique using two Shure SM57 microphones
+  channel: Jsoundservices
+  caption: Snare top and bottom miking with two dynamic mics (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Đặt mic top và bottom cho snare bằng hai mic dynamic (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

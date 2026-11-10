@@ -1,13 +1,20 @@
 id: limiter-on-main-bus
-title: "Limiter on the main bus: PA protection, not loudness"
-title_vi: "Limiter trên main bus: bảo vệ hệ thống PA, không phải làm to"
+title: 'Limiter on the main bus: PA protection, not loudness'
+title_vi: 'Limiter trên main bus: bảo vệ hệ thống PA, không phải làm to'
 topic: dynamics
 tags:
   instrument: []
   genre: []
-  technique: [limiter, main-bus, protection, headroom]
-  event: [corporate, concert]
-summary: "In live sound a main-bus limiter is a safety ceiling for loudspeakers, amplifiers and the audience. It should engage only on rare peaks; if it works constantly, the mix level is too high."
+  technique:
+  - limiter
+  - main-bus
+  - protection
+  - headroom
+  event:
+  - corporate
+  - concert
+summary: In live sound a main-bus limiter is a safety ceiling for loudspeakers, amplifiers and the audience. It should engage only on rare peaks; if it works constantly, the mix level is too high.
+summary_vi: Trong live sound, limiter trên main bus là trần an toàn cho loa, amplifier và khán giả. Nó chỉ nên can thiệp ở những peak hiếm gặp; nếu nó làm việc liên tục thì mức mix đang quá cao.
 body: |
   A limiter is a compressor with a ratio as high as it can go, so the output barely rises once the input reaches the threshold. QSC describes the live-sound job plainly: it caps the maximum level so loudspeakers and amplifiers do not clip and in-ear monitors stay safe. A ratio of 10:1 and above is generally considered hard limiting.
 
@@ -46,35 +53,81 @@ body: |
   ## On a WING
 
   The WING has dedicated limiter models and output dynamics. Check the manual for which models are available on the main buses on your firmware and which one is a brick-wall limiter, then verify by watching the gain-reduction meter while playing a loud passage.
+body_vi: |
+  Limiter là compressor với Ratio cao hết cỡ, nên đầu ra gần như không tăng nữa khi đầu vào chạm Threshold. QSC mô tả công việc của nó trong live sound rất giản dị: chặn mức tối đa để loa và amplifier không bị clip và IEM vẫn an toàn. Ratio từ 10:1 trở lên thường được coi là hard limiting.
+
+  ## Bảo vệ so với độ lớn
+
+  Trong thu âm, limiter hay dùng để làm mix to hơn. Trên main bus live thì ngược lại: mục tiêu là **một cái trần mà bạn hiếm khi chạm tới**. Coi nó như dây an toàn. Nếu kim Gain Reduction của limiter nhảy theo từng nhịp kick, mix đang bị đẩy vào nó và bạn đang đổi dynamics và độ trong lấy rủi ro và mệt tai. Cách sửa đúng là hạ hệ thống xuống hoặc hạ các input to nhất, không phải chồng thêm limiting.
+
+  ## Set Threshold
+
+  Bắt đầu từ hệ thống, không phải từ console:
+  - Xem dữ liệu amplifier và loa cùng bộ xử lý (DSP) limiter có thể đã bảo vệ loa. Limiter trên main bus của console là tuyến phòng thủ thứ hai, không thay thế limiting của system processor.
+  - Set Threshold sao cho nó nằm ngay dưới mức mà hệ thống hoặc amplifier sẽ clip, để những peak to nhất của show thỉnh thoảng chạm vào nó.
+  - Đánh giá bằng tai ở mức show. Threshold chọn sai sẽ ép tiếng rất khó chịu.
+
+  Không có con số chung; thiết lập limiter do nhà sản xuất loa khuyến nghị là điểm xuất phát đáng tin nhất.
+
+  ## Attack và Release
+
+  - **Attack:** đủ nhanh để bắt một transient nguy hiểm. Attack rất nhanh trên bass có thể gây méo, nên nhiều limiter bảo vệ chấp nhận vài ms.
+  - **Release:** bảo vệ chủ yếu phụ thuộc vào Attack; Release quyết định việc phục hồi nghe tự nhiên ra sao. Release ngắn có thể bị pump, Release rất dài khiến cả mix bị kéo xuống sau một peak. Giá trị trung bình, từ vài chục đến vài trăm ms, là điểm bắt đầu hợp lý.
+  - Một số hệ thống dùng cả peak limiter cho transient và RMS limiter cho bảo vệ nhiệt.
+
+  ## Khác biệt giữa corporate và concert
+
+  - **Sự kiện doanh nghiệp:** rủi ro thường gặp là tiếng pop mic bất ngờ, handheld bị rơi hoặc video playback to hơn nhiều so với lúc rehearsal. Limiter trên main bus cộng một limiter riêng trên các input playback sẽ bắt được những thứ này.
+  - **Concert và band:** giữ limiter cao hơn mức peak bình thường của nhạc, nhưng thấp hơn clipping, để chỉ các transient cực đoan bị bắt. Nếu nó làm việc suốt đêm, hạ mức xuống.
+
+  ## Lỗi thường gặp
+
+  - Dùng nó để làm PA to hơn.
+  - Set thấp đến mức làm bẹp dynamics của show.
+  - Quên rằng limiter đặt sau mix không bảo vệ từng IEM send riêng lẻ.
+  - Chồng limiter trên console lên limiting mạnh trong system processor mà không kiểm tra từng cái.
+  - Attack nhanh cộng Release nhanh trên nội dung nhiều bass, gây méo.
+
+  ## Trên WING
+
+  WING có các model limiter riêng và dynamics ở output. Xem manual để biết model nào có trên main bus ở firmware của bạn và cái nào là brick-wall limiter, rồi kiểm chứng bằng cách quan sát meter Gain Reduction khi chơi một đoạn to.
 rule:
-  applies_to: {source_type: [main.lr]}
+  applies_to:
+    source_type:
+    - main.lr
   params:
-    limiter_ratio_min: [10, 100]
-    limiter_attack_ms: [0.5, 5]
-    limiter_release_ms: [50, 300]
-  notes: "starting points; threshold comes from the PA system's clipping point and speaker manufacturer settings, not from a fixed dB value"
+    limiter_ratio_min:
+    - 10
+    - 100
+    limiter_attack_ms:
+    - 0.5
+    - 5
+    limiter_release_ms:
+    - 50
+    - 300
+  notes: starting points; threshold comes from the PA system's clipping point and speaker manufacturer settings, not from a fixed dB value
 sources:
-  - title: "Sound Advice | Limiters Explained"
-    publisher: "QSC"
-    kind: article
-    url: "https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-limiters-explained"
-    accessed: "2026-11-09"
-    locator: "Purpose / Ratio"
-  - title: "Advanced Compression Techniques Part 1"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/advanced-compression-techniques-part-1"
-    accessed: "2026-11-09"
-    locator: "Within Limits; digital clipping and limiting (short peaks)"
-media: []
+- title: Sound Advice | Limiters Explained
+  publisher: QSC
+  kind: article
+  url: https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-limiters-explained
+  accessed: '2026-11-09'
+  locator: Purpose / Ratio
+- title: Advanced Compression Techniques Part 1
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/advanced-compression-techniques-part-1
+  accessed: '2026-11-09'
+  locator: Within Limits; digital clipping and limiting (short peaks)
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=NToo2Akrwyg"
-    title: "What Is a Limiter? | Audio Dynamics 101"
-    channel: "iZotope, Inc."
-    caption: "iZotope on what a limiter does (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=NToo2Akrwyg
+  title: What Is a Limiter? | Audio Dynamics 101
+  channel: iZotope, Inc.
+  caption: iZotope on what a limiter does (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: iZotope nói về limiter làm gì (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

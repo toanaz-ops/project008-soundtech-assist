@@ -304,3 +304,23 @@ def test_diagram_path_must_be_a_plain_file_name(root):
         diagram = {"kind": "diagram", "path": bad, "caption": "c", "license": "CC0-1.0",
                    "attribution": "a", "generated_by": "g"}
         assert ("error", "bad-media") in codes(root, full(media=[diagram])), bad
+
+
+def test_vietnamese_fields_validate_and_serialise_in_order(root):
+    from wing_parser.library import dump_entry
+    ok = full(summary_vi="Tóm tắt", body_vi="Nội dung\n")
+    assert not [c for c in codes(root, ok) if c[0] == "error"]
+    for key in ("summary_vi", "body_vi", "title_vi"):
+        assert ("error", "bad-field") in codes(root, full(**{key: "  "}))
+        assert ("error", "bad-field") in codes(root, full(**{key: 3}))
+    media = [{"kind": "video", "url": "https://example.org/v", "title": "T", "channel": "C",
+              "caption": "Cap", "caption_vi": " "}]
+    assert ("error", "bad-media") in codes(root, full(media=media))
+    media[0]["caption_vi"] = "Chú thích"
+    assert ("error", "bad-media") not in codes(root, full(media=media))
+    text_out = dump_entry(full(body_vi="Nội dung\n", summary_vi="Tóm tắt", media=media))
+    lines = [ln.split(":")[0] for ln in text_out.splitlines() if ln and not ln[0].isspace()
+             and not ln.startswith("-")]
+    assert lines.index("summary") + 1 == lines.index("summary_vi")
+    assert lines.index("body") + 1 == lines.index("body_vi")
+    assert text_out.index("caption:") < text_out.index("caption_vi:")

@@ -20,7 +20,7 @@ from wing_parser.ui.texts import text
 
 SOURCE_COLUMNS = ("title", "publisher", "kind", "url", "author", "year", "accessed",
                   "locator", "doi", "isbn")
-MEDIA_COLUMNS = ("kind", "path", "url", "title", "channel", "timestamp", "caption",
+MEDIA_COLUMNS = ("kind", "path", "url", "title", "channel", "timestamp", "caption", "caption_vi",
                  "license", "attribution", "generated_by")
 
 
@@ -46,7 +46,9 @@ class EntryForm(QTabWidget):
         self.tag_edits = {key: QLineEdit() for key in schema.TAG_KEYS}
         self.summary_edit, self.rule_edit = QPlainTextEdit(), QPlainTextEdit()
         self.summary_edit.setFixedHeight(76)
-        self.body_edit = QPlainTextEdit()
+        self.body_edit, self.body_vi_edit = QPlainTextEdit(), QPlainTextEdit()
+        self.summary_vi_edit = QPlainTextEdit()
+        self.summary_vi_edit.setFixedHeight(76)
         self.preview = QTextBrowser()
         self.sources = DictTable(SOURCE_COLUMNS, {"kind": schema.SOURCE_KINDS},
                                  {"kind": "article", "accessed": today()})
@@ -62,9 +64,11 @@ class EntryForm(QTabWidget):
             edit.setPlaceholderText(text("library.tags_hint"))
             form.addRow(text(f"library.field.tag.{key}"), edit)
         form.addRow(text("library.field.summary"), self.summary_edit)
+        form.addRow(text("library.field.summary_vi"), self.summary_vi_edit)
         form.addRow(text("library.field.rule"), self.rule_edit)
         self.addTab(details, text("library.tab.details"))
         self.addTab(self.body_edit, text("library.tab.body"))
+        self.addTab(self.body_vi_edit, text("library.tab.body_vi"))
         self.addTab(self.preview, text("library.tab.preview"))
         self.addTab(self.sources, text("library.tab.sources"))
         self.addTab(self.media, text("library.tab.media"))
@@ -73,7 +77,8 @@ class EntryForm(QTabWidget):
             line.textChanged.connect(self.changed)
         for box in (self.topic_box, self.confidence_box, self.status_box):
             box.currentIndexChanged.connect(self.changed)
-        for edit in (self.summary_edit, self.rule_edit, self.body_edit):
+        for edit in (self.summary_edit, self.rule_edit, self.body_edit, self.summary_vi_edit,
+                     self.body_vi_edit):
             edit.textChanged.connect(self.changed)
         self.sources.changed.connect(self.changed)
         self.media.changed.connect(self.changed)
@@ -98,6 +103,8 @@ class EntryForm(QTabWidget):
         self.rule_edit.setPlainText(
             yaml.safe_dump(rule, sort_keys=False, allow_unicode=True) if rule else "")
         self.body_edit.setPlainText(str(entry.get("body", "")))
+        self.summary_vi_edit.setPlainText(str(entry.get("summary_vi", "") or ""))
+        self.body_vi_edit.setPlainText(str(entry.get("body_vi", "") or ""))
         self.sources.set_rows(list(entry.get("sources") or []))
         self.media.set_rows(list(entry.get("media") or []))
 
@@ -134,6 +141,8 @@ class EntryForm(QTabWidget):
             confidence=self.confidence_box.currentText(), status=self.status_box.currentText(),
             sources=self.sources.rows())
         for key, value in (("title_vi", self.title_vi_edit.text().strip()),
+                           ("summary_vi", self.summary_vi_edit.toPlainText().strip()),
+                           ("body_vi", self.body_vi_edit.toPlainText() if self.body_vi_edit.toPlainText().strip() else ""),
                            ("rule", self._rule()), ("media", self.media.rows())):
             if value:
                 entry[key] = value

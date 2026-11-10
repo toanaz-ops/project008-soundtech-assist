@@ -1,13 +1,19 @@
 id: wing-channel-processing-chain
-title: "WING channel strip: processing order"
-title_vi: "Kênh WING: thứ tự xử lý tín hiệu"
+title: 'WING channel strip: processing order'
+title_vi: 'Kênh WING: thứ tự xử lý tín hiệu'
 topic: wing-console
 tags:
   instrument: []
   genre: []
-  technique: [signal-flow, channel-strip, processing-order]
-  event: [concert, corporate]
-summary: "A WING channel runs input, gate, EQ and dynamics with two insert points, then fader and sends. The order of gate, dynamics, EQ and the first insert can be rearranged per channel on the HOME screen, so confirm the order on your own desk before relying on it."
+  technique:
+  - signal-flow
+  - channel-strip
+  - processing-order
+  event:
+  - concert
+  - corporate
+summary: A WING channel runs input, gate, EQ and dynamics with two insert points, then fader and sends. The order of gate, dynamics, EQ and the first insert can be rearranged per channel on the HOME screen, so confirm the order on your own desk before relying on it.
+summary_vi: Một channel WING chạy qua input, gate, EQ và dynamics với hai insert point, rồi tới fader và send. Thứ tự của gate, dynamics, EQ và insert đầu tiên có thể sắp xếp lại theo từng channel trên màn HOME, nên hãy xác nhận thứ tự trên chính desk của bạn trước khi dựa vào nó.
 body: |
   ## What the channel contains
 
@@ -31,49 +37,76 @@ body: |
   ## Practical routine
 
   Set gain first, then filters, then fix tonal problems with EQ, then add the gate and compressor. Change the block order only with a reason, make a note of which channels you changed, and save it with the scene so a recall does not surprise the next engineer.
+body_vi: |
+  ## Channel gồm những gì
+
+  Một Channel strip WING có phần input, filter, gate, khối EQ và dynamics, hai insert point, phần main fader và các bus send. Trên màn HOME, các khối được liệt kê ở cột bên trái: input, gate, EQ, dynamics, một insert pre-fader, một insert post-fader, main và bus send. Phần input còn có một post delay làm trễ output của channel. Đoạn manual dùng cho mục này lưu ý rằng danh sách đó có thể mô tả bố cục màn hình chứ không phải đường tín hiệu cố định, vì vậy thứ tự bên dưới là mặc định cần kiểm chứng, không phải đảm bảo.
+
+  ## Sắp xếp lại chain
+
+  Mở màn HOME của channel và chạm biểu tượng cờ lê để vào chế độ edit, rồi kéo các khối vào thứ tự mới và chạm cờ lê lần nữa. Thứ tự của gate, dynamics, EQ và insert có thể khác nhau giữa các channel, và điểm lấy tín hiệu cho 16 bus cũng vậy. Insert pre-fader có thể nằm trước hoặc sau các khối gate, EQ và dynamics; insert thứ hai cố định sau fader và sau phần processing. Có một EQ ba band trên tín hiệu được lấy ra cấp cho các bus.
+
+  ## Khi các nguồn không đồng ý với nhau
+
+  Các hướng dẫn bên thứ ba cho các chain mặc định khác nhau. Một walkthrough mô tả gate, insert FX, EQ, compressor, fader; đoạn manual liệt kê gate, EQ, dynamics. Một hướng dẫn thứ ba mô tả strip phần cứng gồm input, filter, gate, compressor, insert và các khối main cùng một phần EQ bốn encoder, và gợi ý làm theo thứ tự: gain, rồi high-pass và low-pass filter, rồi EQ, rồi gate và compressor. Đây là quy trình riêng của từng tác giả, không phải mặc định chính thức. Vì thế độ tin cậy được ghi là "contested".
+
+  ## Vì sao thứ tự quan trọng
+
+  - **Gate trước dynamics** giúp con Compressor không nâng bleed lên đến mức gate đánh giá sai.
+  - **Compressor trước gate** có thể làm tom hay các nguồn tắt dần nghe ngắn hơn hoặc gọn hơn; một số kỹ sư cố tình làm vậy.
+  - **EQ trước dynamics** cho phép một high-pass hoặc một cut giảm thứ mà Compressor phản ứng, còn **EQ sau dynamics** định hình âm sắc của kết quả đã nén.
+  - **Insert trước fader** xử lý ở mức cố định; **sau fader** thì level của effect đi theo các thao tác fader của bạn, và đó cũng là chỗ automix được áp dụng (xem mục WING automix).
+
+  ## Quy trình thực tế
+
+  Đặt gain trước, rồi filter, rồi sửa các vấn đề âm sắc bằng EQ, sau đó thêm gate và Compressor. Chỉ đổi thứ tự các khối khi có lý do, ghi lại những channel bạn đã đổi, và lưu cùng scene để khi recall không làm kỹ sư kế tiếp bất ngờ.
 rule:
   applies_to:
-    console: [wing]
+    console:
+    - wing
   params: {}
-  notes: "Default block order is not confirmed from the full manual (only a mirror excerpt and third-party guides were opened). Verify on the desk."
+  notes: Default block order is not confirmed from the full manual (only a mirror excerpt and third-party guides were opened). Verify on the desk.
 sources:
-  - title: "Behringer WING RACK manual (mirror), HOME screen and SETUP > Audio"
-    publisher: "Behringer"
-    kind: manual
-    url: "https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html"
-    accessed: "2026-11-09"
-    locator: "HOME screen left column; wrench icon; pre-fader and post-fader insert; DELAY (POST)"
-  - title: "Customizing the Processing Order Per Channel on the Behringer Wing"
-    publisher: "Technically Church"
-    kind: article
-    url: "https://technicallychurch.com/2025/06/customizing-the-processing-order-per-channel-on-the-behringer-wing/"
-    accessed: "2026-11-09"
-    locator: "Default Processing Order; Changing the Processing Order"
-  - title: "Behringer WING: A Beginner's Guide to the Console"
-    publisher: "Party Map Academy"
-    kind: article
-    url: "https://www.partymapacademy.com/blog/behringer-wing-beginners-guide/"
-    accessed: "2026-11-09"
-    locator: "Channel processing chain"
+- title: Behringer WING RACK manual (mirror), HOME screen and SETUP > Audio
+  publisher: Behringer
+  kind: manual
+  url: https://www.manualslib.tech/en-gb/guide/883207/behringer-wing-rack-manual.html
+  accessed: '2026-11-09'
+  locator: HOME screen left column; wrench icon; pre-fader and post-fader insert; DELAY (POST)
+- title: Customizing the Processing Order Per Channel on the Behringer Wing
+  publisher: Technically Church
+  kind: article
+  url: https://technicallychurch.com/2025/06/customizing-the-processing-order-per-channel-on-the-behringer-wing/
+  accessed: '2026-11-09'
+  locator: Default Processing Order; Changing the Processing Order
+- title: 'Behringer WING: A Beginner''s Guide to the Console'
+  publisher: Party Map Academy
+  kind: article
+  url: https://www.partymapacademy.com/blog/behringer-wing-beginners-guide/
+  accessed: '2026-11-09'
+  locator: Channel processing chain
 media:
-  - kind: diagram
-    path: wing-channel-flow.png
-    caption: "WING channel blocks as listed on the HOME screen (reorderable; verify on the desk)"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Yc9hDMyUBGc"
-    title: "Wing How To: Episode 06 - EQ & Dynamics"
-    channel: "Behringer Knowledge Base"
-    caption: "Behringer's WING how-to series, EQ and dynamics episode (not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=6kXHJr2zYiA"
-    title: "Fix a Ringing Snare with Dynamic EQ on the Behringer WING"
-    channel: "Drew Brashler"
-    caption: "Dynamic EQ in the gate section of a WING channel (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: wing-channel-flow.png
+  caption: WING channel blocks as listed on the HOME screen (reorderable; verify on the desk)
+  caption_vi: Các khối channel WING như liệt kê trên màn HOME (có thể sắp xếp lại; hãy kiểm chứng trên desk)
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=Yc9hDMyUBGc
+  title: 'Wing How To: Episode 06 - EQ & Dynamics'
+  channel: Behringer Knowledge Base
+  caption: Behringer's WING how-to series, EQ and dynamics episode (not watched in full)
+  caption_vi: Loạt how-to WING của Behringer, tập về EQ và dynamics (chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=6kXHJr2zYiA
+  title: Fix a Ringing Snare with Dynamic EQ on the Behringer WING
+  channel: Drew Brashler
+  caption: Dynamic EQ in the gate section of a WING channel (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Dynamic EQ trong phần gate của một channel WING (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

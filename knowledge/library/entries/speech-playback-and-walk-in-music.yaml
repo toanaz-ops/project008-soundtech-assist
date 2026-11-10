@@ -1,16 +1,27 @@
 id: speech-playback-and-walk-in-music
-title: "Playback, walk-in music and ducking under an MC"
-title_vi: "Nhạc nền, nhạc chào đón và ducking khi MC nói"
+title: Playback, walk-in music and ducking under an MC
+title_vi: Nhạc nền, nhạc chào đón và ducking khi MC nói
 topic: speech
 tags:
-  instrument: [playback, music-bed, emcee]
+  instrument:
+  - playback
+  - music-bed
+  - emcee
   genre: []
-  technique: [ducking, sidechain, level-balance, eq]
-  event: [corporate, conference, ceremony]
+  technique:
+  - ducking
+  - sidechain
+  - level-balance
+  - eq
+  event:
+  - corporate
+  - conference
+  - ceremony
 summary: |
   Music under speech should sit well below the voice and out of the 1-4 kHz consonant band. Ducking
   (a sidechain compressor keyed by the MC mic) lowers the music while the MC talks and returns it
   afterwards, but the depth and timing are your call.
+summary_vi: Nhạc dưới tiếng nói nên nằm thấp hơn hẳn giọng và tránh dải phụ âm 1-4 kHz. Ducking (compressor sidechain do mic MC điều khiển) hạ nhạc khi MC nói và đưa lên lại sau đó, nhưng độ sâu và timing là do bạn quyết.
 body: |
   **Two jobs, two levels.** At a corporate event, playback has two roles: walk-in or interval music
   that you want people to hear, and background music under speech that must not fight the words.
@@ -50,42 +61,74 @@ body: |
   **Common mistakes:** a ducker keyed by a mic with a lot of room noise (so the music keeps
   pumping), a very deep duck that makes the music feel like a gate, attack too slow (first word is
   masked), and using the same level for walk-in music and underscore.
+body_vi: |
+  **Hai việc, hai mức.** Ở event công ty, playback có hai vai trò: nhạc walk-in hoặc nhạc giờ nghỉ mà bạn muốn mọi người nghe, và nhạc nền dưới tiếng nói không được đánh nhau với lời. Set chúng thành các group hoặc VCA riêng để kéo cái thứ hai xuống mà không đụng cái thứ nhất.
+
+  **Giữ thấp hơn giọng.** Ghi chú về độ rõ lời (Speech intelligibility) của DPA khuyên giữ mức nền thấp hơn hẳn thoại, nhắm khoảng 15 dB signal-to-noise ratio, và cắt nhạc khoảng 5-10 dB bằng parametric EQ trong dải 1-4 kHz để phụ âm của giọng vẫn rõ. Làm EQ này trên music bus (hoặc trên stereo group của playback), không làm trên mic speech. Noise nền, kể cả nhạc dưới thoại, là một trong những thứ làm tiếng nói khó theo dõi hơn.
+
+  **Ducking là gì.** Harman mô tả ducking là một dạng sidechain compression: một kênh điều khiển, ví dụ một mic, kích một compressor trên kênh khác. Khi tín hiệu điều khiển vượt mức đã đặt, nhạc bị giảm; khi nó rớt xuống lại, nhạc trở về. Rất phổ biến cho event, diễn thuyết và lớp fitness. Bài viết chỉ bàn về cài đặt Threshold và không cho con số nào; phần còn lại là tùy bạn.
+
+  **Giá trị xuất phát (gợi ý, không lấy từ các trang được trích dẫn).** Hạ vừa phải khoảng 6-12 dB là đủ cho hầu hết event; sâu hơn (20 dB trở lên) làm nhạc gần như biến mất. Dùng Attack nhanh (hàng chục mili-giây, để từ đầu tiên không bị che), Hold một phần giây để các quãng nghỉ ngắn không làm nhạc "thở", và Release khoảng 0.5-1.5 s để nhạc trở lại mượt. Đặt Threshold sao cho mic MC kích được duck nhưng tiếng phòng và tiếng ồn xung quanh trên mic đó thì không.
+
+  **Trên WING.** Kiểm tra phần dynamics của music bus hoặc channel xem có key/sidechain source và chế độ expander hoặc ducker không (xác nhận tên chế độ chính xác trong manual WING), đặt key là mic MC, rồi đặt depth/Ratio, Attack, Hold và Release. Nếu key source của mixer không dùng được, ride fader nhạc trên VCA bằng tay: đơn giản và thường tốt hơn automation với một MC hay giật mình.
+
+  **Nhạc walk-in và giờ nghỉ.** Đặt ở mức cho phép mọi người nói chuyện (mức nền bạn thỏa thuận với khách), và giữ nó tránh xa vùng sân khấu để không bị feedback vào mic MC. Khi MC bắt đầu, hoặc duck tự động hoặc fade tay xuống thấp hơn khoảng 6-10 dB, tuyệt đối không mute đột ngột. Khi bài phát biểu kết thúc, đưa nhạc lên từ từ.
+
+  **Lỗi thường gặp:** ducker bị kích bởi mic có nhiều tiếng phòng (nhạc cứ pump), duck quá sâu làm nhạc cảm giác như một cái gate, Attack quá chậm (từ đầu tiên bị che), và dùng cùng một mức cho nhạc walk-in và nhạc nền (underscore).
 rule:
-  applies_to: {source_type: [playback.music], event: [corporate, conference, ceremony]}
+  applies_to:
+    source_type:
+    - playback.music
+    event:
+    - corporate
+    - conference
+    - ceremony
   params:
-    music_eq_cut_db: [5, 10]
-    music_eq_cut_region_hz: [1000, 4000]
-    duck_depth_db: [6, 12]
-    duck_hold_ms: [200, 500]
-    duck_release_ms: [500, 1500]
-  notes: "EQ cut and region from DPA. Duck depth, hold and release are starting suggestions from the author, not quoted from the cited pages; adjust by ear and by checking the MC's first word."
+    music_eq_cut_db:
+    - 5
+    - 10
+    music_eq_cut_region_hz:
+    - 1000
+    - 4000
+    duck_depth_db:
+    - 6
+    - 12
+    duck_hold_ms:
+    - 200
+    - 500
+    duck_release_ms:
+    - 500
+    - 1500
+  notes: EQ cut and region from DPA. Duck depth, hold and release are starting suggestions from the author, not quoted from the cited pages; adjust by ear and by checking the MC's first word.
 sources:
-  - title: "Facts about speech intelligibility"
-    publisher: "DPA Microphones"
-    kind: article
-    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
-    accessed: "2026-11-09"
-    locator: "Music under speech"
-  - title: "What Is Ducking and How Can It Help You Sound Better Live?"
-    publisher: "Harman Professional"
-    kind: article
-    url: "https://pro.harman.com/insights/av/what-is-ducking-and-how-can-it-help-you-sound-better-live/"
-    accessed: "2026-11-09"
-    locator: "How it works"
+- title: Facts about speech intelligibility
+  publisher: DPA Microphones
+  kind: article
+  url: https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility
+  accessed: '2026-11-09'
+  locator: Music under speech
+- title: What Is Ducking and How Can It Help You Sound Better Live?
+  publisher: Harman Professional
+  kind: article
+  url: https://pro.harman.com/insights/av/what-is-ducking-and-how-can-it-help-you-sound-better-live/
+  accessed: '2026-11-09'
+  locator: How it works
 media:
-  - kind: diagram
-    path: ducking-chain.png
-    caption: "Ducking signal flow: the MC mic keys a compressor on the music bus."
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=vVqQh3On69o"
-    title: "From Cue to Speakers - the audio signal path in QLab 5"
-    channel: "Figure 53"
-    caption: "Audio path from cue to speakers in QLab (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: ducking-chain.png
+  caption: 'Ducking signal flow: the MC mic keys a compressor on the music bus.'
+  caption_vi: 'Luồng tín hiệu ducking: mic MC kích compressor trên music bus.'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=vVqQh3On69o
+  title: From Cue to Speakers - the audio signal path in QLab 5
+  channel: Figure 53
+  caption: Audio path from cue to speakers in QLab (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Đường tín hiệu từ cue tới loa trong QLab (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

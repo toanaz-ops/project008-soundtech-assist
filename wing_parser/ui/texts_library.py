@@ -43,6 +43,7 @@ LIBRARY_TEXTS: dict[str, str] = {
     "library.view.accessed": "accessed",
     "library.view.missing_file": "(file missing)",
     "library.view.no_sources": "No sources recorded.",
+    "library.view.no_vi": "No Vietnamese version yet - showing English.",
     "library.retire.title": "Retire entry",
     "library.retire.confirm": (
         "Retire \"{title}\"? It is hidden by default and never deleted; "
@@ -53,6 +54,7 @@ LIBRARY_TEXTS: dict[str, str] = {
     "library.edit.title_edit": "Edit entry - {id}",
     "library.tab.details": "Details",
     "library.tab.body": "Body",
+    "library.tab.body_vi": "Body (Vietnamese)",
     "library.tab.preview": "Preview",
     "library.tab.sources": "Sources",
     "library.tab.media": "Media",
@@ -63,6 +65,7 @@ LIBRARY_TEXTS: dict[str, str] = {
     "library.field.confidence": "Confidence",
     "library.field.status": "Status",
     "library.field.summary": "Summary",
+    "library.field.summary_vi": "Summary (Vietnamese)",
     "library.field.rule": "Rule (YAML, optional)",
     "library.field.tag.instrument": "Instrument tags",
     "library.field.tag.genre": "Genre tags",
@@ -86,6 +89,7 @@ LIBRARY_TEXTS: dict[str, str] = {
     "library.col.isbn": "ISBN",
     "library.col.path": "Path",
     "library.col.caption": "Caption",
+    "library.col.caption_vi": "Caption (Vietnamese)",
     "library.col.channel": "Channel",
     "library.col.timestamp": "Timestamp",
     "library.col.license": "Licence",

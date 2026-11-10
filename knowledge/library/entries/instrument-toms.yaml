@@ -1,13 +1,22 @@
 id: instrument-toms
-title: "Toms: mic choice, placement and EQ starting points"
-title_vi: "Trống tom: chọn mic, đặt mic và điểm khởi đầu EQ"
+title: 'Toms: mic choice, placement and EQ starting points'
+title_vi: 'Trống tom: chọn mic, đặt mic và điểm khởi đầu EQ'
 topic: instruments
 tags:
-  instrument: [toms, drums]
-  genre: [rock, pop]
-  technique: [mic-placement, eq, gating]
-  event: [concert]
-summary: "Dynamic clip mics close to each tom, body and ring EQ per drum size, and why toms often need gating and a high-pass."
+  instrument:
+  - toms
+  - drums
+  genre:
+  - rock
+  - pop
+  technique:
+  - mic-placement
+  - eq
+  - gating
+  event:
+  - concert
+summary: Dynamic clip mics close to each tom, body and ring EQ per drum size, and why toms often need gating and a high-pass.
+summary_vi: Mic dynamic dạng clip đặt sát từng tom, EQ body và ring theo cỡ trống, và vì sao tom thường cần gate và high-pass.
 body: |
   ## Mic choice and placement
 
@@ -39,35 +48,119 @@ body: |
   ## Live and WING tips
 
   Leave the toms muted until they are played if you can; unused tom channels add cymbal wash. Save a gate and EQ snippet on the WING for toms, then tweak per drummer.
+body_vi: |
+  ## Chọn mic và vị trí đặt
+
+  Các tom nằm sát nhau, nên mic clip-on nhỏ gọn rất đáng dùng. Sennheiser MD421 dynamic là kinh điển, nhất là khi bật switch roll-off. Condenser nhỏ như SM98 thêm attack và độ mở; dynamic lùn (Audix D-series, MD504) hợp kit chật. Các drummer của Shure ưa họ Beta 98 trên rack tom.
+
+  - Hướng vào mặt trống từ cao hơn rim một hai inch, cách trống khoảng hai inch trở lên, chĩa về tâm mặt trống.
+  - Tom clamp hoặc giá gắn lên trống tiết kiệm chỗ stand và di chuyển theo kit.
+  - Dynamic cho weight và ít spill; condenser cho attack và air. Chọn theo phong cách drummer và độ to của stage.
+  - Y-combiner có thể gộp hai mic tom vào một channel trên desk nhỏ. Trên WING thường bạn đủ channel, nên cho mỗi tom một channel riêng.
+
+  ## EQ khởi đầu
+
+  - High-pass gần 75 Hz trên rack tom và quanh 50 Hz trên floor tom (giá trị của một kỹ sư); iZotope đặt fundamental của tom ở 60-120 Hz.
+  - Body: 300-400 Hz trên rack tom tuỳ cỡ; khoảng 70 Hz trên floor tom.
+  - Mud nằm ở 250-600 Hz; cut nhỏ quanh 400 Hz trên floor tom hoặc 600 Hz trên rack tom để làm sạch.
+  - Stick attack ở 5-6 kHz (thấp hơn cho floor tom, cao hơn cho rack tom), boost nhỏ.
+  - Ring là riêng của từng tom: boost một band hẹp, sweep, rồi cut đúng cao độ gây lỗi.
+
+  ## Dynamics
+
+  Tom là ca gating kinh điển: chúng ring và hứng spill từ cả kit. Attack ngắn, Hold đủ để nốt kịp nói, và mức giảm khi đóng (Range) khoảng -20 đến -30 dB thay vì im hẳn giữ được sự tự nhiên (lời khuyên Range của Burton cho gate drum). Nếu drummer chơi fill nhanh, giữ Release ở mức vừa.
+
+  ## Vấn đề thường gặp
+
+  - **Tom ring, drone:** tune và damp trước; EQ sau.
+  - **Floor tom boomy:** nâng high-pass cao hơn; check mic không nằm trong luồng gió của port.
+  - **Cymbal spill:** đổi vị trí, xoay mic ra xa, siết gate lại.
+
+  ## Mẹo live và WING
+
+  Để tom mute đến khi được chơi nếu có thể; channel tom không dùng chỉ thêm cymbal wash. Lưu một snippet gate và EQ cho tom trên WING, rồi chỉnh lại theo từng drummer.
 rule:
-  applies_to: {source_type: [drums.tom, drums.floor_tom], genre: [rock, pop]}
+  applies_to:
+    source_type:
+    - drums.tom
+    - drums.floor_tom
+    genre:
+    - rock
+    - pop
   params:
-    hpf_hz: [50, 75]
-    fundamental_hz: [60, 120]
-    mud_cut_hz: [250, 600]
-    attack_boost_hz: [5000, 6000]
-    gate_range_db: [-30, -20]
-  notes: "Starting points; tune and damp the drum before EQ."
+    hpf_hz:
+    - 50
+    - 75
+    fundamental_hz:
+    - 60
+    - 120
+    mud_cut_hz:
+    - 250
+    - 600
+    attack_boost_hz:
+    - 5000
+    - 6000
+    gate_range_db:
+    - -30
+    - -20
+  notes: Starting points; tune and damp the drum before EQ.
 sources:
-  - {title: "Engineering Drums Live: Part One", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/engineering-drums-live-part-one", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Toms"}
-  - {title: "Engineering Drums Live: Part Two", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/node/4905769", author: "Jon Burton", year: 2014, accessed: "2026-11-09", locator: "Gating"}
-  - {title: "Beyond the Basics: Drum Miking", publisher: "Shure", kind: article, url: "https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking", accessed: "2026-11-09", locator: "Toms"}
-  - {title: "How to EQ Drums Live", publisher: "musicguymixing.com", kind: article, url: "https://www.musicguymixing.com/eq-drums-live/", accessed: "2026-11-09", locator: "Tom EQ"}
-  - {title: "EQ Cheat Sheet", publisher: "iZotope", kind: article, url: "https://izotope.com/en/learn/eq-cheat-sheet", accessed: "2026-11-09", locator: "Toms"}
+- title: 'Engineering Drums Live: Part One'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-drums-live-part-one
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Toms
+- title: 'Engineering Drums Live: Part Two'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/node/4905769
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Gating
+- title: 'Beyond the Basics: Drum Miking'
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/beyond-the-basics-drum-miking
+  accessed: '2026-11-09'
+  locator: Toms
+- title: How to EQ Drums Live
+  publisher: musicguymixing.com
+  kind: article
+  url: https://www.musicguymixing.com/eq-drums-live/
+  accessed: '2026-11-09'
+  locator: Tom EQ
+- title: EQ Cheat Sheet
+  publisher: iZotope
+  kind: article
+  url: https://izotope.com/en/learn/eq-cheat-sheet
+  accessed: '2026-11-09'
+  locator: Toms
 media:
-  - {kind: diagram, path: toms-eq.png, caption: "Starting EQ for a rack tom", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Os3wSQEoxpw"
-    title: "Basic Drum Miking: The Toms"
-    channel: "Audio-Technica USA"
-    caption: "Audio-Technica basics of tom miking (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=9tArCx0JvhA"
-    title: "How to Gate Toms | Live Sound Tutorial"
-    channel: "Fuze Audio"
-    caption: "Gating toms in a live mix (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: toms-eq.png
+  caption: Starting EQ for a rack tom
+  caption_vi: EQ khởi đầu cho một rack tom
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=Os3wSQEoxpw
+  title: 'Basic Drum Miking: The Toms'
+  channel: Audio-Technica USA
+  caption: Audio-Technica basics of tom miking (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Cơ bản về mic tom của Audio-Technica (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=9tArCx0JvhA
+  title: How to Gate Toms | Live Sound Tutorial
+  channel: Fuze Audio
+  caption: Gating toms in a live mix (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Gate tom trong một live mix (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

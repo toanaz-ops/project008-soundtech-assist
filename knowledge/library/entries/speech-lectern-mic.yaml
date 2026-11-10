@@ -1,16 +1,26 @@
 id: speech-lectern-mic
-title: "Lectern and gooseneck mic: placement, filtering, EQ and gain before feedback"
-title_vi: "Micro bục phát biểu (gooseneck): vị trí, lọc, EQ và gain trước hú"
+title: 'Lectern and gooseneck mic: placement, filtering, EQ and gain before feedback'
+title_vi: 'Micro bục phát biểu (gooseneck): vị trí, lọc, EQ và gain trước hú'
 topic: speech
 tags:
-  instrument: [gooseneck-mic, lectern-mic]
+  instrument:
+  - gooseneck-mic
+  - lectern-mic
   genre: []
-  technique: [mic-placement, hpf, eq, gain-before-feedback]
-  event: [corporate, conference, ceremony]
+  technique:
+  - mic-placement
+  - hpf
+  - eq
+  - gain-before-feedback
+  event:
+  - corporate
+  - conference
+  - ceremony
 summary: |
   A lectern mic gets its best intelligibility and most gain before feedback from a close, steady
   distance and a sensible speech filter and EQ. Most of the work happens before the fader: aim,
   distance, and teaching the speaker to stay in the pickup zone.
+summary_vi: 'Mic lectern đạt độ rõ lời tốt nhất và nhiều gain before feedback nhất khi giữ khoảng cách gần, ổn định, cùng speech filter và EQ hợp lý. Phần lớn công việc diễn ra trước fader: hướng mic, khoảng cách, và dạy người nói ở yên trong vùng thu.'
 body: |
   **Placement beats processing.** For a gooseneck mic, aim for a few fingers to a hand's width
   from the speaker's mouth (roughly 15-25 cm) and slightly off-axis to one side or below mouth
@@ -51,40 +61,69 @@ body: |
   **Common mistakes:** gooseneck pointed at the forehead, a mic too far (the speaker is then
   a quiet source in a loud room), over-boosting 3-5 kHz until the voice sounds sharp, and
   leaving a lectern mic open with no speaker (adds noise and eats gain before feedback).
+body_vi: |
+  **Vị trí đặt thắng xử lý.** Với mic gooseneck, đặt cách miệng người nói vài ngón tay đến một gang tay (khoảng 15-25 cm) và lệch trục nhẹ sang một bên hoặc thấp hơn tầm miệng, để hơi thở và plosive "p/b" không đập thẳng vào đầu capsule. Mức tuân theo luật bình phương nghịch đảo: giảm nửa khoảng cách cho khoảng +6 dB, gấp đôi khoảng cách cho khoảng -6 dB, nên người nói ngả người ra sau hoặc quay sang màn hình sẽ làm mức đổi rất nhiều. Vị trí gần cũng cho nhiều gain before feedback hơn, vì tại capsule giọng to hơn phòng và loa. Văn bản đi kèm của Mike Senior cũng nêu cùng ý: khoảng cách đổi nhỏ gây mức đổi lớn.
+
+  **Pattern và proximity.** Gooseneck cardioid hoặc supercardioid sẽ có hiệu ứng tiệm cận (Proximity Effect) nếu người nói ghé sát (xem `vocal-proximity-effect`), nên chuẩn bị sẵn cho low-end ù ở người nói gần mic. Pattern hypercardioid chịu được khoảng cách xa hơn một chút nhưng nhạy hơn với thứ nằm phía sau capsule, như wedge monitor hoặc loa của lectern.
+
+  **High-pass filter.** Speech có rất ít thông tin hữu ích dưới khoảng 100 Hz với đa số giọng, và bass không thêm gì cho độ rõ. Bắt đầu với HPF khoảng 100 Hz (nâng lên cho người nói giọng mỏng hoặc phòng ù; chỉ hạ xuống nếu giọng trầm đang mất độ nặng). Trên WING, dùng low-cut của channel và nghe khi người nói đang nói, không phải trong solo với tone thử.
+
+  **EQ cho độ rõ lời.** Ghi chú về speech intelligibility của DPA đặt vùng phụ âm quan trọng ở khoảng 2-4 kHz, với 1-4 kHz mang phần lớn độ rõ lời. Một lift rộng, nhẹ vài dB ở vùng 2-4 kHz giúp người nói lầm bầm; một cut nhẹ quanh 200-500 Hz loại bỏ tiếng hộp nếu lectern hoặc phòng gây ra. Chỉ dùng cut hẹp ở các tần số dễ feedback, và để ý sibilance khi nâng trên 4 kHz. Đừng làm thay đổi lớn: EQ cho speech phải nhỏ và rộng.
+
+  **Gain before feedback.** Set gain với người nói thật ở khoảng cách thật, rồi nâng fader đến khi feedback bắt đầu ring, và lùi lại vài dB. Giữ loa ở phía trước mic (hướng ra xa nó), tránh đặt floor monitor ở lectern trừ khi cần, và cân nhắc một cut hẹp ở tần số ring đầu tiên. Nếu người nói quá nhỏ mà chưa ring, cách sửa thường là đặt gần hơn, không phải thêm fader.
+
+  **Hướng dẫn người nói.** Nhờ presenter giữ cùng một khoảng cách, nói ngang qua mic thay vì thẳng vào nó, và báo cho bạn nếu họ bước ra xa. Một lượt đi thử ngắn với chính presenter trước giờ mở cửa thắng mọi cách sửa giữa bài phát biểu.
+
+  **Lỗi thường gặp:** gooseneck chĩa vào trán, mic quá xa (người nói khi đó là nguồn nhỏ trong phòng ồn), boost 3-5 kHz quá tay đến mức giọng nghe chói, và để mic lectern mở khi không có người nói (thêm nhiễu và ăn gain before feedback).
 rule:
-  applies_to: {source_type: [speech.lectern], event: [corporate, conference]}
+  applies_to:
+    source_type:
+    - speech.lectern
+    event:
+    - corporate
+    - conference
   params:
-    mic_distance_cm: [15, 25]
-    hpf_hz: [80, 120]
-    presence_boost_db: [1, 4]
-    presence_region_hz: [2000, 4000]
-  notes: "Starting points only. Distance and HPF figures are common practice; the 2-4 kHz region is from DPA's intelligibility notes."
+    mic_distance_cm:
+    - 15
+    - 25
+    hpf_hz:
+    - 80
+    - 120
+    presence_boost_db:
+    - 1
+    - 4
+    presence_region_hz:
+    - 2000
+    - 4000
+  notes: Starting points only. Distance and HPF figures are common practice; the 2-4 kHz region is from DPA's intelligibility notes.
 sources:
-  - title: "Facts about speech intelligibility"
-    publisher: "DPA Microphones"
-    kind: article
-    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
-    accessed: "2026-11-09"
-    locator: "Frequency ranges; EQ suggestions"
-  - title: "Mixing Secrets for the Small Studio, companion text - Chapter 2, Studio Gear (microphones)"
-    publisher: "Mike Senior"
-    kind: book
-    url: "https://cmtext.com/studio/chapter2_mics2.php"
-    accessed: "2026-11-09"
-    locator: "Proximity Effect; inverse square law"
+- title: Facts about speech intelligibility
+  publisher: DPA Microphones
+  kind: article
+  url: https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility
+  accessed: '2026-11-09'
+  locator: Frequency ranges; EQ suggestions
+- title: Mixing Secrets for the Small Studio, companion text - Chapter 2, Studio Gear (microphones)
+  publisher: Mike Senior
+  kind: book
+  url: https://cmtext.com/studio/chapter2_mics2.php
+  accessed: '2026-11-09'
+  locator: Proximity Effect; inverse square law
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=NBwd5HJe3ig"
-    title: "How to Avoid Plosives When Recording"
-    channel: "Shure Creators"
-    caption: "Short Shure video on how placement reduces plosives (shown with a different mic; the principle applies to a gooseneck)."
-  - kind: video
-    url: "https://www.youtube.com/watch?v=_SMtL6tEfKk"
-    title: "How to EQ MC Microphones | Live Sound Tutorial"
-    channel: "Fuze Audio"
-    caption: "Live sound tutorial on EQ for speech microphones (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=NBwd5HJe3ig
+  title: How to Avoid Plosives When Recording
+  channel: Shure Creators
+  caption: Short Shure video on how placement reduces plosives (shown with a different mic; the principle applies to a gooseneck).
+  caption_vi: Video ngắn của Shure về việc vị trí đặt giảm plosive như thế nào (quay với mic khác; nguyên tắc áp dụng cho gooseneck).
+- kind: video
+  url: https://www.youtube.com/watch?v=_SMtL6tEfKk
+  title: How to EQ MC Microphones | Live Sound Tutorial
+  channel: Fuze Audio
+  caption: Live sound tutorial on EQ for speech microphones (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Hướng dẫn live sound về EQ cho mic speech (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

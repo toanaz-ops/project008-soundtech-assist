@@ -1,13 +1,23 @@
 id: iem-mixes
-title: "In-ear monitor (IEM) mixes: ambience, safety, stereo vs mono"
-title_vi: "Mix in-ear monitor (IEM): ambience, an toàn, stereo và mono"
+title: 'In-ear monitor (IEM) mixes: ambience, safety, stereo vs mono'
+title_vi: 'Mix in-ear monitor (IEM): ambience, an toàn, stereo và mono'
 topic: monitoring
 tags:
-  instrument: [vocal, drums]
-  genre: [pop, rock]
-  technique: [iem, ambience-mic, limiting, hearing-safety]
-  event: [concert]
-summary: "IEMs remove the wedge feedback loop and protect hearing if the level is controlled, but they isolate the performer from the room. Plan ambience, a limiter and a sensible mix before the show."
+  instrument:
+  - vocal
+  - drums
+  genre:
+  - pop
+  - rock
+  technique:
+  - iem
+  - ambience-mic
+  - limiting
+  - hearing-safety
+  event:
+  - concert
+summary: IEMs remove the wedge feedback loop and protect hearing if the level is controlled, but they isolate the performer from the room. Plan ambience, a limiter and a sensible mix before the show.
+summary_vi: IEM loại bỏ vòng hú rít (Feedback) của wedge và bảo vệ thính giác nếu kiểm soát được mức, nhưng chúng cách ly người biểu diễn khỏi căn phòng. Phải lên kế hoạch cho ambience, limiter và một mix hợp lý trước show.
 body: |
   ## Why use IEMs
 
@@ -61,37 +71,70 @@ body: |
 
   Cue sends (check what another performer hears) are a quick way to
   troubleshoot a mix without removing your own headphones from the console.
+body_vi: |
+  ## Vì sao dùng IEM
+
+  Vì earpiece được cách ly với mic, personal monitoring loại bỏ giới hạn gain-before-feedback vốn trói tay wedge, nên người biểu diễn có mix to và rõ hơn nhiều. Earpiece kín cũng cho âm thanh nhất quán giữa các venue và giảm âm lượng sân khấu, làm house mix sạch hơn. Dùng tốt, chúng bảo vệ thính giác và giảm căng giọng, vì ca sĩ không còn phải gồng để nghe chính mình.
+
+  ## Stereo hay mono
+
+  Stereo cho hình ảnh sân khấu tự nhiên hơn và cho phép mức nghe tổng thể thấp hơn, vì người biểu diễn phân biệt các nguồn theo vị trí thay vì theo độ to. Mono rẻ và đơn giản hơn, vẫn dùng được khi mỗi người chỉ cần vài thành phần. Một số transmitter có "mix mode" mang hai mix riêng trên kênh trái và phải, với nút balance để trộn chúng: hữu ích khi muốn cho một người hai mix thay vì một hình ảnh stereo.
+
+  ## Ambience
+
+  IEM kín cắt người biểu diễn khỏi khán giả và phòng, nghe "chết" và có thể khiến ca sĩ hát gồng quá mức. Đưa một chút **ambience** quay lại: đặt một hoặc hai condenser mic hướng về khán giả (hoặc dùng ambient pass-through) và trộn vào ở mức thấp. Giữ ambience tinh tế; quá nhiều sẽ mang lại nhiễu phòng và mở lại đường feedback nếu nó cũng có trong wedge.
+
+  ## An toàn
+
+  - Bắt buộc dùng **limiter** trên transmitter hoặc bodypack. Nó chặn các transient to đột ngột, như mic bị rơi hoặc console trục trặc, có thể gây tổn thương thính giác vĩnh viễn. Set sao cho nó bảo vệ mà không làm bẹp dynamics.
+  - Bắt đầu mix ở mức thấp và nâng lên cùng người biểu diễn, không làm ngược lại.
+  - Giữ đường wireless sạch: dropout và tiếng pop lớn vừa khó chịu vừa nguy hiểm.
+  - Tuyệt đối không thử mức send bằng cách nhét earpiece vào tai mình ở full gain.
+
+  ## Dựng mix
+
+  1. Bắt đầu với giọng hoặc nhạc cụ của chính người biểu diễn cộng click hoặc cue nếu cần.
+  2. Thêm các thành phần họ yêu cầu, từng cái một. Ít thường là nhiều.
+  3. Thêm ambience sau cùng.
+  4. Để họ tự chỉnh volume bodypack, nhưng giữ mức send hợp lý.
+
+  Cue send (kiểm tra người khác đang nghe gì) là cách nhanh để troubleshoot một mix mà không phải tháo headphone của chính bạn khỏi console.
 rule:
-  applies_to: {event: [concert]}
+  applies_to:
+    event:
+    - concert
   params:
-    ambience_level: ["low"]
-  notes: "no safe SPL number claimed here; use limiter and the performer's judgement; see safe-listening-levels for event limits"
+    ambience_level:
+    - low
+  notes: no safe SPL number claimed here; use limiter and the performer's judgement; see safe-listening-levels for event limits
 sources:
-  - title: "In-ear monitoring basics"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/in-ear-monitoring-basics"
-    accessed: "2026-11-09"
-    locator: "Hearing Conservation; Stereo Monitoring; Personal Control"
-  - title: "Shure PSM user guide (search result)"
-    publisher: "Shure"
-    kind: manual
-    url: "https://www.shure.com/damfiles/default/global/documents/publications/en/performance-production/us_pro_guidepersonalmonitor_ea.pdf-a99329954f383dc535fac48bca2396ec.pdf"
-    accessed: "2026-11-09"
-    locator: "Not opened; listed only because it appeared in search results. Ambience and limiter facts here come from the opened IEM basics page and secondary search summaries."
+- title: In-ear monitoring basics
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/in-ear-monitoring-basics
+  accessed: '2026-11-09'
+  locator: Hearing Conservation; Stereo Monitoring; Personal Control
+- title: Shure PSM user guide (search result)
+  publisher: Shure
+  kind: manual
+  url: https://www.shure.com/damfiles/default/global/documents/publications/en/performance-production/us_pro_guidepersonalmonitor_ea.pdf-a99329954f383dc535fac48bca2396ec.pdf
+  accessed: '2026-11-09'
+  locator: Not opened; listed only because it appeared in search results. Ambience and limiter facts here come from the opened IEM basics page and secondary search summaries.
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=89AA-cdw5cE"
-    title: "5 tips to create the best worship team in ear monitor IEM mix"
-    channel: "Practical Worship"
-    caption: "Tips for a worship team in-ear mix (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=9LM1I1hmTsU"
-    title: "How to Mix In-Ear Monitors for Worship Leaders"
-    channel: "MxU"
-    caption: "Mixing in-ear monitors for worship leaders (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=89AA-cdw5cE
+  title: 5 tips to create the best worship team in ear monitor IEM mix
+  channel: Practical Worship
+  caption: Tips for a worship team in-ear mix (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Mẹo cho IEM mix của worship team (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=9LM1I1hmTsU
+  title: How to Mix In-Ear Monitors for Worship Leaders
+  channel: MxU
+  caption: Mixing in-ear monitors for worship leaders (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Mix in-ear monitor cho worship leader (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

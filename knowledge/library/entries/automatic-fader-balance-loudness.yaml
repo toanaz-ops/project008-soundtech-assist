@@ -1,13 +1,19 @@
 id: automatic-fader-balance-loudness
-title: "Automatic fader balance and loudness-based mixing studies"
-title_vi: "Cân bằng fader tự động dựa trên độ lớn (loudness): các nghiên cứu"
+title: Automatic fader balance and loudness-based mixing studies
+title_vi: 'Cân bằng fader tự động dựa trên độ lớn (loudness): các nghiên cứu'
 topic: automix
 tags:
   instrument: []
   genre: []
-  technique: [loudness, fader-balance, automatic-mixing]
-  event: [concert, soundcheck]
-summary: "Several studies set channel faders automatically from measured loudness. One found listeners preferred a simple energy-based balance over a complex psychoacoustic model; others warn that making every track equally loud gives a poor mix, so a per-instrument target is needed."
+  technique:
+  - loudness
+  - fader-balance
+  - automatic-mixing
+  event:
+  - concert
+  - soundcheck
+summary: Several studies set channel faders automatically from measured loudness. One found listeners preferred a simple energy-based balance over a complex psychoacoustic model; others warn that making every track equally loud gives a poor mix, so a per-instrument target is needed.
+summary_vi: Một số nghiên cứu tự động set fader từ loudness đo được. Một nghiên cứu thấy người nghe thích cách cân bằng đơn giản dựa trên năng lượng (energy) hơn là mô hình psychoacoustic phức tạp; các nghiên cứu khác cảnh báo rằng ép mọi track lớn bằng nhau sẽ ra bản mix tệ, nên mỗi nhạc cụ cần một target riêng.
 body: |
   ## The question
 
@@ -30,63 +36,91 @@ body: |
   - Expect percussive and low-frequency sources to look louder on a meter than they feel in the mix; vocals and speech usually need to sit above the band.
   - Re-check balance when the audience arrives; room level changes the picture.
   - For corporate speech, automix handles level between talkers (see the automix entries); music balance is still a human call.
+body_vi: |
+  ## Câu hỏi đặt ra
+
+  Nếu đo được mỗi channel đang lớn cỡ nào, liệu một chương trình có set ra được balance khởi đầu hợp lý không? Các nhà nghiên cứu đã thử với phép đo level đơn giản, với chuẩn loudness, và với mô hình psychoacoustic đầy đủ. Bài học rút ra rất hữu ích khi bạn cần một balance đầu tiên thật nhanh lúc soundcheck.
+
+  ## Các nghiên cứu cho biết gì
+
+  - **Năng lượng thắng sự phức tạp (Wichern et al., iZotope, AES 2015).** Nhóm tác giả phân tích các bản mix của người từ một dataset multitrack để rút ra target loudness theo từng loại nhạc cụ, rồi xây ba phương pháp tự động set level và so với bản mix của người trong một buổi nghe thử. Người nghe thích các bản mix từ mô hình energy đơn giản, gợi ý rằng không nhất thiết phải dùng mô hình psychoacoustic phức tạp chỉ để set level. (Chỉ xem được abstract; không đọc các số liệu thống kê chi tiết.)
+  - **Loudness từng phần (Partial loudness) và masking (Ward, Reiss, Athwal, AES 2012).** Công trình này đo loudness của từng track khi đứng riêng và khi có các track khác, rồi lấy chênh lệch đó để set gain theo thời gian và giảm masking. Tiền đề của nó là bản mix cân bằng thì các nhạc cụ nghe lớn xấp xỉ nhau, khác với các target theo từng nhạc cụ ở trên. (Chỉ abstract.)
+  - **Fader trong thực tế (Mansbridge, Finn, Reiss, AES 2012).** Một bộ điều khiển fader multitrack tự động được đánh giá so với bản mix của người và một bản triển khai tự động trước đó. (Chỉ xem được phần listing.)
+  - **Cảnh báo từ một nghiên cứu về compressor.** Một compressor tự động cân bằng loudness của mọi track trước rồi mới nén bị điểm thấp nhất trong buổi nghe thử, vì các nhạc cụ percussive bị lớn quá so với phần còn lại. Các tác giả liên hệ điều này với công trình fader trước đó.
+
+  ## Vậy mỗi thứ nên lớn cỡ nào?
+
+  Các nghiên cứu bất đồng ở phương pháp chứ không chỉ chi tiết: có nghiên cứu coi "loudness bằng nhau" là đích, có nghiên cứu học target theo nhạc cụ từ các bản mix thật và thấy các phép đo kiểu RMS đơn giản là đủ. Vì vậy độ tin cậy ở đây là "contested". Cả hai cách đều không thay được quyết định của engineer: bài hát hay người nói cần nổi lên trên cùng ở chỗ nào.
+
+  ## Dùng vào show thế nào
+
+  - Dùng meter hoặc loudness readout để đưa mọi channel về vùng level khởi đầu hợp lý, rồi balance bằng tai. Đừng trim mọi thứ về cùng một con số.
+  - Nguồn percussive và low-frequency nhìn trên meter thường lớn hơn cảm nhận trong mix; vocal và speech thường phải ngồi trên band.
+  - Kiểm tra lại balance khi khán giả vào, vì level phòng làm bức tranh thay đổi.
+  - Với speech doanh nghiệp, automix lo level giữa các người nói (xem các entry về automix); balance nhạc vẫn là quyết định của con người.
+
+  Tóm lại, meter đưa bạn tới vạch xuất phát, còn tai bạn mới là người chốt balance.
 rule:
   applies_to:
-    source_type: [multitrack]
+    source_type:
+    - multitrack
   params: {}
-  notes: "No sourced numeric targets: published per-instrument loudness templates were not read in full. Use as a method, not as values."
+  notes: 'No sourced numeric targets: published per-instrument loudness templates were not read in full. Use as a method, not as values.'
 sources:
-  - title: "Comparison of Loudness Features for Automatic Level Adjustment in Mixing"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://www.aes.org/e-lib/browse.cfm?elib=17928"
-    author: "Gordon Wichern, Aaron Wishnick, Alexey Lukin, Hannah Robertson"
-    year: 2015
-    accessed: "2026-11-09"
-    locator: "AES Convention 139, abstract only (page returned HTTP 403; abstract seen in search result)"
-  - title: "Multitrack Mixing Using a Model of Loudness and Partial Loudness"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://joshreiss.github.io/documents/2012/WardReissAthwal-AES133-Multitrackmixingusingamodelofloudnessandpartialloudness.pdf"
-    author: "Dominic Ward, Joshua D. Reiss, Cham Athwal"
-    year: 2012
-    accessed: "2026-11-09"
-    locator: "AES Convention 133, abstract (seen in search result; PDF not opened)"
-  - title: "Intelligent Multitrack Dynamic Range Compression"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf"
-    author: "Zheng Ma, Brecht De Man, Pedro D. L. Pestana, Dawn A. A. Black, Joshua D. Reiss"
-    year: 2015
-    accessed: "2026-11-09"
-    locator: "J. Audio Eng. Soc. 63(6), Sec. 5.3 Summary (comparison against an alternative that equalises loudness first)"
-  - title: "Ten Years of Automatic Mixing"
-    publisher: "Queen Mary University of London"
-    kind: paper
-    url: "https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf"
-    author: "Brecht De Man, Joshua D. Reiss, Ryan Stables"
-    year: 2017
-    accessed: "2026-11-09"
-    locator: "Sec. 2 History; references [19], [23], [36]"
+- title: Comparison of Loudness Features for Automatic Level Adjustment in Mixing
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://www.aes.org/e-lib/browse.cfm?elib=17928
+  author: Gordon Wichern, Aaron Wishnick, Alexey Lukin, Hannah Robertson
+  year: 2015
+  accessed: '2026-11-09'
+  locator: AES Convention 139, abstract only (page returned HTTP 403; abstract seen in search result)
+- title: Multitrack Mixing Using a Model of Loudness and Partial Loudness
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://joshreiss.github.io/documents/2012/WardReissAthwal-AES133-Multitrackmixingusingamodelofloudnessandpartialloudness.pdf
+  author: Dominic Ward, Joshua D. Reiss, Cham Athwal
+  year: 2012
+  accessed: '2026-11-09'
+  locator: AES Convention 133, abstract (seen in search result; PDF not opened)
+- title: Intelligent Multitrack Dynamic Range Compression
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://joshreiss.github.io/documents/2015/Ma 2015 - Intelligent Multitrack Compression.pdf
+  author: Zheng Ma, Brecht De Man, Pedro D. L. Pestana, Dawn A. A. Black, Joshua D. Reiss
+  year: 2015
+  accessed: '2026-11-09'
+  locator: J. Audio Eng. Soc. 63(6), Sec. 5.3 Summary (comparison against an alternative that equalises loudness first)
+- title: Ten Years of Automatic Mixing
+  publisher: Queen Mary University of London
+  kind: paper
+  url: https://www.open-access.bcu.ac.uk/4968/1/WIMP2017_DeManEtAl.pdf
+  author: Brecht De Man, Joshua D. Reiss, Ryan Stables
+  year: 2017
+  accessed: '2026-11-09'
+  locator: Sec. 2 History; references [19], [23], [36]
 media:
-  - kind: diagram
-    path: loudness-balance-flow.png
-    caption: "Loudness-based balancing as the studies describe it, with the human still in the loop"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:signal_flow"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=DZIrlcIV4PM"
-    title: "All Your Audio Meters explained  |  LU, LUFS and more"
-    channel: "Next Level Sound"
-    caption: "Loudness units and meters explained, the measurement behind loudness-based balancing (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=faMwXFuxlpM"
-    title: "How To Mix Live Music Chapter 15 - Faders & Groups"
-    channel: "Yamaha Global"
-    caption: "Yamaha chapter on balancing a band with faders and groups (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: loudness-balance-flow.png
+  caption: Loudness-based balancing as the studies describe it, with the human still in the loop
+  caption_vi: Balance dựa trên loudness như các nghiên cứu mô tả, với con người vẫn nằm trong vòng lặp
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:signal_flow
+- kind: video
+  url: https://www.youtube.com/watch?v=DZIrlcIV4PM
+  title: All Your Audio Meters explained  |  LU, LUFS and more
+  channel: Next Level Sound
+  caption: Loudness units and meters explained, the measurement behind loudness-based balancing (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Giải thích loudness unit và meter, phép đo nằm sau cách balance dựa trên loudness (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
+- kind: video
+  url: https://www.youtube.com/watch?v=faMwXFuxlpM
+  title: How To Mix Live Music Chapter 15 - Faders & Groups
+  channel: Yamaha Global
+  caption: Yamaha chapter on balancing a band with faders and groups (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Chương của Yamaha về balance một band bằng fader và group (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết video)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

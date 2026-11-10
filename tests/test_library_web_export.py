@@ -137,3 +137,27 @@ def test_one_bad_media_path_does_not_stop_the_export(store, tmp_path):
     result = export_web(store, tmp_path / "out")
     assert any("x.png" in m for m in result["missing_media"])
     assert (tmp_path / "out" / "index.html").is_file()
+
+
+def test_vietnamese_fields_reach_the_export_and_artifact(store, tmp_path):
+    media = [{"kind": "video", "url": "https://youtu.be/abc123XYZ_-", "title": "T", "channel": "C",
+              "caption": "Cap", "caption_vi": "Chú thích"}]
+    store.save(entry("vi-entry", summary_vi="Tóm tắt VI", body_vi="Nội dung **đậm**\n", media=media),
+               author="t", note="n")
+    for artifact, name in ((False, "index.html"), (True, "library.html")):
+        out = tmp_path / ("a" if artifact else "e")
+        export_web(store, out, artifact=artifact)
+        view = next(e for e in _data((out / name).read_text(encoding="utf-8"))["entries"]
+                    if e["id"] == "vi-entry")
+        assert view["summary_vi"] == "Tóm tắt VI"
+        assert "<strong>đậm</strong>" in view["body_vi_html"]
+        assert view["media"][0]["caption_vi"] == "Chú thích"
+        assert "body_vi" not in view and "Tóm tắt VI" in (out / name).read_text(encoding="utf-8")
+    plain = next(e for e in _data((tmp_path / "e" / "index.html").read_text(encoding="utf-8"))["entries"]
+                 if e["id"] == "hpf-basics")
+    assert plain["body_vi_html"] == "" and plain["summary_vi"] == ""
+    loaded = store.get("vi-entry")
+    assert render.detail(loaded, media_prefix="m/", raw=True)["body_vi"].startswith("Nội dung")
+    assert "noi dung dam" in render._search_text(loaded.entry)
+    page = (tmp_path / "e" / "index.html").read_text(encoding="utf-8")
+    assert "summary_vi" in page and "caption_vi" in page and "noVi" in page

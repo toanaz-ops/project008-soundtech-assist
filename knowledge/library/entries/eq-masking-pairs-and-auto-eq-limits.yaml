@@ -1,13 +1,27 @@
 id: eq-masking-pairs-and-auto-eq-limits
-title: "Masking pairs and safe limits for automatic EQ moves"
-title_vi: "Cặp nguồn che nhau và giới hạn an toàn cho EQ tự động"
+title: Masking pairs and safe limits for automatic EQ moves
+title_vi: Cặp nguồn che nhau và giới hạn an toàn cho EQ tự động
 topic: eq
 tags:
-  instrument: [kick, bass, vocal, electric-guitar, keys, snare]
-  genre: [pop, rock, speech]
-  technique: [masking, automatic-eq, carving]
-  event: [concert]
-summary: "Which source pairs most often mask each other and the usual way to separate them, plus the limits a tool should respect when it moves EQ for you: small boosts, larger cuts, moderate Q. The limits are an engineering default, not a published rule."
+  instrument:
+  - kick
+  - bass
+  - vocal
+  - electric-guitar
+  - keys
+  - snare
+  genre:
+  - pop
+  - rock
+  - speech
+  technique:
+  - masking
+  - automatic-eq
+  - carving
+  event:
+  - concert
+summary: 'Which source pairs most often mask each other and the usual way to separate them, plus the limits a tool should respect when it moves EQ for you: small boosts, larger cuts, moderate Q. The limits are an engineering default, not a published rule.'
+summary_vi: 'Những cặp nguồn âm hay che lấp nhau (masking) nhất và cách tách chúng thường dùng, cùng các giới hạn một công cụ phải tuân theo khi tự chỉnh EQ giúp bạn: boost nhỏ, cut lớn hơn, Q vừa phải. Các giới hạn này là mặc định kỹ thuật, không phải quy tắc đã công bố.'
 body: |
   ## Pairs that fight
 
@@ -33,68 +47,127 @@ body: |
   ## Limits
 
   The AES papers could not be read beyond their abstracts, and no source gives gain or Q for these pairs. Treat the numbers as a ceiling for automatic moves, not a recipe.
+body_vi: |
+  ## Những cặp hay "đánh nhau"
+
+  Che lấp (Masking) là khi một nguồn âm nuốt mất nguồn khác vì cùng chiếm một vùng tần số. Các cặp dưới đây lấy từ bài của hãng và tạp chí dùng cho bảng EQ.
+
+  - **Kick và bass, khoảng 50 đến 300 Hz**: để một trong hai làm chủ vùng 50 đến 100 Hz. Một bài tạp chí gợi ý dip kick quanh 160 đến 220 Hz và nâng bass quanh 220 đến 300 Hz để hai bên nghe tách bạch.
+  - **Vocal và guitar điện, khoảng 1 đến 4 kHz**: cut guitar gần 4 kHz để nhường chỗ cho giọng hát.
+  - **Vocal và keys, khoảng 125 Hz đến 4 kHz**: dip nhẹ quanh 2 đến 4 kHz trên keys, và để ý vùng low-mid đông đúc quanh 125 đến 350 Hz.
+  - **Snare và vocal, khoảng 1.5 đến 4 kHz**: cả hai đều cần vùng này. Cặp này chỉ được một bài báo ủng hộ gián tiếp.
+
+  ## Giới hạn cho công cụ tự động
+
+  Nghiên cứu về EQ multitrack tự động (chỉ đọc được phần abstract) cho biết các hệ thống được xây để giảm masking đã giảm masking đo được và cảm nhận được trong các bài thử, và một phiên bản chỉ cần một điều khiển cho người dùng đã cải thiện một bản mix thô. Một bài riêng về masking trong subgroup nằm cùng hướng nghiên cứu. Không bài nào đưa ra giới hạn cho live sound, nên các giới hạn ở đây là mặc định kỹ thuật thận trọng, khớp với mức boost nhỏ mà bài của Shure dùng (khoảng +3 dB):
+
+  - Mỗi lần chỉnh, boost không quá khoảng 3 dB, cut không quá khoảng 6 dB.
+  - Q trong khoảng 0.7 đến 4: rộng cho boost, hẹp hơn cho cut.
+  - Trên hệ thống live ưu tiên cut hơn boost, vì boost làm tăng gain trước ngưỡng hú rít (feedback).
+
+  ## Thao tác thực chiến
+
+  Chỉ áp một cú chỉnh theo cặp khi chính tai bạn nghe được hai nguồn đang đánh nhau. Solo một nguồn, sweep nguồn kia, cut ở chỗ nguồn thứ nhất rõ nhất, rồi kiểm tra trong full mix. Xem lại sau khi level vocal hoặc guitar thay đổi, vì masking phụ thuộc level.
+
+  ## Giới hạn
+
+  Các bài AES chỉ đọc được đến phần abstract, và không nguồn nào cho gain hay Q cho các cặp này. Hãy coi các con số là mức trần cho các cú chỉnh tự động, không phải công thức.
 rule:
   kind: masking_pair
-  applies_to: {source_type: [drums.kick, instrument.bass, speech.vocal, instrument.guitar.electric, instrument.keys, drums.snare]}
+  applies_to:
+    source_type:
+    - drums.kick
+    - instrument.bass
+    - speech.vocal
+    - instrument.guitar.electric
+    - instrument.keys
+    - drums.snare
   params:
     pairs:
-      - {a: drums.kick, b: instrument.bass, hz: [50, 300], strategy: "one owns 50-100 Hz; dip kick 160-220 Hz, lift bass 220-300 Hz"}
-      - {a: speech.vocal, b: instrument.guitar.electric, hz: [1000, 4000], strategy: "cut guitar near 4 kHz"}
-      - {a: speech.vocal, b: instrument.keys, hz: [125, 4000], strategy: "gentle 2-4 kHz dip on keys; watch 125-350 Hz"}
-      - {a: drums.snare, b: speech.vocal, hz: [1500, 4000], strategy: "not directly sourced"}
-    auto_eq_bounds: {max_boost_db: 3, max_cut_db: 6, q: [0.7, 4]}
-  notes: "Bounds are an engineering default, not from a source; AES papers only read as abstracts. Prefer cuts live."
+    - a: drums.kick
+      b: instrument.bass
+      hz:
+      - 50
+      - 300
+      strategy: one owns 50-100 Hz; dip kick 160-220 Hz, lift bass 220-300 Hz
+    - a: speech.vocal
+      b: instrument.guitar.electric
+      hz:
+      - 1000
+      - 4000
+      strategy: cut guitar near 4 kHz
+    - a: speech.vocal
+      b: instrument.keys
+      hz:
+      - 125
+      - 4000
+      strategy: gentle 2-4 kHz dip on keys; watch 125-350 Hz
+    - a: drums.snare
+      b: speech.vocal
+      hz:
+      - 1500
+      - 4000
+      strategy: not directly sourced
+    auto_eq_bounds:
+      max_boost_db: 3
+      max_cut_db: 6
+      q:
+      - 0.7
+      - 4
+  notes: Bounds are an engineering default, not from a source; AES papers only read as abstracts. Prefer cuts live.
 sources:
-  - title: "Mix Tips: Kick & Bass"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/mix-tips-kick-bass"
-    accessed: "2026-11-09"
-  - title: "Frequency Range Characteristics"
-    publisher: "FabFilter"
-    kind: article
-    url: "https://www.fabfilter.com/learn/equalization/frequency-range-characteristics/"
-    accessed: "2026-11-09"
-  - title: "Sound Advice: EQ tips for vocals"
-    publisher: "QSC"
-    kind: article
-    url: "https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-eq-tips-for-vocals"
-    accessed: "2026-11-09"
-  - title: "Professional Mixing Tips for Church Sound"
-    publisher: "Shure"
-    kind: article
-    url: "https://www.shure.com/en-US/insights/professional-mixing-tips-for-church-sound"
-    author: "M. Sokol"
-    accessed: "2026-11-09"
-  - title: "Autonomous Multitrack Equalization Based on Masking Reduction"
-    publisher: "Audio Engineering Society"
-    kind: paper
-    url: "https://www.aes.org/e-lib/browse.cfm?elib=17637"
-    author: "Hafezi and Reiss"
-    year: 2015
-    accessed: "2026-11-09"
-    locator: "abstract only"
-  - title: "Automatic Minimisation of Masking in Multitrack Audio using Subgroups"
-    publisher: "arXiv"
-    kind: paper
-    url: "https://arxiv.org/abs/1803.09960v1"
-    year: 2018
-    accessed: "2026-11-09"
-    locator: "abstract"
+- title: 'Mix Tips: Kick & Bass'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/mix-tips-kick-bass
+  accessed: '2026-11-09'
+- title: Frequency Range Characteristics
+  publisher: FabFilter
+  kind: article
+  url: https://www.fabfilter.com/learn/equalization/frequency-range-characteristics/
+  accessed: '2026-11-09'
+- title: 'Sound Advice: EQ tips for vocals'
+  publisher: QSC
+  kind: article
+  url: https://support.qscaudio.com/en_US/sound-advice/sound-advice-|-eq-tips-for-vocals
+  accessed: '2026-11-09'
+- title: Professional Mixing Tips for Church Sound
+  publisher: Shure
+  kind: article
+  url: https://www.shure.com/en-US/insights/professional-mixing-tips-for-church-sound
+  author: M. Sokol
+  accessed: '2026-11-09'
+- title: Autonomous Multitrack Equalization Based on Masking Reduction
+  publisher: Audio Engineering Society
+  kind: paper
+  url: https://www.aes.org/e-lib/browse.cfm?elib=17637
+  author: Hafezi and Reiss
+  year: 2015
+  accessed: '2026-11-09'
+  locator: abstract only
+- title: Automatic Minimisation of Masking in Multitrack Audio using Subgroups
+  publisher: arXiv
+  kind: paper
+  url: https://arxiv.org/abs/1803.09960v1
+  year: 2018
+  accessed: '2026-11-09'
+  locator: abstract
 media:
-  - kind: diagram
-    path: masking-pair-ranges.png
-    caption: "Where common source pairs mask each other"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py:band_chart"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Sk7wefcQXTI"
-    title: "Frequency Masking 101: How to Unmask Your Mix"
-    channel: "iZotope, Inc."
-    caption: "Masking explained, the problem that automatic EQ tries to address (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: masking-pair-ranges.png
+  caption: Where common source pairs mask each other
+  caption_vi: Vùng mà các cặp nguồn âm phổ biến che lấp nhau
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py:band_chart
+- kind: video
+  url: https://www.youtube.com/watch?v=Sk7wefcQXTI
+  title: 'Frequency Masking 101: How to Unmask Your Mix'
+  channel: iZotope, Inc.
+  caption: Masking explained, the problem that automatic EQ tries to address (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Giải thích masking, vấn đề mà EQ tự động cố giải quyết (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: contested
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-import"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

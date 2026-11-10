@@ -23,7 +23,8 @@ TAG_KEYS = ("instrument", "genre", "technique", "event")
 
 # Key order used when writing an entry to disk.
 KEY_ORDER = (
-    "id", "title", "title_vi", "topic", "tags", "summary", "body", "rule",
+    "id", "title", "title_vi", "topic", "tags", "summary", "summary_vi", "body", "body_vi",
+    "rule",
     "sources", "media", "confidence", "status", "revision", "updated_at",
     "updated_by",
 )
@@ -36,7 +37,7 @@ SOURCE_ORDER = (
     "locator", "doi", "isbn",
 )
 MEDIA_ORDER = (
-    "kind", "path", "url", "title", "channel", "timestamp", "caption",
+    "kind", "path", "url", "title", "channel", "timestamp", "caption", "caption_vi",
     "license", "attribution", "generated_by",
 )
 

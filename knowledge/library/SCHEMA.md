@@ -33,7 +33,9 @@ brings new and updated shipped entries, except ones the user has edited.
 | `topic` | yes | str | one id from `topics.yaml` |
 | `tags` | yes | map | `instrument`, `genre`, `technique`, `event` — each a list of kebab-case strings (may be empty) |
 | `summary` | yes | str | 1–3 sentences, own words |
+| `summary_vi` | no | str | Vietnamese summary (non-empty when present). Mixer/audio technical terms stay in English (EQ, gain, fader, compressor, threshold, feedback), as in the app's bilingual UI |
 | `body` | yes | str | Markdown, own words. Never copied text; at most one short quote (<15 words) in quotation marks with its source |
+| `body_vi` | no | str | Vietnamese body, Markdown, same rules as `body` (own words, sourced by the same `sources`); technical terms stay English as above |
 | `rule` | no | map | structured data for automix/advisory (free shape; see below) |
 | `sources` | yes, ≥1 | list | see Sources |
 | `media` | no | list | see Media |
@@ -70,6 +72,9 @@ Each item has `kind`:
   `public-domain`), `attribution` (author as the licence requires).
 - `video` — a link to the original, never downloaded: `url`, `title`,
   `channel`, optional `timestamp` (`mm:ss`), `caption`.
+
+Any media item may carry `caption_vi` (optional, non-empty when present): the
+Vietnamese caption, same term convention as `summary_vi`.
 
 ## `rule` (optional, for automix)
 

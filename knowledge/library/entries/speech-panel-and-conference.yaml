@@ -1,16 +1,27 @@
 id: speech-panel-and-conference
-title: "Panels and conferences: many open mics, NOM and mute discipline"
-title_vi: "Hội thảo, panel nhiều micro: số mic mở (NOM) và kỷ luật mute"
+title: 'Panels and conferences: many open mics, NOM and mute discipline'
+title_vi: 'Hội thảo, panel nhiều micro: số mic mở (NOM) và kỷ luật mute'
 topic: speech
 tags:
-  instrument: [table-mic, gooseneck-mic, handheld-mic]
+  instrument:
+  - table-mic
+  - gooseneck-mic
+  - handheld-mic
   genre: []
-  technique: [automix, gain-sharing, mute-discipline, gain-before-feedback]
-  event: [corporate, conference, panel]
+  technique:
+  - automix
+  - gain-sharing
+  - mute-discipline
+  - gain-before-feedback
+  event:
+  - corporate
+  - conference
+  - panel
 summary: |
   Every open microphone adds noise and cuts gain before feedback: roughly 3 dB per doubling of the
   number of open mics. Use a speech automixer or strict mute discipline so only the active talker is
   live, and keep gating-style behaviour out of the picture unless you mean it.
+summary_vi: 'Mỗi mic đang mở đều thêm noise và làm giảm gain before feedback: khoảng 3 dB mỗi lần số mic mở tăng gấp đôi. Dùng speech automixer hoặc kỷ luật mute chặt để chỉ người đang nói được mở, và đừng để hành vi kiểu gating xuất hiện trừ khi bạn chủ ý.'
 body: |
   **The rule of open mics.** Dan Dugan's Model D manual defines NOM, the number of open
   microphones, and the gain limiting that goes with it: ambient gain drops about 3 dB each time the
@@ -50,44 +61,72 @@ body: |
   **Common mistakes:** leaving every table mic open "just in case", setting automix thresholds so
   low that ambient noise drives gain, treating a gain-sharing automixer as a noise gate, and
   forgetting to mute pack-worn mics when a panelist leaves the table.
+body_vi: |
+  **Quy tắc về mic mở.** Manual Model D của Dan Dugan định nghĩa NOM, số mic đang mở, và việc giới hạn gain đi kèm: ambient gain giảm khoảng 3 dB mỗi khi số mic mở tăng gấp đôi. Với bốn mic mở là khoảng -6 dB, tám mic khoảng -9 dB và mười sáu mic khoảng -12 dB. Cùng phép tính đó mô tả điều xảy ra với biên feedback của bạn nếu để tất cả mic mở ở cùng gain: mỗi lần gấp đôi tốn khoảng 3 dB Headroom và thêm noise phòng cùng reverb. Một panel có tám mic bàn mở hết vì thế khó hơn nhiều so với cùng căn phòng đó chỉ có hai mic.
+
+  **Phương án 1: speech automixer.** Speech System trong manual của Dugan phân bổ gain của một mic đang mở ra khắp hệ thống. Khi ai đó nói, mic đó tăng lên và các mic còn lại giảm xuống; khi mọi người ngừng, tất cả mic quay về gain trung bình. Đây là thiết kế gain-sharing, không phải gate, nên phòng không bị "chặt". Đặt Threshold sao cho ambient noise cho gain gần bằng nhau trên mọi channel, và dùng điều khiển weight/Threshold để bù cho người nói to hoặc nhỏ. Nếu Threshold đặt quá thấp, các mic bắt đầu nghe như bị gate, điều mà manual gọi là không mong muốn. Xem các mục chủ đề automix để biết cách cài đặt trên console; nếu console của bạn có automixer tích hợp, kiểm tra manual của WING để biết các điều khiển chính xác.
+
+  **Phương án 2: mix tay với kỷ luật mute.** Với panel nhỏ và người vận hành có kinh nghiệm thì không cần automixer. Chỉ unmute mic khi người đó sắp nói, và mute khi họ xong. Nhờ người điều phối giữ mỗi lúc chỉ một người nói; gán một DCA/mute group cho mỗi bàn; và giữ một mic dự phòng ở trạng thái mute cho phần Q&A. Mute là miễn phí; gain before feedback thì không.
+
+  **Mute và override.** Manual Model D mô tả một mute làm mọi channel fade out khi đang giữ (có thể remote đến chỗ chủ tọa), một override để tạm tắt các mic khác, và một preset khôi phục mẫu on/auto/off đã lưu. Nút mute của chủ tọa là cách đơn giản và đáng tin để chặn crosstalk và tiếng ho.
+
+  **Khi nào không dùng gain sharing.** Với dàn hợp xướng hát hoặc một mix nhạc, speech gain-sharing automixer sẽ dồn gần hết gain cho giọng to nhất. Xem `vocal-backing-and-choir`.
+
+  **Xử lý cho từng mic.** Cho mỗi mic một HPF riêng (khoảng 100 Hz làm điểm khởi đầu), một chút presence lift rộng và nhẹ nếu cần (xem `speech-intelligibility-sti`), và chỉ notch ở chỗ nào rít. Dùng cùng pickup pattern và khoảng cách trên mọi mic bàn để automixer thấy các level tương tự. Test với tất cả người nói ở âm lượng bình thường tại đúng vị trí thật của họ.
+
+  **Lỗi thường gặp:** để mọi mic bàn mở "phòng khi cần", đặt Threshold automix thấp đến mức ambient noise điều khiển gain, coi gain-sharing automixer như một noise gate, và quên mute các mic đeo người khi diễn giả rời bàn.
+
+  Tóm lại, mic nào chưa cần nói thì mute.
 rule:
-  applies_to: {source_type: [speech.panel], event: [conference, panel]}
+  applies_to:
+    source_type:
+    - speech.panel
+    event:
+    - conference
+    - panel
   params:
-    gain_reduction_db_per_nom_doubling: [3, 3]
-    hpf_hz: [80, 120]
-  notes: "3 dB per doubling is from Dugan's manual (ambient gain: 4 mics about -6 dB, 8 about -9 dB, 16 about -12 dB). HPF is a starting point."
+    gain_reduction_db_per_nom_doubling:
+    - 3
+    - 3
+    hpf_hz:
+    - 80
+    - 120
+  notes: '3 dB per doubling is from Dugan''s manual (ambient gain: 4 mics about -6 dB, 8 about -9 dB, 16 about -12 dB). HPF is a starting point.'
 sources:
-  - title: "Dugan Automatic Mixer Model D and D-1 Manual"
-    publisher: "Dan Dugan Sound Design"
-    kind: manual
-    url: "https://dandugan.com/Assets/manuals/Model-D-and-D-1-Manual.html"
-    accessed: "2026-11-09"
-    locator: "NOM; Gain sharing principle; Mute and Override; Weighting"
-  - title: "Facts about speech intelligibility"
-    publisher: "DPA Microphones"
-    kind: article
-    url: "https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility"
-    accessed: "2026-11-09"
-    locator: "What reduces intelligibility"
+- title: Dugan Automatic Mixer Model D and D-1 Manual
+  publisher: Dan Dugan Sound Design
+  kind: manual
+  url: https://dandugan.com/Assets/manuals/Model-D-and-D-1-Manual.html
+  accessed: '2026-11-09'
+  locator: NOM; Gain sharing principle; Mute and Override; Weighting
+- title: Facts about speech intelligibility
+  publisher: DPA Microphones
+  kind: article
+  url: https://www.dpamicrophones.com/mic-university/facts-about-speech-intelligibility
+  accessed: '2026-11-09'
+  locator: What reduces intelligibility
 media:
-  - kind: diagram
-    path: nom-gain-reduction.png
-    caption: "Ambient gain versus number of open mics (about 3 dB per doubling, per Dugan's manual)."
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: "scripts/library_diagrams.py"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Cx-S4LBgulw"
-    title: "QSC TouchMix-30 Pro Training: Auto Mixer Part 1"
-    channel: "QSC"
-    caption: "QSC training on the automixer for open microphones (title and channel confirmed on YouTube; not watched in full)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=omx8ZjJwclU"
-    title: "Manage multiple microphones with AUTO-MIX"
-    channel: "Behringer"
-    caption: "Behringer demo of automixing several microphones (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: nom-gain-reduction.png
+  caption: Ambient gain versus number of open mics (about 3 dB per doubling, per Dugan's manual).
+  caption_vi: Ambient gain theo số mic mở (khoảng 3 dB mỗi lần gấp đôi, theo manual của Dugan).
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=Cx-S4LBgulw
+  title: 'QSC TouchMix-30 Pro Training: Auto Mixer Part 1'
+  channel: QSC
+  caption: QSC training on the automixer for open microphones (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Khóa đào tạo của QSC về automixer cho mic mở (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
+- kind: video
+  url: https://www.youtube.com/watch?v=omx8ZjJwclU
+  title: Manage multiple microphones with AUTO-MIX
+  channel: Behringer
+  caption: Behringer demo of automixing several microphones (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Demo của Behringer về automix nhiều mic (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

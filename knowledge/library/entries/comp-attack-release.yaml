@@ -1,13 +1,22 @@
 id: comp-attack-release
-title: "Compressor attack and release times"
-title_vi: "Thời gian attack và release của compressor"
+title: Compressor attack and release times
+title_vi: Thời gian attack và release của compressor
 topic: dynamics
 tags:
-  instrument: [vocal, snare, kick, bass]
+  instrument:
+  - vocal
+  - snare
+  - kick
+  - bass
   genre: []
-  technique: [compression, attack, release, pumping]
+  technique:
+  - compression
+  - attack
+  - release
+  - pumping
   event: []
-summary: "Attack sets how quickly gain reduction grabs after the threshold is crossed, release sets how quickly it lets go. Slow attack keeps punch, fast attack tames peaks, and release must be matched to the rhythm of the source to avoid pumping."
+summary: Attack sets how quickly gain reduction grabs after the threshold is crossed, release sets how quickly it lets go. Slow attack keeps punch, fast attack tames peaks, and release must be matched to the rhythm of the source to avoid pumping.
+summary_vi: Attack quyết định Gain Reduction bắt vào nhanh cỡ nào sau khi vượt Threshold, Release quyết định nó nhả ra nhanh cỡ nào. Attack chậm giữ được độ punch, Attack nhanh kìm peak, còn Release phải khớp nhịp của nguồn âm, nếu không bạn sẽ nghe hiện tượng bơm (pumping).
 body: |
   Attack and release are **speeds of gain change**, not delays. Attack is how fast the compressor turns the signal down once it is over the threshold. Release is how fast it returns to unity gain after the signal falls back under it.
 
@@ -48,47 +57,102 @@ body: |
   - Forgetting that different models respond differently to the same numbers; some have program-dependent timing that you cannot set by number at all.
 
   The diagram shows an input burst and the gain reduction following it: the gain falls over the attack time and recovers over the release time. All values are starting points.
+body_vi: |
+  Attack và Release là **tốc độ thay đổi gain**, không phải độ trễ. Attack là tốc độ con Compressor kéo tín hiệu xuống khi nó vượt Threshold. Release là tốc độ trả về unity gain khi tín hiệu tụt xuống dưới Threshold.
+
+  ## Attack
+
+  - **Attack chậm (khoảng 20 đến 40 ms trở lên)**: phần đầu của tiếng đánh lọt qua trước khi Compressor kịp phản ứng. Trống nghe punch và dứt khoát hơn, nhưng đuôi sau tiếng đánh bị kéo xuống nên sustain giảm.
+  - **Attack nhanh (khoảng 1 ms trở xuống)**: chộp cổ transient ngay từ đầu, peak được kiểm soát, tiếng đặc hơn và bớt gắt. Nhưng Attack quá nhanh trên vocal thì giọng bị bẹp và tối.
+  - Tác động cực nhanh trên nguồn âm thấp có thể gây méo, vì Compressor bắt đầu hoạt động ngay trong từng chu kỳ của tiếng bass.
+
+  Ví dụ từ Sound On Sound: với Attack 100 ms và Ratio 4:1, một peak cao hơn Threshold 8 dB chỉ đạt 6 dB Gain Reduction sau 100 ms; peak ngắn hơn mức đó đã qua mất trước khi Compressor kịp tác động đầy đủ.
+
+  ## Release
+
+  - **Quá nhanh**: level lên xuống thấy rõ theo từng câu hát, đó là hiệu ứng bơm (pumping). Với nguồn nhiều low-end, nó còn nghe như méo.
+  - **Quá chậm**: Compressor chưa kịp hồi trước tiếng đánh kế tiếp, nên transient sau bị bẹp và tiếng bị dẹt.
+  - Mục tiêu tốt là gain về khoảng 90 đến 100 phần trăm unity ngay trước tiếng đánh kế tiếp. Với nhạc, đặt Release theo tempo; với giọng nói, Release mức vừa thường nghe tự nhiên nhất.
+
+  ## Điểm xuất phát (chỉnh theo tai)
+
+  | Mục tiêu | Attack | Release | Ratio |
+  |---|---|---|---|
+  | Làm mượt nhẹ (vocal, giọng nói) | khoảng 8 ms | vừa-chậm, khoảng 200 ms | khoảng 3:1 |
+  | Punch cho kick/snare | khoảng 20 đến 40 ms | đặt theo tempo | khoảng 6:1 |
+  | Nén dập ambience/room | rất nhanh | vừa | khoảng 10:1 |
+
+  Một công thức đa dụng hay dùng là Attack 1 ms, Release 50 ms, Ratio 4:1, rồi nới dần các thời gian cho tới khi tiếng đúng ý. FabFilter khuyên chỉnh Attack trước Release.
+
+  ## Thao tác thực chiến
+
+  1. Đặt Threshold sao cho kim Gain Reduction nhúc nhích ở những đoạn to.
+  2. Bắt đầu với Attack chậm và nghe transient. Tăng tốc dần cho tới khi peak được kiểm soát mà tiếng không bị tối.
+  3. Sau đó chỉnh Release trong khi nhìn meter: bạn muốn kim trả về 0 giữa các câu hoặc các tiếng đánh mà không bị chattering.
+
+  ## Lỗi thường gặp
+
+  - Đặt cả hai ở giá trị nhanh nhất "để bắt hết". Kết quả là méo và pumping.
+  - Đặt Release dài đến mức kim không bao giờ về 0.
+  - Quên rằng mỗi model phản ứng khác nhau với cùng một con số; một số có timing program-dependent mà bạn không thể đặt bằng số.
+
+  Sơ đồ cho thấy một burst đầu vào và Gain Reduction theo sau: gain giảm trong thời gian Attack và hồi lại trong thời gian Release. Mọi giá trị đều chỉ là điểm xuất phát.
 rule:
-  applies_to: {source_type: [vocal.lead, vocal.speech, kick, snare]}
+  applies_to:
+    source_type:
+    - vocal.lead
+    - vocal.speech
+    - kick
+    - snare
   params:
-    attack_ms_punch: [20, 40]
-    attack_ms_smoothing: [5, 10]
-    release_ms_smoothing: [150, 300]
-    attack_ms_fast: [0.1, 1]
-  notes: "starting points; sources differ because each compressor model scales time constants differently"
+    attack_ms_punch:
+    - 20
+    - 40
+    attack_ms_smoothing:
+    - 5
+    - 10
+    release_ms_smoothing:
+    - 150
+    - 300
+    attack_ms_fast:
+    - 0.1
+    - 1
+  notes: starting points; sources differ because each compressor model scales time constants differently
 sources:
-  - title: "Compression: What Do All Those Knobs Do?"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/compression-what-do-all-those-knobs-do"
-    accessed: "2026-11-09"
-    locator: "Attacking Instincts / Time And Motion"
-  - title: "What Is Audio Compression? Everything You Need to Know"
-    publisher: "iZotope"
-    kind: article
-    url: "https://www.izotope.com/en/learn/what-is-audio-compression"
-    accessed: "2026-11-09"
-    locator: "Attack and Release Starting Points"
-  - title: "Basic compressor controls"
-    publisher: "FabFilter"
-    kind: article
-    url: "https://fabfilter.com/learn/compression/basic-compressor-controls"
-    accessed: "2026-11-09"
-    locator: "Attack and release"
+- title: 'Compression: What Do All Those Knobs Do?'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/compression-what-do-all-those-knobs-do
+  accessed: '2026-11-09'
+  locator: Attacking Instincts / Time And Motion
+- title: What Is Audio Compression? Everything You Need to Know
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/en/learn/what-is-audio-compression
+  accessed: '2026-11-09'
+  locator: Attack and Release Starting Points
+- title: Basic compressor controls
+  publisher: FabFilter
+  kind: article
+  url: https://fabfilter.com/learn/compression/basic-compressor-controls
+  accessed: '2026-11-09'
+  locator: Attack and release
 media:
-  - kind: diagram
-    path: attack-release-envelope.png
-    caption: "Input burst and gain reduction: 10 ms attack, 150 ms release"
-    license: CC0-1.0
-    attribution: "Generated for wing-parser"
-    generated_by: scripts/library_diagrams.py
-  - kind: video
-    url: "https://www.youtube.com/watch?v=lgCYjek5_JY"
-    title: "How To Use A Compressor | Threshold, Ratio, Attack, Release & More"
-    channel: "Audio University"
-    caption: "Audio University walkthrough of threshold, ratio, attack, release and more (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: attack-release-envelope.png
+  caption: 'Input burst and gain reduction: 10 ms attack, 150 ms release'
+  caption_vi: 'Burst đầu vào và Gain Reduction: Attack 10 ms, Release 150 ms'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=lgCYjek5_JY
+  title: How To Use A Compressor | Threshold, Ratio, Attack, Release & More
+  channel: Audio University
+  caption: Audio University walkthrough of threshold, ratio, attack, release and more (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Audio University hướng dẫn Threshold, Ratio, Attack, Release và hơn nữa (tiêu đề và kênh đã xác nhận trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:15+07:00'
+updated_by: agent:translator-vi

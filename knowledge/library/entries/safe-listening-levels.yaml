@@ -1,13 +1,19 @@
 id: safe-listening-levels
-title: "Safe listening levels at events (WHO global standard)"
-title_vi: "Mức nghe an toàn tại sự kiện (chuẩn toàn cầu của WHO)"
+title: Safe listening levels at events (WHO global standard)
+title_vi: Mức nghe an toàn tại sự kiện (chuẩn toàn cầu của WHO)
 topic: system
 tags:
   instrument: []
   genre: []
-  technique: [spl-monitoring, hearing-safety]
-  event: [concert, festival, corporate]
-summary: "The WHO global standard for venues and events caps average level at 100 dB LAeq over 15 minutes and adds monitoring, acoustics, hearing protection, quiet zones and staff training. It is a recommendation, not law in most places."
+  technique:
+  - spl-monitoring
+  - hearing-safety
+  event:
+  - concert
+  - festival
+  - corporate
+summary: The WHO global standard for venues and events caps average level at 100 dB LAeq over 15 minutes and adds monitoring, acoustics, hearing protection, quiet zones and staff training. It is a recommendation, not law in most places.
+summary_vi: Chuẩn toàn cầu của WHO cho venue và sự kiện giới hạn mức trung bình ở 100 dB LAeq trong 15 phút, kèm theo giám sát, acoustics, bảo vệ thính giác, khu yên tĩnh và đào tạo nhân sự. Đây là khuyến nghị, ở đa số nơi không phải luật.
 body: |
   ## What the standard says
 
@@ -50,27 +56,61 @@ body: |
   force depends on the country. Local regulations (and venue contracts) may be
   stricter. Always check the requirement for the specific show before relying
   on the WHO figure.
+body_vi: |
+  ## Chuẩn nói gì
+
+  Năm 2022, Tổ chức Y tế Thế giới (WHO) công bố một chuẩn toàn cầu về nghe an toàn tại venue và sự kiện (hộp đêm, concert, festival, quán bar). Giới hạn chính là **100 dB LAeq, 15 min**: mức năng lượng trung bình có A-weighting trong bất kỳ cửa sổ 15 phút nào phải nằm ở hoặc dưới 100 dB. Chữ "trung bình" rất quan trọng: peak có thể vượt trong chốc lát, nhưng một show nằm ở 105 dB trong thời gian dài sẽ không đạt.
+
+  Chuẩn gồm sáu yếu tố phối hợp với nhau:
+
+  1. Giới hạn mức trung bình nêu trên.
+  2. Giám sát trực tiếp mức âm thanh bằng thiết bị đã hiệu chuẩn, do nhân sự được chỉ định phụ trách.
+  3. Acoustics của venue và thiết kế hệ thống âm thanh giúp việc chạy ở mức thấp hơn vẫn hiệu quả.
+  4. Phương tiện bảo vệ thính giác cá nhân được cung cấp cho khán giả.
+  5. Khu yên tĩnh để mọi người nghỉ tai.
+  6. Đào tạo và thông tin cho nhân sự tại chỗ và khán giả.
+
+  Một festival áp dụng chuẩn này ở Ấn Độ báo cáo có giám sát tại mỗi venue với đọc số từ xa, và thấy các lần vượt mức hiếm, nhỏ và ngắn.
+
+  ## Ý nghĩa với vị trí mix
+
+  - Đặt một measurement mic hoặc SPL meter ở hoặc gần FOH và theo dõi **LAeq 15 phút trượt**, không chỉ số đo tức thời. Một meter chỉ hiện level tức thời sẽ đánh lừa bạn.
+  - Mix **dynamics, không phải âm lượng không đổi**. Vì giới hạn là trung bình, các đoạn nhẹ "mua" được Headroom cho đoạn to. Compression nặng trên main làm mất lợi ích này.
+  - Kiểm tra nơi khán giả thực sự đứng. Vị trí FOH thường yên hơn các hàng đầu sát stage.
+  - Sự kiện doanh nghiệp có speech và music thường cần mức thấp hơn nhiều so với giới hạn; hãy coi 100 dB là trần, không phải mục tiêu.
+
+  ## Lưu ý
+
+  Chuẩn là khuyến nghị cho chính phủ và đơn vị tổ chức; hiệu lực pháp lý phụ thuộc từng quốc gia. Quy định địa phương (và hợp đồng venue) có thể nghiêm hơn. Luôn kiểm tra yêu cầu cụ thể cho show đó trước khi dựa vào con số của WHO.
 rule:
-  applies_to: {event: [concert, festival, club]}
+  applies_to:
+    event:
+    - concert
+    - festival
+    - club
   params:
-    laeq_limit_db: [100, 100]
-    averaging_window_min: [15, 15]
-  notes: "WHO recommendation; local law or venue contract may be stricter"
+    laeq_limit_db:
+    - 100
+    - 100
+    averaging_window_min:
+    - 15
+    - 15
+  notes: WHO recommendation; local law or venue contract may be stricter
 sources:
-  - title: "WHO hearing guidelines implemented at major arts festival"
-    publisher: "World Health Organization"
-    kind: article
-    url: "https://www.who.int/news-room/feature-stories/detail/who-hearing-guidelines-implemented-at-major-arts-festival"
-    accessed: "2026-11-09"
-    locator: "Six features of the standard"
-  - title: "Live event sound levels rising above the insidious undercurrent of aural incapacitance"
-    publisher: "ProSoundWeb"
-    kind: article
-    url: "https://www.prosoundweb.com/live-event-sound-levels-rising-above-the-insidious-undercurrent-of-aural-incapacitance/"
-    accessed: "2026-11-09"
-    locator: "Not opened in full; cited only for the averaging-window discussion seen in search results"
+- title: WHO hearing guidelines implemented at major arts festival
+  publisher: World Health Organization
+  kind: article
+  url: https://www.who.int/news-room/feature-stories/detail/who-hearing-guidelines-implemented-at-major-arts-festival
+  accessed: '2026-11-09'
+  locator: Six features of the standard
+- title: Live event sound levels rising above the insidious undercurrent of aural incapacitance
+  publisher: ProSoundWeb
+  kind: article
+  url: https://www.prosoundweb.com/live-event-sound-levels-rising-above-the-insidious-undercurrent-of-aural-incapacitance/
+  accessed: '2026-11-09'
+  locator: Not opened in full; cited only for the averaging-window discussion seen in search results
 confidence: established
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:17+07:00'
+updated_by: agent:translator-vi

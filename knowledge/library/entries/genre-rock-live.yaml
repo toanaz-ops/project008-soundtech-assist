@@ -1,13 +1,25 @@
 id: genre-rock-live
-title: "Live rock: balance, low end, dynamics and effects"
-title_vi: "Rock live: cân bằng, tiếng trầm, động và hiệu ứng"
+title: 'Live rock: balance, low end, dynamics and effects'
+title_vi: 'Rock live: cân bằng, tiếng trầm, động và hiệu ứng'
 topic: genre
 tags:
-  instrument: [kick, bass, guitar, vocal, drums]
-  genre: [rock]
-  technique: [low-end, ducking, di-plus-mic, vocal-midrange]
-  event: [concert]
-summary: "In rock the mix is built around drums, bass and a vocal that must cut through loud guitars. The common problems are kick and bass fighting for the same low end and guitars burying the vocal."
+  instrument:
+  - kick
+  - bass
+  - guitar
+  - vocal
+  - drums
+  genre:
+  - rock
+  technique:
+  - low-end
+  - ducking
+  - di-plus-mic
+  - vocal-midrange
+  event:
+  - concert
+summary: In rock the mix is built around drums, bass and a vocal that must cut through loud guitars. The common problems are kick and bass fighting for the same low end and guitars burying the vocal.
+summary_vi: Trong rock, mix được xây quanh drums, bass và một vocal phải xuyên qua guitar to. Vấn đề thường gặp là kick và bass tranh cùng một low end, và guitar vùi vocal.
 body: |
   ## Balance
 
@@ -34,53 +46,90 @@ body: |
   - Leaving the kick and bass both full-range into the subwoofers.
 
   Every number here is a starting point from magazine and vendor articles, mostly written for studio mixes. I found no reputable live-rock source that gives dB or Hz targets for the whole genre, so none is given beyond what is cited.
+body_vi: |
+  ## Balance
+
+  Rock dựa vào rhythm section và một vocal nằm ở midrange. Một tác giả iZotope, mix trong studio, khuyên giữ vocal tập trung ở mid thay vì thêm nhiều treble sáng, để phần top end cho cymbal. Distortion ở high-mid có thể hợp với guitar nhưng top end bị distort thường nghe tệ trên giọng. Trong phòng live, ý tưởng này vẫn áp dụng: khoét chỗ cho vocal trong guitar thay vì chỉ đẩy fader vocal.
+
+  ## Low end
+
+  Kick và bass chia nhau những octave thấp nhất, nên phải quyết ai làm chủ phần nào. Tác giả iZotope để bass chiếm low end với kick nằm ngay trên nó, dùng một Shelf nhẹ trên bass và một Dynamic EQ dip quanh 100 Hz khi kick đánh. SOS đưa lựa chọn tạo hình ngược lại: set kick quanh bass, boost kick gần 70 đến 90 Hz cho punch, và cut cao hơn khoảng một octave để bớt boxy. Sidechain-ducking bass khoảng 3 dB khi kick đánh nghe tự nhiên, rock nặng hơn thì nhiều hơn. Hai bài của SOS và iZotope này thiên về studio; nguyên tắc vẫn dùng được, nhưng hãy check bằng tai trong phòng và trong sub.
+
+  Nếu bass lấy cả từ DI lẫn mic, hãy check polarity. SOS (Burton) lưu ý vấn đề phase giữa hai nguồn có thể làm low end mỏng; đảo polarity một bên và nghe từ vị trí nơi stage và PA cân bằng.
+
+  ## Dynamics
+
+  Compressor trên bass với Attack chậm cho transient đi qua trong khi kiểm soát phần đuôi; slap cần Attack nhanh hơn, với Release trung bình để nó hồi kịp trước nốt tiếp theo. Chỉnh sửa và tune quá đà làm mất sự không hoàn hảo tạo nên groove của rock, nên chỉ sửa những lỗi tệ nhất.
+
+  ## Effects
+
+  Vocal rock thường dry hơn ballad; giữ reverb cho snare và một ambience ngắn, và delay để nhấn thay vì phủ liên tục. Parallel compression trên drums là cách phổ biến để thêm weight mà không làm dẹt transient (iZotope).
+
+  ## Lỗi thường gặp
+
+  - Boost low của rhythm guitar, làm mix đục và chọi với bass.
+  - Đánh giá bass khi solo. Hãy mute nó và check xem low end còn lại gì.
+  - Để cả kick và bass đi full-range vào subwoofer.
+
+  Mọi con số ở đây là điểm khởi đầu từ các bài báo tạp chí và vendor, chủ yếu viết cho mix studio. Tôi không tìm được nguồn rock live đáng tin nào đưa mục tiêu dB hay Hz cho cả thể loại, nên không đưa gì ngoài những gì đã trích dẫn.
 rule:
   applies_to:
-    source_type: [kick, bass]
-    genre: [rock]
+    source_type:
+    - kick
+    - bass
+    genre:
+    - rock
   params:
-    bass_duck_by_kick_db: [3, 3]
-    kick_punch_boost_hz: [70, 90]
-    kick_box_cut_hz: [160, 180]
-  notes: "Studio-oriented starting points (SOS White 2011). Harder rock can duck more. Adjust by ear in the room."
+    bass_duck_by_kick_db:
+    - 3
+    - 3
+    kick_punch_boost_hz:
+    - 70
+    - 90
+    kick_box_cut_hz:
+    - 160
+    - 180
+  notes: Studio-oriented starting points (SOS White 2011). Harder rock can duck more. Adjust by ear in the room.
 sources:
-  - title: "6 Tips for Mixing Good Ol' Fashioned Rock and Roll"
-    publisher: "iZotope"
-    kind: article
-    url: "https://www.izotope.com/community/blog/6-tips-for-mixing-good-ol-fashioned-rock-and-roll"
-    author: "Nick Messitte"
-    year: 2022
-    accessed: "2026-11-09"
-    locator: "Tips 1 (low end), 3 (vocals), 4 (editing)"
-  - title: "Mix Tips For Kick & Bass"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/mix-tips-kick-bass"
-    author: "Paul White"
-    year: 2011
-    accessed: "2026-11-09"
-    locator: "Ducking; EQ regions"
-  - title: "Engineering Bass Guitars Live"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/engineering-bass-guitars-live"
-    author: "Jon Burton"
-    year: 2014
-    accessed: "2026-11-09"
-    locator: "Combining DI and Mic; Compression"
+- title: 6 Tips for Mixing Good Ol' Fashioned Rock and Roll
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/community/blog/6-tips-for-mixing-good-ol-fashioned-rock-and-roll
+  author: Nick Messitte
+  year: 2022
+  accessed: '2026-11-09'
+  locator: Tips 1 (low end), 3 (vocals), 4 (editing)
+- title: Mix Tips For Kick & Bass
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/mix-tips-kick-bass
+  author: Paul White
+  year: 2011
+  accessed: '2026-11-09'
+  locator: Ducking; EQ regions
+- title: Engineering Bass Guitars Live
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/engineering-bass-guitars-live
+  author: Jon Burton
+  year: 2014
+  accessed: '2026-11-09'
+  locator: Combining DI and Mic; Compression
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=H5S34Hf95gI"
-    title: "Live Sound Mixing Strategy - Updated"
-    channel: "Dave Rat"
-    caption: "FOH mixing strategy for rock shows (channel inferred from search results, not confirmed on the page)"
-  - kind: video
-    url: "https://www.youtube.com/watch?v=v7NhjvB8jUM"
-    title: "FOH Mixing: Live Tips and Tricks by Ozzy’s Mix Engineer"
-    channel: "Waves Audio"
-    caption: "Live FOH tips from an engineer who mixed a major rock act (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=H5S34Hf95gI
+  title: Live Sound Mixing Strategy - Updated
+  channel: Dave Rat
+  caption: FOH mixing strategy for rock shows (channel inferred from search results, not confirmed on the page)
+  caption_vi: Chiến lược FOH mixing cho show rock (kênh suy ra từ kết quả tìm kiếm, chưa xác nhận trên trang)
+- kind: video
+  url: https://www.youtube.com/watch?v=v7NhjvB8jUM
+  title: 'FOH Mixing: Live Tips and Tricks by Ozzy’s Mix Engineer'
+  channel: Waves Audio
+  caption: Live FOH tips from an engineer who mixed a major rock act (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Mẹo FOH live từ một kỹ sư từng mix cho một nghệ sĩ rock lớn (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

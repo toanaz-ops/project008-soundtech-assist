@@ -1,13 +1,23 @@
 id: fx-modulation-chorus-doubler
-title: "Modulation: chorus, ensemble and doubling"
-title_vi: "Hiệu ứng modulation: chorus, ensemble và doubler"
+title: 'Modulation: chorus, ensemble and doubling'
+title_vi: 'Hiệu ứng modulation: chorus, ensemble và doubler'
 topic: effects
 tags:
-  instrument: [backing-vocal, bass, keys]
-  genre: [pop]
-  technique: [chorus, doubler, flanger, modulation]
-  event: [concert]
-summary: "Chorus, ensemble and doubling effects blend the dry signal with a short, slowly modulated delayed copy to suggest several players. They thicken backing vocals and keys, and need care on bass and in mono."
+  instrument:
+  - backing-vocal
+  - bass
+  - keys
+  genre:
+  - pop
+  technique:
+  - chorus
+  - doubler
+  - flanger
+  - modulation
+  event:
+  - concert
+summary: Chorus, ensemble and doubling effects blend the dry signal with a short, slowly modulated delayed copy to suggest several players. They thicken backing vocals and keys, and need care on bass and in mono.
+summary_vi: Chorus, ensemble và doubling trộn tín hiệu dry với một bản copy delay ngắn được modulate chậm, tạo cảm giác nhiều người chơi. Chúng làm dày backing vocal và keys, nhưng cần cẩn thận trên bass và khi nghe mono.
 body: |
   ## How it works
 
@@ -35,40 +45,76 @@ body: |
   - Forgetting a mono check.
 
   Numbers are starting points; set by ear. Sources here are mainly SOS articles on modulation, with limited detail on doubler designs.
+body_vi: |
+  ## Cách hoạt động
+
+  Chorus trộn tín hiệu dry với một bản copy bị delay nhẹ, có cao độ bị dịch bởi một bộ dao động tần số thấp chậm (LFO). Tai nghe như nhiều người cùng chơi một phần. Hiệu ứng ensemble chạy nhiều chorus ở các tốc độ khác nhau để khó nhận ra độ dao động tuần hoàn. Flanger dùng delay ngắn hơn chorus và thường thêm feedback, tạo tiếng "whoosh" comb-filter chuyển động. Một bài của SOS nêu delay của chorus là vài chục mili giây với LFO gần 3 Hz, vibrato dưới khoảng 15 ms, và flanging cổ điển dưới khoảng 5 ms. Đây là các khoảng điển hình; từng máy khác nhau rất nhiều.
+
+  ## Doubling
+
+  Setting "doubler" hay "vocal thickener" là hiệu ứng họ chorus nhằm bắt chước một take thứ hai của cùng giọng hát. Các nguồn tôi mở được chỉ mô tả nó theo chorus: một delay ngắn có modulation, nên khoảng delay trùng với các số chorus ở trên. Thuật toán doubler chi tiết khác nhau giữa các hãng, nên hãy nghe thay vì tin tên trên preset.
+
+  ## Khi nào nó đáng dùng ở live
+
+  - **Backing vocal và patch strings hoặc brass:** SOS gợi ý chorus và ensemble cho những thứ này, và cho electric piano. Chúng nghe rộng hơn mà không cần thêm level.
+  - **Stereo rộng:** hard-pan tín hiệu dry và tín hiệu đã chorus để mở rộng phần keys hoặc guitar, rồi check kết quả ở mono. Lý do: comb-filtering làm nó rộng có thể làm nó mỏng đi khi sum.
+  - **Bass:** chỉ dùng khi phần wet được high-pass, như SOS khuyên. Modulate tần thấp làm mờ cao độ và weight, và trên PA thì thành sub lỏng.
+  - **Lead vocal:** giữ nhẹ nếu có dùng. Một lead nghe bị xử lý trong venue sẽ mất presence và có thể hại độ rõ lời.
+
+  ## Setup trên console
+
+  Cấp cho hiệu ứng từ một aux send, set 100% wet, và dùng send level để quyết định nghe bao nhiêu. Chọn Rate chậm và Depth vừa phải trước, rồi tăng Depth đến khi nghe được trong bối cảnh, rồi lùi lại một chút. Giữ return ra khỏi các monitor mix trừ khi ca sĩ yêu cầu.
+
+  ## Lỗi cần tránh
+
+  - Setting nhanh, sâu nghe như say sóng trên nốt kéo dài.
+  - Chorus trên cả mix bus: nó làm nhoè transient và chọi với phase của chính PA.
+  - Quên check mono.
+
+  Các con số chỉ là điểm khởi đầu; set bằng tai. Nguồn ở đây chủ yếu là các bài SOS về modulation, ít chi tiết về thiết kế doubler.
 rule:
   applies_to:
-    source_type: [backing-vocal, keys, strings]
+    source_type:
+    - backing-vocal
+    - keys
+    - strings
   params:
-    chorus_delay_ms: [20, 80]
-    flanger_delay_ms: [1, 5]
-    lfo_rate_hz: [2, 4]
-  notes: "Ranges from SOS (White 2003, 2022) and a plug-in's published range. Typical, not strict; adjust by ear and check mono."
+    chorus_delay_ms:
+    - 20
+    - 80
+    flanger_delay_ms:
+    - 1
+    - 5
+    lfo_rate_hz:
+    - 2
+    - 4
+  notes: Ranges from SOS (White 2003, 2022) and a plug-in's published range. Typical, not strict; adjust by ear and check mono.
 sources:
-  - title: "Modulation Effects: A Primer"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/sound-advice/modulation-effects"
-    author: "Paul White"
-    year: 2022
-    accessed: "2026-11-09"
-    locator: "Chorus & Ensemble; Flanging"
-  - title: "Using Your Plug-in Delay Effects"
-    publisher: "Sound On Sound"
-    kind: article
-    url: "https://www.soundonsound.com/techniques/using-your-plugin-delay-effects"
-    author: "Paul White"
-    year: 2003
-    accessed: "2026-11-09"
-    locator: "Numbers for chorus, vibrato and flanging delay times"
-media: []
+- title: 'Modulation Effects: A Primer'
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/sound-advice/modulation-effects
+  author: Paul White
+  year: 2022
+  accessed: '2026-11-09'
+  locator: Chorus & Ensemble; Flanging
+- title: Using Your Plug-in Delay Effects
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-your-plugin-delay-effects
+  author: Paul White
+  year: 2003
+  accessed: '2026-11-09'
+  locator: Numbers for chorus, vibrato and flanging delay times
 media:
-  - kind: video
-    url: "https://www.youtube.com/watch?v=dXgVVacBUgI"
-    title: "What is Chorus? | How To Use Chorus Effect?"
-    channel: "This Is Onesto"
-    caption: "What chorus is and how to use it (title and channel confirmed on YouTube; not watched in full)"
+- kind: video
+  url: https://www.youtube.com/watch?v=dXgVVacBUgI
+  title: What is Chorus? | How To Use Chorus Effect?
+  channel: This Is Onesto
+  caption: What chorus is and how to use it (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: Chorus là gì và dùng thế nào (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

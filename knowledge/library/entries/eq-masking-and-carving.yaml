@@ -1,13 +1,24 @@
 id: eq-masking-and-carving
-title: "Masking and carving space between sources"
-title_vi: "Masking và tạo khoảng trống tần số giữa các nguồn"
+title: Masking and carving space between sources
+title_vi: Masking và tạo khoảng trống tần số giữa các nguồn
 topic: eq
 tags:
-  instrument: [kick, bass, vocal, guitar]
-  genre: [rock, pop]
-  technique: [eq, masking, carving]
-  event: [concert]
-summary: "When two sources fill the same frequency region one hides the other. Give each source its own region by cutting where another needs room, and judge it in the mix."
+  instrument:
+  - kick
+  - bass
+  - vocal
+  - guitar
+  genre:
+  - rock
+  - pop
+  technique:
+  - eq
+  - masking
+  - carving
+  event:
+  - concert
+summary: When two sources fill the same frequency region one hides the other. Give each source its own region by cutting where another needs room, and judge it in the mix.
+summary_vi: Khi hai nguồn cùng chiếm một vùng tần số, cái này sẽ che cái kia. Hãy cho mỗi nguồn một vùng riêng bằng cách cắt ở chỗ nguồn khác cần chỗ, và đánh giá trong mix.
 body: |
   Masking happens when a louder or denser source covers part of another in the same frequency region, so you cannot hear the second one clearly. The usual cure is not more level but a small trade of frequency territory.
 
@@ -33,25 +44,82 @@ body: |
 
   ## Starting values (not rules)
   Cuts of 2-4 dB with medium Q are enough to hear a difference. Check with bypass.
+body_vi: |
+  Hiện tượng che lấp tần số (Masking) xảy ra khi một nguồn to hơn hoặc dày hơn phủ lên một phần nguồn khác trong cùng vùng tần số, khiến bạn không nghe rõ nguồn thứ hai. Cách chữa thường không phải thêm level mà là đổi chác một chút "lãnh thổ" tần số.
+
+  ## Chỗ hay dính
+  - **Kick và bass guitar** đều muốn vùng 60-100 Hz. Nếu cả hai cùng đầy ở đó, low end sẽ đục.
+  - **Vocal và guitar/keys** gặp nhau ở mid và high-mid; một bức tường guitar có thể chôn lead vocal dù fader đã đúng.
+  - **Dồn ở low-mid (khoảng 200-500 Hz):** nhiều channel cùng thêm độ ấm ở đây, và cộng lại thành mud.
+
+  ## Carving, từng bước
+  1. Quyết định ai sở hữu vùng nào. Ví dụ: kick giữ phần punch dưới cùng, bass giữ phần thân nốt phía trên; hoặc ngược lại, tùy bài.
+  2. High-pass mọi thứ không cần low (guitar, keys, overhead, vocal) để chừa chỗ cho kick và bass.
+  3. Cắt nhỏ ở nguồn phụ tại vùng mà nguồn chính cần. Với vocal vs guitar, cắt vài dB trên guitar quanh vùng presence của vocal thường hiệu quả hơn là boost vocal.
+  4. Chỉ boost nhẹ ở nguồn chính nếu vẫn cần.
+  5. Chỉnh khi cả band đang chơi. Solo có thể nói dối: tiếng solo "to bự" thường thắng chỉ vì nó chiếm hết chỗ.
+
+  ## Công cụ ngoài EQ tĩnh
+  Dynamic EQ hoặc mẹo sidechain có thể duck bass đúng lúc kick đập, để chỗ trống chỉ mở ra khi cần. Xem entry về Dynamic EQ. Panning và level cũng giúp tách nguồn; dùng chúng trước khi nghĩ đến EQ quá tay.
+
+  ## Lỗi thường gặp
+  - Cắt cả hai nguồn ở cùng một chỗ, để lại một cái lỗ.
+  - Carving quá tay tới mức mỗi phần nghe mỏng dính như tờ giấy khi đứng riêng; phải kiểm tra xem nó còn đúng trong bối cảnh mix.
+  - Quên mono compatibility; kiểm tra mix ở mono.
+
+  ## Giá trị xuất phát (không phải luật)
+  Cắt 2-4 dB với Q vừa là đủ nghe ra khác biệt. Kiểm tra bằng bypass.
 rule:
-  applies_to: {source_type: [guitar, keys, vocal, kick, bass]}
+  applies_to:
+    source_type:
+    - guitar
+    - keys
+    - vocal
+    - kick
+    - bass
   params:
-    carve_gain_db: [-2, -4]
-    carve_q: [1, 3]
-  notes: "Starting points. Small cuts in the secondary source, judged in the full mix."
+    carve_gain_db:
+    - -2
+    - -4
+    carve_q:
+    - 1
+    - 3
+  notes: Starting points. Small cuts in the secondary source, judged in the full mix.
 sources:
-  - {title: "Using EQ", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/using-eq", accessed: "2026-11-09", locator: "Mixing With EQ"}
-  - {title: "What's The Frequency?", publisher: "Sound On Sound", kind: article, url: "https://www.soundonsound.com/techniques/whats-frequency", accessed: "2026-11-09", locator: "Some Practical Considerations; Five EQ Tips"}
-  - {title: "6 ways to use a high-pass filter when mixing", publisher: "iZotope", kind: article, url: "https://www.izotope.com/en/learn/6-ways-to-use-a-high-pass-filter-when-mixing", accessed: "2026-11-09", locator: "Use a high-pass filter to give your low-end instruments their space"}
+- title: Using EQ
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/using-eq
+  accessed: '2026-11-09'
+  locator: Mixing With EQ
+- title: What's The Frequency?
+  publisher: Sound On Sound
+  kind: article
+  url: https://www.soundonsound.com/techniques/whats-frequency
+  accessed: '2026-11-09'
+  locator: Some Practical Considerations; Five EQ Tips
+- title: 6 ways to use a high-pass filter when mixing
+  publisher: iZotope
+  kind: article
+  url: https://www.izotope.com/en/learn/6-ways-to-use-a-high-pass-filter-when-mixing
+  accessed: '2026-11-09'
+  locator: Use a high-pass filter to give your low-end instruments their space
 media:
-  - {kind: diagram, path: kick-bass-carve.png, caption: "Example: kick given a low boost, bass a small cut at the same region.", license: CC0-1.0, attribution: "Generated for wing-parser", generated_by: "scripts/library_diagrams.py"}
-  - kind: video
-    url: "https://www.youtube.com/watch?v=Sk7wefcQXTI"
-    title: "Frequency Masking 101: How to Unmask Your Mix"
-    channel: "iZotope, Inc."
-    caption: "iZotope on what frequency masking is and how to reduce it (title and channel confirmed on YouTube; not watched in full)"
+- kind: diagram
+  path: kick-bass-carve.png
+  caption: 'Example: kick given a low boost, bass a small cut at the same region.'
+  caption_vi: 'Ví dụ: kick được boost low, bass cắt nhẹ ở cùng vùng.'
+  license: CC0-1.0
+  attribution: Generated for wing-parser
+  generated_by: scripts/library_diagrams.py
+- kind: video
+  url: https://www.youtube.com/watch?v=Sk7wefcQXTI
+  title: 'Frequency Masking 101: How to Unmask Your Mix'
+  channel: iZotope, Inc.
+  caption: iZotope on what frequency masking is and how to reduce it (title and channel confirmed on YouTube; not watched in full)
+  caption_vi: iZotope về frequency masking là gì và cách giảm nó (đã xác nhận tiêu đề và kênh trên YouTube; chưa xem hết)
 confidence: common-practice
 status: draft
-revision: 1
-updated_at: "2026-11-09T00:00:00+07:00"
-updated_by: "agent:library-research"
+revision: 2
+updated_at: '2026-11-10T08:36:16+07:00'
+updated_by: agent:translator-vi

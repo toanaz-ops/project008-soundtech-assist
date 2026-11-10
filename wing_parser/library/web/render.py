@@ -69,7 +69,8 @@ def _publishers(entry: dict) -> list[str]:
 
 def _search_text(entry: dict) -> str:
     tags = entry.get("tags") if isinstance(entry.get("tags"), dict) else {}
-    parts = [entry.get("title"), entry.get("title_vi"), entry.get("summary"), entry.get("body")]
+    parts = [entry.get("title"), entry.get("title_vi"), entry.get("summary"),
+             entry.get("summary_vi"), entry.get("body"), entry.get("body_vi")]
     for values in tags.values():
         parts.extend(values if isinstance(values, list) else [])
     for src in entry.get("sources") or []:
@@ -84,6 +85,7 @@ def list_item(loaded: LoadedEntry) -> dict:
     return {
         "id": loaded.id, "title": e.get("title", ""), "title_vi": e.get("title_vi", ""),
         "topic": e.get("topic", ""), "tags": e.get("tags") or {}, "summary": e.get("summary", ""),
+        "summary_vi": e.get("summary_vi", ""),
         "confidence": e.get("confidence", ""), "status": e.get("status", ""),
         "revision": e.get("revision"), "layer": loaded.layer,
         "unsourced": "unsourced" in _codes(loaded),
@@ -109,12 +111,14 @@ def detail(loaded: LoadedEntry, *, media_prefix: str, raw: bool) -> dict:
         media.append(item)
     out.update({
         "body_html": render_markdown(str(e.get("body", ""))),
+        "body_vi_html": render_markdown(str(e["body_vi"])) if e.get("body_vi") else "",
         "sources": e.get("sources") or [], "media": media,
         "updated_at": e.get("updated_at", ""), "updated_by": e.get("updated_by", ""),
         "issues": [i.__dict__ for i in loaded.issues],
     })
     if raw:
         out["body"] = e.get("body", "")
+        out["body_vi"] = e.get("body_vi", "")
         out["rule"] = e.get("rule")
     return out
 
