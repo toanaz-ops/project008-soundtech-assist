@@ -12,10 +12,12 @@ Tokens are never logged.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import logging
 import os
+import re
 import threading
 import time
 import urllib.error
@@ -45,8 +47,17 @@ VIEW, EDIT = "knowledge_library.view", "knowledge_library.edit"
 CACHE_TTL = 60.0
 CACHE_MAX = 256
 STATIC_FILES = {"app.js": "text/javascript", "app.css": "text/css"}
+def _bootstrap_hash() -> str:
+    """CSP hash source for the inline prefs bootstrap in index.html (it must run before first paint)."""
+    m = re.search(r'<script id="prefs-bootstrap">(.*?)</script>', static_text("index.html"), re.S)
+    if m is None:
+        raise RuntimeError("static/index.html lost its prefs-bootstrap script")
+    digest = hashlib.sha256(m.group(1).encode("utf-8")).digest()
+    return "'sha256-" + base64.b64encode(digest).decode("ascii") + "'"
+
+
 CSP = ("default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; "
-       "script-src 'self'; connect-src 'self'; frame-src https://www.youtube-nocookie.com; "
+       f"script-src 'self' {_bootstrap_hash()}; connect-src 'self'; frame-src https://www.youtube-nocookie.com; "
        "base-uri 'none'; form-action 'none'; frame-ancestors 'self'")
 
 

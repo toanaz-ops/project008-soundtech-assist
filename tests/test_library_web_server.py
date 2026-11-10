@@ -229,6 +229,15 @@ def test_csp_forbids_framing(client):
     assert "frame-ancestors" in client.get("/library/").headers["content-security-policy"]
 
 
+def test_csp_allows_only_the_hashed_prefs_bootstrap(client):
+    import base64, hashlib, re
+    shell = client.get("/library/")
+    script = re.search(r'<script id="prefs-bootstrap">(.*?)</script>', shell.text, re.S).group(1)
+    want = "'sha256-" + base64.b64encode(hashlib.sha256(script.encode()).digest()).decode() + "'"
+    csp = shell.headers["content-security-policy"]
+    assert want in csp and "'unsafe-inline'" not in csp.split("script-src")[1].split(";")[0]
+
+
 def test_api_entries_is_gzipped(client):
     r = client.get("/library/api/entries", headers={**auth(), "Accept-Encoding": "gzip"})
     assert r.status_code == 200
