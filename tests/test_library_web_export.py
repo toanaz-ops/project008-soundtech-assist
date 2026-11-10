@@ -126,8 +126,25 @@ def test_shell_keeps_full_document_for_server_mode():
     shell = static_text("index.html")
     assert "<!doctype html>" in shell.lower() and "<body>" in shell
     css = static_text("app.css")
-    assert ':root[data-theme="light"]' in css and ':root:not([data-theme="dark"])' in css
     assert "100vh" not in css
+    assert "prefers-color-scheme" not in css and "data-theme" not in css
+    for skin in ("dark", "sodium", "tet"):
+        assert f':root[data-skin="{skin}"]' in css
+    # before-paint bootstrap shares PRJ012's storage keys and defaults to light
+    head = shell.split("</head>")[0]
+    assert 'id="prefs-bootstrap"' in head and "az.prefs.v1" in head and "az.language" in head and "data-skin" in head
+    assert "prefers-color-scheme" not in shell and "data-theme" not in shell and 'name="color-scheme"' not in shell
+    assert 's="light",n="compact",l="vi"' in head
+
+
+def test_exports_keep_the_prefs_bootstrap(store, tmp_path):
+    full = export_web(store, tmp_path / "full")["path"].read_text(encoding="utf-8")
+    frag = export_web(store, tmp_path / "frag", artifact=True)["path"].read_text(encoding="utf-8")
+    for page in (full, frag):
+        assert "az.prefs.v1" in page and "az.language" in page and "data-skin" in page
+        assert 'id="display-btn"' in page and "prefers-color-scheme" not in page
+    # in the fragment the bootstrap precedes all app markup so it still runs before first paint
+    assert frag.index("az.prefs.v1") < frag.index('id="app"')
 
 
 def test_one_bad_media_path_does_not_stop_the_export(store, tmp_path):

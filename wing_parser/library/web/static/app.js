@@ -17,6 +17,9 @@
       retire: "Gỡ mục", back: "Quay lại", rev: "bản", by: "bởi", licence: "giấy phép", credit: "tác giả",
       forbidden: "Tài khoản của bạn chưa được cấp quyền xem thư viện.", forbiddenHint: "Hãy liên hệ chủ hệ thống để được cấp quyền.",
       unavailable: "Dịch vụ xác thực tạm thời không khả dụng. Thử lại sau.", errorGeneric: "Có lỗi xảy ra",
+      display: "Giao diện", language: "Ngôn ngữ", skin: "Giao diện màu", density: "Mật độ",
+      lang_vi: "Tiếng Việt", lang_en: "English", skin_light: "Sáng", skin_dark: "Tối", skin_sodium: "Sodium Rack", skin_tet: "Tết",
+      dens_comfortable: "Thoáng", dens_compact: "Gọn",
       exportNote: "Bản xuất chỉ đọc", save: "Lưu", cancel: "Huỷ", note: "Ghi chú thay đổi (bắt buộc)",
       f_id: "Mã (kebab-case, không đổi được)", f_title: "Tiêu đề (EN)", f_title_vi: "Tiêu đề (VI)", f_topic: "Chủ đề",
       f_tags: "Thẻ (cách nhau bằng dấu phẩy)", f_summary: "Tóm tắt (1-3 câu)", f_summary_vi: "Tóm tắt (VI)", f_body: "Nội dung (Markdown)",
@@ -40,6 +43,9 @@
       retire: "Retire", back: "Back", rev: "rev", by: "by", licence: "licence", credit: "credit",
       forbidden: "Your account has not been granted access to the library.", forbiddenHint: "Ask the system owner for access.",
       unavailable: "The sign-in service is temporarily unavailable. Try again later.", errorGeneric: "Something went wrong",
+      display: "Display", language: "Language", skin: "Skin", density: "Density",
+      lang_vi: "Tiếng Việt", lang_en: "English", skin_light: "Light", skin_dark: "Dark", skin_sodium: "Sodium Rack", skin_tet: "Tet",
+      dens_comfortable: "Comfortable", dens_compact: "Compact",
       exportNote: "Read-only export", save: "Save", cancel: "Cancel", note: "Change note (required)",
       f_id: "Id (kebab-case, fixed)", f_title: "Title (EN)", f_title_vi: "Title (VI)", f_topic: "Topic",
       f_tags: "Tags (comma separated)", f_summary: "Summary (1-3 sentences)", f_summary_vi: "Summary (VI)", f_body: "Body (Markdown)",
@@ -173,7 +179,8 @@
     const gb = $("group-by");
     gb.replaceChildren(...["topic", "instrument", "genre", "technique", "source"].map((g) =>
       h("option", { value: g, selected: g === S.group }, t("g_" + g))));
-    $("lang-btn").textContent = S.lang === "vi" ? "EN" : "VI";
+    $("display-btn").textContent = t("display");
+    renderDisplayMenu();
     const nb = $("new-btn");
     nb.hidden = !S.canEdit;
     nb.textContent = t("newEntry");
@@ -436,21 +443,87 @@
     else if (isNew) showForm(null);
     else setView(h("p", { class: "muted" }, t("empty")), EXPORT && h("p", { class: "muted" }, t("exportNote") + " · " + t("generated") + " " + (S.data.generated_at || "")));
   }
+  // -- display prefs, shared with the PRJ012 app (same origin): az.prefs.v1 {skin, density} + az.language -------------------
+  const SKINS = ["light", "dark", "sodium", "tet"], DENSITIES = ["comfortable", "compact"], LANGS = ["vi", "en"];
+  const PREFS_KEY = "az.prefs.v1", LANG_KEY = "az.language";
+  const P = { skin: "light", density: "compact" };
+  function readPrefs() {
+    let skin = "light", density = "compact", lang = "vi";
+    try {
+      const p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
+      if (p && SKINS.includes(p.skin)) skin = p.skin;
+      if (p && DENSITIES.includes(p.density)) density = p.density;
+    } catch (e) { /* storage blocked or bad JSON: defaults */ }
+    try {
+      const g = localStorage.getItem(LANG_KEY);
+      if (LANGS.includes(g)) lang = g;
+      else { const old = localStorage.getItem("library-lang"); if (LANGS.includes(old)) lang = old; }
+    } catch (e) { /* defaults */ }
+    P.skin = skin; P.density = density; S.lang = lang;
+  }
+  function applyPrefs() {
+    const d = document.documentElement;
+    d.setAttribute("data-skin", P.skin); d.setAttribute("data-density", P.density); d.lang = S.lang;
+  }
+  function savePrefs() {
+    try {  // merge: keep keys the app may store alongside ours
+      let p = {};
+      try { p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch (e) { p = {}; }
+      if (!p || typeof p !== "object" || Array.isArray(p)) p = {};
+      p.skin = P.skin; p.density = P.density;
+      localStorage.setItem(PREFS_KEY, JSON.stringify(p));
+      localStorage.setItem(LANG_KEY, S.lang);
+    } catch (e) { /* private mode */ }
+  }
+  function setPref(kind, value) {
+    if (kind === "lang") S.lang = value; else P[kind] = value;
+    applyPrefs(); savePrefs(); renderChrome(); route();
+  }
+  function renderDisplayMenu() {
+    const menu = $("display-menu");
+    const group = (title, cls, kind, values, cur, key) => [
+      h("h3", {}, t(title)),
+      h("div", { role: "group", "aria-label": t(title), class: cls }, values.map((v) =>
+        h("button", { type: "button", class: kind === "skin" ? "skin-swatch" : "chip-toggle", "aria-pressed": String(cur === v),
+          "data-value": v, onclick: () => setPref(kind, v) }, t(key + v))))];
+    menu.setAttribute("aria-label", t("display"));
+    const active = document.activeElement, keep = menu.contains(active) && active.dataset ? active.dataset.value : null;
+    menu.replaceChildren(...group("language", "lang-switcher", "lang", LANGS, S.lang, "lang_"),
+      ...group("skin", "skin-picker", "skin", SKINS, P.skin, "skin_"),
+      ...group("density", "role-switcher", "density", DENSITIES, P.density, "dens_"));
+    if (keep) { const again = menu.querySelector('[data-value="' + keep + '"]'); if (again) again.focus(); }
+  }
+  function wireDisplayMenu() {
+    const btn = $("display-btn"), menu = $("display-menu");
+    const setOpen = (open, refocus) => {
+      menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+      if (open) { const first = menu.querySelector("button"); if (first) first.focus(); }
+      else if (refocus) btn.focus();
+    };
+    btn.addEventListener("click", () => setOpen(menu.hidden));
+    document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !menu.hidden) { ev.preventDefault(); setOpen(false, true); } });
+    document.addEventListener("click", (ev) => { const path = ev.composedPath(); /* chips re-render on click, so test the dispatch-time path */
+      if (!menu.hidden && !path.includes(menu) && !path.includes(btn)) setOpen(false, false); });
+    // A change made in the PRJ012 app (another tab) updates this page live.
+    window.addEventListener("storage", (ev) => {
+      if (ev.key !== null && ev.key !== PREFS_KEY && ev.key !== LANG_KEY) return;
+      const before = S.lang;
+      readPrefs(); applyPrefs(); renderChrome();
+      if (S.lang !== before) route();
+    });
+  }
   function wire() {
     $("q").addEventListener("input", (ev) => { S.query = ev.target.value; renderTree(); });
     $("group-by").addEventListener("change", (ev) => { S.group = ev.target.value; renderTree(); });
     $("show-retired").addEventListener("change", (ev) => { S.retired = ev.target.checked; renderTree(); });
-    $("lang-btn").addEventListener("click", () => {
-      S.lang = S.lang === "vi" ? "en" : "vi";
-      try { localStorage.setItem("library-lang", S.lang); } catch (e) { /* private mode */ }
-      renderChrome(); route();
-    });
+    wireDisplayMenu();
     $("new-btn").addEventListener("click", () => go("new"));
     $("menu-btn").addEventListener("click", () => $("app").classList.toggle("menu-open"));
     window.addEventListener("hashchange", route);
   }
   (async function main() {
-    try { S.lang = localStorage.getItem("library-lang") || "vi"; } catch (e) { S.lang = "vi"; }
+    readPrefs();
+    applyPrefs();
     wire();
     renderChrome();
     setView(h("p", { class: "muted" }, t("loading")));

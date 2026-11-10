@@ -24,6 +24,7 @@ _CSS_TAG = '<link rel="stylesheet" href="static/app.css">'
 _JS_TAG = '<script src="static/app.js"></script>'
 _DATA_MARK = "<!--LIBRARY_DATA-->"
 _BODY = re.compile(r"<body[^>]*>(.*)</body>", re.S)
+_BOOTSTRAP = re.compile(r'<script id="prefs-bootstrap">.*?</script>', re.S)
 ARTIFACT_LIMIT = 16 * 1024 * 1024
 
 
@@ -59,7 +60,11 @@ def build_fragment(payload: dict) -> str:
     match = _BODY.search(static_text("index.html"))
     if match is None:
         raise RuntimeError("static/index.html has no <body>")
-    inner = _fill(_CSS_TAG + "\n" + match.group(1).strip(), payload)
+    boot = _BOOTSTRAP.search(static_text("index.html"))
+    if boot is None:
+        raise RuntimeError("static/index.html lost its prefs-bootstrap script")
+    # The fragment has no <head>: the bootstrap goes first so it still runs before the app markup paints.
+    inner = _fill(boot.group(0) + "\n" + _CSS_TAG + "\n" + match.group(1).strip(), payload)
     return ('<title>Thư viện Mix</title>\n'
             '<meta name="claude:viewport-fit-sides" content="cover">\n' + inner + "\n")
 
