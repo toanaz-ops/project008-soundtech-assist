@@ -45,6 +45,8 @@ Ba nhóm:
 
 **Không mở hướng 3 phần nội dung (rule thật) khi 6 thẻ gu mix chưa có câu trả
 lời.** Phiên sau đọc Decision Box nhóm "PROJECT008 Soundtech Assist" trước.
+*(2026-11-15: 6 thẻ đã trả lời 11/11 và đã đóng; số thật giờ chờ ở thẻ HW-256 —
+`docs/decisions/2026-11-15-mix-taste-answers.md`.)*
 
 ## Ghi chú
 
