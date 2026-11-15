@@ -3,7 +3,8 @@
 **Last updated:** 2026-11-09. **The 2026-10-22 pause is lifted** (owner, 09/11:
 "Kích hoạt lại, bỏ lệnh tạm dừng các dự án"); waves 6–11 merged —
 see the GUI 6–11 rows in §3 and `docs/proposals/2026-11-09-wave6-decisions.md`. Mix-taste
-answers (Decision Box HW-191.Q1–Q6) and desk acceptance (HW-192) stay with ToanAZ.
+cards HW-191.Q1–Q6 were answered 2026-11-11 (§5 item 13); the numbers themselves now wait on
+ToanAZ in one card, HW-256. Desk acceptance (HW-192) stays with ToanAZ.
 The paragraph below is the older wave 2/3 history §3 grew from.
 GUI wave 3 decisions were resolved 2026-09-25 and its debt cleanup merged. GUI wave 2 (live console page) **merged into `main`** via
 PR #1–#4 (`bedad80`, `00949c4`, `56d5114`, `dcf897a`) — measured at
@@ -395,6 +396,20 @@ supply. **Do not guess them.**
     Open for ToanAZ: acceptance step 6b on the real desk
     (`docs/acceptance/2026-09-wave3-desk-acceptance.md`), and a look at the
     page and the report from the exe.
+
+13. **Mix taste (direction 3) — answered 2026-11-11, numbers pending.**
+    HW-191.Q1–Q5: ToanAZ chose **B** each time (he gives his own list or
+    numbers: ignored `.snap` parameters, kick, vocal/MC, IEM errors and
+    severity, gain-staging targets). HW-191.Q6: **A** (record false positives
+    over time with the Doctor verdict bar), with the note "Thử kể xem": the
+    agent proposes suspect findings for him to confirm. All six are closed in
+    the Decision Box and merged into one manual card, **HW-256**, which lists
+    the current book/engineering defaults with short codes, plus five suspect
+    findings from the `example-Vu.snap` test contract (PB5 Kick In 55.2 Hz,
+    PB2 Hihat 502 Hz, PB4 OH 120 Hz, PB1 on an unpatched Snare Bot, G9
+    SIDEFILL). **Nothing is written to `principles.yaml` / `automix.yaml`
+    until he answers**; a value counts as his only where he wrote it. Record:
+    `docs/decisions/2026-11-15-mix-taste-answers.md`.
 
 ## 6. Waiting on hardware — NOTHING
 
