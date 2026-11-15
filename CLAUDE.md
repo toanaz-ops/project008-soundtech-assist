@@ -29,8 +29,8 @@ explicit paths.
 ## Git: GitHub-oriented
 
 `main` chỉ đổi qua PR đã merge trên GitHub; không commit thẳng vào main local.
-Mỗi task một nhánh trong worktree riêng, CI (check `test`) phải xanh, người bấm
-Merge là ToanAZ. Chi tiết và lệnh cụ thể: `docs/git-workflow.md`.
+Mỗi task một nhánh trong worktree riêng, CI (check `test`) phải xanh, rồi agent
+tự merge (ToanAZ 2026-11-15: không bấm Merge nữa). Chi tiết và lệnh cụ thể: `docs/git-workflow.md`.
 
 ## UI tests on the real app
 

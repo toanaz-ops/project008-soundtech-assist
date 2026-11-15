@@ -19,8 +19,9 @@ Remote: <https://github.com/toanaz-ops/project008-soundtech-assist> (public).
 5. **Một agent verifier mới phải cố bác bỏ** lời tuyên bố "xong" — đọc file
    thật, chạy lệnh thật — trước khi mở lời xin merge (luật toàn cục 1 và
    "never grade your own work").
-6. **Người bấm Merge là ToanAZ**, trừ khi anh đã nói "merge" trong chính
-   cuộc hội thoại đang chạy.
+6. **Agent tự merge khi `test` xanh** (ToanAZ 2026-11-15: "tôi không còn muốn
+   bấm nút merge từ lâu rồi, tự merge đi"). Trước khi merge, xem có phiên khác
+   đang merge vào cùng `main` không (luật toàn cục 5); nếu có thì phối hợp.
 7. **Merge bằng merge commit, không squash.** Từng commit của từng task và
    commit của vòng review-toàn-nhánh đều phải sống sót trong lịch sử.
 
@@ -66,7 +67,7 @@ CI đỏ thì đọc đúng chỗ hỏng, sửa trên chính nhánh đó rồi p
 gh run view <run id> --log-failed
 ```
 
-Sau khi ToanAZ bấm Merge trên GitHub, kéo về máy:
+Sau khi PR được merge trên GitHub, kéo về máy:
 
 ```bash
 git -C "D:\DEV CAVE EP3\PROJECT008-SOUNDTECH-ASSIST" pull --ff-only
@@ -181,7 +182,8 @@ Một task chỉ được gọi là xong khi có đủ:
 - Tính năng người dùng chạm tới: đã có nút trong `wing-ui`, không phải
   CLI-only (xem `CLAUDE.md`).
 
-Merge là việc của ToanAZ. Agent dừng lại ở bước "PR xanh, mời anh xem".
+Từ 2026-11-15 agent tự merge (merge commit) khi các điều trên đạt; không dừng
+lại chờ ToanAZ bấm.
 
 ## Ghi nhận 2026-09-17
 
